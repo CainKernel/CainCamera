@@ -29,6 +29,8 @@ import java.nio.ByteBuffer;
 
 /**
  * 使用枚举方式实现单例
+ * 在surfaceCreated中创建线程实例，在surfaceDestroyed中销毁线程，
+ * 主要是为了防止线程未释放，会导致退出后的内存呈现锯齿状，内存泄漏。
  * Created by cain on 2017/7/9.
  */
 
@@ -47,14 +49,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
     private boolean isRecording = false;    // 是否录制状态
 
     CameraDrawer() {
-        mHandlerThread = new HandlerThread("CameraDrawer Thread");
-        mHandlerThread.start();
-        mDrawerHandler = new CameraDrawerHandler(mHandlerThread.getLooper());
-        mDrawerHandler.sendEmptyMessage(CameraDrawerHandler.MSG_INIT);
-        loopingInterval = CameraUtils.DESIRED_PREVIEW_FPS;
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
+        create();
         if (mDrawerHandler != null) {
             mDrawerHandler.sendMessage(mDrawerHandler
                     .obtainMessage(CameraDrawerHandler.MSG_SURFACE_CREATED, holder));
@@ -75,6 +73,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             mDrawerHandler.sendMessage(mDrawerHandler
                     .obtainMessage(CameraDrawerHandler.MSG_SURFACE_DESTROYED));
         }
+        destory();
     }
 
     @Override
@@ -82,6 +81,17 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         if (mDrawerHandler != null) {
             mDrawerHandler.addNewFrame();
         }
+    }
+
+    /**
+     * 创建HandlerThread和Handler
+     */
+    private void create() {
+        mHandlerThread = new HandlerThread("CameraDrawer Thread");
+        mHandlerThread.start();
+        mDrawerHandler = new CameraDrawerHandler(mHandlerThread.getLooper());
+        mDrawerHandler.sendEmptyMessage(CameraDrawerHandler.MSG_INIT);
+        loopingInterval = CameraUtils.DESIRED_PREVIEW_FPS;
     }
 
     /**
