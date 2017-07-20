@@ -1,11 +1,7 @@
 package com.cgfay.caincamera.activity;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.hardware.Camera;
-import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -14,15 +10,12 @@ import android.widget.Button;
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.CameraDrawer;
 import com.cgfay.caincamera.utils.CameraUtils;
-import com.cgfay.caincamera.utils.ImageUtils;
+import com.cgfay.caincamera.view.AspectFrameLAyout;
 import com.cgfay.caincamera.view.CameraSurfaceView;
-
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 public class CameraActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private AspectFrameLAyout mAspectLayout;
     private CameraSurfaceView mCameraSurfaceView;
     private Button mBtnViewPhoto;
     private Button mBtnTake;
@@ -35,6 +28,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_camera);
+        mAspectLayout = (AspectFrameLAyout) findViewById(R.id.layout_aspect);
+        mAspectLayout.setAspectRatio(3 / 4);
         mCameraSurfaceView = (CameraSurfaceView) findViewById(R.id.view_camera);
         CameraUtils.calculateCameraPreviewOrientation(CameraActivity.this);
         mBtnViewPhoto = (Button) findViewById(R.id.btn_view_photo);

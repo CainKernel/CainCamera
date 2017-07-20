@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.cgfay.caincamera.activity.CameraActivity">
-    <com.cgfay.caincamera.view.CameraSurfaceView
-        android:id="@+id/view_camera"
+    <com.cgfay.caincamera.view.AspectFrameLAyout
+        android:id="@+id/layout_aspect"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content">
+        <com.cgfay.caincamera.view.CameraSurfaceView
+            android:id="@+id/view_camera"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.cgfay.caincamera.view.AspectFrameLAyout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
