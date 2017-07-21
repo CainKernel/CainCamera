@@ -16,13 +16,11 @@
 
 package com.cgfay.caincamera.gles;
 
-import android.opengl.GLES20;
-
-import com.cgfay.caincamera.filter.BaseImageFilter;
-import com.cgfay.caincamera.filter.BaseImageFilterGroup;
-import com.cgfay.caincamera.filter.CameraFilter;
-import com.cgfay.caincamera.filter.IFilter;
-import com.cgfay.caincamera.filter.SurfaceFilter;
+import com.cgfay.caincamera.filter.base.BaseImageFilter;
+import com.cgfay.caincamera.filter.base.BaseImageFilterGroup;
+import com.cgfay.caincamera.filter.base.CameraFilter;
+import com.cgfay.caincamera.filter.base.IFilter;
+import com.cgfay.caincamera.filter.base.SurfaceFilter;
 import com.cgfay.caincamera.utils.GlUtil;
 
 import java.util.ArrayDeque;
@@ -51,6 +49,16 @@ public class FullFrameRect {
      */
     public int createTextureOES() {
         return GlUtil.createTextureObject(mCameraFilter.getTextureType());
+    }
+
+    /**
+     * 添加滤镜
+     * @param filter
+     */
+    public void addFilter(BaseImageFilter filter) {
+        if (mFilterLists != null) {
+            mFilterLists.add(filter);
+        }
     }
 
     /**
@@ -107,16 +115,14 @@ public class FullFrameRect {
      * @param texMatrix
      */
     public void drawEffectFilters(int framebuffer, int textureId, float[] texMatrix) {
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, framebuffer);
         for (IFilter filter : mFilterLists) {
             // 滤镜组绘制完成后需要返回TextureId，可能创建了新的Texture
             if (filter instanceof BaseImageFilterGroup) {
 
             } else if (filter instanceof BaseImageFilter) {
-
+                filter.drawFramebuffer(framebuffer, textureId, texMatrix);
             }
         }
-        GLES20.glBindBuffer(GLES20.GL_FRAMEBUFFER, 0);
     }
 
     /**
@@ -131,6 +137,12 @@ public class FullFrameRect {
         if (mSurfaceFilter != null && doEglCleanup) {
             mSurfaceFilter.release();
             mSurfaceFilter = null;
+        }
+        if (mFilterLists != null) {
+            for (BaseImageFilter filter : mFilterLists) {
+                filter.release();
+            }
+            mFilterLists.clear();
         }
     }
 

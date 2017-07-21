@@ -14,6 +14,8 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.view.SurfaceHolder;
 
+import com.cgfay.caincamera.filter.base.GuassFilter;
+import com.cgfay.caincamera.filter.base.SaturationFilter;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.FullFrameRect;
 import com.cgfay.caincamera.gles.OffscreenSurface;
@@ -422,6 +424,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             mOffScreenSurface.makeCurrent();
             mFullFrameRect = new FullFrameRect();
             mTextureId = mFullFrameRect.createTextureOES();
+            mFullFrameRect.addFilter(new SaturationFilter());
             mCameraTexture = new SurfaceTexture(mTextureId);
             mCameraTexture.setOnFrameAvailableListener(CameraDrawer.this);
             CameraUtils.startPreviewTexture(mCameraTexture);

@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.filter;
+package com.cgfay.caincamera.filter.base;
 
 import java.nio.FloatBuffer;
 

@@ -1,11 +1,13 @@
-package com.cgfay.caincamera.filter;
+package com.cgfay.caincamera.filter.base;
 
+import android.graphics.PointF;
 import android.opengl.GLES20;
 
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.GlUtil;
 
 import java.nio.FloatBuffer;
+import java.util.LinkedList;
 
 /**
  * 基类滤镜
@@ -14,26 +16,26 @@ import java.nio.FloatBuffer;
 
 public class BaseImageFilter implements IFilter {
 
-    private static final String VERTEX_SHADER =
-            "uniform mat4 uMVPMatrix;                               \n" +
-            "uniform mat4 uTexMatrix;                               \n" +
-            "attribute vec4 aPosition;                              \n" +
-            "attribute vec4 aTextureCoord;                          \n" +
-            "varying vec2 vTextureCoord;                            \n" +
-            "void main() {                                          \n" +
-            "    gl_Position = uMVPMatrix * aPosition;              \n" +
-            "    vTextureCoord = (uTexMatrix * aTextureCoord).xy;   \n" +
-            "}\n";
+    static final String VERTEX_SHADER =
+            "uniform mat4 uMVPMatrix;                                   \n" +
+            "uniform mat4 uTexMatrix;                                   \n" +
+            "attribute vec4 aPosition;                                  \n" +
+            "attribute vec4 aTextureCoord;                              \n" +
+            "varying vec2 textureCoordinate;                            \n" +
+            "void main() {                                              \n" +
+            "    gl_Position = uMVPMatrix * aPosition;                  \n" +
+            "    textureCoordinate = (uTexMatrix * aTextureCoord).xy;   \n" +
+            "}                                                          \n";
 
     private static final String FRAGMENT_SHADER_2D =
-            "precision mediump float;                               \n" +
-            "varying vec2 vTextureCoord;                            \n" +
-            "uniform sampler2D sTexture;                            \n" +
-            "void main() {                                          \n" +
-            "    gl_FragColor = texture2D(sTexture, vTextureCoord); \n" +
-            "}                                                      \n";
+            "precision mediump float;                                   \n" +
+            "varying vec2 textureCoordinate;                            \n" +
+            "uniform sampler2D sTexture;                                \n" +
+            "void main() {                                              \n" +
+            "    gl_FragColor = texture2D(sTexture, textureCoordinate); \n" +
+            "}                                                          \n";
 
-    private static final int SIZEOF_FLOAT = 4;
+    static final int SIZEOF_FLOAT = 4;
     private static final float SquareVertices[] = {
             -1.0f, -1.0f,   // 0 bottom left
             1.0f, -1.0f,   // 1 bottom right
@@ -86,8 +88,15 @@ public class BaseImageFilter implements IFilter {
 
     private int mTextureId = -1;
 
+    private final LinkedList<Runnable> mRunOnDraw;
+
     public BaseImageFilter() {
-        mProgramHandle = GlUtil.createProgram(VERTEX_SHADER, FRAGMENT_SHADER_2D);
+        this(VERTEX_SHADER, FRAGMENT_SHADER_2D);
+    }
+
+    public BaseImageFilter(String vertexShader, String fragmentShader) {
+        mRunOnDraw = new LinkedList<>();
+        mProgramHandle = GlUtil.createProgram(vertexShader, fragmentShader);
         maPositionLoc = GLES20.glGetAttribLocation(mProgramHandle, "aPosition");
         maTextureCoordLoc = GLES20.glGetAttribLocation(mProgramHandle, "aTextureCoord");
         muMVPMatrixLoc = GLES20.glGetUniformLocation(mProgramHandle, "uMVPMatrix");
@@ -116,16 +125,18 @@ public class BaseImageFilter implements IFilter {
         GLES20.glBindTexture(getTextureType(), textureId);
         GLES20.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mvpMatrix, 0);
         GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, texMatrix, 0);
+        runPendingOnDrawTasks();
         GLES20.glEnableVertexAttribArray(maPositionLoc);
         GLES20.glVertexAttribPointer(maPositionLoc, coordsPerVertex,
                 GLES20.GL_FLOAT, false, vertexStride, vertexBuffer);
         GLES20.glEnableVertexAttribArray(maTextureCoordLoc);
         GLES20.glVertexAttribPointer(maTextureCoordLoc, 2,
                 GLES20.GL_FLOAT, false, texStride, texBuffer);
+        onDrawArraysBegin();
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, firstVertex, vertexCount);
-        GLES20.glFinish();
         GLES20.glDisableVertexAttribArray(maPositionLoc);
         GLES20.glDisableVertexAttribArray(maTextureCoordLoc);
+        onDrawArraysAfter();
         GLES20.glBindTexture(getTextureType(), 0);
         GLES20.glUseProgram(0);
         mTextureId = textureId;
@@ -159,16 +170,18 @@ public class BaseImageFilter implements IFilter {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
         GLES20.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, GlUtil.IDENTITY_MATRIX, 0);
         GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, texMatrix, 0);
+        runPendingOnDrawTasks();
         GLES20.glEnableVertexAttribArray(maPositionLoc);
         GLES20.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
                 GLES20.GL_FLOAT, false, mVertexStride, mVertexArray);
         GLES20.glEnableVertexAttribArray(maTextureCoordLoc);
         GLES20.glVertexAttribPointer(maTextureCoordLoc, 2,
                 GLES20.GL_FLOAT, false, mTexCoordStride, mTexCoordArray);
+        onDrawArraysBegin();
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, mVertexCount);
-        GLES20.glFinish();
         GLES20.glDisableVertexAttribArray(maPositionLoc);
         GLES20.glDisableVertexAttribArray(maTextureCoordLoc);
+        onDrawArraysAfter();
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glUseProgram(0);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
@@ -187,6 +200,20 @@ public class BaseImageFilter implements IFilter {
     @Override
     public int getOutputTexture() {
         return mTextureId;
+    }
+
+    /**
+     * 调用drawArrays之前，方便添加其他属性
+     */
+    public void onDrawArraysBegin() {
+
+    }
+
+    /**
+     * drawArrays调用之后，方便销毁其他属性
+     */
+    public void onDrawArraysAfter() {
+
     }
 
     /**
@@ -222,5 +249,105 @@ public class BaseImageFilter implements IFilter {
                 result = GlUtil.createFloatBuffer(TextureVertices);
         }
         return result;
+    }
+
+    ///------------------ 同一变量(uniform)设置 ------------------------///
+    protected void setInteger(final int location, final int intValue) {
+        runOnDraw(new Runnable() {
+            @Override
+            public void run() {
+                GLES20.glUniform1i(location, intValue);
+            }
+        });
+    }
+
+    protected void setFloat(final int location, final float floatValue) {
+        runOnDraw(new Runnable() {
+            @Override
+            public void run() {
+                GLES20.glUniform1f(location, floatValue);
+            }
+        });
+    }
+
+    protected void setFloatVec2(final int location, final float[] arrayValue) {
+        runOnDraw(new Runnable() {
+            @Override
+            public void run() {
+                GLES20.glUniform2fv(location, 1, FloatBuffer.wrap(arrayValue));
+            }
+        });
+    }
+
+    protected void setFloatVec3(final int location, final float[] arrayValue) {
+        runOnDraw(new Runnable() {
+            @Override
+            public void run() {
+                GLES20.glUniform3fv(location, 1, FloatBuffer.wrap(arrayValue));
+            }
+        });
+    }
+
+    protected void setFloatVec4(final int location, final float[] arrayValue) {
+        runOnDraw(new Runnable() {
+            @Override
+            public void run() {
+                GLES20.glUniform4fv(location, 1, FloatBuffer.wrap(arrayValue));
+            }
+        });
+    }
+
+    protected void setFloatArray(final int location, final float[] arrayValue) {
+        runOnDraw(new Runnable() {
+            @Override
+            public void run() {
+                GLES20.glUniform1fv(location, arrayValue.length, FloatBuffer.wrap(arrayValue));
+            }
+        });
+    }
+
+    protected void setPoint(final int location, final PointF point) {
+        runOnDraw(new Runnable() {
+
+            @Override
+            public void run() {
+                float[] vec2 = new float[2];
+                vec2[0] = point.x;
+                vec2[1] = point.y;
+                GLES20.glUniform2fv(location, 1, vec2, 0);
+            }
+        });
+    }
+
+    protected void setUniformMatrix3f(final int location, final float[] matrix) {
+        runOnDraw(new Runnable() {
+
+            @Override
+            public void run() {
+                GLES20.glUniformMatrix3fv(location, 1, false, matrix, 0);
+            }
+        });
+    }
+
+    protected void setUniformMatrix4f(final int location, final float[] matrix) {
+        runOnDraw(new Runnable() {
+
+            @Override
+            public void run() {
+                GLES20.glUniformMatrix4fv(location, 1, false, matrix, 0);
+            }
+        });
+    }
+
+    protected void runOnDraw(final Runnable runnable) {
+        synchronized (mRunOnDraw) {
+            mRunOnDraw.addLast(runnable);
+        }
+    }
+
+    protected void runPendingOnDrawTasks() {
+        while (!mRunOnDraw.isEmpty()) {
+            mRunOnDraw.removeFirst().run();
+        }
     }
 }

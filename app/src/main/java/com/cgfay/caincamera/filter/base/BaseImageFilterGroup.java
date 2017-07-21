@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.filter;
+package com.cgfay.caincamera.filter.base;
 
 import android.opengl.GLES20;
 
