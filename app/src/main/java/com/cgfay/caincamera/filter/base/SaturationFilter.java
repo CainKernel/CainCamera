@@ -1,6 +1,6 @@
 package com.cgfay.caincamera.filter.base;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 /**
  * 饱和度滤镜
@@ -89,9 +89,9 @@ public class SaturationFilter extends BaseImageFilter {
 
     public SaturationFilter(String vertexShader, String fragementShader) {
         super(vertexShader, fragementShader);
-        mRangeMinLoc = GLES20.glGetUniformLocation(mProgramHandle, "rangeMin");
-        mRangeMaxLoc = GLES20.glGetUniformLocation(mProgramHandle, "rangeMax");
-        mInputLevelLoc = GLES20.glGetUniformLocation(mProgramHandle, "inputLevel");
+        mRangeMinLoc = GLES30.glGetUniformLocation(mProgramHandle, "rangeMin");
+        mRangeMaxLoc = GLES30.glGetUniformLocation(mProgramHandle, "rangeMax");
+        mInputLevelLoc = GLES30.glGetUniformLocation(mProgramHandle, "inputLevel");
         setSaturationMin(new float[]{0.0f, 0.0f, 0.0f});
         setSaturationMax(new float[]{1.0f, 1.0f, 1.0f});
         setSaturationLevel(0.5f);

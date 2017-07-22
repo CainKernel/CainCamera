@@ -1,6 +1,6 @@
 package com.cgfay.caincamera.filter.base;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ public class BaseImageFilterGroup implements IFilter {
 
     @Override
     public int getTextureType() {
-        return GLES20.GL_TEXTURE_2D;
+        return GLES30.GL_TEXTURE_2D;
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.cgfay.caincamera.filter.base;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 /**
  * 镜像翻转
@@ -65,9 +65,9 @@ public class MirrorFilter extends BaseImageFilter {
 
     public MirrorFilter(String vertexShader, String fragmentShader) {
         super(vertexShader, fragmentShader);
-        mAngleLoc = GLES20.glGetUniformLocation(mProgramHandle, "Angle");
-        mMirrorXLoc = GLES20.glGetUniformLocation(mProgramHandle, "MirrorX");
-        mMirrorYLoc = GLES20.glGetUniformLocation(mProgramHandle, "MirrorY");
+        mAngleLoc = GLES30.glGetUniformLocation(mProgramHandle, "Angle");
+        mMirrorXLoc = GLES30.glGetUniformLocation(mProgramHandle, "MirrorX");
+        mMirrorYLoc = GLES30.glGetUniformLocation(mProgramHandle, "MirrorY");
     }
 
     /**

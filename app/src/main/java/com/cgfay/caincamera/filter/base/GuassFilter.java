@@ -1,6 +1,6 @@
 package com.cgfay.caincamera.filter.base;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 /**
  * 高斯模糊滤镜
@@ -56,10 +56,10 @@ public class GuassFilter extends BaseImageFilter {
 
     public GuassFilter(String vertexShader, String fragmentShader) {
         super(vertexShader, fragmentShader);
-        mRadiusLoc = GLES20.glGetUniformLocation(mProgramHandle, "radius");
-        mOffsetLoc = GLES20.glGetUniformLocation(mProgramHandle, "offset");
-        mImageSizeLoc = GLES20.glGetUniformLocation(mProgramHandle, "imageSize");
-        mBlurSizeLoc = GLES20.glGetUniformLocation(mProgramHandle, "blurSize");
+        mRadiusLoc = GLES30.glGetUniformLocation(mProgramHandle, "radius");
+        mOffsetLoc = GLES30.glGetUniformLocation(mProgramHandle, "offset");
+        mImageSizeLoc = GLES30.glGetUniformLocation(mProgramHandle, "imageSize");
+        mBlurSizeLoc = GLES30.glGetUniformLocation(mProgramHandle, "blurSize");
         setGuassRadius(20.0f);
         setOffset(new float[]{540f, 960f});
         setImageSize(new float[]{1080, 1920});

@@ -4,15 +4,47 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.cgfay.caincamera.activity.CameraActivity">
-    <com.cgfay.caincamera.view.AspectFrameLAyout
+    <com.cgfay.caincamera.view.AspectFrameLayout
         android:id="@+id/layout_aspect"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <com.cgfay.caincamera.view.CameraSurfaceView
-            android:id="@+id/view_camera"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </com.cgfay.caincamera.view.AspectFrameLAyout>
+        android:layout_height="wrap_content"
+        android:layout_gravity="top">
+        <!--<com.cgfay.caincamera.view.CameraSurfaceView-->
+            <!--android:id="@+id/view_camera"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent" />-->
+    </com.cgfay.caincamera.view.AspectFrameLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="top">
+        <Button
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textColor="@android:color/white"
+            android:text="@string/btn_back"
+            android:layout_alignParentStart="true"/>
+        <Button
+            android:id="@+id/btn_setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textColor="@android:color/white"
+            android:text="@string/btn_setting"
+            android:layout_centerInParent="true"/>
+        <Button
+            android:id="@+id/btn_more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textColor="@android:color/white"
+            android:text="@string/btn_more"
+            android:layout_alignParentEnd="true"/>
+    </RelativeLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -41,4 +73,19 @@
             android:layout_weight="1"
             android:text="@string/btn_switch_camera"/>
     </LinearLayout>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_gravity="bottom"
+        android:visibility="gone">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </ScrollView>
 </FrameLayout>

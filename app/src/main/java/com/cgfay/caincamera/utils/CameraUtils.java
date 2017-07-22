@@ -3,6 +3,7 @@ package com.cgfay.caincamera.utils;
 import android.app.Activity;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
@@ -18,9 +19,14 @@ import java.util.List;
 public class CameraUtils {
 
     // 相机默认宽高，相机的宽度和高度跟屏幕坐标不一样，手机屏幕的宽度和高度是反过来的。
-    public static final int DEFAULT_WIDTH = 1280;
-    public static final int DEFAULT_HEIGHT = 720;
+    public static final int DEFAULT_WIDTH = 1024;
+    public static final int DEFAULT_HEIGHT = 768;
     public static final int DESIRED_PREVIEW_FPS = 30;
+
+    // 这里反过来是因为相机的分辨率跟屏幕的分辨率宽高刚好反过来
+    public static final float Ratio_3_4 = 0.75f;
+    public static final float Ratio_9_16 = 0.5625f;
+    public static final float Ratio_1_1 = 1.0f;
 
     private static int mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
     private static Camera mCamera;
@@ -28,6 +34,9 @@ public class CameraUtils {
     private static int mOrientation = 0;
 
     private static SurfaceTexture mSurfaceTexture;
+
+    // 当前的宽高比
+    private static float mCurrentRatio = Ratio_3_4;
 
     /**
      * 打开相机，默认打开前置相机
@@ -155,6 +164,15 @@ public class CameraUtils {
     }
 
     /**
+     * 重新打开相机
+     */
+    public static void reOpenCamera() {
+        releaseCamera();
+        openCamera(mCameraID, DESIRED_PREVIEW_FPS);
+        startPreviewTexture(mSurfaceTexture);
+    }
+
+    /**
      * 释放相机
      */
     public static void releaseCamera() {
@@ -259,7 +277,8 @@ public class CameraUtils {
         // 辗转计算宽高最接近的值
         for (Camera.Size size: sizes) {
             // 如果宽高相等，则直接返回
-            if (size.width == expectWidth && size.height == expectHeight) {
+            if (size.width == expectWidth && size.height == expectHeight
+                    && ((float)size.height / (float) size.width) == mCurrentRatio) {
                 result = size;
                 break;
             }
@@ -267,16 +286,20 @@ public class CameraUtils {
             if (size.width == expectWidth) {
                 widthOrHeight = true;
                 if (Math.abs(result.height - expectHeight)
-                        > Math.abs(size.height - expectHeight)) {
+                        > Math.abs(size.height - expectHeight)
+                        && ((float)size.height / (float) size.width) == mCurrentRatio) {
                     result = size;
+                    break;
                 }
             }
             // 高度相等，则计算宽度最接近的Size
             else if (size.height == expectHeight) {
                 widthOrHeight = true;
                 if (Math.abs(result.width - expectWidth)
-                        > Math.abs(size.width - expectWidth)) {
+                        > Math.abs(size.width - expectWidth)
+                        && ((float)size.height / (float) size.width) == mCurrentRatio) {
                     result = size;
+                    break;
                 }
             }
             // 如果之前的查找不存在宽或高相等的情况，则计算宽度和高度都最接近的期望值的Size
@@ -284,7 +307,8 @@ public class CameraUtils {
                 if (Math.abs(result.width - expectWidth)
                         > Math.abs(size.width - expectWidth)
                         && Math.abs(result.height - expectHeight)
-                        > Math.abs(size.height - expectHeight)) {
+                        > Math.abs(size.height - expectHeight)
+                        && ((float)size.height / (float) size.width) == mCurrentRatio) {
                     result = size;
                 }
             }
@@ -293,7 +317,7 @@ public class CameraUtils {
     }
 
     /**
-     * 排序
+     * 分辨率由大到小排序
      * @param list
      */
     private static void sortList(List<Camera.Size> list) {
@@ -301,9 +325,9 @@ public class CameraUtils {
             @Override
             public int compare(Camera.Size pre, Camera.Size after) {
                 if (pre.width > after.width) {
-                    return 1;
-                } else if (pre.width < after.width) {
                     return -1;
+                } else if (pre.width < after.width) {
+                    return 1;
                 }
                 return 0;
             }
@@ -397,5 +421,26 @@ public class CameraUtils {
      */
     public static int getCameraPreviewThousandFps() {
         return mCameraPreviewFps;
+    }
+
+    /**
+     * 获取当前的宽高比
+     * @return
+     */
+    public static float getCurrentRatio() {
+        return mCurrentRatio;
+    }
+
+    /**
+     * 设置当前相机分辨率的宽高比
+     * @param value
+     */
+    public static void setCurrentRatio(float value) {
+        boolean needToReOpenCamera = ((value == Ratio_9_16) && (mCurrentRatio != Ratio_9_16))
+                || ((value != Ratio_9_16) && (mCurrentRatio == Ratio_9_16));
+        mCurrentRatio = value;
+        if (needToReOpenCamera) {
+            reOpenCamera();
+        }
     }
 }

@@ -1,7 +1,8 @@
 package com.cgfay.caincamera.filter.base;
 
 import android.graphics.PointF;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
+import android.opengl.GLES30;
 
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.GlUtil;
@@ -97,10 +98,10 @@ public class BaseImageFilter implements IFilter {
     public BaseImageFilter(String vertexShader, String fragmentShader) {
         mRunOnDraw = new LinkedList<>();
         mProgramHandle = GlUtil.createProgram(vertexShader, fragmentShader);
-        maPositionLoc = GLES20.glGetAttribLocation(mProgramHandle, "aPosition");
-        maTextureCoordLoc = GLES20.glGetAttribLocation(mProgramHandle, "aTextureCoord");
-        muMVPMatrixLoc = GLES20.glGetUniformLocation(mProgramHandle, "uMVPMatrix");
-        muTexMatrixLoc = GLES20.glGetUniformLocation(mProgramHandle, "uTexMatrix");
+        maPositionLoc = GLES30.glGetAttribLocation(mProgramHandle, "aPosition");
+        maTextureCoordLoc = GLES30.glGetAttribLocation(mProgramHandle, "aTextureCoord");
+        muMVPMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uMVPMatrix");
+        muTexMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uTexMatrix");
     }
 
     /**
@@ -120,25 +121,25 @@ public class BaseImageFilter implements IFilter {
     public void draw(float[] mvpMatrix, FloatBuffer vertexBuffer, int firstVertex,
                      int vertexCount, int coordsPerVertex, int vertexStride,
                      float[] texMatrix, FloatBuffer texBuffer, int textureId, int texStride) {
-        GLES20.glUseProgram(mProgramHandle);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(getTextureType(), textureId);
-        GLES20.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mvpMatrix, 0);
-        GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, texMatrix, 0);
+        GLES30.glUseProgram(mProgramHandle);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(getTextureType(), textureId);
+        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mvpMatrix, 0);
+        GLES30.glUniformMatrix4fv(muTexMatrixLoc, 1, false, texMatrix, 0);
         runPendingOnDrawTasks();
-        GLES20.glEnableVertexAttribArray(maPositionLoc);
-        GLES20.glVertexAttribPointer(maPositionLoc, coordsPerVertex,
-                GLES20.GL_FLOAT, false, vertexStride, vertexBuffer);
-        GLES20.glEnableVertexAttribArray(maTextureCoordLoc);
-        GLES20.glVertexAttribPointer(maTextureCoordLoc, 2,
-                GLES20.GL_FLOAT, false, texStride, texBuffer);
+        GLES30.glEnableVertexAttribArray(maPositionLoc);
+        GLES30.glVertexAttribPointer(maPositionLoc, coordsPerVertex,
+                GLES30.GL_FLOAT, false, vertexStride, vertexBuffer);
+        GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
+        GLES30.glVertexAttribPointer(maTextureCoordLoc, 2,
+                GLES30.GL_FLOAT, false, texStride, texBuffer);
         onDrawArraysBegin();
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, firstVertex, vertexCount);
-        GLES20.glDisableVertexAttribArray(maPositionLoc);
-        GLES20.glDisableVertexAttribArray(maTextureCoordLoc);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, firstVertex, vertexCount);
+        GLES30.glDisableVertexAttribArray(maPositionLoc);
+        GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
         onDrawArraysAfter();
-        GLES20.glBindTexture(getTextureType(), 0);
-        GLES20.glUseProgram(0);
+        GLES30.glBindTexture(getTextureType(), 0);
+        GLES30.glUseProgram(0);
         mTextureId = textureId;
     }
 
@@ -164,37 +165,37 @@ public class BaseImageFilter implements IFilter {
      */
     @Override
     public void drawFramebuffer(int framebuffer, int textureId, float[] texMatrix) {
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, framebuffer);
-        GLES20.glUseProgram(mProgramHandle);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-        GLES20.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, GlUtil.IDENTITY_MATRIX, 0);
-        GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, texMatrix, 0);
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, framebuffer);
+        GLES30.glUseProgram(mProgramHandle);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
+        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, GlUtil.IDENTITY_MATRIX, 0);
+        GLES30.glUniformMatrix4fv(muTexMatrixLoc, 1, false, texMatrix, 0);
         runPendingOnDrawTasks();
-        GLES20.glEnableVertexAttribArray(maPositionLoc);
-        GLES20.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
-                GLES20.GL_FLOAT, false, mVertexStride, mVertexArray);
-        GLES20.glEnableVertexAttribArray(maTextureCoordLoc);
-        GLES20.glVertexAttribPointer(maTextureCoordLoc, 2,
-                GLES20.GL_FLOAT, false, mTexCoordStride, mTexCoordArray);
+        GLES30.glEnableVertexAttribArray(maPositionLoc);
+        GLES30.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
+                GLES30.GL_FLOAT, false, mVertexStride, mVertexArray);
+        GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
+        GLES30.glVertexAttribPointer(maTextureCoordLoc, 2,
+                GLES30.GL_FLOAT, false, mTexCoordStride, mTexCoordArray);
         onDrawArraysBegin();
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, mVertexCount);
-        GLES20.glDisableVertexAttribArray(maPositionLoc);
-        GLES20.glDisableVertexAttribArray(maTextureCoordLoc);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
+        GLES30.glDisableVertexAttribArray(maPositionLoc);
+        GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
         onDrawArraysAfter();
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-        GLES20.glUseProgram(0);
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
+        GLES30.glUseProgram(0);
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
         mTextureId = textureId;
     }
 
     /**
      * 获取Texture类型
-     * GLES20.TEXTURE_2D / GLES11Ext.GL_TEXTURE_EXTERNAL_OES等
+     * GLES30.TEXTURE_2D / GLES11Ext.GL_TEXTURE_EXTERNAL_OES等
      */
     @Override
     public int getTextureType() {
-        return GLES20.GL_TEXTURE_2D;
+        return GLES30.GL_TEXTURE_2D;
     }
 
     @Override
@@ -221,7 +222,7 @@ public class BaseImageFilter implements IFilter {
      */
     @Override
     public void release() {
-        GLES20.glDeleteProgram(mProgramHandle);
+        GLES30.glDeleteProgram(mProgramHandle);
         mProgramHandle = -1;
         mTextureId = -1;
     }
@@ -256,7 +257,7 @@ public class BaseImageFilter implements IFilter {
         runOnDraw(new Runnable() {
             @Override
             public void run() {
-                GLES20.glUniform1i(location, intValue);
+                GLES30.glUniform1i(location, intValue);
             }
         });
     }
@@ -265,7 +266,7 @@ public class BaseImageFilter implements IFilter {
         runOnDraw(new Runnable() {
             @Override
             public void run() {
-                GLES20.glUniform1f(location, floatValue);
+                GLES30.glUniform1f(location, floatValue);
             }
         });
     }
@@ -274,7 +275,7 @@ public class BaseImageFilter implements IFilter {
         runOnDraw(new Runnable() {
             @Override
             public void run() {
-                GLES20.glUniform2fv(location, 1, FloatBuffer.wrap(arrayValue));
+                GLES30.glUniform2fv(location, 1, FloatBuffer.wrap(arrayValue));
             }
         });
     }
@@ -283,7 +284,7 @@ public class BaseImageFilter implements IFilter {
         runOnDraw(new Runnable() {
             @Override
             public void run() {
-                GLES20.glUniform3fv(location, 1, FloatBuffer.wrap(arrayValue));
+                GLES30.glUniform3fv(location, 1, FloatBuffer.wrap(arrayValue));
             }
         });
     }
@@ -292,7 +293,7 @@ public class BaseImageFilter implements IFilter {
         runOnDraw(new Runnable() {
             @Override
             public void run() {
-                GLES20.glUniform4fv(location, 1, FloatBuffer.wrap(arrayValue));
+                GLES30.glUniform4fv(location, 1, FloatBuffer.wrap(arrayValue));
             }
         });
     }
@@ -301,7 +302,7 @@ public class BaseImageFilter implements IFilter {
         runOnDraw(new Runnable() {
             @Override
             public void run() {
-                GLES20.glUniform1fv(location, arrayValue.length, FloatBuffer.wrap(arrayValue));
+                GLES30.glUniform1fv(location, arrayValue.length, FloatBuffer.wrap(arrayValue));
             }
         });
     }
@@ -314,7 +315,7 @@ public class BaseImageFilter implements IFilter {
                 float[] vec2 = new float[2];
                 vec2[0] = point.x;
                 vec2[1] = point.y;
-                GLES20.glUniform2fv(location, 1, vec2, 0);
+                GLES30.glUniform2fv(location, 1, vec2, 0);
             }
         });
     }
@@ -324,7 +325,7 @@ public class BaseImageFilter implements IFilter {
 
             @Override
             public void run() {
-                GLES20.glUniformMatrix3fv(location, 1, false, matrix, 0);
+                GLES30.glUniformMatrix3fv(location, 1, false, matrix, 0);
             }
         });
     }
@@ -334,7 +335,7 @@ public class BaseImageFilter implements IFilter {
 
             @Override
             public void run() {
-                GLES20.glUniformMatrix4fv(location, 1, false, matrix, 0);
+                GLES30.glUniformMatrix4fv(location, 1, false, matrix, 0);
             }
         });
     }

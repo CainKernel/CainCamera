@@ -5,7 +5,7 @@ import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
 import android.media.Image;
 import android.media.ImageReader;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -413,8 +413,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             mDisplaySurface = new WindowSurface(mEglCore, holder.getSurface(), false);
             CameraUtils.openFrontalCamera(CameraUtils.DESIRED_PREVIEW_FPS);
             // 禁用深度测试和背面绘制
-            GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-            GLES20.glDisable(GLES20.GL_CULL_FACE);
+            GLES30.glDisable(GLES30.GL_DEPTH_TEST);
+            GLES30.glDisable(GLES30.GL_CULL_FACE);
         }
 
         private void onSurfaceChanged(int width, int height) {
@@ -505,7 +505,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             mOffScreenSurface.makeCurrent();
             mCameraTexture.getTransformMatrix(mTmpMatrix);
             if (mFullFrameRect != null) {
-                GLES20.glViewport(0, 0, mViewWidth, mViewHeight);
+                GLES30.glViewport(0, 0, mViewWidth, mViewHeight);
                 mFullFrameRect.drawCameraTexture(mInputFramebuffer, mTextureId, mTmpMatrix);
             }
         }
@@ -532,9 +532,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
                 mSaveFrame = true;
                 // 切换到保存图片的上下文
                 mImageReaderWindowSurface.makeCurrent();
-                GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-                GLES20.glViewport(0, 0, mImageReaderWindowSurface.getWidth(),
+                GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+                GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
+                GLES30.glViewport(0, 0, mImageReaderWindowSurface.getWidth(),
                         mImageReaderWindowSurface.getHeight());
                 if (mSkipFrame == 0) {
                     // 绘制到Framebuffer
@@ -544,7 +544,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
                 }
                 mImageReaderWindowSurface.swapBuffers();
                 // 恢复上下文
-                GLES20.glViewport(0, 0, mViewWidth, mViewHeight);
+                GLES30.glViewport(0, 0, mViewWidth, mViewHeight);
                 mOffScreenSurface.makeCurrent();
             }
         }
@@ -555,7 +555,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         private void drawToScreen() {
             if (mFullFrameRect != null) {
                 mDisplaySurface.makeCurrentReadFrom(mOffScreenSurface);
-                GLES20.glViewport(0, 0, mViewWidth, mViewHeight);
+                GLES30.glViewport(0, 0, mViewWidth, mViewHeight);
                 mFullFrameRect.drawScreen(mFramebufferTexture, mTmpMatrix);
                 mDisplaySurface.swapBuffers();
             }
@@ -597,10 +597,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
          * 删除Framebuffer
          */
         private void uninitFramebuffer() {
-            GLES20.glDeleteFramebuffers(1, new int[]{mFramebuffer}, 0);
-            GLES20.glDeleteTextures(1, new int[]{mFramebufferTexture}, 0);
-            GLES20.glDeleteFramebuffers(1, new int[]{mInputFramebuffer}, 0);
-            GLES20.glDeleteTextures(1, new int[]{mInputFramebufferTexture}, 0);
+            GLES30.glDeleteFramebuffers(1, new int[]{mFramebuffer}, 0);
+            GLES30.glDeleteTextures(1, new int[]{mFramebufferTexture}, 0);
+            GLES30.glDeleteFramebuffers(1, new int[]{mInputFramebuffer}, 0);
+            GLES30.glDeleteTextures(1, new int[]{mInputFramebufferTexture}, 0);
         }
 
         /**
