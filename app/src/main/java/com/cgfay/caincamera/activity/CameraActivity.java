@@ -1,17 +1,21 @@
 package com.cgfay.caincamera.activity;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.RelativeLayout;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.CameraDrawer;
@@ -104,17 +108,17 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     private void requestStorageReadPermission() {
         ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_STORAGE_READ);
+                new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, REQUEST_STORAGE_READ);
     }
 
     private void requestStorageWritePermission() {
         ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE_WRITE);
+                new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_STORAGE_WRITE);
     }
 
     private void requestRecordPermission() {
         ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission_group.MICROPHONE}, REQUEST_RECORD);
+                new String[]{ Manifest.permission.RECORD_AUDIO }, REQUEST_RECORD);
     }
 
     private void requestLocationPermission() {
@@ -183,6 +187,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onResume() {
         super.onResume();
+        registerHomeReceiver();
         mCameraEnable = PermissionUtils.permissionChecking(this, Manifest.permission.CAMERA);
         if (mCameraEnable) {
             CameraUtils.startPreview();
@@ -195,11 +200,46 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onPause() {
         super.onPause();
+        unRegisterHomeReceiver();
         if (mCameraEnable) {
             CameraUtils.stopPreview();
             mOnPreviewing = false;
         }
     }
+
+    private void registerHomeReceiver() {
+        IntentFilter homeFilter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+        registerReceiver(mHomePressReceiver, homeFilter);
+    }
+
+    private void unRegisterHomeReceiver() {
+        unregisterReceiver(mHomePressReceiver);
+    }
+
+    /**
+     * 监听点击home键
+     */
+    private BroadcastReceiver mHomePressReceiver = new BroadcastReceiver() {
+        private final String SYSTEM_DIALOG_REASON_KEY = "reason";
+        private final String SYSTEM_DIALOG_REASON_HOME_KEY = "homekey";
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
+                String reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY);
+                if (TextUtils.isEmpty(reason)) {
+                    return;
+                }
+                // 当点击了home键时需要停止预览，防止后台一直持有相机
+                if (reason.equals(SYSTEM_DIALOG_REASON_HOME_KEY)) {
+                    if (mOnPreviewing) {
+                        CameraUtils.stopPreview();
+                        CameraDrawer.INSTANCE.stopPreview();
+                    }
+                }
+            }
+        }
+    };
 
     @Override
     public void onClick(View v) {

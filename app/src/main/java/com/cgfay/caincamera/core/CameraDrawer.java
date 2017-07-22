@@ -126,6 +126,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             return;
         }
         synchronized (mSynOperation) {
+            mDrawerHandler.removeMessages(CameraDrawerHandler.MSG_DRAW);
             mDrawerHandler.sendMessage(mDrawerHandler
                     .obtainMessage(CameraDrawerHandler.MSG_STOP_PREVIEW));
             synchronized (mSyncIsLooping) {
