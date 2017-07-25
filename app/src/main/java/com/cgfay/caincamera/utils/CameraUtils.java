@@ -237,6 +237,14 @@ public class CameraUtils {
         return null;
     }
 
+    public static Camera.CameraInfo getCameraInfo() {
+        if (mCamera != null) {
+            Camera.CameraInfo info = new Camera.CameraInfo();
+            Camera.getCameraInfo(mCameraID, info);
+            return info;
+        }
+        return null;
+    }
     /**
      * 设置拍摄的照片大小
      * @param camera

@@ -1,6 +1,8 @@
-package com.cgfay.caincamera.filter.base;
+package com.cgfay.caincamera.filter.image;
 
 import android.opengl.GLES30;
+
+import com.cgfay.caincamera.filter.base.BaseImageFilter;
 
 /**
  * 镜像翻转

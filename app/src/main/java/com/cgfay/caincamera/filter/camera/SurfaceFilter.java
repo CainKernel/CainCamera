@@ -1,7 +1,8 @@
-package com.cgfay.caincamera.filter.base;
+package com.cgfay.caincamera.filter.camera;
 
 import android.opengl.GLES30;
 
+import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.utils.GlUtil;
 
 /**

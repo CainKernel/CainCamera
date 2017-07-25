@@ -1,32 +1,22 @@
 package com.cgfay.caincamera.core;
 
-import android.graphics.Bitmap;
-import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
-import android.media.Image;
-import android.media.ImageReader;
+import android.hardware.Camera;
+import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.os.SystemClock;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
-import com.cgfay.caincamera.filter.base.GuassFilter;
-import com.cgfay.caincamera.filter.base.SaturationFilter;
+import com.cgfay.caincamera.filter.base.BaseImageFilter;
+import com.cgfay.caincamera.filter.camera.CameraFilter;
 import com.cgfay.caincamera.gles.EglCore;
-import com.cgfay.caincamera.gles.FullFrameRect;
-import com.cgfay.caincamera.gles.OffscreenSurface;
 import com.cgfay.caincamera.gles.WindowSurface;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.GlUtil;
-
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 
 
 /**
@@ -107,12 +97,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             mDrawerHandler.sendMessage(mDrawerHandler
                     .obtainMessage(CameraDrawerHandler.MSG_START_PREVIEW));
             synchronized (mSyncIsLooping) {
-                if (!isPreviewing && !isRecording) {
-                    mDrawerHandler.removeMessages(CameraDrawerHandler.MSG_DRAW);
-                    mDrawerHandler.sendMessageDelayed(mDrawerHandler.obtainMessage(
-                            CameraDrawerHandler.MSG_DRAW,
-                            SystemClock.uptimeMillis() + loopingInterval), loopingInterval);
-                }
                 isPreviewing = true;
             }
         }
@@ -126,12 +110,24 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             return;
         }
         synchronized (mSynOperation) {
-            mDrawerHandler.removeMessages(CameraDrawerHandler.MSG_DRAW);
             mDrawerHandler.sendMessage(mDrawerHandler
                     .obtainMessage(CameraDrawerHandler.MSG_STOP_PREVIEW));
             synchronized (mSyncIsLooping) {
                 isPreviewing = false;
             }
+        }
+    }
+
+    /**
+     * 改变Filter类型
+     */
+    public void changeFilterType(FilterType type) {
+        if (mDrawerHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mDrawerHandler.sendMessage(mDrawerHandler
+                    .obtainMessage(CameraDrawerHandler.MSG_FILTER_TYPE, type));
         }
     }
 
@@ -160,15 +156,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         synchronized (mSynOperation) {
             mDrawerHandler.sendMessage(mDrawerHandler
                     .obtainMessage(CameraDrawerHandler.MSG_START_RECORDING));
-            synchronized (mSyncIsLooping) {
-                if (!isPreviewing && !isRecording) {
-                    mDrawerHandler.removeMessages(CameraDrawerHandler.MSG_DRAW);
-                    mDrawerHandler.sendMessageDelayed(mDrawerHandler.obtainMessage(
-                            CameraDrawerHandler.MSG_DRAW,
-                            SystemClock.uptimeMillis() + loopingInterval), loopingInterval);
-                }
-                isRecording = true;
-            }
         }
     }
 
@@ -198,15 +185,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             // 发送拍照命令
             mDrawerHandler.sendMessage(mDrawerHandler
                     .obtainMessage(CameraDrawerHandler.MSG_TAKE_PICTURE));
-            synchronized (mSyncIsLooping) {
-                // 如果当前不处于预览和录制状态，则发送绘制命令
-                if (!isPreviewing && !isRecording) {
-                    mDrawerHandler.removeMessages(CameraDrawerHandler.MSG_DRAW);
-                    mDrawerHandler.sendMessageDelayed(mDrawerHandler.obtainMessage(
-                            CameraDrawerHandler.MSG_DRAW,
-                            SystemClock.uptimeMillis() + loopingInterval), loopingInterval);
-                }
-            }
         }
     }
 
@@ -247,7 +225,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         static final int MSG_SURFACE_CREATED = 0x001;
         static final int MSG_SURFACE_CHANGED = 0x002;
         static final int MSG_FRAME = 0x003;
-        static final int MSG_DRAW = 0x004;
+        static final int MSG_FILTER_TYPE = 0x004;
         static final int MSG_RESET = 0x005;
         static final int MSG_SURFACE_DESTROYED = 0x006;
         static final int MSG_INIT = 0x007;
@@ -268,27 +246,16 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         private EglCore mEglCore;
         // EGLSurface
         private WindowSurface mDisplaySurface;
-        // 离屏渲染EGLSurface
-        private OffscreenSurface mOffScreenSurface;
-        // ImageReader
-        private ImageReader mImageReader;
-        private WindowSurface mImageReaderWindowSurface;
-        private Bitmap mBitmap;
         // CameraTexture对应的Id
         private int mTextureId;
         private SurfaceTexture mCameraTexture;
-        // 绘制的实体
-        private FullFrameRect mFullFrameRect;
         // 矩阵
-        private final float[] mTmpMatrix = new float[16];
+        private final float[] mMatrix = new float[16];
         // 视图宽高
         private int mViewWidth, mViewHeight;
+        // 预览图片大小
+        private int mImageWidth, mImageHeight;
 
-        // 离屏渲染FBO 和 Texture
-        private int mInputFramebuffer;
-        private int mInputFramebufferTexture;
-        private int mFramebuffer;
-        private int mFramebufferTexture;
         // 更新帧的锁
         private final Object mSyncFrameNum = new Object();
         private final Object mSyncTexture = new Object();
@@ -298,6 +265,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         private boolean isTakePicture = false;
         private boolean mSaveFrame = false;
         private int mSkipFrame = 0;
+
+        private CameraFilter mCameraFilter;
+        private BaseImageFilter mFilter;
 
         public CameraDrawerHandler(Looper looper) {
             super(looper);
@@ -336,39 +306,12 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
                     drawFrame();
                     break;
 
-                // 绘制滤镜
-                case MSG_DRAW:
-                    synchronized (mSyncIsLooping) {
-                        long time = (Long)msg.obj;
-                        long interval = time + loopingInterval - SystemClock.uptimeMillis();
-                        if (isPreviewing || isRecording) {
-                            mDrawerHandler.sendMessageDelayed(mDrawerHandler.obtainMessage(
-                                    CameraDrawerHandler.MSG_DRAW,
-                                    SystemClock.uptimeMillis() + interval), interval);
-                        } else {
-                            mDrawerHandler.sendMessage(mDrawerHandler.obtainMessage(
-                                    CameraDrawerHandler.MSG_DRAW,
-                                    SystemClock.uptimeMillis() + loopingInterval));
-                        }
-                    }
-                    // 有新的帧时就进行绘制
-                    if (hasNewFrame) {
-                        // 绘制特效
-                        drawEffect();
-                        // 绘制录制
-                        drawMediaCodecOrCaptureFrame();
-                        // 绘制到屏幕
-                        drawToScreen();
-                        hasNewFrame = false;
-                    }
+                case MSG_FILTER_TYPE:
+                    setFilter((FilterType) msg.obj);
                     break;
 
                 // 重置
                 case MSG_RESET:
-                    if (mOffScreenSurface != null) {
-                        mOffScreenSurface.makeCurrent();
-                        resetFramebuffer();
-                    }
                     break;
 
                 // 开始预览
@@ -412,7 +355,30 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         private void onSurfaceCreated(SurfaceHolder holder) {
             mEglCore = new EglCore(null, EglCore.FLAG_RECORDABLE);
             mDisplaySurface = new WindowSurface(mEglCore, holder.getSurface(), false);
+            mDisplaySurface.makeCurrent();
+            if (mCameraFilter == null) {
+                mCameraFilter = new CameraFilter();
+            }
+            mTextureId = createTextureOES();
+            mCameraTexture = new SurfaceTexture(mTextureId);
+            mCameraTexture.setOnFrameAvailableListener(CameraDrawer.this);
             CameraUtils.openFrontalCamera(CameraUtils.DESIRED_PREVIEW_FPS);
+            Camera.Size size = CameraUtils.getPreviewSize();
+            Camera.CameraInfo info = CameraUtils.getCameraInfo();
+            if (size != null) {
+                if (info.orientation == 90 || info.orientation == 270) {
+                    mImageWidth = size.height;
+                    mImageHeight = size.width;
+                } else {
+                    mImageWidth = size.width;
+                    mImageHeight = size.height;
+                }
+            } else {
+                mImageWidth = 0;
+                mImageHeight = 0;
+            }
+            mCameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
+            mFilter = FilterManager.getFilter(FilterType.SATURATION);
             // 禁用深度测试和背面绘制
             GLES30.glDisable(GLES30.GL_DEPTH_TEST);
             GLES30.glDisable(GLES30.GL_CULL_FACE);
@@ -421,18 +387,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         private void onSurfaceChanged(int width, int height) {
             mViewWidth = width;
             mViewHeight = height;
-            mOffScreenSurface = new OffscreenSurface(mEglCore, width, height);
-            mOffScreenSurface.makeCurrent();
-            mFullFrameRect = new FullFrameRect();
-            mTextureId = mFullFrameRect.createTextureOES();
-            mFullFrameRect.addFilter(new SaturationFilter());
-            mCameraTexture = new SurfaceTexture(mTextureId);
-            mCameraTexture.setOnFrameAvailableListener(CameraDrawer.this);
+            onFilterChanged();
             CameraUtils.startPreviewTexture(mCameraTexture);
-            resetFramebuffer();
-            mImageReader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 1);
-            mImageReader.setOnImageAvailableListener(mImageReaderOnImageAvailable, null);
-            mImageReaderWindowSurface = new WindowSurface(mEglCore, mImageReader.getSurface(), false);
         }
 
         private void onSurfaceDestoryed() {
@@ -445,39 +401,46 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
                 mDisplaySurface.release();
                 mDisplaySurface = null;
             }
-            if (mOffScreenSurface != null) {
-                mOffScreenSurface.release();
-                mOffScreenSurface = null;
-            }
-            if (mImageReaderWindowSurface != null) {
-                mImageReaderWindowSurface.release();
-                mImageReaderWindowSurface = null;
-            }
-            if (mImageReader != null) {
-                mImageReader.close();
-                mImageReader = null;
-            }
-            if (mFullFrameRect != null) {
-                mFullFrameRect.release();
-                mFullFrameRect = null;
-            }
             if (mEglCore != null) {
                 mEglCore.release();
                 mEglCore = null;
             }
-            uninitFramebuffer();
+        }
+
+        /**
+         * 滤镜或视图发生变化时调用
+         */
+        private void onFilterChanged() {
+            mCameraFilter.onDisplayChanged(mViewWidth, mViewHeight);
+            if (mFilter != null) {
+                mCameraFilter.initCameraFramebuffer(mImageWidth, mImageHeight);
+            } else {
+                mCameraFilter.destroyFramebuffer();
+            }
+        }
+
+        /**
+         * 更新filter
+         * @param type Filter类型
+         */
+        private void setFilter(FilterType type) {
+            if (mFilter != null) {
+                mFilter.release();
+            }
+            mFilter = FilterManager.getFilter(type);
+            onFilterChanged();
         }
 
         /**
          * 绘制帧
          */
         private void drawFrame() {
+            mDisplaySurface.makeCurrent();
             synchronized (mSyncFrameNum) {
                 synchronized (mSyncTexture) {
                     if (mCameraTexture != null) {
                         // 如果存在新的帧，则更新帧
                         while (mFrameNum != 0) {
-                            mOffScreenSurface.makeCurrent();
                             mCameraTexture.updateTexImage();
                             --mFrameNum;
                             // 是否舍弃下一帧
@@ -493,73 +456,14 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
                     }
                 }
             }
-            drawCameraTexture();
-        }
-
-        /**
-         * 将Camera的OES的纹理读入到FBO中
-         */
-        private void drawCameraTexture() {
-            if (mInputFramebuffer <= 0) {
-                return;
+            mCameraTexture.getTransformMatrix(mMatrix);
+            if (mFilter == null) {
+                mCameraFilter.drawFrame(mTextureId, mMatrix);
+            } else {
+                int id = mCameraFilter.drawToTexture(mTextureId, mMatrix);
+                mFilter.drawFrame(id, mMatrix);
             }
-            mOffScreenSurface.makeCurrent();
-            mCameraTexture.getTransformMatrix(mTmpMatrix);
-            if (mFullFrameRect != null) {
-                GLES30.glViewport(0, 0, mViewWidth, mViewHeight);
-                mFullFrameRect.drawCameraTexture(mInputFramebuffer, mTextureId, mTmpMatrix);
-            }
-        }
-
-        /**
-         * 绘制特效到FBO
-         */
-        private void drawEffect() {
-            if (mFullFrameRect != null) {
-                mOffScreenSurface.makeCurrent();
-                mFullFrameRect.drawFramebuffer(mFramebuffer, mInputFramebufferTexture, mTmpMatrix);
-            }
-        }
-
-        /**
-         * 使用MediaCodec进行录制或者拍照
-         */
-        private void drawMediaCodecOrCaptureFrame() {
-            if (isRecording) {
-                // TODO: 录制视频
-
-            } else if (isTakePicture) {
-                isTakePicture = false;
-                mSaveFrame = true;
-                // 切换到保存图片的上下文
-                mImageReaderWindowSurface.makeCurrent();
-                GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
-                GLES30.glViewport(0, 0, mImageReaderWindowSurface.getWidth(),
-                        mImageReaderWindowSurface.getHeight());
-                if (mSkipFrame == 0) {
-                    // 绘制到Framebuffer
-                    if (mFullFrameRect != null) {
-                        mFullFrameRect.drawScreen(mFramebufferTexture, mTmpMatrix);
-                    }
-                }
-                mImageReaderWindowSurface.swapBuffers();
-                // 恢复上下文
-                GLES30.glViewport(0, 0, mViewWidth, mViewHeight);
-                mOffScreenSurface.makeCurrent();
-            }
-        }
-
-        /**
-         * 绘制到屏幕
-         */
-        private void drawToScreen() {
-            if (mFullFrameRect != null) {
-                mDisplaySurface.makeCurrentReadFrom(mOffScreenSurface);
-                GLES30.glViewport(0, 0, mViewWidth, mViewHeight);
-                mFullFrameRect.drawScreen(mFramebufferTexture, mTmpMatrix);
-                mDisplaySurface.swapBuffers();
-            }
+            mDisplaySurface.swapBuffers();
         }
 
         /**
@@ -574,94 +478,11 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         }
 
         /**
-         * 重置Framebuffer
-         */
-        public void resetFramebuffer() {
-            uninitFramebuffer();
-            initFramebuffer();
-        }
-
-        /**
-         * 初始化Framebuffer
-         */
-        private void initFramebuffer() {
-            int[] fb = new int[1], fbt = new int[1];
-            GlUtil.createSampler2DFrameBuff(fb, fbt, mViewWidth, mViewHeight);
-            mInputFramebuffer = fb[0];
-            mInputFramebufferTexture = fbt[0];
-            GlUtil.createSampler2DFrameBuff(fb, fbt, mViewWidth, mViewHeight);
-            mFramebuffer = fb[0];
-            mFramebufferTexture = fbt[0];
-        }
-
-        /**
-         * 删除Framebuffer
-         */
-        private void uninitFramebuffer() {
-            GLES30.glDeleteFramebuffers(1, new int[]{mFramebuffer}, 0);
-            GLES30.glDeleteTextures(1, new int[]{mFramebufferTexture}, 0);
-            GLES30.glDeleteFramebuffers(1, new int[]{mInputFramebuffer}, 0);
-            GLES30.glDeleteTextures(1, new int[]{mInputFramebufferTexture}, 0);
-        }
-
-        /**
-         * ImageReader 监听器
-         */
-        private ImageReader.OnImageAvailableListener mImageReaderOnImageAvailable =
-                new ImageReader.OnImageAvailableListener() {
-                    @Override
-                    public void onImageAvailable(ImageReader imageReader) {
-                        Image image = imageReader.acquireLatestImage();
-                        ByteBuffer[] byteBuffers = new ByteBuffer[1];
-                        byteBuffers[0] = cloneByteBuffer(image.getPlanes()[0].getBuffer());
-                        // TODO: 这里保存的照片右边存在黑边，需要做些修改
-                        if (mBitmap == null) {
-                            int pixelStride = image.getPlanes()[0].getPixelStride();
-                            int rowStride = image.getPlanes()[0].getRowStride();
-                            int rowPadding = rowStride - pixelStride * mImageReader.getWidth();
-                            mBitmap = Bitmap.createBitmap(
-                                    mImageReader.getWidth() + rowPadding / pixelStride,
-                                    mImageReader.getHeight(), Bitmap.Config.ARGB_8888);
-                        }
-                        byteBuffers[0].rewind();
-                        mBitmap.copyPixelsFromBuffer(byteBuffers[0]);
-                        // 保存图片
-                        if (mSaveFrame) {
-                            mSaveFrame = false;
-                            if (mBitmap != null) {
-                                String path = Environment.getExternalStorageDirectory() + "/DCIM/Camera/"
-                                        + System.currentTimeMillis() + ".jpg";
-                                try {
-                                    FileOutputStream fout = new FileOutputStream(path);
-                                    BufferedOutputStream bos = new BufferedOutputStream(fout);
-                                    mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-                                    bos.flush();
-                                    bos.close();
-                                    fout.close();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                } finally {
-                                    image.close();
-                                }
-                            }
-                        } else {
-                            image.close();
-                        }
-                    }
-                };
-
-        /**
-         * 复制字节数据
-         * @param byteBuffer
+         * 创建OES 类型的Texture
          * @return
          */
-        private ByteBuffer cloneByteBuffer(final ByteBuffer byteBuffer) {
-            ByteBuffer clone = ByteBuffer.allocate(byteBuffer.capacity());
-            byteBuffer.rewind();
-            clone.put(byteBuffer);
-            byteBuffer.rewind();
-            clone.flip();
-            return clone;
+        private int createTextureOES() {
+            return GlUtil.createTextureObject(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
         }
     }
 }
