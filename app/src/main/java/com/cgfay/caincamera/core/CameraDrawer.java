@@ -363,20 +363,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             mCameraTexture = new SurfaceTexture(mTextureId);
             mCameraTexture.setOnFrameAvailableListener(CameraDrawer.this);
             CameraUtils.openFrontalCamera(CameraUtils.DESIRED_PREVIEW_FPS);
-            Camera.Size size = CameraUtils.getPreviewSize();
-            Camera.CameraInfo info = CameraUtils.getCameraInfo();
-            if (size != null) {
-                if (info.orientation == 90 || info.orientation == 270) {
-                    mImageWidth = size.height;
-                    mImageHeight = size.width;
-                } else {
-                    mImageWidth = size.width;
-                    mImageHeight = size.height;
-                }
-            } else {
-                mImageWidth = 0;
-                mImageHeight = 0;
-            }
+            calculateImageSize();
             mCameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
             mFilter = FilterManager.getFilter(FilterType.SATURATION);
             // 禁用深度测试和背面绘制
@@ -404,6 +391,26 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             if (mEglCore != null) {
                 mEglCore.release();
                 mEglCore = null;
+            }
+        }
+
+        /**
+         * 计算imageView 的宽高
+         */
+        private void calculateImageSize() {
+            Camera.Size size = CameraUtils.getPreviewSize();
+            Camera.CameraInfo info = CameraUtils.getCameraInfo();
+            if (size != null) {
+                if (info.orientation == 90 || info.orientation == 270) {
+                    mImageWidth = size.height;
+                    mImageHeight = size.width;
+                } else {
+                    mImageWidth = size.width;
+                    mImageHeight = size.height;
+                }
+            } else {
+                mImageWidth = 0;
+                mImageHeight = 0;
             }
         }
 
