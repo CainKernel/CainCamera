@@ -295,9 +295,7 @@ public class CameraUtils {
             }
         }
         if (bigEnough.size() > 0) {
-            Camera.Size size = Collections.min(bigEnough, new CompareAreaSize());
-            Log.d("camera", "width = " + size.width + ", height = " + size.height);
-            return size;
+            return Collections.min(bigEnough, new CompareAreaSize());
         } else if (noBigEnough.size() > 0) {
             return Collections.max(noBigEnough, new CompareAreaSize());
         } else { // 如果不存在满足要求的数值，则辗转计算宽高最接近的值
