@@ -73,7 +73,7 @@ public class BaseImageFilterGroup extends BaseImageFilter {
     }
 
     @Override
-    public void drawFrame(int textureId, float[] texMatrix) {
+    public void drawFrame(int textureId) {
         if (mFramebuffers == null || mFrameBufferTextures == null) {
             return;
         }
@@ -85,12 +85,12 @@ public class BaseImageFilterGroup extends BaseImageFilter {
                 GLES30.glViewport(0, 0, mImageWidth, mImageHeight);
                 GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[i]);
                 GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-                filter.drawFrame(previewTexture, texMatrix);
+                filter.drawFrame(previewTexture);
                 GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
                 previewTexture = mFrameBufferTextures[i];
             } else {
                 GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
-                filter.drawFrame(previewTexture, texMatrix);
+                filter.drawFrame(previewTexture);
             }
         }
     }

@@ -17,6 +17,11 @@ import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.WindowSurface;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.GlUtil;
+import com.cgfay.caincamera.utils.TextureRotationUtils;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 
 
 /**
@@ -269,8 +274,22 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         private CameraFilter mCameraFilter;
         private BaseImageFilter mFilter;
 
+        private ScaleType mScaleType = ScaleType.CENTER_CROP;
+        private FloatBuffer mVertexBuffer;
+        private FloatBuffer mTextureBuffer;
+
         public CameraDrawerHandler(Looper looper) {
             super(looper);
+            mVertexBuffer = ByteBuffer
+                    .allocateDirect(TextureRotationUtils.SquareVertices.length * 4)
+                    .order(ByteOrder.nativeOrder())
+                    .asFloatBuffer();
+            mVertexBuffer.put(TextureRotationUtils.SquareVertices).position(0);
+            mTextureBuffer = ByteBuffer
+                    .allocateDirect(TextureRotationUtils.getTextureVertices().length * 4)
+                    .order(ByteOrder.nativeOrder())
+                    .asFloatBuffer();
+            mTextureBuffer.put(TextureRotationUtils.getTextureVertices()).position(0);
         }
 
         @Override
@@ -375,6 +394,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             mViewWidth = width;
             mViewHeight = height;
             onFilterChanged();
+            adjustViewSize();
             CameraUtils.startPreviewTexture(mCameraTexture);
         }
 
@@ -412,6 +432,63 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
                 mImageWidth = 0;
                 mImageHeight = 0;
             }
+        }
+
+        /**
+         * 调整由于surface的大小与SurfaceView大小不一致带来的显示问题
+         */
+        private void adjustViewSize() {
+            float[] textureCoords = null;
+            float[] vertexCoords = null;
+            // TODO 这里可以做成镜像翻转的
+            float[] textureVertices = TextureRotationUtils.getTextureVertices();
+            float[] vertexVertices = TextureRotationUtils.SquareVertices;
+            float ratioMax = Math.max((float) mViewWidth / mImageWidth,
+                    (float) mViewHeight / mImageHeight);
+            // 新的宽高
+            int imageWidth = Math.round(mImageWidth * ratioMax);
+            int imageHeight = Math.round(mImageHeight * ratioMax);
+            // 获取视图跟texture的宽高比
+            float ratioWidth = (float) imageWidth / (float) mViewWidth;
+            float ratioHeight = (float) imageHeight / (float) mViewHeight;
+            if (mScaleType == ScaleType.CENTER_INSIDE) {
+                vertexCoords = new float[] {
+                        vertexVertices[0] / ratioHeight, vertexVertices[1] / ratioWidth,
+                        vertexVertices[2] / ratioHeight, vertexVertices[3] / ratioWidth,
+                        vertexVertices[4] / ratioHeight, vertexVertices[5] / ratioWidth,
+                        vertexVertices[6] / ratioHeight, vertexVertices[7] / ratioWidth,
+                };
+            } else if (mScaleType == ScaleType.CENTER_CROP) {
+                float distHorizontal = (1 - 1 / ratioWidth) / 2;
+                float distVertical = (1 - 1 / ratioHeight) / 2;
+                textureCoords = new float[] {
+                        addDistance(textureVertices[0], distVertical), addDistance(textureVertices[1], distHorizontal),
+                        addDistance(textureVertices[2], distVertical), addDistance(textureVertices[3], distHorizontal),
+                        addDistance(textureVertices[4], distVertical), addDistance(textureVertices[5], distHorizontal),
+                        addDistance(textureVertices[6], distVertical), addDistance(textureVertices[7], distHorizontal),
+                };
+            }
+            if (vertexCoords == null) {
+                vertexCoords = vertexVertices;
+            }
+            if (textureCoords == null) {
+                textureCoords = textureVertices;
+            }
+            // 更新VertexBuffer 和 TextureBuffer
+            mVertexBuffer.clear();
+            mVertexBuffer.put(vertexCoords).position(0);
+            mTextureBuffer.clear();
+            mTextureBuffer.put(textureCoords).position(0);
+        }
+
+        /**
+         * 计算距离
+         * @param coordinate
+         * @param distance
+         * @return
+         */
+        private float addDistance(float coordinate, float distance) {
+            return coordinate == 0.0f ? distance : 1 - distance;
         }
 
         /**
@@ -464,11 +541,12 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
                 }
             }
             mCameraTexture.getTransformMatrix(mMatrix);
+            mCameraFilter.setTextureTransformMatirx(mMatrix);
             if (mFilter == null) {
-                mCameraFilter.drawFrame(mTextureId, mMatrix);
+                mCameraFilter.drawFrame(mTextureId, mVertexBuffer, mTextureBuffer);
             } else {
-                int id = mCameraFilter.drawToTexture(mTextureId, mMatrix);
-                mFilter.drawFrame(id, mMatrix);
+                int id = mCameraFilter.drawToTexture(mTextureId);
+                mFilter.drawFrame(id, mVertexBuffer, mTextureBuffer);
             }
             mDisplaySurface.swapBuffers();
         }

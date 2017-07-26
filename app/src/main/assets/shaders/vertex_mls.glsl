@@ -98,7 +98,7 @@ void main() {
         i = (i * sin((imageWidth - rawPosition.x) * M_PI_HALF / (imageWidth - xCenter)));
     }
     if (rawPosition.y < yCenter) {
-        j = sin(rawPosition.y * M_PI_HALF / yCneter) * j;
+        j = sin(rawPosition.y * M_PI_HALF / yCenter) * j;
     } else {
         j = (j * sin((imageHeight - rawPosition.y) * M_PI_HALF / (imageHeight - yCenter)));
     }
