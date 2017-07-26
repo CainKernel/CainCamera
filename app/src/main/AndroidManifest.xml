@@ -20,6 +20,9 @@
     <!--录音权限-->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!-- 获取设备信息权限 -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
     <!-- opengles版本控制 -->
     <uses-feature android:glEsVersion="0x00030000" android:required="true" />
 

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -21,6 +22,7 @@ import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.CameraDrawer;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.PermissionUtils;
+import com.cgfay.caincamera.utils.TextureRotationUtils;
 import com.cgfay.caincamera.view.AspectFrameLayout;
 import com.cgfay.caincamera.view.CameraSurfaceView;
 
@@ -65,6 +67,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        String phoneName = Build.MODEL;
+        if (phoneName.toLowerCase().contains("bullhead")) {
+            TextureRotationUtils.setBackReverse(true);
+        }
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);

@@ -1,5 +1,8 @@
 package com.cgfay.caincamera.utils;
 
+import android.hardware.Camera;
+import android.util.Log;
+
 import java.nio.FloatBuffer;
 
 /**
@@ -7,6 +10,9 @@ import java.nio.FloatBuffer;
  */
 
 public class TextureRotationUtils {
+
+    // 摄像头是否倒置，主要是应对Nexus 5X (bullhead) 的后置摄像头图像倒置的问题
+    private static boolean mBackReverse = false;
 
     public static final float SquareVertices[] = {
             -1.0f, -1.0f,   // 0 bottom left
@@ -72,24 +78,54 @@ public class TextureRotationUtils {
         FloatBuffer result;
         switch (CameraUtils.getPreviewOrientation()) {
             case 0:
-                result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices_90);
+                if (CameraUtils.getCameraID() == Camera.CameraInfo.CAMERA_FACING_BACK
+                        && mBackReverse) {
+                    result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices_270);
+                } else {
+                    result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices_90);
+                }
                 break;
 
             case 90:
-                result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices);
+                if (CameraUtils.getCameraID() == Camera.CameraInfo.CAMERA_FACING_BACK
+                        && mBackReverse) {
+                    result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices_180);
+                } else {
+                    result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices);
+                }
                 break;
 
             case 180:
-                result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices_270);
+                if (CameraUtils.getCameraID() == Camera.CameraInfo.CAMERA_FACING_BACK
+                        && mBackReverse) {
+                    result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices_90);
+                } else {
+                    result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices_270);
+                }
                 break;
 
             case 270:
-                result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices_180);
+                if (CameraUtils.getCameraID() == Camera.CameraInfo.CAMERA_FACING_BACK
+                        && mBackReverse) {
+                    result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices);
+                } else {
+                    result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices_180);
+                }
                 break;
 
             default:
-                result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices);
+                if (CameraUtils.getCameraID() == Camera.CameraInfo.CAMERA_FACING_BACK
+                        && mBackReverse) {
+                    result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices_180);
+                } else {
+                    result = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices);
+                }
+
         }
         return result;
+    }
+
+    public static void setBackReverse(boolean reverse) {
+        mBackReverse = reverse;
     }
 }
