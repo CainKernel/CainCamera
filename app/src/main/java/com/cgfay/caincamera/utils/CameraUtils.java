@@ -8,6 +8,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -280,48 +281,67 @@ public class CameraUtils {
     public static Camera.Size calculatePerfectSize(List<Camera.Size> sizes, int expectWidth,
                                                    int expectHeight) {
         sortList(sizes); // 根据宽度进行排序
-        Camera.Size result = sizes.get(0);
-        boolean widthOrHeight = false; // 判断存在宽或高相等的Size
-        // 辗转计算宽高最接近的值
-        for (Camera.Size size: sizes) {
-            // 如果宽高相等，则直接返回
-            if (size.width == expectWidth && size.height == expectHeight
-                    && ((float)size.height / (float) size.width) == mCurrentRatio) {
-                result = size;
-                break;
-            }
-            // 仅仅是宽度相等，计算高度最接近的size
-            if (size.width == expectWidth) {
-                widthOrHeight = true;
-                if (Math.abs(result.height - expectHeight)
-                        > Math.abs(size.height - expectHeight)
-                        && ((float)size.height / (float) size.width) == mCurrentRatio) {
-                    result = size;
-                    break;
-                }
-            }
-            // 高度相等，则计算宽度最接近的Size
-            else if (size.height == expectHeight) {
-                widthOrHeight = true;
-                if (Math.abs(result.width - expectWidth)
-                        > Math.abs(size.width - expectWidth)
-                        && ((float)size.height / (float) size.width) == mCurrentRatio) {
-                    result = size;
-                    break;
-                }
-            }
-            // 如果之前的查找不存在宽或高相等的情况，则计算宽度和高度都最接近的期望值的Size
-            else if (!widthOrHeight) {
-                if (Math.abs(result.width - expectWidth)
-                        > Math.abs(size.width - expectWidth)
-                        && Math.abs(result.height - expectHeight)
-                        > Math.abs(size.height - expectHeight)
-                        && ((float)size.height / (float) size.width) == mCurrentRatio) {
-                    result = size;
+
+        // 根据当前期望的宽高判定
+        List<Camera.Size> bigEnough = new ArrayList<>();
+        List<Camera.Size> noBigEnough = new ArrayList<>();
+        for (Camera.Size size : sizes) {
+            if (size.height * expectWidth / expectHeight == size.width) {
+                if (size.width >= expectWidth && size.height >= expectHeight) {
+                    bigEnough.add(size);
+                } else {
+                    noBigEnough.add(size);
                 }
             }
         }
-        return result;
+        if (bigEnough.size() > 0) {
+            return Collections.min(bigEnough, new CompareAreaSize());
+        } else if (noBigEnough.size() > 0) {
+            return Collections.max(noBigEnough, new CompareAreaSize());
+        } else { // 如果不存在满足要求的数值，则辗转计算宽高最接近的值
+            Camera.Size result = sizes.get(0);
+            boolean widthOrHeight = false; // 判断存在宽或高相等的Size
+            // 辗转计算宽高最接近的值
+            for (Camera.Size size : sizes) {
+                // 如果宽高相等，则直接返回
+                if (size.width == expectWidth && size.height == expectHeight
+                        && ((float) size.height / (float) size.width) == mCurrentRatio) {
+                    result = size;
+                    break;
+                }
+                // 仅仅是宽度相等，计算高度最接近的size
+                if (size.width == expectWidth) {
+                    widthOrHeight = true;
+                    if (Math.abs(result.height - expectHeight)
+                            > Math.abs(size.height - expectHeight)
+                            && ((float) size.height / (float) size.width) == mCurrentRatio) {
+                        result = size;
+                        break;
+                    }
+                }
+                // 高度相等，则计算宽度最接近的Size
+                else if (size.height == expectHeight) {
+                    widthOrHeight = true;
+                    if (Math.abs(result.width - expectWidth)
+                            > Math.abs(size.width - expectWidth)
+                            && ((float) size.height / (float) size.width) == mCurrentRatio) {
+                        result = size;
+                        break;
+                    }
+                }
+                // 如果之前的查找不存在宽或高相等的情况，则计算宽度和高度都最接近的期望值的Size
+                else if (!widthOrHeight) {
+                    if (Math.abs(result.width - expectWidth)
+                            > Math.abs(size.width - expectWidth)
+                            && Math.abs(result.height - expectHeight)
+                            > Math.abs(size.height - expectHeight)
+                            && ((float) size.height / (float) size.width) == mCurrentRatio) {
+                        result = size;
+                    }
+                }
+            }
+            return result;
+        }
     }
 
     /**
@@ -329,19 +349,23 @@ public class CameraUtils {
      * @param list
      */
     private static void sortList(List<Camera.Size> list) {
-        Collections.sort(list, new Comparator<Camera.Size>() {
-            @Override
-            public int compare(Camera.Size pre, Camera.Size after) {
-                if (pre.width > after.width) {
-                    return -1;
-                } else if (pre.width < after.width) {
-                    return 1;
-                }
-                return 0;
-            }
-        });
+        Collections.sort(list, new CompareAreaSize());
     }
 
+    /**
+     * 比较器
+     */
+    private static class CompareAreaSize implements Comparator<Camera.Size> {
+        @Override
+        public int compare(Camera.Size pre, Camera.Size after) {
+            if (pre.width > after.width) {
+                return -1;
+            } else if (pre.width < after.width) {
+                return 1;
+            }
+            return 0;
+        }
+    }
     /**
      * 选择合适的FPS
      * @param parameters
