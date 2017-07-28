@@ -1,16 +1,16 @@
 package com.cgfay.caincamera.core;
 
 import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 import android.view.SurfaceHolder;
 
+import com.cgfay.caincamera.bean.CameraInfo;
+import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
 import com.cgfay.caincamera.gles.EglCore;
@@ -137,7 +137,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
     }
 
     /**
-     * 更新预览大小
+     * 更新预览视图大小
      * @param width
      * @param height
      */
@@ -148,6 +148,19 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         synchronized (mSynOperation) {
             mDrawerHandler.sendMessage(mDrawerHandler
                     .obtainMessage(CameraDrawerHandler.MSG_UPDATE_PREVIEW, width, height));
+        }
+    }
+
+    /**
+     * 通知更新预览图像数据大小
+     */
+    public void updatePreviewImage() {
+        if (mDrawerHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mDrawerHandler.sendMessage(mDrawerHandler
+                    .obtainMessage(CameraDrawerHandler.MSG_UPDATE_PREVIEW_IMAGE_SIZE));
         }
     }
 
@@ -239,6 +252,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         static final int MSG_START_PREVIEW = 0x100;
         static final int MSG_STOP_PREVIEW = 0x101;
         static final int MSG_UPDATE_PREVIEW = 0x102;
+        static final int MSG_UPDATE_PREVIEW_IMAGE_SIZE = 0x103;
 
         static final int MSG_START_RECORDING = 0x200;
         static final int MSG_STOP_RECORDING = 0x201;
@@ -274,7 +288,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         private CameraFilter mCameraFilter;
         private BaseImageFilter mFilter;
 
-        private ScaleType mScaleType = ScaleType.CENTER_CROP;
+        private ScaleType mScaleType = ScaleType.CENTER_INSIDE;
         private FloatBuffer mVertexBuffer;
         private FloatBuffer mTextureBuffer;
 
@@ -341,11 +355,15 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
                 case MSG_STOP_PREVIEW:
                     break;
 
-                // 更新预览大小
+                // 更新预览视图大小
                 case MSG_UPDATE_PREVIEW:
+                    updatePreview(msg.arg1, msg.arg2);
+                    break;
+
+                // 更新预览图片的大小
+                case MSG_UPDATE_PREVIEW_IMAGE_SIZE:
                     synchronized (mSyncIsLooping) {
-                        mViewWidth = msg.arg1;
-                        mViewHeight = msg.arg2;
+                        updatePreviewImageSize();
                     }
                     break;
 
@@ -415,22 +433,45 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         }
 
         /**
+         * 更新预览View的宽高
+         * @param width
+         * @param height
+         */
+        private void updatePreview(int width, int height) {
+            boolean needToadjusted = mViewWidth != width || mViewHeight != height;
+            synchronized (mSyncIsLooping) {
+                mViewWidth = width;
+                mViewHeight = height;
+            }
+            // 是否需要调整
+            if (needToadjusted) {
+                onFilterChanged();
+                adjustViewSize();
+            }
+        }
+
+        /**
+         * 更新预览图片大小
+         */
+        private void updatePreviewImageSize() {
+            onFilterChanged();
+            adjustViewSize();
+        }
+
+        /**
          * 计算imageView 的宽高
          */
         private void calculateImageSize() {
-            Camera.Size size = CameraUtils.getPreviewSize();
-            Camera.CameraInfo info = CameraUtils.getCameraInfo();
-            if (size != null) {
-                if (info.orientation == 90 || info.orientation == 270) {
-                    mImageWidth = size.height;
-                    mImageHeight = size.width;
+            Size size = CameraUtils.getPreviewSize();
+            CameraInfo info = CameraUtils.getCameraInfo();
+            if (info != null) {
+                if (info.getOrientation() == 90 || info.getOrientation() == 270) {
+                    mImageWidth = size.getHeight();
+                    mImageHeight = size.getWidth();
                 } else {
-                    mImageWidth = size.width;
-                    mImageHeight = size.height;
+                    mImageWidth = size.getWidth();
+                    mImageHeight = size.getHeight();
                 }
-            } else {
-                mImageWidth = 0;
-                mImageHeight = 0;
             }
         }
 
@@ -495,7 +536,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
          * 滤镜或视图发生变化时调用
          */
         private void onFilterChanged() {
-            mCameraFilter.onDisplayChanged(mViewWidth, mViewHeight);
+            // 1 : 1 的情况不用调整
+            if (mViewWidth != mViewHeight) {
+                mCameraFilter.onDisplayChanged(mViewWidth, mViewHeight);
+            }
             if (mFilter != null) {
                 mCameraFilter.initCameraFramebuffer(mImageWidth, mImageHeight);
             } else {

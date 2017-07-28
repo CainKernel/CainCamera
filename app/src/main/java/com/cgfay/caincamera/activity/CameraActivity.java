@@ -14,11 +14,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 
 import com.cgfay.caincamera.R;
+import com.cgfay.caincamera.core.AspectRatioType;
 import com.cgfay.caincamera.core.CameraDrawer;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.PermissionUtils;
@@ -56,19 +60,20 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private Button mBtnTake;
     private Button mBtnSwitch;
 
-    private float[] mAspectRatio = {
-            CameraUtils.Ratio_3_4,
-            CameraUtils.Ratio_1_1,
-            CameraUtils.Ratio_9_16
+    private AspectRatioType[] mAspectRatio = {
+            AspectRatioType.RATIO_4_3,
+            AspectRatioType.RATIO_1_1,
+            AspectRatioType.Ratio_16_9
     };
     private int mRatioIndex = 0;
-    private float mCurrentRatio = mAspectRatio[0];
+    private AspectRatioType mCurrentRatio = mAspectRatio[0];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         String phoneName = Build.MODEL;
-        if (phoneName.toLowerCase().contains("bullhead")) {
+        if (phoneName.toLowerCase().contains("bullhead")
+                || phoneName.toLowerCase().contains("nexus 5x")) {
             TextureRotationUtils.setBackReverse(true);
         }
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -85,7 +90,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     private void initView() {
         mAspectLayout = (AspectFrameLayout) findViewById(R.id.layout_aspect);
-        mAspectLayout.setAspectRatio(mCurrentRatio);
+        mAspectLayout.setAspectRatio(CameraUtils.getCurrentRatio());
         mCameraSurfaceView = new CameraSurfaceView(this);
         mCameraSurfaceView.addScroller(this);
         mCameraSurfaceView.addClickListener(this);
@@ -306,15 +311,27 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     /**
-     * 切换预览宽高比
+     * 切换预览宽高比(暂未调整完成)
      */
     private void changePreviewRatio() {
         mRatioIndex++;
         mRatioIndex %= mAspectRatio.length;
         mCurrentRatio = mAspectRatio[mRatioIndex];
         if (mAspectLayout != null) {
-            CameraUtils.setCurrentRatio(mCurrentRatio);
-            mAspectLayout.setAspectRatio(mCurrentRatio);
+            CameraUtils.setCurrentAspectRatio(mCurrentRatio);
+            mAspectLayout.setAspectRatio(CameraUtils.getCurrentRatio());
+            // 更新预览视图大小
+            ViewTreeObserver viewTreeObserver = mAspectLayout.getViewTreeObserver();
+            viewTreeObserver.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    int width = mAspectLayout.getWidth();
+                    int height = mAspectLayout.getHeight();
+                    CameraDrawer.INSTANCE.updatePreview(width, height);
+                    return true;
+                }
+            });
+            CameraDrawer.INSTANCE.updatePreviewImage();
         }
     }
 

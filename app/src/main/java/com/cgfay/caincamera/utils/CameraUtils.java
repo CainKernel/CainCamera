@@ -3,9 +3,12 @@ package com.cgfay.caincamera.utils;
 import android.app.Activity;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+
+import com.cgfay.caincamera.bean.CameraInfo;
+import com.cgfay.caincamera.bean.Size;
+import com.cgfay.caincamera.core.AspectRatioType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,14 +23,20 @@ import java.util.List;
 public class CameraUtils {
 
     // 相机默认宽高，相机的宽度和高度跟屏幕坐标不一样，手机屏幕的宽度和高度是反过来的。
+    // 4 : 3
     public static final int DEFAULT_WIDTH = 1024;
     public static final int DEFAULT_HEIGHT = 768;
+    // 期望fps
     public static final int DESIRED_PREVIEW_FPS = 30;
 
+    // 16 ： 9
+    public static final int DEFAULT_WIDTH_16_9 = 1280;
+    public static final int DEFAULT_HEIGHT_16_9 = 720;
+
     // 这里反过来是因为相机的分辨率跟屏幕的分辨率宽高刚好反过来
-    public static final float Ratio_3_4 = 0.75f;
-    public static final float Ratio_9_16 = 0.5625f;
+    public static final float Ratio_4_3 = 0.75f;
     public static final float Ratio_1_1 = 1.0f;
+    public static final float Ratio_16_9 = 0.5625f;
 
     private static int mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
     private static Camera mCamera;
@@ -37,7 +46,8 @@ public class CameraUtils {
     private static SurfaceTexture mSurfaceTexture;
 
     // 当前的宽高比
-    private static float mCurrentRatio = Ratio_3_4;
+    private static float mCurrentRatio = Ratio_4_3;
+    private static AspectRatioType mCurrentAspectType = AspectRatioType.RATIO_4_3;
 
     /**
      * 打开相机，默认打开前置相机
@@ -96,6 +106,31 @@ public class CameraUtils {
         mCamera.setParameters(parameters);
         setPreviewSize(mCamera, CameraUtils.DEFAULT_WIDTH, CameraUtils.DEFAULT_HEIGHT);
         setPictureSize(mCamera, CameraUtils.DEFAULT_WIDTH, CameraUtils.DEFAULT_HEIGHT);
+        mCamera.setDisplayOrientation(mOrientation);
+    }
+
+    /**
+     *  打开相机
+     * @param cameraID
+     * @param expectFps
+     * @param expectWidth
+     * @param expectHeight
+     */
+    public static void openCamera(int cameraID, int expectFps, int expectWidth, int expectHeight) {
+        if (mCamera != null) {
+            throw new RuntimeException("camera already initialized!");
+        }
+        mCamera = Camera.open(cameraID);
+        if (mCamera == null) {
+            throw new RuntimeException("Unable to open camera");
+        }
+        mCameraID = cameraID;
+        Camera.Parameters parameters = mCamera.getParameters();
+        mCameraPreviewFps = CameraUtils.chooseFixedPreviewFps(parameters, expectFps * 1000);
+        parameters.setRecordingHint(true);
+        mCamera.setParameters(parameters);
+        setPreviewSize(mCamera, expectWidth, expectHeight);
+        setPictureSize(mCamera, expectWidth, expectHeight);
         mCamera.setDisplayOrientation(mOrientation);
     }
 
@@ -231,18 +266,21 @@ public class CameraUtils {
      * 获取预览大小
      * @return
      */
-    public static Camera.Size getPreviewSize() {
+    public static Size getPreviewSize() {
         if (mCamera != null) {
-            return mCamera.getParameters().getPreviewSize();
+            Camera.Size size = mCamera.getParameters().getPreviewSize();
+            Size result = new Size(size.width, size.height);
+            return result;
         }
-        return null;
+        return new Size(0, 0);
     }
 
-    public static Camera.CameraInfo getCameraInfo() {
+    public static CameraInfo getCameraInfo() {
         if (mCamera != null) {
             Camera.CameraInfo info = new Camera.CameraInfo();
             Camera.getCameraInfo(mCameraID, info);
-            return info;
+            CameraInfo result = new CameraInfo(info.facing, info.orientation);
+            return result;
         }
         return null;
     }
@@ -264,11 +302,13 @@ public class CameraUtils {
      * 获取照片大小
      * @return
      */
-    public static Camera.Size getPictureSize() {
+    public static Size getPictureSize() {
         if (mCamera != null) {
-            return mCamera.getParameters().getPictureSize();
+            Camera.Size size = mCamera.getParameters().getPictureSize();
+            Size result = new Size(size.width, size.height);
+            return result;
         }
-        return null;
+        return new Size(0, 0);
     }
 
     /**
@@ -460,15 +500,39 @@ public class CameraUtils {
     }
 
     /**
-     * 设置当前相机分辨率的宽高比
-     * @param value
+     * 设置长宽比，根据长宽比类型调整相机的大小, 4 : 3 和 1 : 1 比较接近，这里不重新打开相机，调整在View中进行
+     * @param type
      */
-    public static void setCurrentRatio(float value) {
-        boolean needToReOpenCamera = ((value == Ratio_9_16) && (mCurrentRatio != Ratio_9_16))
-                || ((value != Ratio_9_16) && (mCurrentRatio == Ratio_9_16));
-        mCurrentRatio = value;
+    public static void setCurrentAspectRatio(AspectRatioType type) {
+        boolean needToReOpenCamera = ((type == AspectRatioType.Ratio_16_9)
+                && (mCurrentAspectType != AspectRatioType.Ratio_16_9))
+                || ((type != AspectRatioType.Ratio_16_9)
+                && (mCurrentAspectType == AspectRatioType.Ratio_16_9));
+        mCurrentAspectType = type;
+        // 计算当前长宽比实际值
+        switch (type) {
+            case RATIO_4_3:
+                mCurrentRatio = Ratio_4_3;
+                break;
+
+            case RATIO_1_1:
+                mCurrentRatio = Ratio_1_1;
+                break;
+
+            case Ratio_16_9:
+                mCurrentRatio = Ratio_16_9;
+                break;
+        }
+        int width = DEFAULT_WIDTH;
+        int height = DEFAULT_HEIGHT;
+        if (mCurrentAspectType == AspectRatioType.Ratio_16_9) {
+            width = DEFAULT_WIDTH_16_9;
+            height = DEFAULT_HEIGHT_16_9;
+        }
         if (needToReOpenCamera) {
-            reOpenCamera();
+            releaseCamera();
+            openCamera(mCameraID, DESIRED_PREVIEW_FPS, width, height);
+            startPreviewTexture(mSurfaceTexture);
         }
     }
 }
