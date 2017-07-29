@@ -13,7 +13,7 @@ public class GuassFilter extends BaseImageFilter {
     private static final String FRAGMENT_SHADER =
             "precision mediump float;                                                         \n" +
             "varying mediump vec2 textureCoordinate;                                              \n" +
-            "uniform sampler2D sTexture;                                                      \n" +
+            "uniform sampler2D inputTexture;                                                      \n" +
             "uniform mediump float radius;                                                    \n" +
             "uniform mediump vec2 offset;                                                     \n" +
             "uniform mediump vec2 imageSize;                                                  \n" +
@@ -32,17 +32,17 @@ public class GuassFilter extends BaseImageFilter {
             "    Guass[4] = 0.105882;                                                         \n" +
             "    Guass[5] = 0.105882;                                                         \n" +
             "                                                                                 \n" +
-            "    sum += texture2D(sTexture, textureCoordinate + (-5.0 * myOffset)) * Guass[0];    \n" +
-            "    sum += texture2D(sTexture, textureCoordinate + (-4.0 * myOffset)) * Guass[1];    \n" +
-            "    sum += texture2D(sTexture, textureCoordinate + (-3.0 * myOffset)) * Guass[2];    \n" +
-            "    sum += texture2D(sTexture, textureCoordinate + (-2.0 * myOffset)) * Guass[3];    \n" +
-            "    sum += texture2D(sTexture, textureCoordinate + (-1.0 * myOffset)) * Guass[4];    \n" +
-            "    sum += texture2D(sTexture, textureCoordinate + (0.0 * myOffset)) * Guass[5];     \n" +
-            "    sum += texture2D(sTexture, textureCoordinate + (1.0 * myOffset)) * Guass[4];     \n" +
-            "    sum += texture2D(sTexture, textureCoordinate + (2.0 * myOffset)) * Guass[3];     \n" +
-            "    sum += texture2D(sTexture, textureCoordinate + (3.0 * myOffset)) * Guass[2];     \n" +
-            "    sum += texture2D(sTexture, textureCoordinate + (4.0 * myOffset)) * Guass[1];     \n" +
-            "    sum += texture2D(sTexture, textureCoordinate + (5.0 * myOffset)) * Guass[0];     \n" +
+            "    sum += texture2D(inputTexture, textureCoordinate + (-5.0 * myOffset)) * Guass[0];    \n" +
+            "    sum += texture2D(inputTexture, textureCoordinate + (-4.0 * myOffset)) * Guass[1];    \n" +
+            "    sum += texture2D(inputTexture, textureCoordinate + (-3.0 * myOffset)) * Guass[2];    \n" +
+            "    sum += texture2D(inputTexture, textureCoordinate + (-2.0 * myOffset)) * Guass[3];    \n" +
+            "    sum += texture2D(inputTexture, textureCoordinate + (-1.0 * myOffset)) * Guass[4];    \n" +
+            "    sum += texture2D(inputTexture, textureCoordinate + (0.0 * myOffset)) * Guass[5];     \n" +
+            "    sum += texture2D(inputTexture, textureCoordinate + (1.0 * myOffset)) * Guass[4];     \n" +
+            "    sum += texture2D(inputTexture, textureCoordinate + (2.0 * myOffset)) * Guass[3];     \n" +
+            "    sum += texture2D(inputTexture, textureCoordinate + (3.0 * myOffset)) * Guass[2];     \n" +
+            "    sum += texture2D(inputTexture, textureCoordinate + (4.0 * myOffset)) * Guass[1];     \n" +
+            "    sum += texture2D(inputTexture, textureCoordinate + (5.0 * myOffset)) * Guass[0];     \n" +
             "                                                                                 \n" +
             "    gl_FragColor = sum;                                                          \n" +
             "}                                                                                \n";

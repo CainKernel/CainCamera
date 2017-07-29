@@ -30,9 +30,9 @@ public class CameraFilter extends BaseImageFilter {
             "#extension GL_OES_EGL_image_external : require         \n" +
             "precision mediump float;                               \n" +
             "varying vec2 textureCoordinate;                            \n" +
-            "uniform samplerExternalOES sTexture;                   \n" +
+            "uniform samplerExternalOES inputTexture;                   \n" +
             "void main() {                                          \n" +
-            "    gl_FragColor = texture2D(sTexture, textureCoordinate); \n" +
+            "    gl_FragColor = texture2D(inputTexture, textureCoordinate); \n" +
             "}                                                      \n";
 
 
@@ -50,6 +50,7 @@ public class CameraFilter extends BaseImageFilter {
         muTexMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uTexMatrix");
         maPositionLoc = GLES30.glGetAttribLocation(mProgramHandle, "aPosition");
         maTextureCoordLoc = GLES30.glGetAttribLocation(mProgramHandle, "aTextureCoord");
+        mInputTextureLoc = GLES30.glGetUniformLocation(mProgramHandle, "inputTexture");
     }
 
     @Override
@@ -72,6 +73,7 @@ public class CameraFilter extends BaseImageFilter {
         GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
         GLES30.glVertexAttribPointer(maTextureCoordLoc, 2,
                 GLES30.GL_FLOAT, false, mTexCoordStride, textureBuffer);
+        GLES30.glUniform1i(mInputTextureLoc, 0);
         onDrawArraysBegin();
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
         GLES30.glDisableVertexAttribArray(maPositionLoc);
@@ -87,6 +89,9 @@ public class CameraFilter extends BaseImageFilter {
      * @return 绘制完成返回绑定到Framebuffer中的Texture
      */
     public int drawToTexture(int textureId) {
+        if (mFramebuffers == null) {
+            return GlUtil.GL_NOT_INIT;
+        }
         runPendingOnDrawTasks();
         GLES30.glViewport(0, 0, mFrameWidth, mFrameHeight);
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[0]);
@@ -101,10 +106,12 @@ public class CameraFilter extends BaseImageFilter {
         GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
         GLES30.glVertexAttribPointer(maTextureCoordLoc, 2,
                 GLES30.GL_FLOAT, false, mTexCoordStride, TextureRotationUtils.getTextureBuffer());
+        GLES30.glUniform1i(mInputTextureLoc, 0);
+        onDrawArraysBegin();
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
-        GLES30.glFinish();
         GLES30.glDisableVertexAttribArray(maPositionLoc);
         GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
+        onDrawArraysAfter();
         GLES30.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
         GLES30.glUseProgram(0);
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);

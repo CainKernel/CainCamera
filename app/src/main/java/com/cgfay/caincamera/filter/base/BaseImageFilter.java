@@ -2,8 +2,8 @@ package com.cgfay.caincamera.filter.base;
 
 import android.graphics.PointF;
 import android.opengl.GLES30;
+import android.util.Log;
 
-import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.GlUtil;
 
 import java.nio.FloatBuffer;
@@ -31,9 +31,9 @@ public class BaseImageFilter {
     private static final String FRAGMENT_SHADER_2D =
             "precision mediump float;                                   \n" +
             "varying vec2 textureCoordinate;                            \n" +
-            "uniform sampler2D sTexture;                                \n" +
+            "uniform sampler2D inputTexture;                                \n" +
             "void main() {                                              \n" +
-            "    gl_FragColor = texture2D(sTexture, textureCoordinate); \n" +
+            "    gl_FragColor = texture2D(inputTexture, textureCoordinate); \n" +
             "}                                                          \n";
 
     protected static final int SIZEOF_FLOAT = 4;
@@ -54,6 +54,7 @@ public class BaseImageFilter {
     protected int muMVPMatrixLoc;
     protected int maPositionLoc;
     protected int maTextureCoordLoc;
+    protected int mInputTextureLoc;
 
     // 渲染的Image的宽高
     protected int mImageWidth;
@@ -74,6 +75,7 @@ public class BaseImageFilter {
         maPositionLoc = GLES30.glGetAttribLocation(mProgramHandle, "aPosition");
         maTextureCoordLoc = GLES30.glGetAttribLocation(mProgramHandle, "aTextureCoord");
         muMVPMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uMVPMatrix");
+        mInputTextureLoc = GLES30.glGetUniformLocation(mProgramHandle, "inputTexture");
     }
 
     /**
@@ -112,6 +114,9 @@ public class BaseImageFilter {
      */
     public void drawFrame(int textureId, FloatBuffer vertexBuffer,
                           FloatBuffer textureBuffer) {
+        if (textureId == GlUtil.GL_NOT_INIT) {
+            return;
+        }
         GLES30.glUseProgram(mProgramHandle);
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
@@ -123,6 +128,7 @@ public class BaseImageFilter {
         GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
         GLES30.glVertexAttribPointer(maTextureCoordLoc, 2,
                 GLES30.GL_FLOAT, false, mTexCoordStride, textureBuffer);
+        GLES30.glUniform1i(mInputTextureLoc, 0);
         onDrawArraysBegin();
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
         GLES30.glDisableVertexAttribArray(maPositionLoc);

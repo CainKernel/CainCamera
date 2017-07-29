@@ -16,11 +16,11 @@ public class SaturationFilter extends BaseImageFilter {
 //            "varying vec2 textureCoordinate;                                        \n" +
 //            "uniform vec4 rangeMin;                                                 \n" +
 //            "uniform vec4 rangeMax;                                                 \n" +
-//            "uniform sampler2D sTexture;                                            \n" +
+//            "uniform sampler2D inputTexture;                                            \n" +
 //            "uniform lowp float inputLevel;                                         \n" +
 //            "const mediump vec3 luminanceWeighting = vec3(0.2125, 0.7154, 0.0721);  \n" +
 //            "void main() {                                                          \n" +
-//            "  vec4 source = texture2D(sTexture, textureCoordinate);                \n" +
+//            "  vec4 source = texture2D(inputTexture, textureCoordinate);                \n" +
 //            "  vec3 dest = source.rgb;                                              \n" +
 //            "  float fMin = dot(rangeMin.rgb, luminanceWeighting);                  \n" +
 //            "  float fMax = dot(rangeMax.rgb, luminanceWeighting);                  \n" +
@@ -37,26 +37,27 @@ public class SaturationFilter extends BaseImageFilter {
 
 //    private static final String FRAGMENT_SATURATION = "precision mediump float;\n" +
 //            "varying highp vec2 textureCoordinate;\n" +
-//            "uniform sampler2D sTexture;\n" +
+//            "uniform sampler2D inputTexture;\n" +
 //            "uniform lowp float inputLevel;\n" +
 //            "// Values from \\\"Graphics Shaders: Theory and Practice\\\" by Bailey and Cunningham\n" +
 //            "const mediump vec3 luminanceWeighting = vec3(0.2125, 0.7154, 0.0721);\n" +
 //            "void main() {\n" +
-//            "    lowp vec4 textureColor = texture2D(sTexture, textureCoordinate);\n" +
+//            "    lowp vec4 textureColor = texture2D(inputTexture, textureCoordinate);\n" +
 //            "    lowp float luminance = dot(textureColor.rgb, luminanceWeighting);\n" +
 //            "    lowp vec3 greyScaleColor = vec3(luminance);\n" +
 //            "    gl_FragColor = vec4(mix(greyScaleColor, textureColor.rgb, inputLevel), textureColor.w);\n" +
 //            "}";
 
-    private static final String FRAGMENT_SATURATION = "precision mediump float;\n" +
+    private static final String FRAGMENT_SATURATION =
+            "precision mediump float;\n" +
             "varying vec2 textureCoordinate;\n" +
             "uniform vec4 rangeMin;  // 最小值，比如 rgb(0.0f, 0.0f, 0.0f)\n" +
             "uniform vec4 rangeMax;  // 最大值，比如 rgb(1.0f, 1.0f, 1.0f)\n" +
-            "uniform sampler2D sTexture;\n" +
+            "uniform sampler2D inputTexture;\n" +
             "uniform lowp float inputLevel;   // 变化的等级, -1 ~ 1之间\n" +
             "const mediump vec3 luminanceWeighting = vec3(0.2125, 0.7154, 0.0721);\n" +
             "void main() {\n" +
-            "  vec4 source = texture2D(sTexture, textureCoordinate);\n" +
+            "  vec4 source = texture2D(inputTexture, textureCoordinate);\n" +
             "  vec3 dest = source.rgb;\n" +
             "  if (inputLevel >= 0.0) {\n" +
             "    float fMin = dot(rangeMin.rgb, luminanceWeighting);\n" +

@@ -13,7 +13,7 @@ public class MirrorFilter extends BaseImageFilter {
     private static final String FRAGMENT_MORROR =
             "precision mediump float;\n" +
             "varying mediump vec2 textureCoordinate;\n" +
-            "uniform sampler2D sTexture;\n" +
+            "uniform sampler2D inputTexture;\n" +
             "uniform float Angle;\n" +
             "uniform float MirrorX;\n" +
             "uniform float MirrorY;\n" +
@@ -53,7 +53,7 @@ public class MirrorFilter extends BaseImageFilter {
             "    if(MirrorY > 0.001) {\n" +
             "        textPos = vec2(textPos.x, 1.0-textPos.y);\n" +
             "    }\n" +
-            "    color =texture2D(sTexture, textPos).rgb;\n" +
+            "    color =texture2D(inputTexture, textPos).rgb;\n" +
             "    gl_FragColor = vec4(color, 1.0);\n" +
             "}";
 

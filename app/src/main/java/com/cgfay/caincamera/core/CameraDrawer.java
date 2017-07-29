@@ -2,11 +2,13 @@ package com.cgfay.caincamera.core;
 
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
+import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.bean.CameraInfo;
@@ -436,6 +438,14 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             if (mEglCore != null) {
                 mEglCore.release();
                 mEglCore = null;
+            }
+            if (mCameraFilter != null) {
+                mCameraFilter.release();
+                mCameraFilter = null;
+            }
+            if (mFilter != null) {
+                mFilter.release();
+                mFilter = null;
             }
         }
 

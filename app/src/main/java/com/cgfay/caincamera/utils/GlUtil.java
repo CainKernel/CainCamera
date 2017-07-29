@@ -12,6 +12,9 @@ public class GlUtil {
 
     public static final String TAG = "GlUtil";
 
+    // 从初始化失败
+    public static final int GL_NOT_INIT = -1;
+
     // 单位矩阵
     public static final float[] IDENTITY_MATRIX;
     static {
