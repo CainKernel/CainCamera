@@ -45,12 +45,12 @@ public class CameraFilter extends BaseImageFilter {
     private int mFrameHeight = -1;
 
     public CameraFilter() {
-        mProgramHandle = GlUtil.createProgram(VERTEX_SHADER, FRAGMENT_SHADER_OES);
-        muMVPMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uMVPMatrix");
+        this(VERTEX_SHADER, FRAGMENT_SHADER_OES);
+    }
+
+    public CameraFilter(String vertexShader, String fragmentShader) {
+        super(vertexShader, fragmentShader);
         muTexMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uTexMatrix");
-        maPositionLoc = GLES30.glGetAttribLocation(mProgramHandle, "aPosition");
-        maTextureCoordLoc = GLES30.glGetAttribLocation(mProgramHandle, "aTextureCoord");
-        mInputTextureLoc = GLES30.glGetUniformLocation(mProgramHandle, "inputTexture");
     }
 
     @Override

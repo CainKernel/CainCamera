@@ -119,7 +119,7 @@ public class BaseImageFilter {
         }
         GLES30.glUseProgram(mProgramHandle);
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId);
+        GLES30.glBindTexture(getTextureType(), textureId);
         GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, GlUtil.IDENTITY_MATRIX, 0);
         runPendingOnDrawTasks();
         GLES30.glEnableVertexAttribArray(maPositionLoc);
@@ -134,7 +134,7 @@ public class BaseImageFilter {
         GLES30.glDisableVertexAttribArray(maPositionLoc);
         GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
         onDrawArraysAfter();
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
+        GLES30.glBindTexture(getTextureType(), 0);
         GLES30.glUseProgram(0);
     }
 
