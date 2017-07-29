@@ -193,6 +193,7 @@ public class CameraUtils {
         if (mCameraID == cameraId) {
             return;
         }
+        stopPreview();
         mCameraID = cameraId;
         releaseCamera();
         openCamera(cameraId, DESIRED_PREVIEW_FPS);

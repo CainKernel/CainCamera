@@ -253,6 +253,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         static final int MSG_STOP_PREVIEW = 0x101;
         static final int MSG_UPDATE_PREVIEW = 0x102;
         static final int MSG_UPDATE_PREVIEW_IMAGE_SIZE = 0x103;
+        static final int MSG_SWITCH_CAMERA = 0x104;
 
         static final int MSG_START_RECORDING = 0x200;
         static final int MSG_STOP_RECORDING = 0x201;
@@ -283,6 +284,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         public boolean dropNextFrame = false;
         private boolean isTakePicture = false;
         private boolean mSaveFrame = false;
+        // 跳过的帧数，主要是切换相机、改变视图等地方需要跳过
         private int mSkipFrame = 0;
 
         private CameraFilter mCameraFilter;
@@ -365,6 +367,11 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
                     synchronized (mSyncIsLooping) {
                         updatePreviewImageSize();
                     }
+                    break;
+
+                // 切换相机操作
+                case MSG_SWITCH_CAMERA:
+                    mSkipFrame = 5;
                     break;
 
                 // 开始录制
@@ -563,6 +570,12 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
          * 绘制帧
          */
         private void drawFrame() {
+            synchronized (mSyncIsLooping) {
+                if (mSkipFrame > 0) {
+                    mSkipFrame--;
+                    return;
+                }
+            }
             mDisplaySurface.makeCurrent();
             synchronized (mSyncFrameNum) {
                 synchronized (mSyncTexture) {
@@ -587,7 +600,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             mCameraTexture.getTransformMatrix(mMatrix);
             mCameraFilter.setTextureTransformMatirx(mMatrix);
             if (mFilter == null) {
-                mCameraFilter.drawFrame(mTextureId, mVertexBuffer, mTextureBuffer);
+                // 相机输入图像流使用的TextureBuffer需要做orientation调整
+                mCameraFilter.drawFrame(mTextureId, mVertexBuffer,
+                        TextureRotationUtils.getTextureBuffer());
             } else {
                 int id = mCameraFilter.drawToTexture(mTextureId);
                 mFilter.drawFrame(id, mVertexBuffer, mTextureBuffer);
