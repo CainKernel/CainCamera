@@ -6,6 +6,8 @@ import com.cgfay.caincamera.filter.base.BaseImageFilter;
 
 /**
  * 饱和度滤镜
+ * 饱和度可以解决为彩色光所呈现的彩色的深浅程度，取决于彩色光中混入的白光的数量，
+ * 饱和度是某种色光纯度的反映，饱和度越高，则深色越深
  * Created by cain.huang on 2017/7/21.
  */
 public class SaturationFilter extends BaseImageFilter {

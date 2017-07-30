@@ -2,6 +2,8 @@ package com.cgfay.caincamera.filter.base;
 
 import android.opengl.GLES30;
 
+import com.cgfay.caincamera.utils.GlUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,8 +17,6 @@ public class BaseImageFilterGroup extends BaseImageFilter {
     private static int[] mFrameBufferTextures;
     private int mFrameWdith;
     private int mFrameHeight;
-
-    private int mTextureId = -1;
 
     protected List<BaseImageFilter> mFilters = new ArrayList<BaseImageFilter>();
 
@@ -104,7 +104,6 @@ public class BaseImageFilterGroup extends BaseImageFilter {
             mFilters.clear();
         }
         destroyFramebuffers();
-        mTextureId = -1;
     }
 
     /**

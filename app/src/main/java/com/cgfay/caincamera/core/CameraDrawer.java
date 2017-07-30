@@ -411,7 +411,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             CameraUtils.openFrontalCamera(CameraUtils.DESIRED_PREVIEW_FPS);
             calculateImageSize();
             mCameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
-            mFilter = FilterManager.getFilter(FilterType.SATURATION);
+            mFilter = FilterManager.getFilter(FilterType.REALTIMEBEAUTY);
+            mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
             // 禁用深度测试和背面绘制
             GLES30.glDisable(GLES30.GL_DEPTH_TEST);
             GLES30.glDisable(GLES30.GL_CULL_FACE);

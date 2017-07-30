@@ -6,6 +6,10 @@ package com.cgfay.caincamera.core;
 
 public enum FilterType {
     NONE,
+
+    WHITENORREDDEN, // 白皙还是红润
+    REALTIMEBEAUTY, // 实时美颜
+
     // Edit Image
     SATURATION, // 饱和度
     MIRROR, // 镜像
