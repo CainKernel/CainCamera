@@ -7,4 +7,11 @@
     <string name="btn_setting">设置</string>
     <string name="btn_back">返回</string>
     <string name="btn_more">更多</string>
+
+
+    <string-array name="trackig_mode_array">
+        <item>Normal</item>
+        <item>Robust</item>
+        <item>Fast</item>
+    </string-array>
 </resources>

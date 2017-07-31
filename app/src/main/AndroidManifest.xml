@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.cgfay.caincamera">
 
-    <!--高通GPU调试权限-->
+    <!-- 高通GPU调试权限 -->
     <uses-permission android:name="com.qti.permission.PROFILER" />
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -17,14 +17,17 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
-    <!--录音权限-->
+    <!-- 录音权限 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <!-- 获取设备信息权限 -->
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <!-- opengles版本控制 -->
-    <uses-feature android:glEsVersion="0x00030000" android:required="true" />
+    <uses-feature
+        android:glEsVersion="0x00030000"
+        android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -33,12 +36,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.MainActivity">
-
-        </activity>
-        <activity android:name=".activity.CameraActivity"
+        <activity android:name=".activity.MainActivity"></activity>
+        <activity
+            android:name=".activity.CameraActivity"
             android:screenOrientation="portrait"
             android:theme="@style/CameraTheme">
+        </activity>
+        <activity android:name=".activity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
