@@ -2,13 +2,11 @@ package com.cgfay.caincamera.core;
 
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
-import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.bean.CameraInfo;
@@ -299,10 +297,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         public CameraDrawerHandler(Looper looper) {
             super(looper);
             mVertexBuffer = ByteBuffer
-                    .allocateDirect(TextureRotationUtils.SquareVertices.length * 4)
+                    .allocateDirect(TextureRotationUtils.CubeVertices.length * 4)
                     .order(ByteOrder.nativeOrder())
                     .asFloatBuffer();
-            mVertexBuffer.put(TextureRotationUtils.SquareVertices).position(0);
+            mVertexBuffer.put(TextureRotationUtils.CubeVertices).position(0);
             mTextureBuffer = ByteBuffer
                     .allocateDirect(TextureRotationUtils.getTextureVertices().length * 4)
                     .order(ByteOrder.nativeOrder())
@@ -501,7 +499,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             float[] vertexCoords = null;
             // TODO 这里可以做成镜像翻转的
             float[] textureVertices = TextureRotationUtils.getTextureVertices();
-            float[] vertexVertices = TextureRotationUtils.SquareVertices;
+            float[] vertexVertices = TextureRotationUtils.CubeVertices;
             float ratioMax = Math.max((float) mViewWidth / mImageWidth,
                     (float) mViewHeight / mImageHeight);
             // 新的宽高

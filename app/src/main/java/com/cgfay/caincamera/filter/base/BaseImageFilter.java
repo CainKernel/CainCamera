@@ -2,7 +2,6 @@ package com.cgfay.caincamera.filter.base;
 
 import android.graphics.PointF;
 import android.opengl.GLES30;
-import android.util.Log;
 
 import com.cgfay.caincamera.utils.GlUtil;
 
@@ -41,13 +40,13 @@ public class BaseImageFilter {
 
 
     private static final FloatBuffer FULL_RECTANGLE_BUF =
-            GlUtil.createFloatBuffer(TextureRotationUtils.SquareVertices);
+            GlUtil.createFloatBuffer(TextureRotationUtils.CubeVertices);
 
     protected FloatBuffer mVertexArray = FULL_RECTANGLE_BUF;
     protected FloatBuffer mTexCoordArray = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices);
-    protected int mCoordsPerVertex = 2;
+    protected int mCoordsPerVertex = TextureRotationUtils.CoordsPerVertex;
     protected int mVertexStride = mCoordsPerVertex * SIZEOF_FLOAT;
-    protected int mVertexCount = TextureRotationUtils.SquareVertices.length / mCoordsPerVertex;
+    protected int mVertexCount = TextureRotationUtils.CubeVertices.length / mCoordsPerVertex;
     protected int mTexCoordStride = 2 * SIZEOF_FLOAT;
 
     protected int mProgramHandle;
