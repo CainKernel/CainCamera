@@ -2,10 +2,12 @@ package com.cgfay.caincamera.filter.base;
 
 import android.graphics.PointF;
 import android.opengl.GLES30;
+import android.opengl.Matrix;
 
 import com.cgfay.caincamera.utils.GlUtil;
 
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import com.cgfay.caincamera.utils.TextureRotationUtils;
@@ -62,6 +64,21 @@ public class BaseImageFilter {
     protected int mDisplayWidth;
     protected int mDisplayHeight;
 
+    // --- 视锥体属性 start ---
+    // 视图矩阵
+    protected float[] mViewMatrix = new float[16];
+    // 投影矩阵
+    protected float[] mProjectionMatrix = new float[16];
+    // 模型矩阵
+    protected float[] mModelMatrix = new float[16];
+    // 变换矩阵
+    protected float[] mMVPMatrix = new float[16];
+    // 模型矩阵欧拉角的实际角度
+    protected float mYawAngle = 0.0f;
+    protected float mPitchAngle = 0.0f;
+    protected float mRollAngle = 0.0f;
+    // --- 视锥体属性 end ---
+
     private final LinkedList<Runnable> mRunOnDraw;
 
     public BaseImageFilter() {
@@ -75,6 +92,7 @@ public class BaseImageFilter {
         maTextureCoordLoc = GLES30.glGetAttribLocation(mProgramHandle, "aTextureCoord");
         muMVPMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uMVPMatrix");
         mInputTextureLoc = GLES30.glGetUniformLocation(mProgramHandle, "inputTexture");
+        initIdentityMatrix();
     }
 
     /**
@@ -165,6 +183,112 @@ public class BaseImageFilter {
     public void release() {
         GLES30.glDeleteProgram(mProgramHandle);
         mProgramHandle = -1;
+    }
+
+    ///---------------------- 计算视锥体矩阵变换 ---------------------------------///
+    /**
+     * 初始化单位矩阵
+     */
+    public void initIdentityMatrix() {
+        Matrix.setIdentityM(mViewMatrix, 0);
+        Matrix.setIdentityM(mProjectionMatrix, 0);
+        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.setIdentityM(mMVPMatrix, 0);
+    }
+
+    /**
+     * 计算投影变换(仅onInputSizeChanged里面调用)
+     * @param width
+     * @param height
+     */
+    protected void changedProjectMatrix(int width, int height) {
+        Matrix.setIdentityM(mProjectionMatrix, 0);
+        float ratio = (float) width / height;
+        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 1, 2);
+    }
+
+    /**
+     * 计算视锥体变换矩阵(MVPMatrix)
+     */
+    protected void calculateMVPMatrix() {
+        // 模型矩阵变换
+        Matrix.setIdentityM(mModelMatrix, 0); // 重置模型矩阵方便计算
+        Matrix.rotateM(mModelMatrix, 0, mYawAngle, 1.0f, 0, 0);
+        Matrix.rotateM(mModelMatrix, 0, mPitchAngle, 0, 1.0f, 0);
+        Matrix.rotateM(mModelMatrix, 0, mRollAngle, 0, 0, 1.0f);
+        // 综合矩阵变换
+        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
+    }
+
+    /**
+     * 设置投影矩阵
+     * @param matrix
+     */
+    public void setViewMatrix(float[] matrix) {
+        if (Arrays.equals(mViewMatrix, matrix)) {
+            mViewMatrix = matrix;
+        }
+    }
+
+    /**
+     * 设置投影矩阵
+     * @param matrix
+     */
+    public void setProjectionMatrix(float[] matrix) {
+        if (Arrays.equals(mProjectionMatrix, matrix)) {
+            mProjectionMatrix = matrix;
+        }
+    }
+
+    /**
+     * 设置模型矩阵
+     * @param matrix
+     */
+    public void setModelMatrix(float[] matrix) {
+        if (Arrays.equals(mModelMatrix, matrix)) {
+            mModelMatrix = matrix;
+        }
+    }
+
+    /**
+     * 设置变换矩阵
+     * @param matrix
+     */
+    public void setMVPMatrix(float[] matrix) {
+        if (!Arrays.equals(mMVPMatrix, matrix)) {
+            mMVPMatrix = matrix;
+        }
+    }
+
+    /**
+     * 模型矩阵 X轴旋转角度（0 ~ 360）
+     * @param angle
+     */
+    public void setModelYawAngle(float angle) {
+        if (mYawAngle != angle) {
+            mYawAngle = angle;
+        }
+    }
+
+    /**
+     * 模型矩阵 Y轴旋转角度(0 ~ 360)
+     * @param angle
+     */
+    public void setModelPitchAngle(float angle) {
+        if (mPitchAngle != angle) {
+            mPitchAngle = angle;
+        }
+    }
+
+    /**
+     * 模型矩阵 Z轴旋转角度(0 ~ 360)
+     * @param angle
+     */
+    public void setModelRollAngle(float angle) {
+        if (mRollAngle != angle) {
+            mRollAngle = angle;
+        }
     }
 
     ///------------------ 统一变量(uniform)设置 ------------------------///
