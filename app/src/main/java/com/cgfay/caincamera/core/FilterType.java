@@ -7,6 +7,7 @@ package com.cgfay.caincamera.core;
 public enum FilterType {
     NONE,
 
+    STICKER,    // 贴纸
     WHITENORREDDEN, // 白皙还是红润
     REALTIMEBEAUTY, // 实时美颜
 

@@ -1,6 +1,7 @@
 package com.cgfay.caincamera.filter.base;
 
 import android.graphics.PointF;
+import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
 
@@ -39,7 +40,7 @@ public class BaseImageFilter {
 
     protected static final int SIZEOF_FLOAT = 4;
 
-
+    protected static final int CoordsPerTexture = 2;
 
     private static final FloatBuffer FULL_RECTANGLE_BUF =
             GlUtil.createFloatBuffer(TextureRotationUtils.CubeVertices);
@@ -49,7 +50,7 @@ public class BaseImageFilter {
     protected int mCoordsPerVertex = TextureRotationUtils.CoordsPerVertex;
     protected int mVertexStride = mCoordsPerVertex * SIZEOF_FLOAT;
     protected int mVertexCount = TextureRotationUtils.CubeVertices.length / mCoordsPerVertex;
-    protected int mTexCoordStride = 2 * SIZEOF_FLOAT;
+    protected int mTexCoordStride = CoordsPerTexture * SIZEOF_FLOAT;
 
     protected int mProgramHandle;
     protected int muMVPMatrixLoc;
@@ -137,13 +138,13 @@ public class BaseImageFilter {
         GLES30.glUseProgram(mProgramHandle);
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(getTextureType(), textureId);
-        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, GlUtil.IDENTITY_MATRIX, 0);
+        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
         runPendingOnDrawTasks();
         GLES30.glEnableVertexAttribArray(maPositionLoc);
         GLES30.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
                 GLES30.GL_FLOAT, false, mVertexStride, vertexBuffer);
         GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
-        GLES30.glVertexAttribPointer(maTextureCoordLoc, 2,
+        GLES30.glVertexAttribPointer(maTextureCoordLoc, CoordsPerTexture,
                 GLES30.GL_FLOAT, false, mTexCoordStride, textureBuffer);
         GLES30.glUniform1i(mInputTextureLoc, 0);
         onDrawArraysBegin();
@@ -194,17 +195,6 @@ public class BaseImageFilter {
         Matrix.setIdentityM(mProjectionMatrix, 0);
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.setIdentityM(mMVPMatrix, 0);
-    }
-
-    /**
-     * 计算投影变换(仅onInputSizeChanged里面调用)
-     * @param width
-     * @param height
-     */
-    protected void changedProjectMatrix(int width, int height) {
-        Matrix.setIdentityM(mProjectionMatrix, 0);
-        float ratio = (float) width / height;
-        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 1, 2);
     }
 
     /**
