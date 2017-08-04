@@ -6,6 +6,7 @@ import com.cgfay.caincamera.filter.beauty.WhitenOrReddenFilter;
 import com.cgfay.caincamera.filter.image.GuassFilter;
 import com.cgfay.caincamera.filter.image.MirrorFilter;
 import com.cgfay.caincamera.filter.image.SaturationFilter;
+import com.cgfay.caincamera.filter.sticker.StickerFilter;
 
 /**
  * Filter管理类
@@ -18,7 +19,8 @@ public class FilterManager {
 
     public static BaseImageFilter getFilter(FilterType type) {
         switch (type) {
-
+            case STICKER:
+                return new StickerFilter();
             // 美颜滤镜
             // 白皙还是红润
             case WHITENORREDDEN:

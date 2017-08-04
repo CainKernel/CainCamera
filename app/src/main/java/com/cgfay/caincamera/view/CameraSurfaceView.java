@@ -1,11 +1,13 @@
 package com.cgfay.caincamera.view;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.CameraDrawer;
 
 /**
@@ -57,6 +59,8 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         CameraDrawer.INSTANCE.surfaceCreated(holder);
+        CameraDrawer.INSTANCE.setBitmap(BitmapFactory.decodeResource(getResources(),
+                R.drawable.huaji));
     }
 
     @Override

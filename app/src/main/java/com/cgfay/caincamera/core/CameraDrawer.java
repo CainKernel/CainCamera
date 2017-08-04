@@ -1,5 +1,6 @@
 package com.cgfay.caincamera.core;
 
+import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
@@ -13,6 +14,7 @@ import com.cgfay.caincamera.bean.CameraInfo;
 import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
+import com.cgfay.caincamera.filter.sticker.StickerFilter;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.WindowSurface;
 import com.cgfay.caincamera.utils.CameraUtils;
@@ -45,7 +47,16 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
     private boolean isPreviewing = false;   // 是否预览状态
     private boolean isRecording = false;    // 是否录制状态
 
+    private Bitmap mBitmap;
+
     CameraDrawer() {
+    }
+
+    public void setBitmap(Bitmap bitmap) {
+        if (mBitmap != null) {
+            mBitmap.recycle();
+        }
+        mBitmap = bitmap;
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -409,7 +420,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             CameraUtils.openFrontalCamera(CameraUtils.DESIRED_PREVIEW_FPS);
             calculateImageSize();
             mCameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
-            mFilter = FilterManager.getFilter(FilterType.REALTIMEBEAUTY);
+            mFilter = FilterManager.getFilter(FilterType.STICKER);
             mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
             // 禁用深度测试和背面绘制
             GLES30.glDisable(GLES30.GL_DEPTH_TEST);
@@ -422,6 +433,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             onFilterChanged();
             adjustViewSize();
             CameraUtils.startPreviewTexture(mCameraTexture);
+            mFilter.onDisplayChanged(mViewWidth, mViewHeight);
+            ((StickerFilter)mFilter).setStickerBitmap(mBitmap);
         }
 
         private void onSurfaceDestoryed() {
