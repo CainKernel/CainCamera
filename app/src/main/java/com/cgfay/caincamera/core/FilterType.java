@@ -12,8 +12,13 @@ public enum FilterType {
     REALTIMEBEAUTY, // 实时美颜
 
     // Edit Image
-    SATURATION, // 饱和度
-    MIRROR, // 镜像
+    BRIGHTNESS, // 亮度
+    CONTRAST, // 对比度
+    EXPOSURE, // 曝光
     GUASS, // 高斯模糊
+    HUE, // 色调
+    MIRROR, // 镜像
+    SATURATION, // 饱和度
+    SHARPNESS, // 锐度
 
 }

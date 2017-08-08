@@ -3,9 +3,14 @@ package com.cgfay.caincamera.core;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.beauty.BeautyFilter;
 import com.cgfay.caincamera.filter.beauty.WhitenOrReddenFilter;
+import com.cgfay.caincamera.filter.image.BrightnessFilter;
+import com.cgfay.caincamera.filter.image.ContrastFilter;
+import com.cgfay.caincamera.filter.image.ExposureFilter;
 import com.cgfay.caincamera.filter.image.GuassFilter;
+import com.cgfay.caincamera.filter.image.HueFilter;
 import com.cgfay.caincamera.filter.image.MirrorFilter;
 import com.cgfay.caincamera.filter.image.SaturationFilter;
+import com.cgfay.caincamera.filter.image.SharpnessFilter;
 import com.cgfay.caincamera.filter.sticker.StickerFilter;
 
 /**
@@ -38,6 +43,21 @@ public class FilterManager {
             // 高斯模糊
             case GUASS:
                 return new GuassFilter();
+            // 亮度
+            case BRIGHTNESS:
+                return new BrightnessFilter();
+            // 对比度
+            case CONTRAST:
+                return new ContrastFilter();
+            // 曝光
+            case EXPOSURE:
+                return new ExposureFilter();
+            // 色调
+            case HUE:
+                return new HueFilter();
+            // 锐度
+            case SHARPNESS:
+                return new SharpnessFilter();
             default:
                 return null;
         }

@@ -45,10 +45,18 @@ public class StickerFilter extends BaseImageFilter {
                     "uniform sampler2D inputTexture;    // 原始Texture\n" +
                     "uniform sampler2D mipmapTexture;   // 贴图Texture\n" +
                     "\n" +
+                    "uniform vec2 v_mid; // 旋转中心点\n" +
+                    "uniform vec3 v_Rotation; // 旋转角度\n" +
+                    "uniform vec2 v_scale; //缩放\n" +
+                    "\n" +
                     "void main()\n" +
                     "{\n" +
+                    " vec2 rotated = vec2(cos(v_Rotation[2])*(mipmapCoordinate.x - v_mid.x)*v_scale.x\n" +
+                    "                      + sin(v_Rotation[2])*(mipmapCoordinate.y - v_mid.y)*v_scale.y + v_mid.x,\n" +
+                    "                    cos(v_Rotation[2])*(mipmapCoordinate.y - v_mid.y)*v_scale.y\n" +
+                    "                    - sin(v_Rotation[2])*(mipmapCoordinate.x - v_mid.x)*v_scale.x + v_mid.y);\n" +
                     "    lowp vec4 sourceColor = texture2D(inputTexture, 1.0 - textureCoordinate);\n" +
-                    "    lowp vec4 mipmapColor = texture2D(mipmapTexture, mipmapCoordinate);\n" +
+                    "    lowp vec4 mipmapColor = texture2D(mipmapTexture, rotated);\n" +
                     "    vec4 resultColor;\n" +
                     "    resultColor[3] = sourceColor[3];\n" +
                     "\n" +
@@ -92,10 +100,13 @@ public class StickerFilter extends BaseImageFilter {
     private int mBitmapTextureLoc;
     private int mColorLoc;
     private int maBitmapCoordLoc;
+    private int mRotationLoc;
+    private int mMiddleLoc;
+    private int mScaleLoc;
 
     private FloatBuffer mTextureBuffer;
 
-    private float[] ColorValues = { 0.8f, 0.6f, 0.7f, 0.2f};
+    private float[] ColorValues = { 1.0f, 1.0f, 1.0f, 0.5f};
 
     private Bitmap mBitmap;
     private int[] mTextures = new int[1];
@@ -109,12 +120,19 @@ public class StickerFilter extends BaseImageFilter {
         maBitmapCoordLoc = GLES30.glGetAttribLocation(mProgramHandle, "aBitmapCoord");
         mBitmapTextureLoc = GLES30.glGetUniformLocation(mProgramHandle, "mipmapTexture");
         mColorLoc = GLES30.glGetUniformLocation(mProgramHandle, "color");
+        mRotationLoc = GLES30.glGetUniformLocation(mProgramHandle, "v_Rotation");
+        mMiddleLoc = GLES30.glGetUniformLocation(mProgramHandle, "v_mid");
+        mScaleLoc = GLES30.glGetUniformLocation(mProgramHandle, "v_scale");
 //        // 视图矩阵
-//        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, 2, 0f, 0f, 0f, 0f, 1f, 0f);
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -1, 0f, 0f, 0f, 0f, 1f, 0f);
         // 计算变换矩阵，将图像翻转
         Matrix.rotateM(mMVPMatrix, 0, 180, 0, 0, 1);
         setTrackScale(0.5f);
         setTextures(TextureVertices);
+
+        setFloatVec2(mMiddleLoc, new float[]{ 0.5f, 0.5f});
+        setFloatVec2(mScaleLoc, new float[]{1.0f, 1.0f});
+        setFloatVec3(mRotationLoc, new float[]{0, 60, 45});
     }
 
     /**
@@ -146,9 +164,10 @@ public class StickerFilter extends BaseImageFilter {
     @Override
     public void onInputSizeChanged(int width, int height) {
         super.onInputSizeChanged(width, height);
-//        float aspect = (float) width / height; // 计算宽高比
+        float aspect = (float) width / height; // 计算宽高比
 //        aspect = 1; // 如果是1的话，这里是不会发生变形之类的，强制变成宽高比的话，会将画面拉伸变形为正方形
-//        Matrix.frustumM(mProjectionMatrix, 0, -aspect, aspect, -1, 1, 3, 7);
+//        Matrix.frustumM(mProjectionMatrix, 0, -aspect, aspect, -1, 1, 1, 10);
+        Matrix.perspectiveM(mProjectionMatrix, 0, 60, aspect, 2, 10);
     }
 
     @Override
