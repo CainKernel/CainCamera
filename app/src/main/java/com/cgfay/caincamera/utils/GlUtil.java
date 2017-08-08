@@ -1,9 +1,17 @@
 package com.cgfay.caincamera.utils;
 
+import android.content.Context;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.opengl.GLES20;
 import android.opengl.GLES30;
+import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.util.Log;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -160,5 +168,55 @@ public class GlUtil {
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
         checkGlError("createCamFrameBuff");
+    }
+
+    /**
+     * 加载mipmap纹理
+     * @param context
+     * @param name
+     * @return
+     */
+    public static int loadMipmapTextureFromAssets(Context context, String name) {
+        int[] textureHandle = new int[1];
+        GLES30.glGenTextures(1, textureHandle, 0);
+        if (textureHandle[0] != 0) {
+            Bitmap bitmap = getImageFromAssetsFile(context, name);
+            GLES30.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
+
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                    GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                    GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                    GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                    GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+            GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
+            bitmap.recycle();
+        }
+        if (textureHandle[0] == 0) {
+            throw new RuntimeException("Error loading texture.");
+        }
+
+        return textureHandle[0];
+    }
+
+    /**
+     * 加载Assets文件夹下的图片
+     * @param context
+     * @param fileName
+     * @return
+     */
+    private static Bitmap getImageFromAssetsFile(Context context, String fileName) {
+        Bitmap bitmap = null;
+        AssetManager manager = context.getResources().getAssets();
+        try {
+            InputStream is = manager.open(fileName);
+            bitmap = BitmapFactory.decodeStream(is);
+            is.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bitmap;
     }
 }

@@ -7,6 +7,10 @@ package com.cgfay.caincamera.core;
 public enum FilterType {
     NONE,
 
+    // 颜色滤镜效果相关
+    SKETCH, // 素描
+
+
     STICKER,    // 贴纸
     WHITENORREDDEN, // 白皙还是红润
     REALTIMEBEAUTY, // 实时美颜

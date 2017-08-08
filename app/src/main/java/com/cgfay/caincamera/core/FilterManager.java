@@ -1,5 +1,6 @@
 package com.cgfay.caincamera.core;
 
+import com.cgfay.caincamera.filter.advanced.SketchFilter;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.beauty.BeautyFilter;
 import com.cgfay.caincamera.filter.beauty.WhitenOrReddenFilter;
@@ -24,6 +25,10 @@ public class FilterManager {
 
     public static BaseImageFilter getFilter(FilterType type) {
         switch (type) {
+            //  颜色滤镜相关
+            case SKETCH:
+                return new SketchFilter();
+
             case STICKER:
                 return new StickerFilter();
             // 美颜滤镜

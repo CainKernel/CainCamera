@@ -24,6 +24,7 @@ import android.widget.FrameLayout;
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.AspectRatioType;
 import com.cgfay.caincamera.core.CameraDrawer;
+import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.PermissionUtils;
 import com.cgfay.caincamera.utils.TextureRotationUtils;
@@ -206,6 +207,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         } else {
             requestCameraPermission();
         }
+        // 持有当前上下文
+        ParamsManager.context = this;
     }
 
     @Override
@@ -216,6 +219,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             CameraUtils.stopPreview();
             mOnPreviewing = false;
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // 在停止时需要释放上下文，防止内存泄漏
+        ParamsManager.context = null;
     }
 
     private void registerHomeReceiver() {
