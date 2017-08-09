@@ -420,7 +420,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             CameraUtils.openFrontalCamera(CameraUtils.DESIRED_PREVIEW_FPS);
             calculateImageSize();
             mCameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
-            mFilter = FilterManager.getFilter(FilterType.STICKER);
+            mFilter = FilterManager.getFilter(FilterType.REALTIMEBEAUTY);
             mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
             // 禁用深度测试和背面绘制
             GLES30.glDisable(GLES30.GL_DEPTH_TEST);
@@ -434,7 +434,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             adjustViewSize();
             CameraUtils.startPreviewTexture(mCameraTexture);
             mFilter.onDisplayChanged(mViewWidth, mViewHeight);
-            ((StickerFilter)mFilter).setStickerBitmap(mBitmap);
         }
 
         private void onSurfaceDestoryed() {

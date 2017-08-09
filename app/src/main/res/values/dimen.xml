@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- photo view -->
+    <dimen name="selected_indicator_padding">7.5dp</dimen>
+    <dimen name="selected_indicator_width">25dp</dimen>
+    <!-- 编辑图片底部功能栏的高度 -->
+    <dimen name="photo_edit_function_height">120dp</dimen>
+
+</resources>

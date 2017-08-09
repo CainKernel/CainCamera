@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.cgfay.caincamera.view.SquareImageView
+            android:id="@+id/iv_photo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop" />
+        <ImageView
+            android:id="@+id/selected_indicator"
+            android:layout_width="@dimen/selected_indicator_width"
+            android:layout_height="@dimen/selected_indicator_width"
+            android:padding="@dimen/selected_indicator_padding"
+            android:layout_gravity="end|top"
+            android:background="@drawable/mis_btn_unselected"/>
+    </FrameLayout>
+</LinearLayout>

@@ -28,8 +28,12 @@ import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.PermissionUtils;
 import com.cgfay.caincamera.utils.TextureRotationUtils;
+import com.cgfay.caincamera.utils.faceplus.ConUtil;
+import com.cgfay.caincamera.utils.faceplus.Util;
 import com.cgfay.caincamera.view.AspectFrameLayout;
 import com.cgfay.caincamera.view.CameraSurfaceView;
+import com.megvii.facepp.sdk.Facepp;
+import com.megvii.licensemanager.sdk.LicenseManager;
 
 public class CameraActivity extends AppCompatActivity implements View.OnClickListener,
         CameraSurfaceView.OnClickListener, CameraSurfaceView.OnTouchScroller {
@@ -87,6 +91,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         } else {
             requestCameraPermission();
         }
+        requestFaceNetwork();
     }
 
     private void initView() {
@@ -262,10 +267,43 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
     };
 
+    /**
+     * Face++SDK联网请求
+     */
+    private void requestFaceNetwork() {
+        if (Facepp.getSDKAuthType(ConUtil.getFileContent(this, R.raw
+                .megviifacepp_0_4_7_model)) == 2) {// 非联网授权
+            ParamsManager.canFaceTrack = true;
+            return;
+        }
+        final LicenseManager licenseManager = new LicenseManager(this);
+        licenseManager.setExpirationMillis(Facepp.getApiExpirationMillis(this, ConUtil.getFileContent(this, R.raw
+                .megviifacepp_0_4_7_model)));
+
+        String uuid = ConUtil.getUUIDString(this);
+        long apiName = Facepp.getApiName();
+
+        licenseManager.setAuthTimeBufferMillis(0);
+
+        licenseManager.takeLicenseFromNetwork(uuid, Util.API_KEY, Util.API_SECRET, apiName,
+                LicenseManager.DURATION_30DAYS, "Landmark", "1", true, new LicenseManager.TakeLicenseCallback() {
+                    @Override
+                    public void onSuccess() {
+                        ParamsManager.canFaceTrack = true;
+                    }
+
+                    @Override
+                    public void onFailed(int i, byte[] bytes) {
+                        ParamsManager.canFaceTrack = false;
+                    }
+                });
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_view_photo:
+                viewPhoto();
                 break;
 
             case R.id.btn_take:
@@ -352,6 +390,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      */
     private void surfaceViewClick(float x, float y) {
 
+    }
+
+    /**
+     * 查看媒体库中的图片
+     */
+    private void viewPhoto() {
+        startActivity(new Intent(CameraActivity.this, PhotoViewActivity.class));
     }
 
     /**

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cgfay.caincamera.activity.PhotoViewActivity">
+
+    <!-- 列表 -->
+    <com.cgfay.caincamera.view.AsyncRecyclerview
+        android:id="@+id/photo_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </com.cgfay.caincamera.view.AsyncRecyclerview>
+
+    <!-- 图片预览编辑 -->
+    <RelativeLayout
+        android:id="@+id/layout_photo_edit"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:visibility="gone">
+        <LinearLayout
+            android:id="@+id/layout_edit_bar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/photo_edit_function_height"
+            android:orientation="horizontal"
+            android:layout_alignParentBottom="true">
+
+        </LinearLayout>
+        <android.opengl.GLSurfaceView
+            android:id="@+id/photo_edit_view"
+            android:layout_above="@id/layout_edit_bar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </RelativeLayout>
+</FrameLayout>
