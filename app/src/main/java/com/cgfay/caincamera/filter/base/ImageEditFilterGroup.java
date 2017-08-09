@@ -25,7 +25,19 @@ public class ImageEditFilterGroup extends BaseImageFilterGroup {
     private static final int SATURATION = 4;
     private static final int SHARPNESS = 5;
 
-    private List<BaseImageFilter> initFilters() {
+    public ImageEditFilterGroup() {
+        this(initFilters());
+    }
+
+    public ImageEditFilterGroup(List<BaseImageFilter> filters) {
+        super(filters);
+    }
+
+    /**
+     * 初始化滤镜
+     * @return
+     */
+    private static List<BaseImageFilter> initFilters() {
         List<BaseImageFilter> filters = new ArrayList<BaseImageFilter>();
 
         filters.add(BRIGHTNESS, FilterManager.getFilter(FilterType.BRIGHTNESS)); // 亮度
