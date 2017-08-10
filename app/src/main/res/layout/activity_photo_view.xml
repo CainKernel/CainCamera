@@ -21,14 +21,72 @@
         android:layout_height="match_parent"
         android:background="@android:color/white"
         android:visibility="gone">
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/layout_edit_bar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/photo_edit_function_height"
             android:orientation="horizontal"
             android:layout_alignParentBottom="true">
+            <ProgressBar
+                android:layout_marginTop="@dimen/layout_margin_height"
+                android:progress="50"
+                android:max="100"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="@dimen/layout_margin_height"
+                android:layout_alignParentBottom="true">
+                <Button
+                    android:id="@+id/btn_brightness"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="@dimen/edit_size"
+                    android:text="@string/brightness"/>
+                <Button
+                    android:id="@+id/btn_contrast"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="@dimen/edit_size"
+                    android:text="@string/contrast"/>
 
-        </LinearLayout>
+                <Button
+                    android:id="@+id/btn_exposure"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="@dimen/edit_size"
+                    android:text="@string/exposure" />
+
+                <Button
+                    android:id="@+id/btn_hue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="@dimen/edit_size"
+                    android:text="@string/hue" />
+
+                <Button
+                    android:id="@+id/btn_saturation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="@dimen/edit_size"
+                    android:text="@string/saturation"/>
+                <Button
+                    android:id="@+id/btn_sharpness"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="@dimen/edit_size"
+                    android:text="@string/sharpness"/>
+            </LinearLayout>
+        </RelativeLayout>
         <com.cgfay.caincamera.view.PhotoEditSurfaceView
             android:id="@+id/photo_edit_view"
             android:layout_above="@id/layout_edit_bar"
