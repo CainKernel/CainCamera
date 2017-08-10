@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context="com.cgfay.caincamera.activity.PhotoViewActivity">
 
     <!-- 列表 -->
@@ -28,7 +29,7 @@
             android:layout_alignParentBottom="true">
 
         </LinearLayout>
-        <android.opengl.GLSurfaceView
+        <com.cgfay.caincamera.view.PhotoEditSurfaceView
             android:id="@+id/photo_edit_view"
             android:layout_above="@id/layout_edit_bar"
             android:layout_width="match_parent"

@@ -4,17 +4,14 @@ import android.Manifest;
 import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import com.cgfay.caincamera.R;
@@ -22,13 +19,14 @@ import com.cgfay.caincamera.adapter.PhotoViewAdapter;
 import com.cgfay.caincamera.bean.ImageMeta;
 import com.cgfay.caincamera.utils.PermissionUtils;
 import com.cgfay.caincamera.view.AsyncRecyclerview;
+import com.cgfay.caincamera.view.PhotoEditSurfaceView;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class PhotoViewActivity extends AppCompatActivity
+public class PhotoViewActivity extends BaseActivity
         implements PhotoViewAdapter.OnItemClickLitener {
 
     private static final int REQUEST_STORAGE_READ = 0x01;
@@ -45,20 +43,19 @@ public class PhotoViewActivity extends AppCompatActivity
 
     // 编辑图片
     private RelativeLayout mPhotoEditLayout;
-    private GLSurfaceView mPhotoEditView;
-    private PhotoEditRenderer mEditRenderer;
+    private PhotoEditSurfaceView mPhotoEditView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_view);
         multiSelectEnable = getIntent().getBooleanExtra("multiSelect", false);
+        initView();
         if (PermissionUtils.permissionChecking(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
             startAsyncScaneMedia();
         } else {
             requestStorageReadPermission();
         }
-        initView();
     }
 
     private void initView() {
@@ -69,11 +66,7 @@ public class PhotoViewActivity extends AppCompatActivity
         mImageLists = new ArrayList<ImageMeta>();
         // 编辑图片
         mPhotoEditLayout = (RelativeLayout) findViewById(R.id.layout_photo_edit);
-        mPhotoEditView = (GLSurfaceView) findViewById(R.id.photo_edit_view);
-        mPhotoEditView.setEGLContextClientVersion(3);
-        mEditRenderer = new PhotoEditRenderer(this);
-        mPhotoEditView.setRenderer(mEditRenderer);
-        mPhotoEditView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        mPhotoEditView = (PhotoEditSurfaceView) findViewById(R.id.photo_edit_view);
     }
 
     /**
@@ -93,7 +86,7 @@ public class PhotoViewActivity extends AppCompatActivity
         mPhotoAdapter.addItemClickListener(this);
         mPhotoAdapter.setMultiSelectEnable(multiSelectEnable);
         mPhototView.setAdapter(mPhotoAdapter);
-        mPhotoAdapter.setLongClickEnable(true);
+//        mPhotoAdapter.setLongClickEnable(true);
     }
 
     /**
@@ -188,10 +181,8 @@ public class PhotoViewActivity extends AppCompatActivity
      */
     private void showPhotoEditView() {
         mPhotoEditLayout.setVisibility(View.VISIBLE);
-        // 设置数据
-        mEditRenderer.setImageMeta(mImageLists.get(mCurrentSelecetedIndex));
-        // 请求渲染
-        mPhotoEditView.requestRender();
+        mPhotoEditView.setImageMeta(mImageLists.get(mCurrentSelecetedIndex));
+        Log.d("PATH", "PATH = " + mImageLists.get(mCurrentSelecetedIndex).getPath());
     }
 
     // 扫描媒体库

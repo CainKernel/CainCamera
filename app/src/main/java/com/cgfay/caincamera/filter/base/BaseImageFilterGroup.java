@@ -4,6 +4,7 @@ import android.opengl.GLES30;
 
 import com.cgfay.caincamera.utils.GlUtil;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,6 +92,29 @@ public class BaseImageFilterGroup extends BaseImageFilter {
             } else {
                 GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
                 filter.drawFrame(previewTexture);
+            }
+        }
+    }
+
+    @Override
+    public void drawFrame(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
+        if (mFramebuffers == null || mFrameBufferTextures == null) {
+            return;
+        }
+        int size = mFilters.size();
+        int previewTexture = textureId;
+        for (int i = 0; i < size; i++) {
+            BaseImageFilter filter = mFilters.get(i);
+            if (i < size - 1) {
+                GLES30.glViewport(0, 0, mImageWidth, mImageHeight);
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[i]);
+                GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                filter.drawFrame(previewTexture, vertexBuffer, textureBuffer);
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+                previewTexture = mFrameBufferTextures[i];
+            } else {
+                GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
+                filter.drawFrame(previewTexture, vertexBuffer, textureBuffer);
             }
         }
     }

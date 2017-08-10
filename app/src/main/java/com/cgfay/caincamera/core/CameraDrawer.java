@@ -522,10 +522,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             float ratioHeight = (float) imageHeight / (float) mViewHeight;
             if (mScaleType == ScaleType.CENTER_INSIDE) {
                 vertexCoords = new float[] {
-                        vertexVertices[0] / ratioHeight, vertexVertices[1] / ratioWidth,
-                        vertexVertices[2] / ratioHeight, vertexVertices[3] / ratioWidth,
-                        vertexVertices[4] / ratioHeight, vertexVertices[5] / ratioWidth,
-                        vertexVertices[6] / ratioHeight, vertexVertices[7] / ratioWidth,
+                        vertexVertices[0] / ratioHeight, vertexVertices[1] / ratioWidth, vertexVertices[2],
+                        vertexVertices[3] / ratioHeight, vertexVertices[4] / ratioWidth, vertexVertices[5],
+                        vertexVertices[6] / ratioHeight, vertexVertices[7] / ratioWidth, vertexVertices[8],
+                        vertexVertices[9] / ratioHeight, vertexVertices[10] / ratioWidth, vertexVertices[11],
                 };
             } else if (mScaleType == ScaleType.CENTER_CROP) {
                 float distHorizontal = (1 - 1 / ratioWidth) / 2;
