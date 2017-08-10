@@ -79,15 +79,9 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        if (mBitmap == null || mBitmap.isRecycled()) {
+        if (mTextureId == GlUtil.GL_NOT_INIT) {
             return;
         }
-        // 销毁以前的Texture
-        if (mTextureId == GlUtil.GL_NOT_INIT) {
-            GLES30.glDeleteTextures(1, new int[]{mTextureId}, 0);
-            mTextureId = GlUtil.GL_NOT_INIT;
-        }
-        mTextureId = GlUtil.createTexture(mBitmap);
         // 绘制流程
         mImageFilter.drawFrame(mTextureId);
         if (mFilter == null) {
@@ -146,11 +140,16 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         if (mBitmap != null) {
             mBitmap.recycle();
             mBitmap = null;
-
+        }
+        // 销毁以前的Texture
+        if (mTextureId != GlUtil.GL_NOT_INIT) {
+            GLES30.glDeleteTextures(1, new int[]{mTextureId}, 0);
+            mTextureId = GlUtil.GL_NOT_INIT;
         }
         // 重新创建Bitmap 和Texture
         mBitmap = BitmapFactory.decodeFile(mImageMeta.getPath());
         mImageWidth = mBitmap.getWidth();
         mImageHeight = mBitmap.getHeight();
+        mTextureId = GlUtil.createTexture(mBitmap);
     }
 }

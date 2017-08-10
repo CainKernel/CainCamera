@@ -180,9 +180,9 @@ public class PhotoViewActivity extends BaseActivity
      * 显示图片编辑界面
      */
     private void showPhotoEditView() {
+        mPhototView.setVisibility(View.GONE);
         mPhotoEditLayout.setVisibility(View.VISIBLE);
         mPhotoEditView.setImageMeta(mImageLists.get(mCurrentSelecetedIndex));
-        Log.d("PATH", "PATH = " + mImageLists.get(mCurrentSelecetedIndex).getPath());
     }
 
     // 扫描媒体库
