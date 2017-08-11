@@ -85,7 +85,7 @@ public class ImageEditFilterGroup extends BaseImageFilterGroup {
      * 设置图片饱和度
      * @param saturation
      */
-    public void setSaturationLevel(float saturation) {
+    public void setSaturation(float saturation) {
         ((SaturationFilter)mFilters.get(SATURATION)).setSaturationLevel(saturation);
     }
 

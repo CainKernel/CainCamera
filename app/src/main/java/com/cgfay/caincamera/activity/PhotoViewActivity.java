@@ -10,6 +10,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -20,7 +21,6 @@ import android.widget.TextView;
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.PhotoViewAdapter;
 import com.cgfay.caincamera.bean.ImageMeta;
-import com.cgfay.caincamera.core.FilterType;
 import com.cgfay.caincamera.utils.PermissionUtils;
 import com.cgfay.caincamera.view.AsyncRecyclerview;
 import com.cgfay.caincamera.view.PhotoEditSurfaceView;
@@ -35,6 +35,8 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
 
     private static final int REQUEST_STORAGE_READ = 0x01;
     private static final int COLUMNSIZE = 3;
+    // 原始滤镜值
+    private static final float[] OriginalValues = new float[] {0, 1.0f, 0, 0, 1.0f, 0};
 
     // 滤镜值索引
     private static final int BrightnessIndex = 0;
@@ -50,6 +52,9 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
     private boolean multiSelectEnable = false;
     private int mCurrentSelecetedIndex = -1; // 单选模式下的当前位置
 
+    // toolbar
+    private Toolbar mToolbar;
+    // 显示列表
     private AsyncRecyclerview mPhototView;
     private GridLayoutManager mLayoutManager;
     private PhotoViewAdapter mPhotoAdapter;
@@ -68,7 +73,7 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
     private Button mSharpness;
     private TextView mValueShow;
     // 用于记录六种选项值
-    private float[] mValues = new float[] {0, 0, 0, 0, 0, 0};
+    private float[] mValues = OriginalValues;
     private int mCurrentFilterIndex = BrightnessIndex;
 
     @Override
@@ -85,6 +90,9 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
     }
 
     private void initView() {
+        // toolbar
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
         // 显示媒体库数据
         mPhototView = (AsyncRecyclerview) findViewById(R.id.photo_view);
         mLayoutManager = new GridLayoutManager(PhotoViewActivity.this, COLUMNSIZE);
@@ -234,7 +242,6 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
         switch (v.getId()) {
             // 亮度
             case R.id.btn_brightness:
-                mPhotoEditView.setFilter(FilterType.BRIGHTNESS);
                 mPhotoEditView.setBrightness(mValues[BrightnessIndex]);
                 mCurrentFilterIndex = BrightnessIndex;
                 mSeekbar.setProgress((int) (mValues[BrightnessIndex] * SeekBarMax));
@@ -242,15 +249,13 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
 
             // 对比度
             case R.id.btn_contrast:
-                mPhotoEditView.setFilter(FilterType.CONTRAST);
                 mPhotoEditView.setContrast(mValues[ContrastIndex]);
                 mCurrentFilterIndex = ContrastIndex;
-                mSeekbar.setProgress((int) (mValues[ContrastIndex] * SeekBarMax));
+                mSeekbar.setProgress((int) (mValues[ContrastIndex] * SeekBarMax / 2.0f));
                 break;
 
             // 曝光
             case R.id.btn_exposure:
-                mPhotoEditView.setFilter(FilterType.EXPOSURE);
                 mPhotoEditView.setExposure(mValues[ExposureIndex]);
                 mCurrentFilterIndex = ExposureIndex;
                 mSeekbar.setProgress((int) (mValues[ExposureIndex] * SeekBarMax));
@@ -258,7 +263,6 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
 
             // 色调
             case R.id.btn_hue:
-                mPhotoEditView.setFilter(FilterType.HUE);
                 mPhotoEditView.setHue(mValues[HueIndex]);
                 mCurrentFilterIndex = HueIndex;
                 mSeekbar.setProgress((int) (mValues[HueIndex] * SeekBarMax / 360f));
@@ -266,15 +270,13 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
 
             // 饱和度
             case R.id.btn_saturation:
-                mPhotoEditView.setFilter(FilterType.SATURATION);
                 mPhotoEditView.setSaturation(mValues[SaturationIndex]);
                 mCurrentFilterIndex = SaturationIndex;
                 mSeekbar.setProgress((int) (mValues[SaturationIndex] * SeekBarMax / 2.0f));
                 break;
 
-            // 对比度
+            // 锐度
             case R.id.btn_sharpness:
-                mPhotoEditView.setFilter(FilterType.SHARPNESS);
                 mPhotoEditView.setSharpness(mValues[SharpnessIndex]);
                 mCurrentFilterIndex = SharpnessIndex;
                 mSeekbar.setProgress((int) (mValues[SharpnessIndex] * SeekBarMax));
@@ -303,7 +305,6 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
      */
     private void setFilterValues(int progress) {
         float value = (float) progress / (float) SeekBarMax;
-        Log.d("value", "value = " + value);
         // 计算百分比
         float text = (float)Math.round(value * 100);
         String string = text + "%";
@@ -312,7 +313,8 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
         // 调整实际的率净值
         if (mCurrentFilterIndex == HueIndex) {
             value = value * 360f; // 色调在0 ~ 360度之间变化
-        } else if (mCurrentFilterIndex == SaturationIndex) {
+        } else if (mCurrentFilterIndex == SaturationIndex
+                || mCurrentFilterIndex == ContrastIndex) {
             value = value * 2.0f; // 对比度在0 ~ 2之间变化
         }
         // 缓存当前的滤镜值
@@ -342,6 +344,19 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
                 mPhotoEditView.setSharpness(value);
                 break;
         }
+    }
+
+    /**
+     * 重置滤镜为原始值
+     */
+    private void resetFilterValues() {
+        mValues = OriginalValues;
+        mPhotoEditView.setBrightness(OriginalValues[BrightnessIndex]);
+        mPhotoEditView.setContrast(OriginalValues[ContrastIndex]);
+        mPhotoEditView.setExposure(OriginalValues[ExposureIndex]);
+        mPhotoEditView.setHue(OriginalValues[HueIndex]);
+        mPhotoEditView.setSaturation(OriginalValues[SaturationIndex]);
+        mPhotoEditView.setSharpness(OriginalValues[SharpnessIndex]);
     }
 
     // 扫描媒体库

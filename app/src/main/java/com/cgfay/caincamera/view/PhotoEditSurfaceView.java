@@ -6,19 +6,10 @@ import android.graphics.BitmapFactory;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
-import android.util.Log;
 
 import com.cgfay.caincamera.bean.ImageMeta;
-import com.cgfay.caincamera.core.FilterManager;
-import com.cgfay.caincamera.core.FilterType;
-import com.cgfay.caincamera.filter.base.BaseImageFilter;
-import com.cgfay.caincamera.filter.image.BrightnessFilter;
-import com.cgfay.caincamera.filter.image.ContrastFilter;
-import com.cgfay.caincamera.filter.image.ExposureFilter;
-import com.cgfay.caincamera.filter.image.HueFilter;
+import com.cgfay.caincamera.filter.base.ImageEditFilterGroup;
 import com.cgfay.caincamera.filter.image.OriginalFilter;
-import com.cgfay.caincamera.filter.image.SaturationFilter;
-import com.cgfay.caincamera.filter.image.SharpnessFilter;
 import com.cgfay.caincamera.utils.GlUtil;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -40,7 +31,7 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
     // 原始图片滤镜
     private OriginalFilter mImageFilter;
     // 滤镜
-    private BaseImageFilter mFilter;
+    private ImageEditFilterGroup mFilter;
     // 图片宽度
     private int mImageWidth;
     // 图片高度
@@ -68,8 +59,7 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        mImageFilter = new OriginalFilter();
-        mFilter = FilterManager.getFilter(FilterType.BRIGHTNESS);
+        initImageEditFilter();
         createBitmapTexture();
     }
 
@@ -78,7 +68,6 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         mViewWidth = width;
         mViewHeight = height;
         onFilterChanged();
-        mFilter.onDisplayChanged(mViewWidth, mViewHeight);
     }
 
     @Override
@@ -97,24 +86,12 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
     }
 
     /**
-     * 设置滤镜类型
-     * @param type
+     * 初始化图片滤镜组
      */
-    public void setFilter(final FilterType type) {
-        queueEvent(new Runnable() {
-            @Override
-            public void run() {
-                if (mFilter != null) {
-                    mFilter.release();
-                    mFilter = null;
-                }
-                mFilter = FilterManager.getFilter(type);
-                onFilterChanged();
-                requestRender();
-            }
-        });
+    private void initImageEditFilter() {
+        mImageFilter = new OriginalFilter();
+        mFilter = new ImageEditFilterGroup();
     }
-
     /**
      * 设置图片元数据
      * @param imageMeta
@@ -131,6 +108,7 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
      * 滤镜或视图发生变化时调用
      */
     private void onFilterChanged() {
+        mImageFilter.onInputSizeChanged(mImageWidth, mImageHeight);
         mImageFilter.onDisplayChanged(mViewWidth, mViewHeight);
         if (mFilter != null) {
             mImageFilter.initFramebuffer(mImageWidth, mImageHeight);
@@ -181,8 +159,8 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         queueEvent(new Runnable() {
             @Override
             public void run() {
-                if (mFilter != null && mFilter instanceof BrightnessFilter) {
-                    ((BrightnessFilter)mFilter).setBrightness(value);
+                if (mFilter != null) {
+                    mFilter.setBrightness(value);
                     requestRender();
                 }
             }
@@ -196,15 +174,15 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
     public void setContrast(float contrast) {
         if (contrast < 0) {
             contrast = 0;
-        } else if (contrast > 1) {
-            contrast = 1;
+        } else if (contrast > 2) {
+            contrast = 2;
         }
         final float value = contrast;
         queueEvent(new Runnable() {
             @Override
             public void run() {
-                if (mFilter != null && mFilter instanceof ContrastFilter) {
-                    ((ContrastFilter)mFilter).setContrast(value);
+                if (mFilter != null) {
+                    mFilter.setContrast(value);
                     requestRender();
                 }
             }
@@ -225,8 +203,8 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         queueEvent(new Runnable() {
             @Override
             public void run() {
-                if (mFilter != null && mFilter instanceof ExposureFilter) {
-                    ((ExposureFilter)mFilter).setExposure(value);
+                if (mFilter != null) {
+                    mFilter.setExposure(value);
                     requestRender();
                 }
             }
@@ -241,8 +219,8 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         queueEvent(new Runnable() {
             @Override
             public void run() {
-                if (mFilter != null && mFilter instanceof HueFilter) {
-                    ((HueFilter)mFilter).setHue(hue);
+                if (mFilter != null) {
+                    mFilter.setHue(hue);
                     requestRender();
                 }
             }
@@ -263,8 +241,8 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         queueEvent(new Runnable() {
             @Override
             public void run() {
-                if (mFilter != null && mFilter instanceof SaturationFilter) {
-                    ((SaturationFilter)mFilter).setSaturationLevel(value);
+                if (mFilter != null) {
+                    mFilter.setSaturation(value);
                     requestRender();
                 }
             }
@@ -285,8 +263,9 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         queueEvent(new Runnable() {
             @Override
             public void run() {
-                if (mFilter != null && mFilter instanceof SharpnessFilter) {
-                    ((SharpnessFilter)mFilter).setSharpness(value);
+                if (mFilter != null) {
+                    mFilter.setSharpness(value);
+                    requestRender();
                 }
             }
         });

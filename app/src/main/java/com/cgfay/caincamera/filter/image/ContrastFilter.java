@@ -35,7 +35,7 @@ public class ContrastFilter extends BaseImageFilter {
     public ContrastFilter(String vertexShader, String fragmentShader) {
         super(vertexShader, fragmentShader);
         mContrastLoc = GLES30.glGetUniformLocation(mProgramHandle, "contrast");
-        setContrast(0);
+        setContrast(1.0f);
     }
 
     /**
