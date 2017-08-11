@@ -16,11 +16,14 @@ import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
 import com.cgfay.caincamera.filter.sticker.StickerFilter;
 import com.cgfay.caincamera.gles.EglCore;
+import com.cgfay.caincamera.gles.VideoEncoderCore;
 import com.cgfay.caincamera.gles.WindowSurface;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.GlUtil;
 import com.cgfay.caincamera.utils.TextureRotationUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -277,6 +280,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         private EglCore mEglCore;
         // EGLSurface
         private WindowSurface mDisplaySurface;
+        // 录制视频用的EGLSurface
+        private WindowSurface mRecordWindowSurface;
+        private VideoEncoderCore mVideoEncoder;
         // CameraTexture对应的Id
         private int mTextureId;
         private SurfaceTexture mCameraTexture;
@@ -297,6 +303,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         private boolean mSaveFrame = false;
         // 跳过的帧数，主要是切换相机、改变视图等地方需要跳过
         private int mSkipFrame = 0;
+        // 录制视频
+        private boolean isRecording = false;
+        private int bitrate = 1000000;
 
         private CameraFilter mCameraFilter;
         private BaseImageFilter mFilter;
@@ -387,10 +396,37 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
 
                 // 开始录制
                 case MSG_START_RECORDING:
+                    File file = new File(ParamsManager.VideoPath
+                            + "CainCamera_" + System.currentTimeMillis() + ".mp4");
+                    if (!file.getParentFile().exists()) {
+                        file.getParentFile().mkdirs();
+                    }
+                    try {
+                        mVideoEncoder = new VideoEncoderCore(mImageWidth, mImageHeight,
+                                bitrate, file);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    mRecordWindowSurface = new WindowSurface(mEglCore,
+                            mVideoEncoder.getInputSurface(), true);
+                    isRecording = true;
                     break;
 
                 // 停止录制
                 case MSG_STOP_RECORDING:
+                    synchronized (mSyncIsLooping) {
+                        mVideoEncoder.drainEncoder(true);
+                    }
+                    isRecording = false;
+                    // 录制完成需要释放资源
+                    if (mVideoEncoder != null) {
+                        mVideoEncoder.release();
+                        mVideoEncoder = null;
+                    }
+                    if (mRecordWindowSurface != null) {
+                        mRecordWindowSurface.release();
+                        mRecordWindowSurface = null;
+                    }
                     break;
 
                 // 重置bitrate(录制视频时使用)
@@ -620,6 +656,22 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             }
             mCameraTexture.getTransformMatrix(mMatrix);
             mCameraFilter.setTextureTransformMatirx(mMatrix);
+            draw();
+            mDisplaySurface.swapBuffers();
+            // 是否处于录制状态
+            if (isRecording) {
+                mRecordWindowSurface.makeCurrent();
+                mVideoEncoder.drainEncoder(false);
+                draw();
+                mRecordWindowSurface.setPresentationTime(mCameraTexture.getTimestamp());
+                mRecordWindowSurface.swapBuffers();
+            }
+        }
+
+        /**
+         * 绘制实体
+         */
+        private void draw() {
             if (mFilter == null) {
                 // 相机输入图像流使用的TextureBuffer需要做orientation调整
                 mCameraFilter.drawFrame(mTextureId, mVertexBuffer,
@@ -628,7 +680,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
                 int id = mCameraFilter.drawToTexture(mTextureId);
                 mFilter.drawFrame(id, mVertexBuffer, mTextureBuffer);
             }
-            mDisplaySurface.swapBuffers();
         }
 
         /**
