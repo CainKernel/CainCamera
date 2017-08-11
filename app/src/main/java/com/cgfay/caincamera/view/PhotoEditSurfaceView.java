@@ -12,7 +12,12 @@ import com.cgfay.caincamera.core.FilterManager;
 import com.cgfay.caincamera.core.FilterType;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.image.BrightnessFilter;
+import com.cgfay.caincamera.filter.image.ContrastFilter;
+import com.cgfay.caincamera.filter.image.ExposureFilter;
+import com.cgfay.caincamera.filter.image.HueFilter;
 import com.cgfay.caincamera.filter.image.OriginalFilter;
+import com.cgfay.caincamera.filter.image.SaturationFilter;
+import com.cgfay.caincamera.filter.image.SharpnessFilter;
 import com.cgfay.caincamera.utils.GlUtil;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -63,10 +68,8 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         mImageFilter = new OriginalFilter();
-        mFilter = new BrightnessFilter();
-        ((BrightnessFilter)mFilter).setBrightness(0.5f);
+        mFilter = FilterManager.getFilter(FilterType.BRIGHTNESS);
         createBitmapTexture();
-        mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
     }
 
     @Override
@@ -102,6 +105,7 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         }
         mFilter = FilterManager.getFilter(type);
         onFilterChanged();
+        requestRender();
     }
 
     /**
@@ -150,6 +154,100 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         mBitmap = BitmapFactory.decodeFile(mImageMeta.getPath());
         mImageWidth = mBitmap.getWidth();
         mImageHeight = mBitmap.getHeight();
+        if (mFilter != null) {
+            mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
+        }
         mTextureId = GlUtil.createTexture(mBitmap);
+    }
+
+    /**
+     * 设置亮度
+     * @param brightness
+     */
+    public void setBrightness(float brightness) {
+        if (brightness < 0) {
+            brightness = 0;
+        } else if (brightness > 1) {
+            brightness = 1;
+        }
+        if (mFilter != null && mFilter instanceof BrightnessFilter) {
+            ((BrightnessFilter)mFilter).setBrightness(brightness);
+            requestRender();
+        }
+    }
+
+    /**
+     * 设置对比度
+     * @param contrast
+     */
+    public void setContrast(float contrast) {
+        if (contrast < 0) {
+            contrast = 0;
+        } else if (contrast > 1) {
+            contrast = 1;
+        }
+
+        if (mFilter != null && mFilter instanceof ContrastFilter) {
+            ((ContrastFilter)mFilter).setContrast(contrast);
+            requestRender();
+        }
+    }
+
+    /**
+     * 设置曝光
+     * @param exposure
+     */
+    public void setExposure(float exposure) {
+        if (exposure < 0) {
+            exposure = 0;
+        } else if (exposure > 1) {
+            exposure = 1;
+        }
+        if (mFilter != null && mFilter instanceof ExposureFilter) {
+            ((ExposureFilter)mFilter).setExposure(exposure);
+            requestRender();
+        }
+    }
+
+    /**
+     * 设置色调 0 ~ 360度
+     * @param hue
+     */
+    public void setHue(float hue) {
+        if (mFilter != null && mFilter instanceof HueFilter) {
+            ((HueFilter)mFilter).setHue(hue);
+            requestRender();
+        }
+    }
+
+    /**
+     * 设置饱和度 0.0 ~ 2.0之间
+     * @param saturation
+     */
+    public void setSaturation(float saturation) {
+        if (saturation < 0) {
+            saturation = 0;
+        } else if (saturation > 2) {
+            saturation = 2;
+        }
+        if (mFilter != null && mFilter instanceof SaturationFilter) {
+            ((SaturationFilter)mFilter).setSaturationLevel(saturation);
+            requestRender();
+        }
+    }
+
+    /**
+     * 设置锐度
+     * @param sharpness
+     */
+    public void setSharpness(float sharpness) {
+        if (sharpness < 0) {
+            sharpness = 0;
+        } else if (sharpness > 1) {
+            sharpness = 1;
+        }
+        if (mFilter != null && mFilter instanceof SharpnessFilter) {
+            ((SharpnessFilter)mFilter).setSharpness(sharpness);
+        }
     }
 }

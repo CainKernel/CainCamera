@@ -37,51 +37,18 @@ public class SaturationFilter extends BaseImageFilter {
 //            "  gl_FragColor = vec4(dest, source.a);                                 \n" +
 //            "}                                                                      \n";
 
-//    private static final String FRAGMENT_SATURATION = "precision mediump float;\n" +
-//            "varying highp vec2 textureCoordinate;\n" +
-//            "uniform sampler2D inputTexture;\n" +
-//            "uniform lowp float inputLevel;\n" +
-//            "// Values from \\\"Graphics Shaders: Theory and Practice\\\" by Bailey and Cunningham\n" +
-//            "const mediump vec3 luminanceWeighting = vec3(0.2125, 0.7154, 0.0721);\n" +
-//            "void main() {\n" +
-//            "    lowp vec4 textureColor = texture2D(inputTexture, textureCoordinate);\n" +
-//            "    lowp float luminance = dot(textureColor.rgb, luminanceWeighting);\n" +
-//            "    lowp vec3 greyScaleColor = vec3(luminance);\n" +
-//            "    gl_FragColor = vec4(mix(greyScaleColor, textureColor.rgb, inputLevel), textureColor.w);\n" +
-//            "}";
-
     private static final String FRAGMENT_SATURATION =
             "precision mediump float;\n" +
-            "varying vec2 textureCoordinate;\n" +
-            "uniform vec4 rangeMin;  // 最小值，比如 rgb(0.0f, 0.0f, 0.0f)\n" +
-            "uniform vec4 rangeMax;  // 最大值，比如 rgb(1.0f, 1.0f, 1.0f)\n" +
+            "varying highp vec2 textureCoordinate;\n" +
             "uniform sampler2D inputTexture;\n" +
-            "uniform lowp float inputLevel;   // 变化的等级, -1 ~ 1之间\n" +
+            "uniform lowp float inputLevel;\n" +
+            "// Values from \\\"Graphics Shaders: Theory and Practice\\\" by Bailey and Cunningham\n" +
             "const mediump vec3 luminanceWeighting = vec3(0.2125, 0.7154, 0.0721);\n" +
             "void main() {\n" +
-            "  vec4 source = texture2D(inputTexture, textureCoordinate);\n" +
-            "  vec3 dest = source.rgb;\n" +
-            "  if (inputLevel >= 0.0) {\n" +
-            "    float fMin = dot(rangeMin.rgb, luminanceWeighting);\n" +
-            "    float fMax = dot(rangeMax.rgb, luminanceWeighting);\n" +
-            "    fMax = 1.0 - (1.0 - fMax) / 1.5;\n" +
-            "    fMax = max(0.5, fMax);\n" +
-            "    float diff = fMax - fMin;\n" +
-            "    // 计算差分\n" +
-            "    dest.r = (dest.r - fMin) / diff;\n" +
-            "    dest.g = (dest.g - fMin) / diff;\n" +
-            "    dest.b = (dest.b - fMin) / diff;\n" +
-            "    float level = clamp(inputLevel, 0.0, 1.0);\n" +
-            "    // dest = source.rgb * (1 - level) + dest * level;\n" +
-            "    dest = mix(source.rgb, dest, level);\n" +
-            "  } else {\n" +
-            "    lowp float luminance = dot(source.rgb, luminanceWeighting);\n" +
+            "    lowp vec4 textureColor = texture2D(inputTexture, textureCoordinate);\n" +
+            "    lowp float luminance = dot(textureColor.rgb, luminanceWeighting);\n" +
             "    lowp vec3 greyScaleColor = vec3(luminance);\n" +
-            "    lowp float level = clamp(inputLevel + 1.0, 0.0, 1.0);\n" +
-            "    level = level + level;\n" +
-            "    dest = mix(greyScaleColor, source.rgb, level);\n" +
-            "  }\n" +
-            "  gl_FragColor = vec4(dest, source.a);\n" +
+            "    gl_FragColor = vec4(mix(greyScaleColor, textureColor.rgb, inputLevel), textureColor.w);\n" +
             "}";
 
     private int mRangeMinLoc;
@@ -99,12 +66,12 @@ public class SaturationFilter extends BaseImageFilter {
         mInputLevelLoc = GLES30.glGetUniformLocation(mProgramHandle, "inputLevel");
         setSaturationMin(new float[]{0.0f, 0.0f, 0.0f});
         setSaturationMax(new float[]{1.0f, 1.0f, 1.0f});
-        setSaturationLevel(0.0f);
+        setSaturationLevel(1.0f);
     }
 
     /**
      * 设置饱和度值
-     * @param value 0.0 ~ 1.0之间
+     * @param value 0.0 ~ 2.0之间
      */
     public void setSaturationLevel(float value) {
         setFloat(mInputLevelLoc, value);

@@ -26,12 +26,10 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/photo_edit_function_height"
             android:orientation="horizontal"
+            android:layout_margin="@dimen/layout_margin_height"
             android:layout_alignParentBottom="true">
-            <ProgressBar
-                android:layout_marginTop="@dimen/layout_margin_height"
-                android:progress="50"
-                android:max="100"
-                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            <SeekBar
+                android:id="@+id/edit_value"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
             <LinearLayout
@@ -93,4 +91,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </RelativeLayout>
+    <!--用于显示滤镜值-->
+    <TextView
+        android:id="@+id/show_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textColor="@color/colorValueShow"
+        android:textSize="@dimen/show_value_size"
+        android:visibility="gone"/>
 </FrameLayout>

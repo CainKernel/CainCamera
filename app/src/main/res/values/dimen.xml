@@ -5,8 +5,10 @@
     <dimen name="selected_indicator_width">25dp</dimen>
     <!-- 编辑图片底部功能栏的高度 -->
     <dimen name="photo_edit_function_height">120dp</dimen>
+    <dimen name="layout_margin_height">20dp</dimen>
     <!--字体-->
     <dimen name="edit_size">10sp</dimen>
-    <dimen name="layout_margin_height">20dp</dimen>
+    <dimen name="show_value_size">20sp</dimen>
+
 
 </resources>

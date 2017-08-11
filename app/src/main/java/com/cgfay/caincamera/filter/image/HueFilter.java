@@ -69,7 +69,7 @@ public class HueFilter extends BaseImageFilter {
     }
 
     /**
-     * 设置色调
+     * 设置色调 0 ~ 360
      * @param hue
      */
     public void setHue(float hue) {

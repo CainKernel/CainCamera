@@ -12,11 +12,15 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.PhotoViewAdapter;
 import com.cgfay.caincamera.bean.ImageMeta;
+import com.cgfay.caincamera.core.FilterType;
 import com.cgfay.caincamera.utils.PermissionUtils;
 import com.cgfay.caincamera.view.AsyncRecyclerview;
 import com.cgfay.caincamera.view.PhotoEditSurfaceView;
@@ -26,11 +30,22 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class PhotoViewActivity extends BaseActivity
-        implements PhotoViewAdapter.OnItemClickLitener {
+public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.OnItemClickLitener,
+        SeekBar.OnSeekBarChangeListener, View.OnClickListener {
 
     private static final int REQUEST_STORAGE_READ = 0x01;
     private static final int COLUMNSIZE = 3;
+
+    // 滤镜值索引
+    private static final int BrightnessIndex = 0;
+    private static final int ContrastIndex = 1;
+    private static final int ExposureIndex = 2;
+    private static final int HueIndex = 3;
+    private static final int SaturationIndex = 4;
+    private static final int SharpnessIndex = 5;
+
+    // Seekbar的最大值
+    private static final int SeekBarMax = 100;
 
     private boolean multiSelectEnable = false;
     private int mCurrentSelecetedIndex = -1; // 单选模式下的当前位置
@@ -44,6 +59,17 @@ public class PhotoViewActivity extends BaseActivity
     // 编辑图片
     private RelativeLayout mPhotoEditLayout;
     private PhotoEditSurfaceView mPhotoEditView;
+    private SeekBar mSeekbar;
+    private Button mBrightness;
+    private Button mContrast;
+    private Button mExposure;
+    private Button mHue;
+    private Button mSaturation;
+    private Button mSharpness;
+    private TextView mValueShow;
+    // 用于记录六种选项值
+    private float[] mValues = new float[] {0, 0, 0, 0, 0, 0};
+    private int mCurrentFilterIndex = BrightnessIndex;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +93,24 @@ public class PhotoViewActivity extends BaseActivity
         // 编辑图片
         mPhotoEditLayout = (RelativeLayout) findViewById(R.id.layout_photo_edit);
         mPhotoEditView = (PhotoEditSurfaceView) findViewById(R.id.photo_edit_view);
+
+        mSeekbar = (SeekBar) findViewById(R.id.edit_value);
+        mBrightness = (Button) findViewById(R.id.btn_brightness);
+        mContrast = (Button) findViewById(R.id.btn_contrast);
+        mExposure = (Button) findViewById(R.id.btn_exposure);
+        mHue = (Button) findViewById(R.id.btn_hue);
+        mSaturation = (Button)findViewById(R.id.btn_saturation);
+        mSharpness = (Button) findViewById(R.id.btn_sharpness);
+        mValueShow = (TextView) findViewById(R.id.show_value);
+
+        mSeekbar.setMax(SeekBarMax);
+        mSeekbar.setOnSeekBarChangeListener(this);
+        mBrightness.setOnClickListener(this);
+        mContrast.setOnClickListener(this);
+        mExposure.setOnClickListener(this);
+        mHue.setOnClickListener(this);
+        mSaturation.setOnClickListener(this);
+        mSharpness.setOnClickListener(this);
     }
 
     /**
@@ -183,6 +227,120 @@ public class PhotoViewActivity extends BaseActivity
         mPhototView.setVisibility(View.GONE);
         mPhotoEditLayout.setVisibility(View.VISIBLE);
         mPhotoEditView.setImageMeta(mImageLists.get(mCurrentSelecetedIndex));
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            // 亮度
+            case R.id.btn_brightness:
+                mPhotoEditView.setFilter(FilterType.BRIGHTNESS);
+                mPhotoEditView.setBrightness(mValues[BrightnessIndex]);
+                mCurrentFilterIndex = BrightnessIndex;
+                mSeekbar.setProgress((int) (mValues[BrightnessIndex] * SeekBarMax));
+                break;
+
+            // 对比度
+            case R.id.btn_contrast:
+                mPhotoEditView.setFilter(FilterType.CONTRAST);
+                mPhotoEditView.setContrast(mValues[ContrastIndex]);
+                mCurrentFilterIndex = ContrastIndex;
+                mSeekbar.setProgress((int) (mValues[ContrastIndex] * SeekBarMax));
+                break;
+
+            // 曝光
+            case R.id.btn_exposure:
+                mPhotoEditView.setFilter(FilterType.EXPOSURE);
+                mPhotoEditView.setExposure(mValues[ExposureIndex]);
+                mCurrentFilterIndex = ExposureIndex;
+                mSeekbar.setProgress((int) (mValues[ExposureIndex] * SeekBarMax));
+                break;
+
+            // 色调
+            case R.id.btn_hue:
+                mPhotoEditView.setFilter(FilterType.HUE);
+                mPhotoEditView.setHue(mValues[HueIndex]);
+                mCurrentFilterIndex = HueIndex;
+                mSeekbar.setProgress((int) (mValues[HueIndex] * SeekBarMax / 360f));
+                break;
+
+            // 饱和度
+            case R.id.btn_saturation:
+                mPhotoEditView.setFilter(FilterType.SATURATION);
+                mPhotoEditView.setSaturation(mValues[SaturationIndex]);
+                mCurrentFilterIndex = SaturationIndex;
+                mSeekbar.setProgress((int) (mValues[SaturationIndex] * SeekBarMax / 2.0f));
+                break;
+
+            // 对比度
+            case R.id.btn_sharpness:
+                mPhotoEditView.setFilter(FilterType.SHARPNESS);
+                mPhotoEditView.setSharpness(mValues[SharpnessIndex]);
+                mCurrentFilterIndex = SharpnessIndex;
+                mSeekbar.setProgress((int) (mValues[SharpnessIndex] * SeekBarMax));
+                break;
+        }
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        setFilterValues(progress);
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+        mValueShow.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+        mValueShow.setVisibility(View.GONE);
+    }
+
+    /**
+     * 设置滤镜值
+     * @param progress seekbar的进度值
+     */
+    private void setFilterValues(int progress) {
+        float value = (float) progress / (float) SeekBarMax;
+        // 计算百分比
+        float text = (float)Math.round(value * 100);
+        String string = text + "%";
+        // 设置显示的值
+        mValueShow.setText(string);
+        // 调整实际的率净值
+        if (mCurrentFilterIndex == HueIndex) {
+            value = value * 360f; // 色调在0 ~ 360度之间变化
+        } else if (mCurrentFilterIndex == SaturationIndex) {
+            value = value * 2.0f; // 对比度在0 ~ 2之间变化
+        }
+        // 缓存当前的滤镜值
+        mValues[mCurrentFilterIndex] = value;
+        switch (mCurrentFilterIndex) {
+            case BrightnessIndex:
+                mPhotoEditView.setBrightness(value);
+                break;
+
+            case ContrastIndex:
+                mPhotoEditView.setContrast(value);
+                break;
+
+            case ExposureIndex:
+                mPhotoEditView.setExposure(value);
+                break;
+
+            case HueIndex:
+                mPhotoEditView.setHue(value);
+                break;
+
+            case SaturationIndex:
+                mPhotoEditView.setSaturation(value);
+                break;
+
+            case SharpnessIndex:
+                mPhotoEditView.setSharpness(value);
+                break;
+        }
     }
 
     // 扫描媒体库
