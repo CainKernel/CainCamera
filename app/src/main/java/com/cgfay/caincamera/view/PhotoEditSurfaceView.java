@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import com.cgfay.caincamera.bean.ImageMeta;
 import com.cgfay.caincamera.core.FilterManager;
@@ -99,13 +100,19 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
      * 设置滤镜类型
      * @param type
      */
-    public void setFilter(FilterType type) {
-        if (mFilter != null) {
-            mFilter.release();
-        }
-        mFilter = FilterManager.getFilter(type);
-        onFilterChanged();
-        requestRender();
+    public void setFilter(final FilterType type) {
+        queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                if (mFilter != null) {
+                    mFilter.release();
+                    mFilter = null;
+                }
+                mFilter = FilterManager.getFilter(type);
+                onFilterChanged();
+                requestRender();
+            }
+        });
     }
 
     /**
@@ -170,10 +177,16 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         } else if (brightness > 1) {
             brightness = 1;
         }
-        if (mFilter != null && mFilter instanceof BrightnessFilter) {
-            ((BrightnessFilter)mFilter).setBrightness(brightness);
-            requestRender();
-        }
+        final float value = brightness;
+        queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                if (mFilter != null && mFilter instanceof BrightnessFilter) {
+                    ((BrightnessFilter)mFilter).setBrightness(value);
+                    requestRender();
+                }
+            }
+        });
     }
 
     /**
@@ -186,11 +199,16 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         } else if (contrast > 1) {
             contrast = 1;
         }
-
-        if (mFilter != null && mFilter instanceof ContrastFilter) {
-            ((ContrastFilter)mFilter).setContrast(contrast);
-            requestRender();
-        }
+        final float value = contrast;
+        queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                if (mFilter != null && mFilter instanceof ContrastFilter) {
+                    ((ContrastFilter)mFilter).setContrast(value);
+                    requestRender();
+                }
+            }
+        });
     }
 
     /**
@@ -203,21 +221,32 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         } else if (exposure > 1) {
             exposure = 1;
         }
-        if (mFilter != null && mFilter instanceof ExposureFilter) {
-            ((ExposureFilter)mFilter).setExposure(exposure);
-            requestRender();
-        }
+        final float value = exposure;
+        queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                if (mFilter != null && mFilter instanceof ExposureFilter) {
+                    ((ExposureFilter)mFilter).setExposure(value);
+                    requestRender();
+                }
+            }
+        });
     }
 
     /**
      * 设置色调 0 ~ 360度
      * @param hue
      */
-    public void setHue(float hue) {
-        if (mFilter != null && mFilter instanceof HueFilter) {
-            ((HueFilter)mFilter).setHue(hue);
-            requestRender();
-        }
+    public void setHue(final float hue) {
+        queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                if (mFilter != null && mFilter instanceof HueFilter) {
+                    ((HueFilter)mFilter).setHue(hue);
+                    requestRender();
+                }
+            }
+        });
     }
 
     /**
@@ -230,10 +259,16 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         } else if (saturation > 2) {
             saturation = 2;
         }
-        if (mFilter != null && mFilter instanceof SaturationFilter) {
-            ((SaturationFilter)mFilter).setSaturationLevel(saturation);
-            requestRender();
-        }
+        final float value = saturation;
+        queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                if (mFilter != null && mFilter instanceof SaturationFilter) {
+                    ((SaturationFilter)mFilter).setSaturationLevel(value);
+                    requestRender();
+                }
+            }
+        });
     }
 
     /**
@@ -246,8 +281,14 @@ public class PhotoEditSurfaceView extends GLSurfaceView implements GLSurfaceView
         } else if (sharpness > 1) {
             sharpness = 1;
         }
-        if (mFilter != null && mFilter instanceof SharpnessFilter) {
-            ((SharpnessFilter)mFilter).setSharpness(sharpness);
-        }
+        final float value = sharpness;
+        queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                if (mFilter != null && mFilter instanceof SharpnessFilter) {
+                    ((SharpnessFilter)mFilter).setSharpness(value);
+                }
+            }
+        });
     }
 }

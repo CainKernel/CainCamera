@@ -303,6 +303,7 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
      */
     private void setFilterValues(int progress) {
         float value = (float) progress / (float) SeekBarMax;
+        Log.d("value", "value = " + value);
         // 计算百分比
         float text = (float)Math.round(value * 100);
         String string = text + "%";
