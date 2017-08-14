@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.bean.CameraInfo;
@@ -657,6 +658,20 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             mCameraTexture.getTransformMatrix(mMatrix);
             mCameraFilter.setTextureTransformMatirx(mMatrix);
             draw();
+            // 拍照状态
+            if (isTakePicture) {
+                isTakePicture = false;
+                File file = new File(ParamsManager.ImagePath + "CainCamera_"
+                        + System.currentTimeMillis() + ".jpeg");
+                if (!file.getParentFile().exists()) {
+                    file.getParentFile().mkdirs();
+                }
+                try {
+                    mDisplaySurface.saveFrame(file);
+                } catch (IOException e) {
+//                        e.printStackTrace();
+                }
+            }
             mDisplaySurface.swapBuffers();
             // 是否处于录制状态
             if (isRecording) {

@@ -212,6 +212,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         } else {
             requestCameraPermission();
         }
+        // 判断是否允许写入权限
+        if (PermissionUtils.permissionChecking(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            mStorageWriteEnable = true;
+        }
         // 持有当前上下文
         ParamsManager.context = this;
     }
@@ -407,7 +411,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             return;
         }
         if (mStorageWriteEnable
-                || PermissionUtils.permissionChecking(this, Manifest.permission_group.STORAGE)) {
+                || PermissionUtils.permissionChecking(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             CameraDrawer.INSTANCE.takePicture();
         } else {
             requestStorageWritePermission();
