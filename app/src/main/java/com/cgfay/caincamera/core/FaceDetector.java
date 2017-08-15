@@ -26,9 +26,6 @@ public class FaceDetector {
     private FaceDetectorHandler mDetectorHandler;
     private HandlerThread mHandlerThread;
 
-    private final Object mSyncOperation = new Object();
-    private final Object mSyncIsLooping = new Object();
-
     // 人脸检测
     private Facepp mFacepp;
     // 最小人脸检测大小
@@ -96,17 +93,15 @@ public class FaceDetector {
             }
             return;
         }
-        synchronized (mSyncOperation) {
-            mDetectorHandler.sendEmptyMessage(FaceDetectorHandler.MSG_DESTORY);
-            mHandlerThread.quitSafely();
-            try {
-                mHandlerThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            mHandlerThread = null;
-            mDetectorHandler = null;
+        mDetectorHandler.sendEmptyMessage(FaceDetectorHandler.MSG_DESTORY);
+        mHandlerThread.quitSafely();
+        try {
+            mHandlerThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+        mHandlerThread = null;
+        mDetectorHandler = null;
     }
 
     /**
@@ -149,29 +144,23 @@ public class FaceDetector {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_INIT_CONFIG:
-                    synchronized (mSyncIsLooping) {
-                        initConfig(msg.arg1, msg.arg2);
-                    }
+                    initConfig(msg.arg1, msg.arg2);
                     break;
 
                 case MSG_FACE_DETECTING:
                     // 如果没有创建检测对象
                     if (mFacepp == null) {
-                        synchronized (mSyncIsLooping) {
-                            initConfig(msg.arg1, msg.arg2);
-                        }
+                        initConfig(msg.arg1, msg.arg2);
                     }
                     faceDetecting((byte[]) msg.obj, msg.arg1, msg.arg2);
                     break;
 
                 case MSG_DESTORY:
-                    synchronized (mSyncIsLooping) {
-                        if (mFacepp != null) {
-                            mFacepp.release();
-                            mFacepp = null;
-                        }
-                        isAvailable = false;
+                    if (mFacepp != null) {
+                        mFacepp.release();
+                        mFacepp = null;
                     }
+                    isAvailable = false;
                     break;
             }
         }

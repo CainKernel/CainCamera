@@ -245,17 +245,15 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             }
             return;
         }
-        synchronized (mSynOperation) {
-            mDrawerHandler.sendEmptyMessage(CameraDrawerHandler.MSG_DESTROY);
-            mHandlerThread.quitSafely();
-            try {
-                mHandlerThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            mHandlerThread = null;
-            mDrawerHandler = null;
+        mDrawerHandler.sendEmptyMessage(CameraDrawerHandler.MSG_DESTROY);
+        mHandlerThread.quitSafely();
+        try {
+            mHandlerThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+        mHandlerThread = null;
+        mDrawerHandler = null;
     }
 
     @Override
