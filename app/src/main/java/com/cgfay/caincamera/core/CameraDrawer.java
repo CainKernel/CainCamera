@@ -515,6 +515,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
 
         private void onSurfaceDestoryed() {
             CameraUtils.releaseCamera();
+            FaceManager.getInstance().destory();
             if (mCameraTexture != null) {
                 mCameraTexture.release();
                 mCameraTexture = null;
@@ -551,10 +552,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
          * 初始化人脸检测工具
          */
         private void initFaceDetection() {
+            FaceManager.getInstance().createHandleThread();
             if (ParamsManager.canFaceTrack) {
-                FaceManager.getInstance().initFaceConfig(ParamsManager.context,
-                        mImageWidth, mImageHeight);
-                FaceManager.getInstance().setBackCamera(CameraUtils.getCameraID()
+                FaceManager.getInstance().initFaceConfig(mImageWidth, mImageHeight);
+                FaceManager.getInstance().getFaceDetector().setBackCamera(CameraUtils.getCameraID()
                         == Camera.CameraInfo.CAMERA_FACING_BACK);
             }
         }
@@ -774,9 +775,11 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
          */
         public void addNewFrame() {
             synchronized (mSyncFrameNum) {
-                ++mFrameNum;
-                removeMessages(MSG_FRAME);
-                sendMessageAtFrontOfQueue(obtainMessage(MSG_FRAME));
+                if (isPreviewing) {
+                    ++mFrameNum;
+                    removeMessages(MSG_FRAME);
+                    sendMessageAtFrontOfQueue(obtainMessage(MSG_FRAME));
+                }
             }
         }
 
