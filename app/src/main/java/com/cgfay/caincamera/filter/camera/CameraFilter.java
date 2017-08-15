@@ -105,7 +105,7 @@ public class CameraFilter extends BaseImageFilter {
                 GLES30.GL_FLOAT, false, mVertexStride, mVertexArray);
         GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
         GLES30.glVertexAttribPointer(maTextureCoordLoc, 2,
-                GLES30.GL_FLOAT, false, mTexCoordStride, TextureRotationUtils.getTextureBuffer());
+                GLES30.GL_FLOAT, false, mTexCoordStride, mTexCoordArray);
         GLES30.glUniform1i(mInputTextureLoc, 0);
         onDrawArraysBegin();
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
@@ -117,6 +117,10 @@ public class CameraFilter extends BaseImageFilter {
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
         GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
         return mFramebufferTextures[0];
+    }
+
+    public void updateTextureBuffer() {
+        mTexCoordArray = TextureRotationUtils.getTextureBuffer();
     }
 
     /**

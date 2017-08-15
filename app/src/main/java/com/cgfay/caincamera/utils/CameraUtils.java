@@ -215,7 +215,6 @@ public class CameraUtils {
         releaseCamera();
         openCamera(cameraId, DESIRED_PREVIEW_FPS);
         addPreviewCallbacks(callback, buffer);
-        startPreviewTexture(mSurfaceTexture);
     }
 
     /**

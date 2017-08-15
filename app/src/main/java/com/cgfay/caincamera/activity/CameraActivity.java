@@ -159,7 +159,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mCameraEnable = true;
                     initView();
-                    CameraUtils.startPreview();
+                    CameraDrawer.INSTANCE.startPreview();
                     mOnPreviewing = true;
                 }
                 break;
@@ -207,7 +207,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         registerHomeReceiver();
         mCameraEnable = PermissionUtils.permissionChecking(this, Manifest.permission.CAMERA);
         if (mCameraEnable) {
-            CameraUtils.startPreview();
+            CameraDrawer.INSTANCE.startPreview();
             mOnPreviewing = true;
         } else {
             requestCameraPermission();
@@ -225,7 +225,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         super.onPause();
         unRegisterHomeReceiver();
         if (mCameraEnable) {
-            CameraUtils.stopPreview();
+            CameraDrawer.INSTANCE.stopPreview();
             mOnPreviewing = false;
         }
     }
@@ -263,7 +263,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 // 当点击了home键时需要停止预览，防止后台一直持有相机
                 if (reason.equals(SYSTEM_DIALOG_REASON_HOME_KEY)) {
                     if (mOnPreviewing) {
-                        CameraUtils.stopPreview();
                         CameraDrawer.INSTANCE.stopPreview();
                     }
                 }

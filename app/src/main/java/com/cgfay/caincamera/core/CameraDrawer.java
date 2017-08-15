@@ -394,10 +394,15 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
 
                 // 开始预览
                 case MSG_START_PREVIEW:
+                    if (mCameraTexture != null && mCameraFilter != null) {
+                        mCameraFilter.updateTextureBuffer();
+                        CameraUtils.startPreviewTexture(mCameraTexture);
+                    }
                     break;
 
                 // 停止预览
                 case MSG_STOP_PREVIEW:
+                    CameraUtils.stopPreview();
                     break;
 
                 // 更新预览视图大小
@@ -416,6 +421,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                 case MSG_SWITCH_CAMERA:
                     CameraUtils.switchCamera(1 - CameraUtils.getCameraID(),
                             CameraDrawer.this, mPreviewBuffer);
+                    sendMessage(obtainMessage(MSG_START_PREVIEW));
                     break;
 
                 // PreviewCallback回调预览
@@ -502,6 +508,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             mViewHeight = height;
             onFilterChanged();
             adjustViewSize();
+            mCameraFilter.updateTextureBuffer();
             CameraUtils.startPreviewTexture(mCameraTexture);
             mFilter.onDisplayChanged(mViewWidth, mViewHeight);
         }
