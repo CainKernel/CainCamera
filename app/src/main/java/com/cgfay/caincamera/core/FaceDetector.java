@@ -138,7 +138,8 @@ public class FaceDetector {
 
         static final int MSG_INIT_CONFIG = 0x01;
         static final int MSG_FACE_DETECTING = 0x02;
-        static final int MSG_DESTORY = 0x3;
+        static final int MSG_DESTORY = 0x03;
+        private boolean isAvailable = false; // 人脸检测是否处于可用状态
 
         public FaceDetectorHandler(Looper looper) {
             super(looper);
@@ -162,6 +163,16 @@ public class FaceDetector {
                     }
                     faceDetecting((byte[]) msg.obj, msg.arg1, msg.arg2);
                     break;
+
+                case MSG_DESTORY:
+                    synchronized (mSyncIsLooping) {
+                        if (mFacepp != null) {
+                            mFacepp.release();
+                            mFacepp = null;
+                        }
+                        isAvailable = false;
+                    }
+                    break;
             }
         }
 
@@ -171,8 +182,12 @@ public class FaceDetector {
          * @param height
          */
         private void initConfig(int width, int height) {
-            mSensorUtil = new SensorEventUtil(ParamsManager.context);
-            mFacepp = new Facepp();
+            if (mSensorUtil == null) {
+                mSensorUtil = new SensorEventUtil(ParamsManager.context);
+            }
+            if (mFacepp == null) {
+                mFacepp = new Facepp();
+            }
             int left = 0;
             int top = 0;
             int right = width;
@@ -203,6 +218,7 @@ public class FaceDetector {
             // 识别模式，常规、鲁棒性还是快速
             faceppConfig.detectionMode = Facepp.FaceppConfig.DETECTION_MODE_TRACKING_ROBUST;
             mFacepp.setFaceppConfig(faceppConfig);
+            isAvailable = true;
         }
 
         /**
@@ -224,6 +240,9 @@ public class FaceDetector {
          * @param height
          */
         public void faceDetecting(byte[] data, int width, int height) {
+            if (!isAvailable) {
+                return;
+            }
             // 配置旋转角度
             int orientation = mSensorUtil.orientation;
             if (orientation == 0)
@@ -235,13 +254,15 @@ public class FaceDetector {
             else if (orientation == 3)
                 rotation = 360 - CameraUtils.getPreviewOrientation();
             setConfig(rotation);
+            if (mFacepp == null) {
+                return;
+            }
             // 检测人脸
             Facepp.Face[] faces = mFacepp.detect(data, width, height, Facepp.IMAGEMODE_NV21);
             if (faces != null) {
                 ArrayList<ArrayList> faceVertices = new ArrayList<ArrayList>();
                 // 判断是否存在人脸
                 if (faces.length > 0) {
-                    Log.d("faceDetecting", "hahaha");
                     // 初始化姿态角
                     mPitch = new float[faces.length];
                     mYaw = new float[faces.length];
