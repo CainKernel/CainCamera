@@ -201,6 +201,24 @@ public class CameraUtils {
     }
 
     /**
+     * 切换相机
+     * @param cameraId
+     * @param callback
+     * @param buffer
+     */
+    public static void switchCamera(int cameraId, Camera.PreviewCallback callback, byte[] buffer) {
+        if (mCameraID == cameraId) {
+            return;
+        }
+        stopPreview();
+        mCameraID = cameraId;
+        releaseCamera();
+        openCamera(cameraId, DESIRED_PREVIEW_FPS);
+        addPreviewCallbacks(callback, buffer);
+        startPreviewTexture(mSurfaceTexture);
+    }
+
+    /**
      * 重新打开相机
      */
     public static void reOpenCamera() {
@@ -246,9 +264,6 @@ public class CameraUtils {
      */
     public static void addPreviewCallbacks(Camera.PreviewCallback callback, byte[] previewBuffer) {
         if (mCamera != null) {
-            // 释放之前的Buffer和回调
-            mCamera.addCallbackBuffer(null);
-            mCamera.setPreviewCallbackWithBuffer(null);
             // 重新添加Buffer和回调
             mCamera.addCallbackBuffer(previewBuffer);
             mCamera.setPreviewCallbackWithBuffer(callback);

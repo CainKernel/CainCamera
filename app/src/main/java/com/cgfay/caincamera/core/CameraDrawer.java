@@ -1,6 +1,5 @@
 package com.cgfay.caincamera.core;
 
-import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.GLES11Ext;
@@ -9,7 +8,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.bean.CameraInfo;
@@ -25,7 +23,6 @@ import com.cgfay.caincamera.utils.TextureRotationUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -271,7 +268,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                 }
             }
         }
-        camera.addCallbackBuffer(mPreviewBuffer);
+        if (mPreviewBuffer != null) {
+            camera.addCallbackBuffer(mPreviewBuffer);
+        }
     }
 
     private class CameraDrawerHandler extends Handler {
@@ -415,6 +414,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
 
                 // 切换相机操作
                 case MSG_SWITCH_CAMERA:
+                    CameraUtils.switchCamera(1 - CameraUtils.getCameraID(),
+                            CameraDrawer.this, mPreviewBuffer);
                     break;
 
                 // PreviewCallback回调预览
