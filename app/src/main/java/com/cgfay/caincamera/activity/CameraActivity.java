@@ -429,6 +429,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
         if (mCameraSurfaceView != null) {
             CameraUtils.switchCamera(1 - CameraUtils.getCameraID());
+            CameraDrawer.INSTANCE.switchCamera();
         }
     }
 

@@ -214,6 +214,7 @@ public class CameraUtils {
      */
     public static void releaseCamera() {
         if (mCamera != null) {
+            mCamera.setPreviewCallbackWithBuffer(null);
             mCamera.stopPreview();
             mCamera.release();
             mCamera = null;
@@ -235,6 +236,22 @@ public class CameraUtils {
     public static void stopPreview() {
         if (mCamera != null) {
             mCamera.stopPreview();
+        }
+    }
+
+    /**
+     * 添加预览回调
+     * @param callback
+     * @param previewBuffer
+     */
+    public static void addPreviewCallbacks(Camera.PreviewCallback callback, byte[] previewBuffer) {
+        if (mCamera != null) {
+            // 释放之前的Buffer和回调
+            mCamera.addCallbackBuffer(null);
+            mCamera.setPreviewCallbackWithBuffer(null);
+            // 重新添加Buffer和回调
+            mCamera.addCallbackBuffer(previewBuffer);
+            mCamera.setPreviewCallbackWithBuffer(callback);
         }
     }
 

@@ -1,7 +1,8 @@
 package com.cgfay.caincamera.core;
 
-import android.graphics.Bitmap;
+import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.hardware.Camera;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 import android.os.Handler;
@@ -15,7 +16,6 @@ import com.cgfay.caincamera.bean.CameraInfo;
 import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
-import com.cgfay.caincamera.filter.sticker.StickerFilter;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.VideoEncoderCore;
 import com.cgfay.caincamera.gles.WindowSurface;
@@ -25,6 +25,7 @@ import com.cgfay.caincamera.utils.TextureRotationUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -37,7 +38,8 @@ import java.nio.FloatBuffer;
  * Created by cain on 2017/7/9.
  */
 
-public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
+public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
+        Camera.PreviewCallback {
 
     INSTANCE;
 
@@ -51,16 +53,11 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
     private boolean isPreviewing = false;   // 是否预览状态
     private boolean isRecording = false;    // 是否录制状态
 
-    private Bitmap mBitmap;
+    // 预览回调缓存，解决previewCallback回调内存抖动问题
+    private byte[] mPreviewBuffer;
+
 
     CameraDrawer() {
-    }
-
-    public void setBitmap(Bitmap bitmap) {
-        if (mBitmap != null) {
-            mBitmap.recycle();
-        }
-        mBitmap = bitmap;
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -180,6 +177,19 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
     }
 
     /**
+     * 切换相机
+     */
+    public void switchCamera() {
+        if (mDrawerHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mDrawerHandler.sendMessage(mDrawerHandler
+                    .obtainMessage(CameraDrawerHandler.MSG_SWITCH_CAMERA));
+        }
+    }
+
+    /**
      * 开始录制
      */
     public void startRecording() {
@@ -251,6 +261,19 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         }
     }
 
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        if (mDrawerHandler != null) {
+            synchronized (mSynOperation) {
+                if (isPreviewing || isRecording) {
+                    mDrawerHandler.sendMessage(mDrawerHandler
+                            .obtainMessage(CameraDrawerHandler.MSG_PREVIEW_CALLBACK, data));
+                }
+            }
+        }
+        camera.addCallbackBuffer(mPreviewBuffer);
+    }
+
     private class CameraDrawerHandler extends Handler {
 
         private static final String TAG = "CameraDrawer";
@@ -269,6 +292,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         static final int MSG_UPDATE_PREVIEW = 0x102;
         static final int MSG_UPDATE_PREVIEW_IMAGE_SIZE = 0x103;
         static final int MSG_SWITCH_CAMERA = 0x104;
+        static final int MSG_PREVIEW_CALLBACK = 0x105;
 
         static final int MSG_START_RECORDING = 0x200;
         static final int MSG_STOP_RECORDING = 0x201;
@@ -293,7 +317,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         private int mViewWidth, mViewHeight;
         // 预览图片大小
         private int mImageWidth, mImageHeight;
-
+        // 是否预览成功，防止重复检测
+        private boolean isSuccess = false;
         // 更新帧的锁
         private final Object mSyncFrameNum = new Object();
         private final Object mSyncTexture = new Object();
@@ -302,8 +327,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
         public boolean dropNextFrame = false;
         private boolean isTakePicture = false;
         private boolean mSaveFrame = false;
-        // 跳过的帧数，主要是切换相机、改变视图等地方需要跳过
-        private int mSkipFrame = 0;
         // 录制视频
         private boolean isRecording = false;
         private int bitrate = 1000000;
@@ -392,7 +415,12 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
 
                 // 切换相机操作
                 case MSG_SWITCH_CAMERA:
-                    mSkipFrame = 5;
+                    break;
+
+                // PreviewCallback回调预览
+                case MSG_PREVIEW_CALLBACK:
+                    byte[] data = (byte[])msg.obj;
+                    previewCallback(data);
                     break;
 
                 // 开始录制
@@ -462,6 +490,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
             // 禁用深度测试和背面绘制
             GLES30.glDisable(GLES30.GL_DEPTH_TEST);
             GLES30.glDisable(GLES30.GL_CULL_FACE);
+            // 添加预览回调以及回调buffer，用于人脸检测
+            initPreviewCallback();
+            // 初始化人脸检测工具
+            initFaceDetection();
         }
 
         private void onSurfaceChanged(int width, int height) {
@@ -495,6 +527,44 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
                 mFilter.release();
                 mFilter = null;
             }
+        }
+
+        /**
+         * 初始化预览回调
+         */
+        private void initPreviewCallback() {
+            Size previewSize = CameraUtils.getPreviewSize();
+            int size = previewSize.getWidth() * previewSize.getHeight() * 3 / 2;
+            mPreviewBuffer = new byte[size];
+            CameraUtils.addPreviewCallbacks(CameraDrawer.this, mPreviewBuffer);
+        }
+
+        /**
+         * 初始化人脸检测工具
+         */
+        private void initFaceDetection() {
+            if (ParamsManager.canFaceTrack) {
+                FaceManager.getInstance().initFaceConfig(ParamsManager.context,
+                        mImageWidth, mImageHeight);
+                FaceManager.getInstance().setBackCamera(CameraUtils.getCameraID()
+                        == Camera.CameraInfo.CAMERA_FACING_BACK);
+            }
+        }
+
+        /**
+         * 预览回调
+         * @param data
+         */
+        private void previewCallback(byte[] data) {
+            if (isSuccess)
+                return;
+            isSuccess = true;
+            if (ParamsManager.canFaceTrack) {
+                synchronized (mSyncIsLooping) {
+                    FaceManager.getInstance().faceDetecting(data, mImageWidth, mImageHeight);
+                }
+            }
+            isSuccess = false;
         }
 
         /**
@@ -628,12 +698,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener {
          * 绘制帧
          */
         private void drawFrame() {
-            synchronized (mSyncIsLooping) {
-                if (mSkipFrame > 0) {
-                    mSkipFrame--;
-                    return;
-                }
-            }
             mDisplaySurface.makeCurrent();
             synchronized (mSyncFrameNum) {
                 synchronized (mSyncTexture) {

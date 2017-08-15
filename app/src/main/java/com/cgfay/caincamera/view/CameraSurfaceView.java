@@ -59,8 +59,6 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         CameraDrawer.INSTANCE.surfaceCreated(holder);
-        CameraDrawer.INSTANCE.setBitmap(BitmapFactory.decodeResource(getResources(),
-                R.drawable.huaji));
     }
 
     @Override
