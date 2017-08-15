@@ -511,9 +511,11 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             mCameraFilter.updateTextureBuffer();
             CameraUtils.startPreviewTexture(mCameraTexture);
             mFilter.onDisplayChanged(mViewWidth, mViewHeight);
+            isPreviewing = true;
         }
 
         private void onSurfaceDestoryed() {
+            isPreviewing = false;
             CameraUtils.releaseCamera();
             FaceManager.getInstance().destory();
             if (mCameraTexture != null) {
