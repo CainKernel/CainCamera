@@ -12,6 +12,7 @@ import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.bean.CameraInfo;
 import com.cgfay.caincamera.bean.Size;
+import com.cgfay.caincamera.facedetector.FaceManager;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
 import com.cgfay.caincamera.gles.EglCore;

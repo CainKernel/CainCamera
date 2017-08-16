@@ -1,9 +1,4 @@
-package com.cgfay.caincamera.core;
-
-import com.cgfay.caincamera.utils.CameraUtils;
-import com.megvii.facepp.sdk.Facepp;
-
-import java.util.ArrayList;
+package com.cgfay.caincamera.facedetector;
 
 /**
  * Face++的人脸检测管理器

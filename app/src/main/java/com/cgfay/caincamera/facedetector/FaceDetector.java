@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.core;
+package com.cgfay.caincamera.facedetector;
 
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -7,6 +7,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.cgfay.caincamera.R;
+import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.SensorEventUtil;
 import com.cgfay.caincamera.utils.faceplus.ConUtil;
