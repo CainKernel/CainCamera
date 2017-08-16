@@ -8,6 +8,12 @@
     <string name="btn_back">返回</string>
     <string name="btn_more">更多</string>
 
+    <!--底部文字-->
+    <string name="tv_gif">表情包</string>
+    <string name="tv_picture">拍照</string>
+    <string name="tv_sticker">萌装照</string>
+    <string name="tv_video">视频</string>
+
     <!--编辑图片-->
     <string name="brightness">亮度</string>
     <string name="contrast">对比度</string>

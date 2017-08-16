@@ -6,6 +6,8 @@
     <!-- 编辑图片底部功能栏的高度 -->
     <dimen name="photo_edit_function_height">120dp</dimen>
     <dimen name="layout_margin_height">20dp</dimen>
+    <!--底部显示的文字-->
+    <dimen name="tv_width">50dp</dimen>
     <!--字体-->
     <dimen name="edit_size">10sp</dimen>
     <dimen name="show_value_size">20sp</dimen>

@@ -58,9 +58,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     private AspectFrameLayout mAspectLayout;
     private CameraSurfaceView mCameraSurfaceView;
-    private Button mBtnBack;
     private Button mBtnSetting;
-    private Button mBtnMore;
     private Button mBtnViewPhoto;
     private Button mBtnTake;
     private Button mBtnSwitch;
@@ -102,12 +100,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mCameraSurfaceView.addClickListener(this);
         mAspectLayout.addView(mCameraSurfaceView);
         mAspectLayout.requestLayout();
-        mBtnBack = (Button) findViewById(R.id.btn_back);
-        mBtnBack.setOnClickListener(this);
         mBtnSetting = (Button)findViewById(R.id.btn_setting);
         mBtnSetting.setOnClickListener(this);
-        mBtnMore = (Button) findViewById(R.id.btn_more);
-        mBtnMore.setOnClickListener(this);
         mBtnViewPhoto = (Button) findViewById(R.id.btn_view_photo);
         mBtnViewPhoto.setOnClickListener(this);
         mBtnTake = (Button) findViewById(R.id.btn_take);
@@ -317,16 +311,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 switchCamera();
                 break;
 
-            case R.id.btn_back:
-                onBackPressed();
-                break;
-
             case R.id.btn_setting:
                 showSettingPopView();
-                break;
-
-            case R.id.btn_more:
-                openMoreSetting();
                 break;
         }
     }
@@ -435,7 +421,4 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     }
 
-    private void openMoreSetting() {
-
-    }
 }
