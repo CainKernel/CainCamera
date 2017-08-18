@@ -8,10 +8,12 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.bean.CameraInfo;
 import com.cgfay.caincamera.bean.Size;
+import com.cgfay.caincamera.facedetector.DetectorCallback;
 import com.cgfay.caincamera.facedetector.FaceManager;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
@@ -325,12 +327,16 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         public boolean dropNextFrame = false;
         private boolean isTakePicture = false;
         private boolean mSaveFrame = false;
+        // 是否允许绘制人脸关键点
+        private boolean enableDrawPoints = true;
         // 录制视频
         private boolean isRecording = false;
         private int bitrate = 1000000;
 
         private CameraFilter mCameraFilter;
         private BaseImageFilter mFilter;
+        // 关键点绘制（调试用）
+        private FacePointsDrawer mFacePointsDrawer;
 
         private ScaleType mScaleType = ScaleType.CENTER_INSIDE;
         private FloatBuffer mVertexBuffer;
@@ -537,6 +543,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                 mFilter.release();
                 mFilter = null;
             }
+            if (mFacePointsDrawer != null) {
+                mFacePointsDrawer.release();
+                mFacePointsDrawer = null;
+            }
         }
 
         /**
@@ -558,6 +568,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                 FaceManager.getInstance().initFaceConfig(mImageWidth, mImageHeight);
                 FaceManager.getInstance().getFaceDetector().setBackCamera(CameraUtils.getCameraID()
                         == Camera.CameraInfo.CAMERA_FACING_BACK);
+                addDetectorCallback();
+                if (enableDrawPoints) {
+                    mFacePointsDrawer = new FacePointsDrawer();
+                }
             }
         }
 
@@ -758,6 +772,29 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         }
 
         /**
+         * 添加检测回调
+         */
+        public void addDetectorCallback() {
+            FaceManager.getInstance().getFaceDetector()
+                    .addDetectorCallback(new DetectorCallback() {
+                @Override
+                public void onTrackingFinish(boolean hasFaces) {
+                    // 如果有人脸并且允许绘制关键点，则添加数据
+                    if (hasFaces) {
+                        if (enableDrawPoints && mFacePointsDrawer != null) {
+                            mFacePointsDrawer.addPoints(FaceManager.getInstance()
+                                    .getFaceDetector().getFacePoints());
+                        }
+                    } else {
+                        if (enableDrawPoints && mFacePointsDrawer != null) {
+                            mFacePointsDrawer.addPoints(null);
+                        }
+                    }
+                }
+            });
+        }
+
+        /**
          * 绘制实体
          */
         private void draw() {
@@ -768,6 +805,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             } else {
                 int id = mCameraFilter.drawToTexture(mTextureId);
                 mFilter.drawFrame(id, mVertexBuffer, mTextureBuffer);
+            }
+            // 是否绘制点
+            if (enableDrawPoints && mFacePointsDrawer != null) {
+                mFacePointsDrawer.drawPoints(mMatrix);
             }
         }
 

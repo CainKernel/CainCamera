@@ -62,7 +62,9 @@ public class FaceDetector {
     private SensorEventUtil mSensorUtil;
     // 角度
     private int rotation = 0;
-    private ArrayList<ArrayList> mFaceVertices;
+    private ArrayList<ArrayList<float[]>> mFacePoints;
+
+    private DetectorCallback mDetectorCallback;
 
     /**
      * 创建线程
@@ -128,6 +130,14 @@ public class FaceDetector {
             mDetectorHandler.sendMessageAtFrontOfQueue(mDetectorHandler
                     .obtainMessage(FaceDetectorHandler.MSG_FACE_DETECTING, width, height, data));
         }
+    }
+
+    /**
+     * 添加检测回调
+     * @param callback
+     */
+    public void addDetectorCallback(DetectorCallback callback) {
+        mDetectorCallback = callback;
     }
 
     private class FaceDetectorHandler extends Handler {
@@ -205,8 +215,8 @@ public class FaceDetector {
                 faceppConfig.one_face_tracking = 1;
             else
                 faceppConfig.one_face_tracking = 0;
-            // 识别模式，常规、鲁棒性还是快速
-            faceppConfig.detectionMode = Facepp.FaceppConfig.DETECTION_MODE_TRACKING_ROBUST;
+            // 识别模式，常规、鲁棒性还是快速(实际测试，Normal效果会好很多)
+            faceppConfig.detectionMode = Facepp.FaceppConfig.DETECTION_MODE_NORMAL;
             mFacepp.setFaceppConfig(faceppConfig);
             isAvailable = true;
         }
@@ -250,7 +260,7 @@ public class FaceDetector {
             // 检测人脸
             Facepp.Face[] faces = mFacepp.detect(data, width, height, Facepp.IMAGEMODE_NV21);
             if (faces != null) {
-                ArrayList<ArrayList> faceVertices = new ArrayList<ArrayList>();
+                ArrayList<ArrayList<float[]>> facePoints = new ArrayList<ArrayList<float[]>>();
                 // 判断是否存在人脸
                 if (faces.length > 0) {
                     // 初始化姿态角
@@ -289,8 +299,29 @@ public class FaceDetector {
                         // 置信度
                         mConfidence[index] = faces[index].confidence;
 
-                        // TODO 计算人脸位置
-
+                        // 计算人脸关键点
+                        if (orientation == 1 || orientation == 2) {
+                            int temp = width;
+                            width = height;
+                            height = temp;
+                        }
+                        ArrayList<float[]> points = new ArrayList<float[]>();
+                        for (int i = 0; i < faces[index].points.length; i++) {
+                            float x = (faces[index].points[i].x / height) * 2 - 1;
+                            if (isBackCamera)
+                                x = -x;
+                            float y = 1 - (faces[index].points[i].y / width) * 2;
+                            float[] pointf = new float[] { x, y, 0.0f };
+                            if (orientation == 1) {
+                                pointf = new float[]{ -y, x, 0.0f };
+                            } else if (orientation == 2) {
+                                pointf = new float[]{ y, -x, 0.0f };
+                            } else if (orientation == 3) {
+                                pointf = new float[] { -x, -y, 0.0f };
+                            }
+                            points.add(pointf);
+                        }
+                        facePoints.add(points);
                     }
                 } else { // 如果没有人脸时，将姿态角和自信度都置为null，防止上一次的检测结果污染数据
                     mPitch = null;
@@ -298,14 +329,16 @@ public class FaceDetector {
                     mRoll = null;
                     mConfidence = null;
                 }
-                // 保存当前的顶点，先销毁以前保存的顶点数据VertexBuffer
-                if (mFaceVertices != null) {
-                    for (int i = 0; i < mFaceVertices.size(); i++) {
-                        mFaceVertices.get(i).clear();
-                    }
-                    mFaceVertices = null;
+                // 判断是否存在关键点，不存在则清空数据
+                if (facePoints.size() > 0) {
+                    mFacePoints = facePoints;
+                } else {
+                    mFacePoints = null;
                 }
-                mFaceVertices = faceVertices;
+                // 检测完成回调
+                if (mDetectorCallback != null) {
+                    mDetectorCallback.onTrackingFinish(faces.length > 0);
+                }
             }
         }
 
@@ -502,7 +535,7 @@ public class FaceDetector {
      * 获取人脸的顶点VertexBuffers
      * @return
      */
-    public ArrayList<ArrayList> getFaceVertices() {
-        return mFaceVertices;
+    public ArrayList<ArrayList<float[]>> getFacePoints() {
+        return mFacePoints;
     }
 }
