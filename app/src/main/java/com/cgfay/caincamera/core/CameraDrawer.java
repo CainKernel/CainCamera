@@ -808,7 +808,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             }
             // 是否绘制点
             if (enableDrawPoints && mFacePointsDrawer != null) {
-                mFacePointsDrawer.drawPoints(mMatrix);
+                mFacePointsDrawer.drawPoints();
             }
         }
 

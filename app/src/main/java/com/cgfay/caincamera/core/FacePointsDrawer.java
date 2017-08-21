@@ -1,6 +1,7 @@
 package com.cgfay.caincamera.core;
 
 import android.opengl.GLES30;
+import android.opengl.Matrix;
 
 import com.cgfay.caincamera.utils.GlUtil;
 
@@ -35,6 +36,7 @@ public class FacePointsDrawer {
     protected int muMVPMatrixLoc;
     protected int maPositionLoc;
     private int mInputColorLoc;
+    private float[] mMVPMatrix = new float[16];
     // 是否正在绘制
     private boolean hasDrawing = false;
     // 画点
@@ -49,20 +51,20 @@ public class FacePointsDrawer {
         maPositionLoc = GLES30.glGetAttribLocation(mProgramHandle, "aPosition");
         muMVPMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uMVPMatrix");
         mInputColorLoc = GLES30.glGetUniformLocation(mProgramHandle, "inputColor");
+        Matrix.setIdentityM(mMVPMatrix, 0);
     }
 
     /**
      * 绘制点
-     * @param mvpMatrix SurfaceTexture的matrix
      */
-    public void drawPoints(float[] mvpMatrix) {
+    public void drawPoints() {
         if (mPoints == null || mPoints.size() <= 0 || hasDrawing) {
             return;
         }
         // 标志位变更需要同步
         hasDrawing = true;
         GLES30.glUseProgram(mProgramHandle);
-        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mvpMatrix, 0);
+        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
         GLES30.glEnableVertexAttribArray(maPositionLoc);
         GLES30.glUniform4fv(mInputColorLoc, 1, Color, 0);
         ArrayList<ArrayList<float[]>> points = new ArrayList<ArrayList<float[]>>();
@@ -89,6 +91,14 @@ public class FacePointsDrawer {
         GLES30.glDisableVertexAttribArray(maPositionLoc);
         GLES30.glUseProgram(0);
         hasDrawing = false;
+    }
+
+    /**
+     * 设置变换矩阵
+     * @param mvpMatrix
+     */
+    public void setMVPMAtrix(float[] mvpMatrix) {
+        mMVPMatrix = mvpMatrix;
     }
 
     /**
