@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.Priority;
+import com.bumptech.glide.request.RequestOptions;
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.bean.ImageMeta;
 import com.cgfay.caincamera.view.SquareImageView;
@@ -45,10 +47,15 @@ public class PhotoViewAdapter extends RecyclerView.Adapter<PhotoViewAdapter.Phot
 
     @Override
     public void onBindViewHolder(PhotoHolder holder, int position) {
-        holder.mImageView.setBackgroundResource(R.drawable.mis_default_error);
         if (!TextUtils.isEmpty(mPhotoList.get(position).getPath())) {
+            RequestOptions options = new RequestOptions()
+                    .centerCrop()
+                    .placeholder(R.drawable.mis_default_error)
+                    .error(R.drawable.mis_default_error)
+                    .priority(Priority.HIGH);
             Glide.with(mContext)
                     .load(mPhotoList.get(position).getPath())
+                    .apply(options)
                     .into(holder.mImageView);
         }
         if (!multiSelectEnable) {
