@@ -2,6 +2,7 @@ package com.cgfay.caincamera.filter.camera;
 
 import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
+import android.opengl.Matrix;
 
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.utils.GlUtil;
@@ -51,6 +52,15 @@ public class CameraFilter extends BaseImageFilter {
     public CameraFilter(String vertexShader, String fragmentShader) {
         super(vertexShader, fragmentShader);
         muTexMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uTexMatrix");
+        // 视图矩阵
+        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -1, 0f, 0f, 0f, 0f, 1f, 0f);
+    }
+
+    @Override
+    public void onInputSizeChanged(int width, int height) {
+        super.onInputSizeChanged(width, height);
+        float aspect = (float) width / height; // 计算宽高比
+        Matrix.perspectiveM(mProjectionMatrix, 0, 60, aspect, 2, 10);
     }
 
     @Override
@@ -64,7 +74,8 @@ public class CameraFilter extends BaseImageFilter {
         GLES30.glUseProgram(mProgramHandle);
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
-        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, GlUtil.IDENTITY_MATRIX, 0);
+        calculateMVPMatrix();
+        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
         GLES30.glUniformMatrix4fv(muTexMatrixLoc, 1, false, mTextureMatrix, 0);
         runPendingOnDrawTasks();
         GLES30.glEnableVertexAttribArray(maPositionLoc);
@@ -98,7 +109,7 @@ public class CameraFilter extends BaseImageFilter {
         GLES30.glUseProgram(mProgramHandle);
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
-        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, GlUtil.IDENTITY_MATRIX, 0);
+        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
         GLES30.glUniformMatrix4fv(muTexMatrixLoc, 1, false, mTextureMatrix, 0);
         GLES30.glEnableVertexAttribArray(maPositionLoc);
         GLES30.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,

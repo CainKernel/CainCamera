@@ -1,5 +1,6 @@
 package com.cgfay.caincamera.core;
 
+import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.GLES11Ext;
@@ -17,6 +18,7 @@ import com.cgfay.caincamera.facedetector.DetectorCallback;
 import com.cgfay.caincamera.facedetector.FaceManager;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
+import com.cgfay.caincamera.filter.sticker.StickerFilter;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.VideoEncoderCore;
 import com.cgfay.caincamera.gles.WindowSurface;
@@ -56,6 +58,11 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
     // 预览回调缓存，解决previewCallback回调内存抖动问题
     private byte[] mPreviewBuffer;
 
+    private Bitmap mBitmap;
+
+    public void setBitmap(Bitmap bitmap) {
+        mBitmap = bitmap;
+    }
 
     CameraDrawer() {
     }
@@ -328,7 +335,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         private boolean isTakePicture = false;
         private boolean mSaveFrame = false;
         // 是否允许绘制人脸关键点
-        private boolean enableDrawPoints = true;
+        private boolean enableDrawPoints = false;
         // 录制视频
         private boolean isRecording = false;
         private int bitrate = 1000000;
@@ -497,8 +504,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             CameraUtils.openFrontalCamera(CameraUtils.DESIRED_PREVIEW_FPS);
             calculateImageSize();
             mCameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
-            mFilter = FilterManager.getFilter(FilterType.REALTIMEBEAUTY);
-            mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
+            mFilter = FilterManager.getFilter(FilterType.STICKER);
+//            mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
+            mFilter.onInputSizeChanged(mBitmap.getWidth(), mBitmap.getHeight());
             // 禁用深度测试和背面绘制
             GLES30.glDisable(GLES30.GL_DEPTH_TEST);
             GLES30.glDisable(GLES30.GL_CULL_FACE);
@@ -513,9 +521,11 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             mViewHeight = height;
             onFilterChanged();
             adjustViewSize();
+            ((StickerFilter)mFilter).setStickerBitmap(mBitmap);
             mCameraFilter.updateTextureBuffer();
             CameraUtils.startPreviewTexture(mCameraTexture);
-            mFilter.onDisplayChanged(mViewWidth, mViewHeight);
+//            mFilter.onDisplayChanged(mViewWidth, mViewHeight);
+            mFilter.onDisplayChanged(mBitmap.getWidth(), mBitmap.getHeight());
             isPreviewing = true;
         }
 

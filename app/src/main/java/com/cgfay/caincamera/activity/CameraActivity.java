@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -90,6 +91,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             requestCameraPermission();
         }
         requestFaceNetwork();
+        CameraDrawer.INSTANCE.setBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.huaji));
     }
 
     private void initView() {

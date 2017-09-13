@@ -122,6 +122,19 @@ public class GlUtil {
     }
 
     /**
+     * 创建FloatBuffer
+     * @param data
+     * @return
+     */
+    public static FloatBuffer createFloatBuffer(ArrayList<Float> data) {
+        float[] coords = new float[data.size()];
+        for (int i = 0; i < coords.length; i++){
+            coords[i] = data.get(i);
+        }
+        return createFloatBuffer(coords);
+    }
+
+    /**
      * 创建Texture对象
      * @param textureType
      * @return
@@ -240,7 +253,7 @@ public class GlUtil {
      * @param fileName
      * @return
      */
-    private static Bitmap getImageFromAssetsFile(Context context, String fileName) {
+    public static Bitmap getImageFromAssetsFile(Context context, String fileName) {
         Bitmap bitmap = null;
         AssetManager manager = context.getResources().getAssets();
         try {

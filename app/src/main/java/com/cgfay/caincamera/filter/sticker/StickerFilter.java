@@ -123,7 +123,7 @@ public class StickerFilter extends BaseImageFilter {
         mRotationLoc = GLES30.glGetUniformLocation(mProgramHandle, "v_Rotation");
         mMiddleLoc = GLES30.glGetUniformLocation(mProgramHandle, "v_mid");
         mScaleLoc = GLES30.glGetUniformLocation(mProgramHandle, "v_scale");
-//        // 视图矩阵
+        // 视图矩阵
         Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -1, 0f, 0f, 0f, 0f, 1f, 0f);
         // 计算变换矩阵，将图像翻转
         Matrix.rotateM(mMVPMatrix, 0, 180, 0, 0, 1);
