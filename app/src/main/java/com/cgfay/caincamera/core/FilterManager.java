@@ -13,6 +13,7 @@ import com.cgfay.caincamera.filter.image.MirrorFilter;
 import com.cgfay.caincamera.filter.image.SaturationFilter;
 import com.cgfay.caincamera.filter.image.SharpnessFilter;
 import com.cgfay.caincamera.filter.sticker.StickerFilter;
+import com.cgfay.caincamera.type.FilterType;
 
 /**
  * Filter管理类

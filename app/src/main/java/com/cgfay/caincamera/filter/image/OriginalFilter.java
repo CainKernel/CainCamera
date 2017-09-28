@@ -3,7 +3,6 @@ package com.cgfay.caincamera.filter.image;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
 
-import com.cgfay.caincamera.core.ScaleType;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.utils.GlUtil;
 import com.cgfay.caincamera.utils.TextureRotationUtils;

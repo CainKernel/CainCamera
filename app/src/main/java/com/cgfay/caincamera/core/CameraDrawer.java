@@ -19,6 +19,8 @@ import com.cgfay.caincamera.filter.camera.CameraFilter;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.VideoEncoderCore;
 import com.cgfay.caincamera.gles.WindowSurface;
+import com.cgfay.caincamera.type.FilterType;
+import com.cgfay.caincamera.type.ScaleType;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.GlUtil;
 import com.cgfay.caincamera.utils.TextureRotationUtils;

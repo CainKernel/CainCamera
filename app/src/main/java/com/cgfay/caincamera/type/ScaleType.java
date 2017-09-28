@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.core;
+package com.cgfay.caincamera.type;
 
 /**
  * 缩放类型

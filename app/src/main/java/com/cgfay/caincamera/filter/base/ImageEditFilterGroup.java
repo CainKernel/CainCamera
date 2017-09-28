@@ -1,7 +1,7 @@
 package com.cgfay.caincamera.filter.base;
 
 import com.cgfay.caincamera.core.FilterManager;
-import com.cgfay.caincamera.core.FilterType;
+import com.cgfay.caincamera.type.FilterType;
 import com.cgfay.caincamera.filter.image.BrightnessFilter;
 import com.cgfay.caincamera.filter.image.ContrastFilter;
 import com.cgfay.caincamera.filter.image.ExposureFilter;

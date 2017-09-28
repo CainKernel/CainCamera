@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
+import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -15,17 +15,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.FrameLayout;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.AspectRatioType;
 import com.cgfay.caincamera.core.CameraDrawer;
 import com.cgfay.caincamera.core.ParamsManager;
+import com.cgfay.caincamera.type.GalleryType;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.PermissionUtils;
 import com.cgfay.caincamera.utils.TextureRotationUtils;
@@ -49,7 +48,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     // 权限使能标志
     private boolean mCameraEnable = false;
     private boolean mStorageWriteEnable = false;
-    private boolean mRecordEnable = false;
+    private boolean mRecordSoundEnable = false;
     private boolean mLocationEnable = false;
 
     // 状态标志
@@ -164,7 +163,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             case REQUEST_RECORD:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mRecordEnable = true;
+                    mRecordSoundEnable = true;
                 }
                 break;
 
@@ -286,7 +285,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 break;
 
             case R.id.btn_take:
-                takePicture();
+                takePictureOrVideo();
                 break;
 
             case R.id.btn_switch:
@@ -372,14 +371,27 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     /**
      * 拍照
      */
-    private void takePicture() {
+    private void takePictureOrVideo() {
         if (!mOnPreviewing) {
             return;
         }
         if (mStorageWriteEnable
                 || PermissionUtils.permissionChecking(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            CameraDrawer.INSTANCE.takePicture();
+            if (ParamsManager.mGalleryType == GalleryType.GIF) {
+
+            } else if (ParamsManager.mGalleryType == GalleryType.PICTURE) {
+                CameraDrawer.INSTANCE.takePicture();
+            } else if (ParamsManager.mGalleryType == GalleryType.VIDEO) {
+                if (mOnRecording) {
+                    CameraDrawer.INSTANCE.stopRecording();
+                    mBtnTake.setBackgroundResource(R.drawable.round_green);
+                } else {
+                    CameraDrawer.INSTANCE.startRecording();
+                    mBtnTake.setBackgroundResource(R.drawable.round_red);
+                }
+                mOnRecording = !mOnRecording;
+            }
         } else {
             requestStorageWritePermission();
         }
