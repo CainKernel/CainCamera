@@ -323,10 +323,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         private final Object mSyncFrameNum = new Object();
         private final Object mSyncTexture = new Object();
         private int mFrameNum = 0;
-        private boolean hasNewFrame = false;
         public boolean dropNextFrame = false;
         private boolean isTakePicture = false;
-        private boolean mSaveFrame = false;
         // 是否允许绘制人脸关键点
         private boolean enableDrawPoints = false;
         // 录制视频
@@ -730,13 +728,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                         while (mFrameNum != 0) {
                             mCameraTexture.updateTexImage();
                             --mFrameNum;
-                            // 是否舍弃下一帧
-                            if (!dropNextFrame) {
-                                hasNewFrame = true;
-                            } else {
-                                dropNextFrame = false;
-                                hasNewFrame = false;
-                            }
                         }
                     } else {
                         return;
