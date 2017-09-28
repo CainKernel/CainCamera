@@ -1,6 +1,5 @@
 package com.cgfay.caincamera.core;
 
-import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.GLES11Ext;
@@ -9,7 +8,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.bean.CameraInfo;
@@ -18,7 +16,6 @@ import com.cgfay.caincamera.facedetector.DetectorCallback;
 import com.cgfay.caincamera.facedetector.FaceManager;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
-import com.cgfay.caincamera.filter.sticker.StickerFilter;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.VideoEncoderCore;
 import com.cgfay.caincamera.gles.WindowSurface;
@@ -57,12 +54,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
 
     // 预览回调缓存，解决previewCallback回调内存抖动问题
     private byte[] mPreviewBuffer;
-
-    private Bitmap mBitmap;
-
-    public void setBitmap(Bitmap bitmap) {
-        mBitmap = bitmap;
-    }
 
     CameraDrawer() {
     }
@@ -504,9 +495,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             CameraUtils.openFrontalCamera(CameraUtils.DESIRED_PREVIEW_FPS);
             calculateImageSize();
             mCameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
-            mFilter = FilterManager.getFilter(FilterType.STICKER);
-//            mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
-            mFilter.onInputSizeChanged(mBitmap.getWidth(), mBitmap.getHeight());
+            mFilter = FilterManager.getFilter(FilterType.REALTIMEBEAUTY);
+            mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
             // 禁用深度测试和背面绘制
             GLES30.glDisable(GLES30.GL_DEPTH_TEST);
             GLES30.glDisable(GLES30.GL_CULL_FACE);
@@ -521,11 +511,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             mViewHeight = height;
             onFilterChanged();
             adjustViewSize();
-            ((StickerFilter)mFilter).setStickerBitmap(mBitmap);
             mCameraFilter.updateTextureBuffer();
             CameraUtils.startPreviewTexture(mCameraTexture);
-//            mFilter.onDisplayChanged(mViewWidth, mViewHeight);
-            mFilter.onDisplayChanged(mBitmap.getWidth(), mBitmap.getHeight());
+            mFilter.onDisplayChanged(mViewWidth, mViewHeight);
             isPreviewing = true;
         }
 

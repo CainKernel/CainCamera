@@ -23,6 +23,7 @@ import android.opengl.GLES30;
 import android.util.Log;
 
 import com.cgfay.caincamera.utils.GlUtil;
+import com.cgfay.caincamera.utils.ImageUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -189,10 +190,31 @@ public class EglSurfaceBase {
             bos = new BufferedOutputStream(new FileOutputStream(filename));
             Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             bmp.copyPixelsFromBuffer(buf);
+            bmp = ImageUtils.getRotatedBitmap(bmp, 180);
             bmp.compress(Bitmap.CompressFormat.JPEG, 90, bos);
             bmp.recycle();
         } finally {
             if (bos != null) bos.close();
         }
     }
+
+    /**
+     * 获取帧
+     * @return
+     */
+    public Bitmap getFrameBitmap() {
+        int width = getWidth();
+        int height = getHeight();
+        ByteBuffer buf = ByteBuffer.allocateDirect(width * height * 4);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        GLES30.glReadPixels(0, 0, width, height,
+                GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buf);
+        GlUtil.checkGlError("glReadPixels");
+        buf.rewind();
+
+        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        bmp.copyPixelsFromBuffer(buf);
+        return ImageUtils.getRotatedBitmap(bmp, 180);
+    }
+
 }

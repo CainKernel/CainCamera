@@ -48,7 +48,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     // 权限使能标志
     private boolean mCameraEnable = false;
-    private boolean mStorageReadEnable = false;
     private boolean mStorageWriteEnable = false;
     private boolean mRecordEnable = false;
     private boolean mLocationEnable = false;
@@ -84,14 +83,15 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_camera);
-        if (PermissionUtils.permissionChecking(this, Manifest.permission.CAMERA)) {
-            mCameraEnable = true;
+        mCameraEnable = PermissionUtils.permissionChecking(this, Manifest.permission.CAMERA);
+        mStorageWriteEnable = PermissionUtils.permissionChecking(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (mCameraEnable && mStorageWriteEnable) {
             initView();
         } else {
-            requestCameraPermission();
+            ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_CAMERA);
         }
         requestFaceNetwork();
-        CameraDrawer.INSTANCE.setBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.huaji));
     }
 
     private void initView() {
@@ -117,11 +117,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private void requestCameraPermission() {
         ActivityCompat.requestPermissions(this,
                 new String[]{ Manifest.permission.CAMERA }, REQUEST_CAMERA);
-    }
-
-    private void requestStorageReadPermission() {
-        ActivityCompat.requestPermissions(this,
-                new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, REQUEST_STORAGE_READ);
     }
 
     private void requestStorageWritePermission() {
@@ -155,27 +150,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mCameraEnable = true;
                     initView();
-                    CameraDrawer.INSTANCE.startPreview();
-                    mOnPreviewing = true;
                 }
                 break;
 
-            // 读取存储权限
-            case REQUEST_STORAGE_READ:
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mStorageReadEnable = true;
-                }
-                break;
-
-            // 写入存储权限(只有在拍照时才请求)
             case REQUEST_STORAGE_WRITE:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mStorageWriteEnable = true;
-                    if (mOnPreviewing) {
-                        CameraDrawer.INSTANCE.takePicture();
-                    }
                 }
                 break;
 
@@ -201,7 +182,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     protected void onResume() {
         super.onResume();
         registerHomeReceiver();
-        mCameraEnable = PermissionUtils.permissionChecking(this, Manifest.permission.CAMERA);
         if (mCameraEnable) {
             CameraDrawer.INSTANCE.startPreview();
             mOnPreviewing = true;

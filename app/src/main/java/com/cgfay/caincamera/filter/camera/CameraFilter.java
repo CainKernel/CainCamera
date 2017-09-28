@@ -142,6 +142,26 @@ public class CameraFilter extends BaseImageFilter {
         mTextureMatrix = texMatrix;
     }
 
+    /**
+     * 镜像翻转
+     * @param coords
+     * @param matrix
+     * @return
+     */
+    private float[] transformTextureCoordinates(float[] coords, float[] matrix) {
+        float[] result = new float[coords.length];
+        float[] vt = new float[4];
+
+        for (int i = 0; i < coords.length; i += 2) {
+            float[] v = { coords[i], coords[i + 1], 0, 1 };
+            Matrix.multiplyMV(vt, 0, matrix, 0, v, 0);
+            result[i] = vt[0];// x轴镜像
+            // result[i + 1] = vt[1];y轴镜像
+            result[i + 1] = coords[i + 1];
+        }
+        return result;
+    }
+
     public void initCameraFramebuffer(int width, int height) {
         if (mFramebuffers != null && (mFrameWidth != width || mFrameHeight != height)) {
             destroyFramebuffer();
