@@ -32,11 +32,16 @@ import com.cgfay.caincamera.utils.faceplus.ConUtil;
 import com.cgfay.caincamera.utils.faceplus.Util;
 import com.cgfay.caincamera.view.AspectFrameLayout;
 import com.cgfay.caincamera.view.CameraSurfaceView;
+import com.cgfay.caincamera.view.HorizontalIndicatorView;
 import com.megvii.facepp.sdk.Facepp;
 import com.megvii.licensemanager.sdk.LicenseManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CameraActivity extends AppCompatActivity implements View.OnClickListener,
-        CameraSurfaceView.OnClickListener, CameraSurfaceView.OnTouchScroller {
+        CameraSurfaceView.OnClickListener, CameraSurfaceView.OnTouchScroller,
+        HorizontalIndicatorView.IndicatorListener {
 
     private static final String TAG = "CameraActivity";
     private static final int REQUEST_CAMERA = 0x01;
@@ -61,6 +66,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private Button mBtnViewPhoto;
     private Button mBtnTake;
     private Button mBtnSwitch;
+    // 底部指示器
+    private List<String> mIndicatorText = new ArrayList<String>();
+    private HorizontalIndicatorView mBottomIndicator;
 
     private AspectRatioType[] mAspectRatio = {
             AspectRatioType.RATIO_4_3,
@@ -109,7 +117,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mBtnTake.setOnClickListener(this);
         mBtnSwitch = (Button) findViewById(R.id.btn_switch);
         mBtnSwitch.setOnClickListener(this);
-
+        mBottomIndicator = (HorizontalIndicatorView) findViewById(R.id.bottom_indicator);
+        String[] galleryIndicator = getResources().getStringArray(R.array.gallery_indicator);
+        for (String text : galleryIndicator) {
+            mIndicatorText.add(text);
+        }
+        mBottomIndicator.setIndicators(mIndicatorText);
+        mBottomIndicator.addIndicatorListener(this);
         CameraUtils.calculateCameraPreviewOrientation(CameraActivity.this);
     }
 
@@ -414,4 +428,14 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     }
 
+    @Override
+    public void onIndicatorChanged(int currentIndex) {
+        if (currentIndex == 0) {
+            ParamsManager.mGalleryType = GalleryType.GIF;
+        } else if (currentIndex == 1) {
+            ParamsManager.mGalleryType = GalleryType.PICTURE;
+        } else if (currentIndex == 2) {
+            ParamsManager.mGalleryType = GalleryType.VIDEO;
+        }
+    }
 }

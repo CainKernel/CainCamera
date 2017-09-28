@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="HorizontalIndicatorView">
+        <!--可见数目-->
+        <attr name="SeeSize" format="integer"></attr>
+        <!--默认文字大小和颜色-->
+        <attr name="TextSize" format="float"></attr>
+        <attr name="TextColor" format="color|reference"></attr>
+        <!--选中大小和颜色-->
+        <attr name="SelectedTextSize" format="float"></attr>
+        <attr name="SelectedTextColor" format="color|reference"></attr>
+    </declare-styleable>
+</resources>
