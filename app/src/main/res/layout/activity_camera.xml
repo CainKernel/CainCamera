@@ -14,86 +14,114 @@
             <!--android:layout_width="match_parent"-->
             <!--android:layout_height="match_parent" />-->
     </com.cgfay.caincamera.view.AspectFrameLayout>
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/top_button_layout_height"
         android:orientation="horizontal"
-        android:layout_gravity="top">
-        <Button
-            android:id="@+id/btn_view_photo"
+        android:layout_gravity="top"
+        android:gravity="center">
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:textColor="@android:color/darker_gray"
-            android:text="@string/btn_view_photo"
-            android:layout_alignParentStart="true"/>
-        <Button
-            android:id="@+id/btn_setting"
+            android:layout_weight="1"
+            android:gravity="center">
+            <Button
+                android:id="@+id/btn_view_photo"
+                android:layout_width="@dimen/top_button_width_height"
+                android:layout_height="@dimen/top_button_width_height"
+                android:background="@drawable/take_gallery_glow" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:textColor="@android:color/darker_gray"
-            android:text="@string/btn_setting"
-            android:layout_centerInParent="true"/>
-        <Button
-            android:id="@+id/btn_switch"
+            android:layout_weight="1"
+            android:gravity="center">
+            <Button
+                android:id="@+id/btn_setting"
+                android:layout_width="@dimen/top_button_width_height"
+                android:layout_height="@dimen/top_button_width_height"
+                android:background="@drawable/setting_more_glow" />
+        </LinearLayout>
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:textColor="@android:color/darker_gray"
-            android:text="@string/btn_switch_camera"
-            android:layout_alignParentEnd="true"/>
-    </RelativeLayout>
+            android:layout_weight="1"
+            android:gravity="center">
+            <Button
+                android:id="@+id/btn_switch"
+                android:layout_width="@dimen/top_button_width_height"
+                android:layout_height="@dimen/top_button_width_height"
+                android:background="@drawable/switch_camera_glow" />
+        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
+        android:background="@android:color/transparent"
         android:gravity="center"
-        android:orientation="vertical"
-        android:background="@android:color/transparent">
-        <Button
-            android:id="@+id/btn_take"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/btn_take"/>
-        <LinearLayout
-            android:id="@+id/layout_sticker"
+        android:orientation="vertical">
+
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/photo_edit_function_height"
-            android:orientation="vertical">
-        </LinearLayout>
+            android:layout_height="@dimen/bottom_gallery_layout_height">
+
+            <Button
+                android:id="@+id/btn_stickers"
+                android:layout_width="@dimen/stickers_width_height"
+                android:layout_height="@dimen/stickers_width_height"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/button_margin_horizontal"
+                android:background="@drawable/gallery_sticker" />
+
+            <Button
+                android:id="@+id/btn_take"
+                android:layout_width="@dimen/record_width_height"
+                android:layout_height="@dimen/record_width_height"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center"
+                android:background="@drawable/round_red" />
+
+            <Button
+                android:id="@+id/btn_filters"
+                android:layout_width="@dimen/filters_width_height"
+                android:layout_height="@dimen/filters_width_height"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/button_margin_horizontal"
+                android:background="@drawable/gallery_filter" />
+        </RelativeLayout>
+
         <LinearLayout
             android:id="@+id/layout_textview"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_horizontal">
+            android:layout_height="@dimen/bottom_indicator_height"
+            android:gravity="center"
+            android:orientation="horizontal">
+
             <TextView
                 android:id="@+id/tv_gif"
                 android:layout_width="@dimen/tv_width"
                 android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:text="@string/tv_gif"/>
+                android:text="@string/tv_gif"
+                android:textAlignment="center" />
+
             <TextView
                 android:id="@+id/tv_picture"
                 android:layout_width="@dimen/tv_width"
                 android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:text="@string/tv_picture"/>
-            <TextView
-                android:id="@+id/tv_sticker"
-                android:layout_width="@dimen/tv_width"
-                android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:text="@string/tv_sticker"/>
+                android:text="@string/tv_picture"
+                android:textAlignment="center" />
+
             <TextView
                 android:id="@+id/tv_video"
                 android:layout_width="@dimen/tv_width"
                 android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:text="@string/tv_video"/>
+                android:text="@string/tv_video"
+                android:textAlignment="center" />
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

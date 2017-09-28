@@ -326,7 +326,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void doubleClick(float x, float y) {
-        changePreviewRatio();
     }
 
     /**
