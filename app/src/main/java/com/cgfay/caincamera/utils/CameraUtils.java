@@ -23,9 +23,8 @@ import java.util.List;
 public class CameraUtils {
 
     // 相机默认宽高，相机的宽度和高度跟屏幕坐标不一样，手机屏幕的宽度和高度是反过来的。
-    // 4 : 3
-    public static final int DEFAULT_WIDTH = 1024;
-    public static final int DEFAULT_HEIGHT = 768;
+    public static final int DEFAULT_WIDTH = 1280;
+    public static final int DEFAULT_HEIGHT = 720;
     // 期望fps
     public static final int DESIRED_PREVIEW_FPS = 30;
 
@@ -46,8 +45,8 @@ public class CameraUtils {
     private static SurfaceTexture mSurfaceTexture;
 
     // 当前的宽高比
-    private static float mCurrentRatio = Ratio_4_3;
-    private static AspectRatioType mCurrentAspectType = AspectRatioType.RATIO_4_3;
+    private static float mCurrentRatio = Ratio_16_9;
+    private static AspectRatioType mCurrentAspectType = AspectRatioType.Ratio_16_9;
 
     /**
      * 打开相机，默认打开前置相机
