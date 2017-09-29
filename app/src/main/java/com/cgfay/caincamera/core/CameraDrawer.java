@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.bean.CameraInfo;
@@ -301,6 +302,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
 
         static final int MSG_TAKE_PICTURE = 0x400;
 
+        // 调试
+        private boolean enableDebug = true;
+
         // EGL共享上下文
         private EglCore mEglCore;
         // EGLSurface
@@ -445,7 +449,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                         file.getParentFile().mkdirs();
                     }
                     try {
-                        mVideoEncoder = new VideoEncoderCore(mViewWidth, mViewHeight,
+                        mVideoEncoder = new VideoEncoderCore(mImageWidth, mImageHeight,
                                 bitrate, file);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -731,6 +735,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
          * 绘制帧
          */
         private void drawFrame() {
+            long t1 = 0L;
+            if (enableDebug) {
+                t1 = System.nanoTime();
+            }
             mDisplaySurface.makeCurrent();
             synchronized (mSyncFrameNum) {
                 synchronized (mSyncTexture) {
@@ -770,6 +778,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                 draw();
                 mRecordWindowSurface.setPresentationTime(mCameraTexture.getTimestamp());
                 mRecordWindowSurface.swapBuffers();
+            }
+            if (enableDebug) {
+                long t2 = System.nanoTime();
+                Log.d("drawFrame", "draw time = " + (t2 - t1) / 1000000 + "ms");
             }
         }
 
