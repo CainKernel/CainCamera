@@ -4,7 +4,6 @@ import com.cgfay.caincamera.filter.advanced.SketchFilter;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.base.DisplayFilter;
 import com.cgfay.caincamera.filter.beauty.BeautyFilter;
-import com.cgfay.caincamera.filter.beauty.RealtimeBeauty;
 import com.cgfay.caincamera.filter.beauty.WhitenOrReddenFilter;
 import com.cgfay.caincamera.filter.image.BrightnessFilter;
 import com.cgfay.caincamera.filter.image.ContrastFilter;
@@ -39,8 +38,7 @@ public class FilterManager {
             case WHITENORREDDEN:
                 return new WhitenOrReddenFilter();
             case REALTIMEBEAUTY:
-//                return new BeautyFilter();
-                return new RealtimeBeauty();
+                return new BeautyFilter();
 
             // 图片基本属性编辑滤镜
             // 饱和度
