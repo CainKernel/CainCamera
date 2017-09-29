@@ -2,7 +2,6 @@ package com.cgfay.caincamera.core;
 
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -15,6 +14,7 @@ import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.facedetector.DetectorCallback;
 import com.cgfay.caincamera.facedetector.FaceManager;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
+import com.cgfay.caincamera.filter.base.DisplayFilter;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.VideoEncoderCore;
@@ -309,7 +309,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         private WindowSurface mRecordWindowSurface;
         private VideoEncoderCore mVideoEncoder;
         // CameraTexture对应的Id
-        private int mTextureId;
+        private int mCameraTextureId;
         private SurfaceTexture mCameraTexture;
         // 矩阵
         private final float[] mMatrix = new float[16];
@@ -323,7 +323,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         private final Object mSyncFrameNum = new Object();
         private final Object mSyncTexture = new Object();
         private int mFrameNum = 0;
-        public boolean dropNextFrame = false;
         private boolean isTakePicture = false;
         // 是否允许绘制人脸关键点
         private boolean enableDrawPoints = false;
@@ -339,6 +338,11 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         private ScaleType mScaleType = ScaleType.CENTER_INSIDE;
         private FloatBuffer mVertexBuffer;
         private FloatBuffer mTextureBuffer;
+
+        // 预览的TextureId
+        private int mCurrentTextureId;
+        // 预览以及录制的帧
+        private DisplayFilter mDisplayFilter;
 
         public CameraDrawerHandler(Looper looper) {
             super(looper);
@@ -489,12 +493,16 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             if (mCameraFilter == null) {
                 mCameraFilter = new CameraFilter();
             }
-            mTextureId = createTextureOES();
-            mCameraTexture = new SurfaceTexture(mTextureId);
+            if (mDisplayFilter == null) {
+                mDisplayFilter = new DisplayFilter();
+            }
+            mCameraTextureId = GlUtil.createTextureOES();
+            mCameraTexture = new SurfaceTexture(mCameraTextureId);
             mCameraTexture.setOnFrameAvailableListener(CameraDrawer.this);
             CameraUtils.openFrontalCamera(CameraUtils.DESIRED_PREVIEW_FPS);
             calculateImageSize();
             mCameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
+            mDisplayFilter.onInputSizeChanged(mImageWidth, mImageHeight);
             mFilter = FilterManager.getFilter(FilterType.REALTIMEBEAUTY);
             mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
             // 禁用深度测试和背面绘制
@@ -513,6 +521,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             adjustViewSize();
             mCameraFilter.updateTextureBuffer();
             CameraUtils.startPreviewTexture(mCameraTexture);
+            mDisplayFilter.onDisplayChanged(mViewWidth, mViewHeight);
             mFilter.onDisplayChanged(mViewWidth, mViewHeight);
             isPreviewing = true;
         }
@@ -536,6 +545,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             if (mCameraFilter != null) {
                 mCameraFilter.release();
                 mCameraFilter = null;
+            }
+            if (mDisplayFilter != null) {
+                mDisplayFilter.release();
+                mDisplayFilter = null;
             }
             if (mFilter != null) {
                 mFilter.release();
@@ -693,14 +706,12 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
          * 滤镜或视图发生变化时调用
          */
         private void onFilterChanged() {
-            // 1 : 1 的情况不用调整
             if (mViewWidth != mViewHeight) {
                 mCameraFilter.onDisplayChanged(mViewWidth, mViewHeight);
             }
+            mCameraFilter.initFramebuffer(mImageWidth, mImageHeight);
             if (mFilter != null) {
-                mCameraFilter.initCameraFramebuffer(mImageWidth, mImageHeight);
-            } else {
-                mCameraFilter.destroyFramebuffer();
+                mFilter.initFramebuffer(mImageWidth, mImageHeight);
             }
         }
 
@@ -713,7 +724,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                 mFilter.release();
             }
             mFilter = FilterManager.getFilter(type);
-            onFilterChanged();
+            mFilter.initFramebuffer(mImageWidth, mImageHeight);
         }
 
         /**
@@ -786,21 +797,32 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         }
 
         /**
-         * 绘制实体
+         * 绘制图像数据到FBO
          */
         private void draw() {
             if (mFilter == null) {
-                // 相机输入图像流使用的TextureBuffer需要做orientation调整
-                mCameraFilter.drawFrame(mTextureId, mVertexBuffer,
-                        TextureRotationUtils.getTextureBuffer());
+                mCurrentTextureId = mCameraFilter.drawFrameBuffer(mCameraTextureId);
             } else {
-                int id = mCameraFilter.drawToTexture(mTextureId);
-                mFilter.drawFrame(id, mVertexBuffer, mTextureBuffer);
+                mCurrentTextureId = mCameraFilter.drawFrameBuffer(mCameraTextureId);
+                mCurrentTextureId = mFilter.drawFrameBuffer(mCurrentTextureId, mVertexBuffer, mTextureBuffer);
             }
+            drawDisplay();
             // 是否绘制点
             if (enableDrawPoints && mFacePointsDrawer != null) {
                 mFacePointsDrawer.drawPoints();
             }
+        }
+
+        /**
+         * 绘制显示帧(预览或者录制)
+         */
+        private void drawDisplay() {
+            if (mDisplayFilter == null) {
+                mDisplayFilter = new DisplayFilter();
+                mDisplayFilter.onInputSizeChanged(mImageWidth, mImageHeight);
+                mDisplayFilter.onDisplayChanged(mViewWidth, mViewHeight);
+            }
+            mDisplayFilter.drawFrame(mCurrentTextureId);
         }
 
         /**
@@ -814,14 +836,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                     sendMessageAtFrontOfQueue(obtainMessage(MSG_FRAME));
                 }
             }
-        }
-
-        /**
-         * 创建OES 类型的Texture
-         * @return
-         */
-        private int createTextureOES() {
-            return GlUtil.createTextureObject(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
         }
     }
 }

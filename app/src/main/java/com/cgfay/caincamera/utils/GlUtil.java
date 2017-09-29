@@ -5,6 +5,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.RectF;
+import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
@@ -214,6 +215,14 @@ public class GlUtil {
             return texture[0];
         }
         return 0;
+    }
+
+    /**
+     * 创建OES 类型的Texture
+     * @return
+     */
+    public static int createTextureOES() {
+        return GlUtil.createTextureObject(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
     }
 
     /**

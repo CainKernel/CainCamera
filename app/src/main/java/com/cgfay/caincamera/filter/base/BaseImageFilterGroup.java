@@ -40,7 +40,7 @@ public class BaseImageFilterGroup extends BaseImageFilter {
         // 先销毁原来的Framebuffers
         if(mFramebuffers != null && (mImageWidth != width
                 || mImageHeight != height || mFramebuffers.length != size-1)) {
-            destroyFramebuffers();
+            destroyFramebuffer();
             mImageWidth = width;
             mImageWidth = height;
         }
@@ -114,13 +114,13 @@ public class BaseImageFilterGroup extends BaseImageFilter {
             }
             mFilters.clear();
         }
-        destroyFramebuffers();
+        destroyFramebuffer();
     }
 
     /**
      * 初始化framebuffer
      */
-    private void initFramebuffer(int width, int height) {
+    public void initFramebuffer(int width, int height) {
         int size = mFilters.size();
         // 创建Framebuffers 和 Textures
         if (mFramebuffers == null) {
@@ -165,7 +165,7 @@ public class BaseImageFilterGroup extends BaseImageFilter {
     /**
      * 销毁Framebuffers
      */
-    private void destroyFramebuffers() {
+    public void destroyFramebuffer() {
         if (mFrameBufferTextures != null) {
             GLES30.glDeleteTextures(mFrameBufferTextures.length, mFrameBufferTextures, 0);
             mFrameBufferTextures = null;

@@ -110,7 +110,7 @@ public class BeautyFilter extends BaseImageFilter {
         super(vertexShader, fragmentShader);
         mSingleStepOffsetLoc = GLES30.glGetUniformLocation(mProgramHandle, "singleStepOffset");
         mParamsLoc = GLES30.glGetUniformLocation(mProgramHandle, "params");
-        setBeautyLevel(1);
+        setBeautyLevel(5);
     }
 
     @Override

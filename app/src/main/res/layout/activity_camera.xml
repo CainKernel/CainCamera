@@ -97,7 +97,7 @@
         </RelativeLayout>
         <com.cgfay.caincamera.view.HorizontalIndicatorView
             android:id="@+id/bottom_indicator"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="@dimen/bottom_indicator_height"
             app:SeeSize="5"
             app:TextSize="30"

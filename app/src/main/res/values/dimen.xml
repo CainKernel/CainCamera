@@ -21,7 +21,7 @@
     <dimen name="button_margin_horizontal">40dp</dimen>
 
     <!--顶部按钮的宽高-->
-    <dimen name="top_button_layout_height">40dp</dimen>
-    <dimen name="top_button_width_height">30dp</dimen>
+    <dimen name="top_button_layout_height">50dp</dimen>
+    <dimen name="top_button_width_height">35dp</dimen>
 
 </resources>
