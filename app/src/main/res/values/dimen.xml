@@ -6,8 +6,6 @@
     <!-- 编辑图片底部功能栏的高度 -->
     <dimen name="photo_edit_function_height">120dp</dimen>
     <dimen name="layout_margin_height">20dp</dimen>
-    <!--底部显示的文字-->
-    <dimen name="tv_width">50dp</dimen>
     <!--字体-->
     <dimen name="edit_size">10sp</dimen>
     <dimen name="show_value_size">20sp</dimen>
@@ -19,6 +17,7 @@
     <dimen name="filters_width_height">50dp</dimen>
     <dimen name="bottom_indicator_height">40dp</dimen>
     <dimen name="button_margin_horizontal">40dp</dimen>
+    <dimen name="bottom_layout_margin">10dp</dimen>
 
     <!--顶部按钮的宽高-->
     <dimen name="top_button_layout_height">50dp</dimen>

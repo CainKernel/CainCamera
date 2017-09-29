@@ -58,6 +58,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/layout_bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
@@ -67,7 +68,8 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_gallery_layout_height">
+            android:layout_height="@dimen/bottom_gallery_layout_height"
+            android:layout_marginTop="@dimen/bottom_layout_margin">
 
             <Button
                 android:id="@+id/btn_stickers"
@@ -76,7 +78,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/button_margin_horizontal"
-                android:background="@drawable/gallery_sticker" />
+                android:background="@drawable/gallery_sticker_glow" />
 
             <Button
                 android:id="@+id/btn_take"

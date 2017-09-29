@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,6 +18,7 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.AspectRatioType;
@@ -62,10 +62,16 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     private AspectFrameLayout mAspectLayout;
     private CameraSurfaceView mCameraSurfaceView;
+    // 顶部Button
     private Button mBtnSetting;
     private Button mBtnViewPhoto;
-    private Button mBtnTake;
     private Button mBtnSwitch;
+    // 底部layout 和 Button
+    private LinearLayout mBottomLayout;
+    private Button mBtnStickers;
+    private Button mBtnTake;
+    private Button mBtnFilters;
+
     // 底部指示器
     private List<String> mIndicatorText = new ArrayList<String>();
     private HorizontalIndicatorView mBottomIndicator;
@@ -117,6 +123,17 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mBtnTake.setOnClickListener(this);
         mBtnSwitch = (Button) findViewById(R.id.btn_switch);
         mBtnSwitch.setOnClickListener(this);
+
+        mBottomLayout = (LinearLayout) findViewById(R.id.layout_bottom);
+        if (CameraUtils.getCurrentRatio() < 0.75f) {
+            mBottomLayout.setBackgroundResource(R.drawable.bottom_background_glow);
+        } else {
+            mBottomLayout.setBackgroundResource(R.drawable.bottom_background);
+        }
+        mBtnStickers = (Button) findViewById(R.id.btn_stickers);
+        mBtnStickers.setOnClickListener(this);
+        mBtnFilters = (Button) findViewById(R.id.btn_filters);
+        mBtnFilters.setOnClickListener(this);
         mBottomIndicator = (HorizontalIndicatorView) findViewById(R.id.bottom_indicator);
         String[] galleryIndicator = getResources().getStringArray(R.array.gallery_indicator);
         for (String text : galleryIndicator) {
@@ -309,6 +326,14 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             case R.id.btn_setting:
                 showSettingPopView();
                 break;
+
+            case R.id.btn_stickers:
+                showStickers();
+                break;
+
+            case R.id.btn_filters:
+                showFilters();
+                break;
         }
     }
 
@@ -424,7 +449,24 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    /**
+     * 显示设置更多视图
+     */
     private void showSettingPopView() {
+
+    }
+
+    /**
+     * 显示贴纸列表
+     */
+    private void showStickers() {
+
+    }
+
+    /**
+     * 显示滤镜
+     */
+    private void showFilters() {
 
     }
 
