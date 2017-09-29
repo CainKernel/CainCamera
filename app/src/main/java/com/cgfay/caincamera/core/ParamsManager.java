@@ -29,5 +29,5 @@ public class ParamsManager {
     public static boolean canFaceTrack = false;
 
     // 存放预览类型，GIF表情包、PICTURE拍照、VIDEO视频等
-    public static GalleryType mGalleryType = GalleryType.VIDEO;
+    public static GalleryType mGalleryType = GalleryType.PICTURE;
 }

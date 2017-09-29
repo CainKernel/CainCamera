@@ -303,7 +303,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         static final int MSG_TAKE_PICTURE = 0x400;
 
         // 调试
-        private boolean enableDebug = true;
+        private boolean enableDebug = false;
 
         // EGL共享上下文
         private EglCore mEglCore;

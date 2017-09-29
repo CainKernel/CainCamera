@@ -57,11 +57,7 @@ public class AspectFrameLayout extends FrameLayout {
             double aspectDiff = mTargetAspect / viewAspectRatio - 1;
 
             if (Math.abs(aspectDiff) >= 0.01) {
-                if (aspectDiff > 0) {
-                    initialHeight = (int)(initialWidth / mTargetAspect);
-                } else {
-                    initialWidth = (int)(initialHeight * mTargetAspect);
-                }
+                initialHeight = (int)(initialWidth / mTargetAspect);
             }
             initialWidth += horizPadding;
             initialHeight += vertPadding;
