@@ -445,7 +445,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                         file.getParentFile().mkdirs();
                     }
                     try {
-                        mVideoEncoder = new VideoEncoderCore(mImageWidth, mImageHeight,
+                        mVideoEncoder = new VideoEncoderCore(mViewWidth, mViewHeight,
                                 bitrate, file);
                     } catch (IOException e) {
                         e.printStackTrace();
