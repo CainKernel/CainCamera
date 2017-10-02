@@ -332,7 +332,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         private boolean enableDrawPoints = false;
         // 录制视频
         private boolean isRecording = false;
-        private int bitrate = 1000000;
+        private int mRecordBitrate;
+        private static final int FRAME_RATE = 25;
+        private static final int BPP = 4;
 
         private CameraFilter mCameraFilter;
         private BaseImageFilter mFilter;
@@ -448,9 +450,11 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                     if (!file.getParentFile().exists()) {
                         file.getParentFile().mkdirs();
                     }
+                    // 计算帧率
+                    mRecordBitrate = mViewWidth * mViewHeight * FRAME_RATE / BPP;
                     try {
-                        mVideoEncoder = new VideoEncoderCore(mImageWidth, mImageHeight,
-                                bitrate, file);
+                        mVideoEncoder = new VideoEncoderCore(mViewWidth, mViewHeight,
+                                mRecordBitrate, file);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -775,7 +779,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             if (isRecording) {
                 mRecordWindowSurface.makeCurrent();
                 mVideoEncoder.drainEncoder(false);
-                draw();
+                drawDisplay();
                 mRecordWindowSurface.setPresentationTime(mCameraTexture.getTimestamp());
                 mRecordWindowSurface.swapBuffers();
             }
