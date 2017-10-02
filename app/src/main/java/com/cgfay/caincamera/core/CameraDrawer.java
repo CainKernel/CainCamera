@@ -507,7 +507,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             mCameraTextureId = GlUtil.createTextureOES();
             mCameraTexture = new SurfaceTexture(mCameraTextureId);
             mCameraTexture.setOnFrameAvailableListener(CameraDrawer.this);
-            CameraUtils.openFrontalCamera(CameraUtils.DESIRED_PREVIEW_FPS);
+            CameraUtils.openCamera(CameraUtils.DESIRED_PREVIEW_FPS);
             calculateImageSize();
             mCameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
             mDisplayFilter.onInputSizeChanged(mImageWidth, mImageHeight);

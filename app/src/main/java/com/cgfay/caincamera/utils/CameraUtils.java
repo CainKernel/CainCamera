@@ -52,37 +52,8 @@ public class CameraUtils {
      * 打开相机，默认打开前置相机
      * @param expectFps
      */
-    public static void openFrontalCamera(int expectFps) {
-        if (mCamera != null) {
-            throw new RuntimeException("camera already initialized!");
-        }
-        Camera.CameraInfo info = new Camera.CameraInfo();
-        int numCameras = Camera.getNumberOfCameras();
-        for (int i = 0; i < numCameras; i++) {
-            Camera.getCameraInfo(i, info);
-            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                mCamera = Camera.open(i);
-                mCameraID = info.facing;
-                break;
-            }
-        }
-        // 如果没有前置摄像头，则打开默认的后置摄像头
-        if (mCamera == null) {
-            mCamera = Camera.open();
-            mCameraID = Camera.CameraInfo.CAMERA_FACING_BACK;
-        }
-        // 没有摄像头时，抛出异常
-        if (mCamera == null) {
-            throw new RuntimeException("Unable to open camera");
-        }
-
-        Camera.Parameters parameters = mCamera.getParameters();
-        mCameraPreviewFps = CameraUtils.chooseFixedPreviewFps(parameters, expectFps * 1000);
-        parameters.setRecordingHint(true);
-        mCamera.setParameters(parameters);
-        setPreviewSize(mCamera, CameraUtils.DEFAULT_WIDTH, CameraUtils.DEFAULT_HEIGHT);
-        setPictureSize(mCamera, CameraUtils.DEFAULT_WIDTH, CameraUtils.DEFAULT_HEIGHT);
-        mCamera.setDisplayOrientation(mOrientation);
+    public static void openCamera(int expectFps) {
+        openCamera(mCameraID, expectFps);
     }
 
     /**

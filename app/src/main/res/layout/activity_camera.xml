@@ -78,7 +78,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/button_margin_horizontal"
-                android:background="@drawable/gallery_sticker_glow" />
+                android:background="@drawable/gallery_sticker" />
 
             <Button
                 android:id="@+id/btn_take"
