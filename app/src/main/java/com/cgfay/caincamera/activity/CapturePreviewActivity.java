@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.type.GalleryType;
+import com.cgfay.caincamera.utils.FileUtils;
 import com.cgfay.caincamera.view.AspectFrameLayout;
 import com.cgfay.caincamera.view.preview.GifSurfaceView;
 import com.cgfay.caincamera.view.preview.PictureSurfaceView;
@@ -95,6 +96,12 @@ public class CapturePreviewActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        executeCancel();
+    }
+
     /**
      * 执行取消动作
      */
@@ -113,7 +120,9 @@ public class CapturePreviewActivity extends AppCompatActivity
      * 执行保存操作
      */
     private void executeSave() {
-
+        File file = new File(mPath);
+        String newPath = ParamsManager.AlbumPath + file.getName();
+        FileUtils.copyFile(mPath, newPath);
     }
 
 

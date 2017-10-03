@@ -19,6 +19,9 @@ public class ParamsManager {
     // 存储根目录
     private static final String StoragePath = Environment.getExternalStorageDirectory().getPath();
 
+    // 默认相册位置
+    public static final String AlbumPath = StoragePath + "/DCIM/Camera/";
+
     // 图片存放地址
     public static final String ImagePath = StoragePath + "/CainCamera/Image/";
 
