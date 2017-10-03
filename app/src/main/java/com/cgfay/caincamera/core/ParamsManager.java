@@ -25,6 +25,9 @@ public class ParamsManager {
     // 视频存放地址
     public static final String VideoPath = StoragePath + "/CainCamera/Video/";
 
+    // Gif存放地址
+    public static final String GifPath = StoragePath + "/CainCamera/Gif/";
+
     // 人脸识别是否正常
     public static boolean canFaceTrack = false;
 

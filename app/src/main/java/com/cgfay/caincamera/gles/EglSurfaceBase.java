@@ -16,12 +16,15 @@
 
 package com.cgfay.caincamera.gles;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.opengl.EGL14;
 import android.opengl.EGLSurface;
 import android.opengl.GLES30;
 import android.util.Log;
 
+import com.cgfay.caincamera.activity.CapturePreviewActivity;
+import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.utils.GlUtil;
 import com.cgfay.caincamera.utils.ImageUtils;
 
@@ -191,11 +194,15 @@ public class EglSurfaceBase {
             Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             bmp.copyPixelsFromBuffer(buf);
             bmp = ImageUtils.getRotatedBitmap(bmp, 180);
+            bmp = ImageUtils.getFlipBitmap(bmp);
             bmp.compress(Bitmap.CompressFormat.JPEG, 90, bos);
             bmp.recycle();
         } finally {
             if (bos != null) bos.close();
         }
+        Intent intent = new Intent(ParamsManager.context, CapturePreviewActivity.class);
+        intent.putExtra(CapturePreviewActivity.PATH, filename);
+        ParamsManager.context.startActivity(intent);
     }
 
     /**

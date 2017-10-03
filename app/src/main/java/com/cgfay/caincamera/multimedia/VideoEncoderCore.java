@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.cgfay.caincamera.gles;
+package com.cgfay.caincamera.multimedia;
 
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;

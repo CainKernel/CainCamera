@@ -18,8 +18,20 @@ public class ImageUtils {
     public static Bitmap getRotatedBitmap(Bitmap bitmap, int rotation) {
         Matrix matrix = new Matrix();
         matrix.postRotate(rotation);
-        Bitmap result = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
                 bitmap.getHeight(), matrix, false);
-        return result;
+    }
+
+    /**
+     * 镜像翻转图片
+     * @param bitmap
+     * @return
+     */
+    public static Bitmap getFlipBitmap(Bitmap bitmap) {
+        Matrix matrix = new Matrix();
+        matrix.setScale(-1, 1);
+        matrix.postTranslate(bitmap.getWidth(), 0);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
+                bitmap.getHeight(), matrix, false);
     }
 }

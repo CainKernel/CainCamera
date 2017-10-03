@@ -1,8 +1,10 @@
 package com.cgfay.caincamera.core;
 
+import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.GLES30;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -10,6 +12,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
+import com.cgfay.caincamera.activity.CapturePreviewActivity;
 import com.cgfay.caincamera.bean.CameraInfo;
 import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.facedetector.DetectorCallback;
@@ -18,7 +21,7 @@ import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.base.DisplayFilter;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
 import com.cgfay.caincamera.gles.EglCore;
-import com.cgfay.caincamera.gles.VideoEncoderCore;
+import com.cgfay.caincamera.multimedia.VideoEncoderCore;
 import com.cgfay.caincamera.gles.WindowSurface;
 import com.cgfay.caincamera.type.FilterType;
 import com.cgfay.caincamera.type.ScaleType;
@@ -341,7 +344,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         // 关键点绘制（调试用）
         private FacePointsDrawer mFacePointsDrawer;
 
-        private ScaleType mScaleType = ScaleType.CENTER_INSIDE;
+        private ScaleType mScaleType = ScaleType.CENTER_CROP;
         private FloatBuffer mVertexBuffer;
         private FloatBuffer mTextureBuffer;
 
