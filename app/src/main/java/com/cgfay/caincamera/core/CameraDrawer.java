@@ -328,8 +328,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         private boolean isSuccess = false;
         // 更新帧的锁
         private final Object mSyncFrameNum = new Object();
-        private final Object mSyncTexture = new Object();
-        private int mFrameNum = 0;
         private boolean isTakePicture = false;
         // 是否允许绘制人脸关键点
         private boolean enableDrawPoints = false;
@@ -742,24 +740,12 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
          * 绘制帧
          */
         private void drawFrame() {
+            mCameraTexture.updateTexImage();
             long t1 = 0L;
             if (enableDebug) {
                 t1 = System.nanoTime();
             }
             mDisplaySurface.makeCurrent();
-            synchronized (mSyncFrameNum) {
-                synchronized (mSyncTexture) {
-                    if (mCameraTexture != null) {
-                        // 如果存在新的帧，则更新帧
-                        while (mFrameNum != 0) {
-                            mCameraTexture.updateTexImage();
-                            --mFrameNum;
-                        }
-                    } else {
-                        return;
-                    }
-                }
-            }
             mCameraTexture.getTransformMatrix(mMatrix);
             mCameraFilter.setTextureTransformMatirx(mMatrix);
             draw();
@@ -850,7 +836,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         public void addNewFrame() {
             synchronized (mSyncFrameNum) {
                 if (isPreviewing) {
-                    ++mFrameNum;
                     removeMessages(MSG_FRAME);
                     sendMessageAtFrontOfQueue(obtainMessage(MSG_FRAME));
                 }
