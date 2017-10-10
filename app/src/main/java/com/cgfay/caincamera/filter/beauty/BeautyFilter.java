@@ -130,23 +130,23 @@ public class BeautyFilter extends BaseImageFilter {
                 break;
 
             case 1:
-                setFloat(mParamsLoc, 1.0f);
+                setFloat(mParamsLoc, 3.0f);
                 break;
 
             case 2:
-                setFloat(mParamsLoc, 0.8f);
+                setFloat(mParamsLoc, 2.3f);
                 break;
 
             case 3:
-                setFloat(mParamsLoc, 0.6f);
+                setFloat(mParamsLoc, 1.7f);
                 break;
 
             case 4:
-                setFloat(mParamsLoc, 0.4f);
+                setFloat(mParamsLoc, 1.3f);
                 break;
 
             case 5:
-                setFloat(mParamsLoc, 0.33f);
+                setFloat(mParamsLoc, 1.0f);
                 break;
             default:
                 break;

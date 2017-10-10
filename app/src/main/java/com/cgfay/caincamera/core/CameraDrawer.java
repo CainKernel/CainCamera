@@ -504,18 +504,19 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             if (mCameraFilter == null) {
                 mCameraFilter = new CameraFilter();
             }
-            if (mDisplayFilter == null) {
-                mDisplayFilter = new DisplayFilter();
-            }
             mCameraTextureId = GlUtil.createTextureOES();
             mCameraTexture = new SurfaceTexture(mCameraTextureId);
             mCameraTexture.setOnFrameAvailableListener(CameraDrawer.this);
             CameraUtils.openCamera(CameraUtils.DESIRED_PREVIEW_FPS);
             calculateImageSize();
             mCameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
-            mDisplayFilter.onInputSizeChanged(mImageWidth, mImageHeight);
             mFilter = FilterManager.getFilter(FilterType.REALTIMEBEAUTY);
             mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
+            // 显示
+            if (mDisplayFilter == null) {
+                mDisplayFilter = new DisplayFilter();
+                mDisplayFilter.onInputSizeChanged(mImageWidth, mImageHeight);
+            }
             // 禁用深度测试和背面绘制
             GLES30.glDisable(GLES30.GL_DEPTH_TEST);
             GLES30.glDisable(GLES30.GL_CULL_FACE);
@@ -782,7 +783,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             if (isRecording) {
                 mRecordWindowSurface.makeCurrent();
                 mVideoEncoder.drainEncoder(false);
-                drawDisplay();
+//                drawDisplay();
+                draw();
                 mRecordWindowSurface.setPresentationTime(mCameraTexture.getTimestamp());
                 mRecordWindowSurface.swapBuffers();
             }
@@ -819,13 +821,16 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
          * 绘制图像数据到FBO
          */
         private void draw() {
+            // TODO 加入Framebuffer后，美颜算法无效果
             if (mFilter == null) {
-                mCurrentTextureId = mCameraFilter.drawFrameBuffer(mCameraTextureId);
+//                mCurrentTextureId = mCameraFilter.drawFrameBuffer(mCameraTextureId);
+                mCameraFilter.drawFrameBuffer(mCameraTextureId);
             } else {
                 mCurrentTextureId = mCameraFilter.drawFrameBuffer(mCameraTextureId);
-                mCurrentTextureId = mFilter.drawFrameBuffer(mCurrentTextureId, mVertexBuffer, mTextureBuffer);
+//                mCurrentTextureId = mFilter.drawFrameBuffer(mCurrentTextureId, mVertexBuffer, mTextureBuffer);
+                mFilter.drawFrame(mCurrentTextureId, mVertexBuffer, mTextureBuffer);
             }
-            drawDisplay();
+//            drawDisplay();
             // 是否绘制点
             if (enableDrawPoints && mFacePointsDrawer != null) {
                 mFacePointsDrawer.drawPoints();
