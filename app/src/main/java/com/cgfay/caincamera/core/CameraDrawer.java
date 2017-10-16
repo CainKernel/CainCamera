@@ -266,22 +266,12 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
     @Override
     public void onPreviewFrame(final byte[] data, Camera camera) {
         if (mDrawerHandler != null) {
-//            synchronized (mSynOperation) {
-//                if (isPreviewing || isRecording) {
-//                    mDrawerHandler.sendMessage(mDrawerHandler
-//                            .obtainMessage(CameraDrawerHandler.MSG_PREVIEW_CALLBACK, data));
-//                }
-//            }
-            mDrawerHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (ParamsManager.canFaceTrack && isPreviewing) {
-                        synchronized (mSyncIsLooping) {
-                            FaceManager.getInstance().faceDetecting(data, 1280, 720);
-                        }
-                    }
+            synchronized (mSynOperation) {
+                if (isPreviewing || isRecording) {
+                    mDrawerHandler.sendMessage(mDrawerHandler
+                            .obtainMessage(CameraDrawerHandler.MSG_PREVIEW_CALLBACK, data));
                 }
-            });
+            }
         }
         if (mPreviewBuffer != null) {
             camera.addCallbackBuffer(mPreviewBuffer);
