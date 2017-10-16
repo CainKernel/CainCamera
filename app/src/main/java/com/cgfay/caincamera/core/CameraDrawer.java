@@ -102,7 +102,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
     private void create() {
         mHandlerThread = new HandlerThread("CameraDrawer Thread");
         mHandlerThread.start();
-        mDrawerHandler = new CameraDrawerHandler(mHandlerThread.getLooper());
+        mDrawerHandler = new CameraDrawerHandler(mHandlerThread.getLooper(), this);
         mDrawerHandler.sendEmptyMessage(CameraDrawerHandler.MSG_INIT);
         loopingInterval = CameraUtils.DESIRED_PREVIEW_FPS;
     }
@@ -264,14 +264,24 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
     }
 
     @Override
-    public void onPreviewFrame(byte[] data, Camera camera) {
+    public void onPreviewFrame(final byte[] data, Camera camera) {
         if (mDrawerHandler != null) {
-            synchronized (mSynOperation) {
-                if (isPreviewing || isRecording) {
-                    mDrawerHandler.sendMessage(mDrawerHandler
-                            .obtainMessage(CameraDrawerHandler.MSG_PREVIEW_CALLBACK, data));
+//            synchronized (mSynOperation) {
+//                if (isPreviewing || isRecording) {
+//                    mDrawerHandler.sendMessage(mDrawerHandler
+//                            .obtainMessage(CameraDrawerHandler.MSG_PREVIEW_CALLBACK, data));
+//                }
+//            }
+            mDrawerHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (ParamsManager.canFaceTrack && isPreviewing) {
+                        synchronized (mSyncIsLooping) {
+                            FaceManager.getInstance().faceDetecting(data, 1280, 720);
+                        }
+                    }
                 }
-            }
+            });
         }
         if (mPreviewBuffer != null) {
             camera.addCallbackBuffer(mPreviewBuffer);
@@ -332,7 +342,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         private int mFrameNum = 0;
         private boolean isTakePicture = false;
         // 是否允许绘制人脸关键点
-        private boolean enableDrawPoints = false;
+        private boolean enableDrawPoints = true;
         // 录制视频
         private boolean isRecording = false;
         private int mRecordBitrate;
@@ -353,8 +363,11 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         // 预览以及录制的帧
         private DisplayFilter mDisplayFilter;
 
-        public CameraDrawerHandler(Looper looper) {
+        private final Camera.PreviewCallback mPreviewCallback;
+
+        public CameraDrawerHandler(Looper looper, Camera.PreviewCallback previewCallback) {
             super(looper);
+            mPreviewCallback = previewCallback;
             mVertexBuffer = ByteBuffer
                     .allocateDirect(TextureRotationUtils.CubeVertices.length * 4)
                     .order(ByteOrder.nativeOrder())
@@ -579,7 +592,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             Size previewSize = CameraUtils.getPreviewSize();
             int size = previewSize.getWidth() * previewSize.getHeight() * 3 / 2;
             mPreviewBuffer = new byte[size];
-            CameraUtils.addPreviewCallbacks(CameraDrawer.this, mPreviewBuffer);
+            CameraUtils.addPreviewCallbacks(mPreviewCallback, mPreviewBuffer);
         }
 
         /**
@@ -608,7 +621,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             isSuccess = true;
             if (ParamsManager.canFaceTrack) {
                 synchronized (mSyncIsLooping) {
-                    FaceManager.getInstance().faceDetecting(data, mImageWidth, mImageHeight);
+                    FaceManager.getInstance().faceDetecting(data, mImageHeight, mImageWidth);
                 }
             }
             isSuccess = false;

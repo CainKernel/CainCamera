@@ -303,6 +303,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
                     @Override
                     public void onFailed(int i, byte[] bytes) {
+                        Log.d("LicenseManager", "Failed to register license!");
                         ParamsManager.canFaceTrack = false;
                     }
                 });

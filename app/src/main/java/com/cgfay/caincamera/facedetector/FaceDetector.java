@@ -159,11 +159,13 @@ public class FaceDetector {
                     break;
 
                 case MSG_FACE_DETECTING:
+//                    long time = System.currentTimeMillis();
                     // 如果没有创建检测对象
                     if (mFacepp == null) {
                         initConfig(msg.arg1, msg.arg2);
                     }
                     faceDetecting((byte[]) msg.obj, msg.arg1, msg.arg2);
+//                    Log.d("faceDetecting", "time: " + (System.currentTimeMillis() - time));
                     break;
 
                 case MSG_DESTORY:
@@ -246,13 +248,13 @@ public class FaceDetector {
             // 配置旋转角度
             int orientation = mSensorUtil.orientation;
             if (orientation == 0)
-                rotation = CameraUtils.getPreviewOrientation();
+                rotation = 360 - CameraUtils.getPreviewOrientation();
             else if (orientation == 1)
                 rotation = 0;
             else if (orientation == 2)
                 rotation = 180;
             else if (orientation == 3)
-                rotation = 360 - CameraUtils.getPreviewOrientation();
+                rotation = CameraUtils.getPreviewOrientation();
             setConfig(rotation);
             if (mFacepp == null) {
                 return;
@@ -306,20 +308,21 @@ public class FaceDetector {
                             height = temp;
                         }
                         ArrayList<float[]> points = new ArrayList<float[]>();
+                        // TODO 两个边角交界的角度出现错乱，需要调整
                         for (int i = 0; i < faces[index].points.length; i++) {
                             float x = (faces[index].points[i].x / height) * 2 - 1;
                             if (isBackCamera)
                                 x = -x;
                             float y = 1 - (faces[index].points[i].y / width) * 2;
-                            float[] pointf = new float[] { x, y, 0.0f };
+                            float[] point = new float[] { -x, y, 0.0f };
                             if (orientation == 1) {
-                                pointf = new float[]{ -y, x, 0.0f };
+                                point = new float[]{ y, x, 0.0f };
                             } else if (orientation == 2) {
-                                pointf = new float[]{ y, -x, 0.0f };
+                                point = new float[]{ -y, -x, 0.0f };
                             } else if (orientation == 3) {
-                                pointf = new float[] { -x, -y, 0.0f };
+                                point = new float[] { x, -y, 0.0f };
                             }
-                            points.add(pointf);
+                            points.add(point);
                         }
                         facePoints.add(points);
                     }
