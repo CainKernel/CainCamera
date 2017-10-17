@@ -16,7 +16,10 @@ import com.cgfay.caincamera.filter.image.MirrorFilter;
 import com.cgfay.caincamera.filter.image.SaturationFilter;
 import com.cgfay.caincamera.filter.image.SharpnessFilter;
 import com.cgfay.caincamera.filter.sticker.StickerFilter;
+import com.cgfay.caincamera.type.FilterIndex;
 import com.cgfay.caincamera.type.FilterType;
+
+import java.util.HashMap;
 
 /**
  * Filter管理类
@@ -24,6 +27,39 @@ import com.cgfay.caincamera.type.FilterType;
  */
 
 public class FilterManager {
+
+    private static HashMap<FilterType, FilterIndex> mIndexMap = new HashMap<FilterType, FilterIndex>();
+    static {
+        mIndexMap.put(FilterType.NONE, FilterIndex.NoneIndex);
+
+        // 图片编辑
+        mIndexMap.put(FilterType.BRIGHTNESS, FilterIndex.ImageEditIndex);
+        mIndexMap.put(FilterType.CONTRAST, FilterIndex.ImageEditIndex);
+        mIndexMap.put(FilterType.EXPOSURE, FilterIndex.ImageEditIndex);
+        mIndexMap.put(FilterType.GUASS, FilterIndex.ImageEditIndex);
+        mIndexMap.put(FilterType.HUE, FilterIndex.ImageEditIndex);
+        mIndexMap.put(FilterType.MIRROR, FilterIndex.ImageEditIndex);
+        mIndexMap.put(FilterType.SATURATION, FilterIndex.ImageEditIndex);
+        mIndexMap.put(FilterType.SHARPNESS, FilterIndex.ImageEditIndex);
+
+
+        // 美颜
+        mIndexMap.put(FilterType.REALTIMEBEAUTY, FilterIndex.BeautyIndex);
+
+        // 瘦脸大眼
+        mIndexMap.put(FilterType.FACESTRETCH, FilterIndex.FaceStretchIndex);
+
+        // 贴纸
+        mIndexMap.put(FilterType.STICKER, FilterIndex.StickerIndex);
+
+        // 彩妆
+        mIndexMap.put(FilterType.MAKEUP, FilterIndex.MakeUpIndex);
+
+
+        // 颜色滤镜
+        mIndexMap.put(FilterType.WHITENORREDDEN, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.SKETCH, FilterIndex.ColorIndex);
+    }
 
     private FilterManager() {}
 
@@ -78,5 +114,18 @@ public class FilterManager {
      */
     public static BaseImageFilterGroup getFilterGroup() {
         return new RealTimeBeautyFilterGroup();
+    }
+
+    /**
+     * 获取层级
+     * @param Type
+     * @return
+     */
+    public static FilterIndex getIndex(FilterType Type) {
+        FilterIndex index = mIndexMap.get(Type);
+        if (index != null) {
+            return index;
+        }
+        return FilterIndex.NoneIndex;
     }
 }

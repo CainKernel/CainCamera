@@ -328,7 +328,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         private int mFrameNum = 0;
         private boolean isTakePicture = false;
         // 是否允许绘制人脸关键点
-        private boolean enableDrawPoints = true;
+        private boolean enableDrawPoints = false;
         // 录制视频
         private boolean isRecording = false;
         private int mRecordBitrate;

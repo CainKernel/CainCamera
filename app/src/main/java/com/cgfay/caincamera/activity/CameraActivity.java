@@ -24,6 +24,7 @@ import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.AspectRatioType;
 import com.cgfay.caincamera.core.CameraDrawer;
 import com.cgfay.caincamera.core.ParamsManager;
+import com.cgfay.caincamera.type.FilterType;
 import com.cgfay.caincamera.type.GalleryType;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.PermissionUtils;
@@ -341,11 +342,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void swipeBack() {
         Log.d(TAG, "swipeBack");
+        CameraDrawer.INSTANCE.changeFilterType(FilterType.SKETCH);
     }
 
     @Override
     public void swipeFrontal() {
         Log.d(TAG, "swipeFrontal");
+        CameraDrawer.INSTANCE.changeFilterType(FilterType.WHITENORREDDEN);
     }
 
     @Override

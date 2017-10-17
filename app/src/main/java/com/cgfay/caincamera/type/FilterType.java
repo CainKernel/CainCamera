@@ -7,15 +7,7 @@ package com.cgfay.caincamera.type;
 public enum FilterType {
     NONE,
 
-    // 颜色滤镜效果相关
-    SKETCH, // 素描
-
-
-    STICKER,    // 贴纸
-    WHITENORREDDEN, // 白皙还是红润
-    REALTIMEBEAUTY, // 实时美颜
-
-    // Edit Image
+    // 图片编辑滤镜
     BRIGHTNESS, // 亮度
     CONTRAST, // 对比度
     EXPOSURE, // 曝光
@@ -24,5 +16,21 @@ public enum FilterType {
     MIRROR, // 镜像
     SATURATION, // 饱和度
     SHARPNESS, // 锐度
+
+
+    // 人脸美颜美妆贴纸
+    REALTIMEBEAUTY, // 实时美颜
+    FACESTRETCH, // 人脸变形(瘦脸大眼等)
+
+    STICKER,    // 贴纸
+    MAKEUP, // 彩妆
+
+    // 颜色滤镜
+    SKETCH, // 素描
+    WHITENORREDDEN, // 白皙还是红润
+
+
+
+
 
 }
