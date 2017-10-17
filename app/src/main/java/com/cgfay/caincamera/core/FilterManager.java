@@ -2,7 +2,9 @@ package com.cgfay.caincamera.core;
 
 import com.cgfay.caincamera.filter.advanced.SketchFilter;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
+import com.cgfay.caincamera.filter.base.BaseImageFilterGroup;
 import com.cgfay.caincamera.filter.base.DisplayFilter;
+import com.cgfay.caincamera.filter.beauty.RealTimeBeautyFilterGroup;
 import com.cgfay.caincamera.filter.beauty.RealtimeBeautify;
 import com.cgfay.caincamera.filter.beauty.WhitenOrReddenFilter;
 import com.cgfay.caincamera.filter.image.BrightnessFilter;
@@ -70,4 +72,11 @@ public class FilterManager {
         }
     }
 
+    /**
+     * 获取滤镜组
+     * @return
+     */
+    public static BaseImageFilterGroup getFilterGroup() {
+        return new RealTimeBeautyFilterGroup();
+    }
 }

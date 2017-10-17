@@ -2,7 +2,7 @@ package com.cgfay.caincamera.filter.sticker;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.Matrix;
 
 import com.cgfay.caincamera.utils.GlUtil;
@@ -75,13 +75,13 @@ public class SkyBoxFilter {
 
     public void createProgram() {
         mHProgram = GlUtil.createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
-        mHProjMatrix=GLES20.glGetUniformLocation(mHProgram,"uProjMatrix");
-        mHViewMatrix=GLES20.glGetUniformLocation(mHProgram,"uViewMatrix");
-        mHModelMatrix=GLES20.glGetUniformLocation(mHProgram,"uModelMatrix");
-        mHRotateMatrix=GLES20.glGetUniformLocation(mHProgram,"uRotateMatrix");
-        mHUTexture=GLES20.glGetUniformLocation(mHProgram,"uTexture");
-        mHPosition=GLES20.glGetAttribLocation(mHProgram,"aPosition");
-        mHCoordinate=GLES20.glGetAttribLocation(mHProgram,"aCoordinate");
+        mHProjMatrix=GLES30.glGetUniformLocation(mHProgram,"uProjMatrix");
+        mHViewMatrix=GLES30.glGetUniformLocation(mHProgram,"uViewMatrix");
+        mHModelMatrix=GLES30.glGetUniformLocation(mHProgram,"uModelMatrix");
+        mHRotateMatrix=GLES30.glGetUniformLocation(mHProgram,"uRotateMatrix");
+        mHUTexture=GLES30.glGetUniformLocation(mHProgram,"uTexture");
+        mHPosition=GLES30.glGetAttribLocation(mHProgram,"aPosition");
+        mHCoordinate=GLES30.glGetAttribLocation(mHProgram,"aCoordinate");
         mMipmapTextureId = GlUtil.createTexture(mBitmap);
         calculateAttribute();
     }
@@ -118,21 +118,21 @@ public class SkyBoxFilter {
         if (mMipmapTextureId == GlUtil.GL_NOT_INIT) {
             return;
         }
-        GLES20.glUseProgram(mHProgram);
-        GLES20.glUniformMatrix4fv(mHProjMatrix,1,false,mProjectMatrix,0);
-        GLES20.glUniformMatrix4fv(mHViewMatrix,1,false,mViewMatrix,0);
-        GLES20.glUniformMatrix4fv(mHModelMatrix,1,false,mModelMatrix,0);
-        GLES20.glUniformMatrix4fv(mHRotateMatrix,1,false,mRotateMatrix,0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mMipmapTextureId);
-        GLES20.glUniform1i(mHUTexture, 0);
-        GLES20.glEnableVertexAttribArray(mHPosition);
-        GLES20.glVertexAttribPointer(mHPosition,3,GLES20.GL_FLOAT,false,0, mVertexBuffer);
-        GLES20.glEnableVertexAttribArray(mHCoordinate);
-        GLES20.glVertexAttribPointer(mHCoordinate,2,GLES20.GL_FLOAT,false,0, mTextureBuffer);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vCount);
+        GLES30.glUseProgram(mHProgram);
+        GLES30.glUniformMatrix4fv(mHProjMatrix,1,false,mProjectMatrix,0);
+        GLES30.glUniformMatrix4fv(mHViewMatrix,1,false,mViewMatrix,0);
+        GLES30.glUniformMatrix4fv(mHModelMatrix,1,false,mModelMatrix,0);
+        GLES30.glUniformMatrix4fv(mHRotateMatrix,1,false,mRotateMatrix,0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mMipmapTextureId);
+        GLES30.glUniform1i(mHUTexture, 0);
+        GLES30.glEnableVertexAttribArray(mHPosition);
+        GLES30.glVertexAttribPointer(mHPosition,3,GLES30.GL_FLOAT,false,0, mVertexBuffer);
+        GLES30.glEnableVertexAttribArray(mHCoordinate);
+        GLES30.glVertexAttribPointer(mHCoordinate,2,GLES30.GL_FLOAT,false,0, mTextureBuffer);
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, vCount);
 
-        GLES20.glDisableVertexAttribArray(mHPosition);
+        GLES30.glDisableVertexAttribArray(mHPosition);
 
     }
 

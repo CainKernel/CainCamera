@@ -1,10 +1,8 @@
 package com.cgfay.caincamera.core;
 
-import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.GLES30;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -12,17 +10,15 @@ import android.os.Message;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
-import com.cgfay.caincamera.activity.CapturePreviewActivity;
 import com.cgfay.caincamera.bean.CameraInfo;
 import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.facedetector.DetectorCallback;
 import com.cgfay.caincamera.facedetector.FaceManager;
-import com.cgfay.caincamera.filter.base.BaseImageFilter;
-import com.cgfay.caincamera.filter.base.DisplayFilter;
+import com.cgfay.caincamera.filter.base.BaseImageFilterGroup;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
 import com.cgfay.caincamera.gles.EglCore;
-import com.cgfay.caincamera.multimedia.VideoEncoderCore;
 import com.cgfay.caincamera.gles.WindowSurface;
+import com.cgfay.caincamera.multimedia.VideoEncoderCore;
 import com.cgfay.caincamera.type.FilterType;
 import com.cgfay.caincamera.type.ScaleType;
 import com.cgfay.caincamera.utils.CameraUtils;
@@ -340,18 +336,13 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         private static final int BPP = 4;
 
         private CameraFilter mCameraFilter;
-        private BaseImageFilter mFilter;
+        private BaseImageFilterGroup mFilter;
         // 关键点绘制（调试用）
         private FacePointsDrawer mFacePointsDrawer;
 
         private ScaleType mScaleType = ScaleType.CENTER_CROP;
         private FloatBuffer mVertexBuffer;
         private FloatBuffer mTextureBuffer;
-
-        // 预览的TextureId
-        private int mCurrentTextureId;
-        // 预览以及录制的帧
-        private DisplayFilter mDisplayFilter;
 
         private final Camera.PreviewCallback mPreviewCallback;
 
@@ -404,7 +395,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                     break;
 
                 case MSG_FILTER_TYPE:
-                    setFilter((FilterType) msg.obj);
+                    changeFilter((FilterType) msg.obj);
                     break;
 
                 // 重置
@@ -513,13 +504,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             CameraUtils.openCamera(CameraUtils.DESIRED_PREVIEW_FPS);
             calculateImageSize();
             mCameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
-            mFilter = FilterManager.getFilter(FilterType.REALTIMEBEAUTY);
+            mFilter = FilterManager.getFilterGroup();
             mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
-            // 显示
-            if (mDisplayFilter == null) {
-                mDisplayFilter = new DisplayFilter();
-                mDisplayFilter.onInputSizeChanged(mImageWidth, mImageHeight);
-            }
             // 禁用深度测试和背面绘制
             GLES30.glDisable(GLES30.GL_DEPTH_TEST);
             GLES30.glDisable(GLES30.GL_CULL_FACE);
@@ -536,7 +522,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             adjustViewSize();
             mCameraFilter.updateTextureBuffer();
             CameraUtils.startPreviewTexture(mCameraTexture);
-            mDisplayFilter.onDisplayChanged(mViewWidth, mViewHeight);
             mFilter.onDisplayChanged(mViewWidth, mViewHeight);
             isPreviewing = true;
         }
@@ -560,10 +545,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             if (mCameraFilter != null) {
                 mCameraFilter.release();
                 mCameraFilter = null;
-            }
-            if (mDisplayFilter != null) {
-                mDisplayFilter.release();
-                mDisplayFilter = null;
             }
             if (mFilter != null) {
                 mFilter.release();
@@ -725,21 +706,16 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                 mCameraFilter.onDisplayChanged(mViewWidth, mViewHeight);
             }
             mCameraFilter.initFramebuffer(mImageWidth, mImageHeight);
-            if (mFilter != null) {
-                mFilter.initFramebuffer(mImageWidth, mImageHeight);
-            }
         }
 
         /**
          * 更新filter
          * @param type Filter类型
          */
-        private void setFilter(FilterType type) {
+        private void changeFilter(FilterType type) {
             if (mFilter != null) {
-                mFilter.release();
+                mFilter.changeFilter(type);
             }
-            mFilter = FilterManager.getFilter(type);
-            mFilter.initFramebuffer(mImageWidth, mImageHeight);
         }
 
         /**
@@ -826,30 +802,15 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         private void draw() {
             // TODO 加入Framebuffer后，美颜算法无效果
             if (mFilter == null) {
-//                mCurrentTextureId = mCameraFilter.drawFrameBuffer(mCameraTextureId);
-                mCameraFilter.drawFrameBuffer(mCameraTextureId);
+                mCameraFilter.drawFrame(mCameraTextureId);
             } else {
-                mCurrentTextureId = mCameraFilter.drawFrameBuffer(mCameraTextureId);
-//                mCurrentTextureId = mFilter.drawFrameBuffer(mCurrentTextureId, mVertexBuffer, mTextureBuffer);
-                mFilter.drawFrame(mCurrentTextureId, mVertexBuffer, mTextureBuffer);
+                int id = mCameraFilter.drawFrameBuffer(mCameraTextureId);
+                mFilter.drawFrame(id, mVertexBuffer, mTextureBuffer);
             }
-//            drawDisplay();
             // 是否绘制点
             if (enableDrawPoints && mFacePointsDrawer != null) {
                 mFacePointsDrawer.drawPoints();
             }
-        }
-
-        /**
-         * 绘制显示帧(预览或者录制)
-         */
-        private void drawDisplay() {
-            if (mDisplayFilter == null) {
-                mDisplayFilter = new DisplayFilter();
-                mDisplayFilter.onInputSizeChanged(mImageWidth, mImageHeight);
-                mDisplayFilter.onDisplayChanged(mViewWidth, mViewHeight);
-            }
-            mDisplayFilter.drawFrame(mCurrentTextureId);
         }
 
         /**

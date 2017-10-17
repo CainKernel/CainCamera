@@ -1,7 +1,7 @@
 package com.cgfay.caincamera.filter.sticker;
 
 import android.graphics.Bitmap;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
@@ -178,7 +178,7 @@ public class StickerFilter extends BaseImageFilter {
         }
         // 绘制贴纸
         GLES30.glEnable(GLES30.GL_DEPTH_TEST);
-        GLES30.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
         GLES30.glUseProgram(mProgramHandle);
 //        calculateMVPMatrix();
         GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);

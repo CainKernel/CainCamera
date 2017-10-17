@@ -2,6 +2,7 @@ package com.cgfay.caincamera.filter.base;
 
 import android.opengl.GLES30;
 
+import com.cgfay.caincamera.type.FilterType;
 import com.cgfay.caincamera.utils.GlUtil;
 
 import java.nio.FloatBuffer;
@@ -12,7 +13,7 @@ import java.util.List;
  * 滤镜组基类
  * Created by cain on 17-7-17.
  */
-public class BaseImageFilterGroup extends BaseImageFilter {
+public abstract class BaseImageFilterGroup extends BaseImageFilter {
 
     private static int[] mFramebuffers;
     private static int[] mFrameBufferTextures;
@@ -184,6 +185,8 @@ public class BaseImageFilterGroup extends BaseImageFilter {
         mFilters.addAll(filters);
         addFrambuffers();
     }
+
+    public abstract void changeFilter(FilterType type);
 
     /**
      * 添加Framebuffer

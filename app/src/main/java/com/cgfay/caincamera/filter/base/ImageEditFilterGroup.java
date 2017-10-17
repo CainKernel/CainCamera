@@ -97,4 +97,9 @@ public class ImageEditFilterGroup extends BaseImageFilterGroup {
         ((SharpnessFilter)mFilters.get(SHARPNESS)).setSharpness(sharpness);
     }
 
+
+    @Override
+    public void changeFilter(FilterType type) {
+
+    }
 }
