@@ -123,6 +123,7 @@ public class CapturePreviewActivity extends AppCompatActivity
         File file = new File(mPath);
         String newPath = ParamsManager.AlbumPath + file.getName();
         FileUtils.copyFile(mPath, newPath);
+        finish();
     }
 
 
