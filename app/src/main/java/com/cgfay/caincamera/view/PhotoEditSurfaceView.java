@@ -8,7 +8,7 @@ import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
 import com.cgfay.caincamera.bean.ImageMeta;
-import com.cgfay.caincamera.filter.base.ImageEditFilterGroup;
+import com.cgfay.caincamera.filter.group.ImageEditFilterGroup;
 import com.cgfay.caincamera.filter.image.OriginalFilter;
 import com.cgfay.caincamera.utils.GlUtil;
 

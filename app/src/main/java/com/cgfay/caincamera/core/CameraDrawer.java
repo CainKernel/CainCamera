@@ -19,6 +19,7 @@ import com.cgfay.caincamera.filter.camera.CameraFilter;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.WindowSurface;
 import com.cgfay.caincamera.multimedia.VideoEncoderCore;
+import com.cgfay.caincamera.type.FilterGroupType;
 import com.cgfay.caincamera.type.FilterType;
 import com.cgfay.caincamera.type.ScaleType;
 import com.cgfay.caincamera.utils.CameraUtils;
@@ -27,6 +28,7 @@ import com.cgfay.caincamera.utils.TextureRotationUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -47,8 +49,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
     private CameraDrawerHandler mDrawerHandler;
     private HandlerThread mHandlerThread;
 
-    // 锁
+    // 操作锁
     private final Object mSynOperation = new Object();
+    // Looping锁
     private final Object mSyncIsLooping = new Object();
     private long loopingInterval; // 根据fps计算
     private boolean isPreviewing = false;   // 是否预览状态
@@ -145,6 +148,20 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         synchronized (mSynOperation) {
             mDrawerHandler.sendMessage(mDrawerHandler
                     .obtainMessage(CameraDrawerHandler.MSG_FILTER_TYPE, type));
+        }
+    }
+
+    /**
+     * 改变滤镜组类型
+     * @param type
+     */
+    public void changeFilterGroup(FilterGroupType type) {
+        if (mDrawerHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mDrawerHandler.sendMessage(mDrawerHandler
+                    .obtainMessage(CameraDrawerHandler.MSG_FILTER_GROUP, type));
         }
     }
 
@@ -301,6 +318,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
 
         static final int MSG_TAKE_PICTURE = 0x400;
 
+        // 切换滤镜组
+        static final int MSG_FILTER_GROUP = 0x500;
+
+
         // 调试
         private boolean enableDebug = false;
 
@@ -344,11 +365,11 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         private FloatBuffer mVertexBuffer;
         private FloatBuffer mTextureBuffer;
 
-        private final Camera.PreviewCallback mPreviewCallback;
+        private final WeakReference<Camera.PreviewCallback> mWeakPreviewCallback;
 
         public CameraDrawerHandler(Looper looper, Camera.PreviewCallback previewCallback) {
             super(looper);
-            mPreviewCallback = previewCallback;
+            mWeakPreviewCallback = new WeakReference<Camera.PreviewCallback>(previewCallback);
             mVertexBuffer = ByteBuffer
                     .allocateDirect(TextureRotationUtils.CubeVertices.length * 4)
                     .order(ByteOrder.nativeOrder())
@@ -394,8 +415,14 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                     drawFrame();
                     break;
 
+                // 切换滤镜
                 case MSG_FILTER_TYPE:
                     changeFilter((FilterType) msg.obj);
+                    break;
+
+                // 切换滤镜组
+                case MSG_FILTER_GROUP:
+                    changeFilterGroup((FilterGroupType) msg.obj);
                     break;
 
                 // 重置
@@ -558,12 +585,15 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
 
         /**
          * 初始化预览回调
+         * TODO MIUI中无法预览回调，这里需要修改
          */
         private void initPreviewCallback() {
-            Size previewSize = CameraUtils.getPreviewSize();
-            int size = previewSize.getWidth() * previewSize.getHeight() * 3 / 2;
-            mPreviewBuffer = new byte[size];
-            CameraUtils.addPreviewCallbacks(mPreviewCallback, mPreviewBuffer);
+            if (mWeakPreviewCallback.get() != null) {
+                Size previewSize = CameraUtils.getPreviewSize();
+                int size = previewSize.getWidth() * previewSize.getHeight() * 3 / 2;
+                mPreviewBuffer = new byte[size];
+                CameraUtils.addPreviewCallbacks(mWeakPreviewCallback.get(), mPreviewBuffer);
+            }
         }
 
         /**
@@ -715,6 +745,21 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         private void changeFilter(FilterType type) {
             if (mFilter != null) {
                 mFilter.changeFilter(type);
+            }
+        }
+
+        /**
+         * 切换滤镜组
+         * @param type
+         */
+        private void changeFilterGroup(FilterGroupType type) {
+            synchronized (mSyncIsLooping) {
+                if (mFilter != null) {
+                    mFilter.release();
+                }
+                mFilter = FilterManager.getFilterGroup(type);
+                mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
+                mFilter.onDisplayChanged(mViewWidth, mViewHeight);
             }
         }
 

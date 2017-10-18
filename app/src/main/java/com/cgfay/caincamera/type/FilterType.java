@@ -17,6 +17,7 @@ public enum FilterType {
     SATURATION, // 饱和度
     SHARPNESS, // 锐度
 
+    WATERMASK, // 水印
 
     // 人脸美颜美妆贴纸
     REALTIMEBEAUTY, // 实时美颜

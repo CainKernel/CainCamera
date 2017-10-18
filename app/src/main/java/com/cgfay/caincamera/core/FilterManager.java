@@ -4,9 +4,10 @@ import com.cgfay.caincamera.filter.advanced.SketchFilter;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.base.BaseImageFilterGroup;
 import com.cgfay.caincamera.filter.base.DisplayFilter;
-import com.cgfay.caincamera.filter.beauty.RealTimeBeautyFilterGroup;
+import com.cgfay.caincamera.filter.group.DefaultFilterGroup;
 import com.cgfay.caincamera.filter.beauty.RealtimeBeautify;
 import com.cgfay.caincamera.filter.beauty.WhitenOrReddenFilter;
+import com.cgfay.caincamera.filter.group.MakeUpFilterGroup;
 import com.cgfay.caincamera.filter.image.BrightnessFilter;
 import com.cgfay.caincamera.filter.image.ContrastFilter;
 import com.cgfay.caincamera.filter.image.ExposureFilter;
@@ -16,6 +17,7 @@ import com.cgfay.caincamera.filter.image.MirrorFilter;
 import com.cgfay.caincamera.filter.image.SaturationFilter;
 import com.cgfay.caincamera.filter.image.SharpnessFilter;
 import com.cgfay.caincamera.filter.sticker.StickerFilter;
+import com.cgfay.caincamera.type.FilterGroupType;
 import com.cgfay.caincamera.type.FilterIndex;
 import com.cgfay.caincamera.type.FilterType;
 
@@ -42,6 +44,8 @@ public class FilterManager {
         mIndexMap.put(FilterType.SATURATION, FilterIndex.ImageEditIndex);
         mIndexMap.put(FilterType.SHARPNESS, FilterIndex.ImageEditIndex);
 
+        // 水印
+        mIndexMap.put(FilterType.WATERMASK, FilterIndex.WaterMaskIndex);
 
         // 美颜
         mIndexMap.put(FilterType.REALTIMEBEAUTY, FilterIndex.BeautyIndex);
@@ -65,18 +69,6 @@ public class FilterManager {
 
     public static BaseImageFilter getFilter(FilterType type) {
         switch (type) {
-            //  颜色滤镜相关
-            case SKETCH:
-                return new SketchFilter();
-
-            case STICKER:
-                return new StickerFilter();
-            // 美颜滤镜
-            // 白皙还是红润
-            case WHITENORREDDEN:
-                return new WhitenOrReddenFilter();
-            case REALTIMEBEAUTY:
-                return new RealtimeBeautify();
 
             // 图片基本属性编辑滤镜
             // 饱和度
@@ -103,6 +95,24 @@ public class FilterManager {
             // 锐度
             case SHARPNESS:
                 return new SharpnessFilter();
+
+            //  素描
+            case SKETCH:
+                return new SketchFilter();
+
+            // 贴纸
+            case STICKER:
+                return new StickerFilter();
+
+            // 白皙还是红润
+            case WHITENORREDDEN:
+                return new WhitenOrReddenFilter();
+            // 实时磨皮
+            case REALTIMEBEAUTY:
+                return new RealtimeBeautify();
+
+
+
             default:
                 return new DisplayFilter();
         }
@@ -113,7 +123,20 @@ public class FilterManager {
      * @return
      */
     public static BaseImageFilterGroup getFilterGroup() {
-        return new RealTimeBeautyFilterGroup();
+        return new DefaultFilterGroup();
+    }
+
+    public static BaseImageFilterGroup getFilterGroup(FilterGroupType type) {
+        switch (type) {
+            // 彩妆滤镜组
+            case MAKEUP:
+                return new MakeUpFilterGroup();
+
+            // 默认滤镜组
+            case DEFAULT:
+            default:
+                return new DefaultFilterGroup();
+        }
     }
 
     /**

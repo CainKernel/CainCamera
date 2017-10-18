@@ -14,7 +14,7 @@ public class FaceManager {
         mFaceDetector = new FaceDetector();
     }
 
-    public static FaceManager getInstance() {
+    public static synchronized FaceManager getInstance() {
 
         if (instance == null) {
             instance = new FaceManager();

@@ -23,6 +23,9 @@ public enum FilterIndex {
     // 彩妆
     MakeUpIndex,
 
+    // 水印
+    WaterMaskIndex,
+
     // 图片编辑
     ImageEditIndex
 }

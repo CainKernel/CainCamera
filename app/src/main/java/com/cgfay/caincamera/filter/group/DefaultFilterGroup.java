@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.filter.beauty;
+package com.cgfay.caincamera.filter.group;
 
 import com.cgfay.caincamera.core.FilterManager;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 实时美颜滤镜组
+ * 默认实时美颜滤镜组
  * Created by cain on 2017/7/30.
  */
-public class RealTimeBeautyFilterGroup extends BaseImageFilterGroup {
+public class DefaultFilterGroup extends BaseImageFilterGroup {
     // 实时美颜层
     private static final int BeautyfyIndex = 0;
     // 颜色层
@@ -21,18 +21,19 @@ public class RealTimeBeautyFilterGroup extends BaseImageFilterGroup {
     // 瘦脸大眼层
     private static final int FaceStretchIndex = 2;
 
-    public RealTimeBeautyFilterGroup() {
+    public DefaultFilterGroup() {
         this(initFilters());
     }
 
-    private RealTimeBeautyFilterGroup(List<BaseImageFilter> filters) {
+    private DefaultFilterGroup(List<BaseImageFilter> filters) {
         mFilters = filters;
     }
 
-    public static List<BaseImageFilter> initFilters() {
+    private static List<BaseImageFilter> initFilters() {
         List<BaseImageFilter> filters = new ArrayList<BaseImageFilter>();
         filters.add(BeautyfyIndex, FilterManager.getFilter(FilterType.REALTIMEBEAUTY));
-        filters.add(ColorIndex, FilterManager.getFilter(FilterType.SKETCH));
+        filters.add(ColorIndex, FilterManager.getFilter(FilterType.NONE));
+        filters.add(FaceStretchIndex, FilterManager.getFilter(FilterType.FACESTRETCH));
         return filters;
     }
 
