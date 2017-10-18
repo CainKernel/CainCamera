@@ -1,18 +1,15 @@
 package com.cgfay.caincamera.filter.base;
 
 import android.graphics.PointF;
-import android.opengl.GLES11Ext;
-import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
 
 import com.cgfay.caincamera.utils.GlUtil;
+import com.cgfay.caincamera.utils.TextureRotationUtils;
 
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 import java.util.LinkedList;
-
-import com.cgfay.caincamera.utils.TextureRotationUtils;
 
 /**
  * 基类滤镜
@@ -192,8 +189,6 @@ public class BaseImageFilter {
         GLES30.glViewport(0, 0, mFrameWidth, mFrameHeight);
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[0]);
         GLES30.glUseProgram(mProgramHandle);
-        runPendingOnDrawTasks();
-
         vertexBuffer.position(0);
         GLES30.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
                 GLES30.GL_FLOAT, false, 0, vertexBuffer);
