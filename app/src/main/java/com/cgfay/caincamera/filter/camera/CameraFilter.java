@@ -64,64 +64,8 @@ public class CameraFilter extends BaseImageFilter {
     }
 
     @Override
-    public void drawFrame(int textureId, FloatBuffer vertexBuffer,
-                          FloatBuffer textureBuffer){
-        GLES30.glUseProgram(mProgramHandle);
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
-        GLES30.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
-        calculateMVPMatrix();
-        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
+    public void onDrawArraysBegin() {
         GLES30.glUniformMatrix4fv(muTexMatrixLoc, 1, false, mTextureMatrix, 0);
-        runPendingOnDrawTasks();
-        GLES30.glEnableVertexAttribArray(maPositionLoc);
-        GLES30.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
-                GLES30.GL_FLOAT, false, mVertexStride, vertexBuffer);
-        GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
-        GLES30.glVertexAttribPointer(maTextureCoordLoc, 2,
-                GLES30.GL_FLOAT, false, mTexCoordStride, textureBuffer);
-        GLES30.glUniform1i(mInputTextureLoc, 0);
-        onDrawArraysBegin();
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
-        GLES30.glDisableVertexAttribArray(maPositionLoc);
-        GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
-        onDrawArraysAfter();
-        GLES30.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
-        GLES30.glUseProgram(0);
-    }
-
-    public int drawFrameBuffer(int textureId) {
-        return drawFrameBuffer(textureId, mVertexArray, mTexCoordArray);
-    }
-
-    public int drawFrameBuffer(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
-        if (mFramebuffers == null) {
-            return GlUtil.GL_NOT_INIT;
-        }
-        runPendingOnDrawTasks();
-        GLES30.glViewport(0, 0, mFrameWidth, mFrameHeight);
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[0]);
-        GLES30.glUseProgram(mProgramHandle);
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
-        GLES30.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
-        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
-        GLES30.glUniformMatrix4fv(muTexMatrixLoc, 1, false, mTextureMatrix, 0);
-        GLES30.glEnableVertexAttribArray(maPositionLoc);
-        GLES30.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
-                GLES30.GL_FLOAT, false, mVertexStride, vertexBuffer);
-        GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
-        GLES30.glVertexAttribPointer(maTextureCoordLoc, 2,
-                GLES30.GL_FLOAT, false, mTexCoordStride, textureBuffer);
-        GLES30.glUniform1i(mInputTextureLoc, 0);
-        onDrawArraysBegin();
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
-        GLES30.glDisableVertexAttribArray(maPositionLoc);
-        GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
-        onDrawArraysAfter();
-        GLES30.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
-        GLES30.glUseProgram(0);
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
-        GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
-        return mFramebufferTextures[0];
     }
 
     public void updateTextureBuffer() {

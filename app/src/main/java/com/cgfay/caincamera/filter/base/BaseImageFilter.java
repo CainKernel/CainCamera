@@ -143,22 +143,27 @@ public class BaseImageFilter {
             return;
         }
         GLES30.glUseProgram(mProgramHandle);
+        runPendingOnDrawTasks();
+
+        vertexBuffer.position(0);
+        GLES30.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
+                GLES30.GL_FLOAT, false, 0, vertexBuffer);
+        GLES30.glEnableVertexAttribArray(maPositionLoc);
+
+        textureBuffer.position(0);
+        GLES30.glVertexAttribPointer(maTextureCoordLoc, 2,
+                GLES30.GL_FLOAT, false, 0, textureBuffer);
+        GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
+
+        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(getTextureType(), textureId);
-        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
-        runPendingOnDrawTasks();
-        GLES30.glEnableVertexAttribArray(maPositionLoc);
-        GLES30.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
-                GLES30.GL_FLOAT, false, mVertexStride, vertexBuffer);
-        GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
-        GLES30.glVertexAttribPointer(maTextureCoordLoc, CoordsPerTexture,
-                GLES30.GL_FLOAT, false, mTexCoordStride, textureBuffer);
         GLES30.glUniform1i(mInputTextureLoc, 0);
         onDrawArraysBegin();
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
+        onDrawArraysAfter();
         GLES30.glDisableVertexAttribArray(maPositionLoc);
         GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
-        onDrawArraysAfter();
         GLES30.glBindTexture(getTextureType(), 0);
         GLES30.glUseProgram(0);
     }
@@ -187,21 +192,27 @@ public class BaseImageFilter {
         GLES30.glViewport(0, 0, mFrameWidth, mFrameHeight);
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[0]);
         GLES30.glUseProgram(mProgramHandle);
+        runPendingOnDrawTasks();
+
+        vertexBuffer.position(0);
+        GLES30.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
+                GLES30.GL_FLOAT, false, 0, vertexBuffer);
+        GLES30.glEnableVertexAttribArray(maPositionLoc);
+
+        textureBuffer.position(0);
+        GLES30.glVertexAttribPointer(maTextureCoordLoc, 2,
+                GLES30.GL_FLOAT, false, 0, textureBuffer);
+        GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
+
+        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(getTextureType(), textureId);
-        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
-        GLES30.glEnableVertexAttribArray(maPositionLoc);
-        GLES30.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
-                GLES30.GL_FLOAT, false, mVertexStride, vertexBuffer);
-        GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
-        GLES30.glVertexAttribPointer(maTextureCoordLoc, 2,
-                GLES30.GL_FLOAT, false, mTexCoordStride, textureBuffer);
         GLES30.glUniform1i(mInputTextureLoc, 0);
         onDrawArraysBegin();
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
+        onDrawArraysAfter();
         GLES30.glDisableVertexAttribArray(maPositionLoc);
         GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
-        onDrawArraysAfter();
         GLES30.glBindTexture(getTextureType(), 0);
         GLES30.glUseProgram(0);
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
