@@ -7,6 +7,9 @@ import android.media.MediaFormat;
 import android.util.Log;
 import android.view.Surface;
 
+import com.cgfay.caincamera.core.VideoRecordDrawer;
+import com.cgfay.caincamera.gles.EglCore;
+
 import java.io.IOException;
 
 /**
@@ -34,12 +37,14 @@ public class VideoMediaEncoder extends MediaEncoder {
 
     private Surface mSurface;
 
+    private VideoRecordDrawer mRenderDrawer;
+
     public VideoMediaEncoder(MediaEncoderMuxer muxer, EncoderListener listener,
                              int width, int height) {
         super(muxer, listener);
         mWidth = width;
         mHeight = height;
-
+        mRenderDrawer = VideoRecordDrawer.createDrawer(TAG, mWidth, mHeight);
     }
 
     @Override
@@ -47,9 +52,21 @@ public class VideoMediaEncoder extends MediaEncoder {
         boolean result = super.frameAvailable();
         if (result) {
             // 绘制
-
+            videoDraw();
         }
         return result;
+    }
+
+    /**
+     * 绘制
+     */
+    private void videoDraw() {
+        mRenderDrawer.sendDraw();
+    }
+
+
+    public void setEglContext(final EglCore egl, final int tex_id) {
+        mRenderDrawer.setEglContext(egl, tex_id, mSurface, true);
     }
 
     @Override
@@ -86,6 +103,10 @@ public class VideoMediaEncoder extends MediaEncoder {
             mSurface = null;
         }
 
+        if (mRenderDrawer != null) {
+            mRenderDrawer.release();
+            mRenderDrawer = null;
+        }
         super.release();
     }
 
@@ -176,5 +197,13 @@ public class VideoMediaEncoder extends MediaEncoder {
     protected void endOfInputStream() {
         mMediaCodec.signalEndOfInputStream();
         mIsEOS = true;
+    }
+
+    /**
+     * 获取视频录制绘制器
+     * @return
+     */
+    public VideoRecordDrawer getVideoDrawer() {
+        return mRenderDrawer;
     }
 }

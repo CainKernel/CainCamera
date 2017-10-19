@@ -202,7 +202,9 @@ public class EglSurfaceBase {
         }
         Intent intent = new Intent(ParamsManager.context, CapturePreviewActivity.class);
         intent.putExtra(CapturePreviewActivity.PATH, filename);
-        ParamsManager.context.startActivity(intent);
+        if (ParamsManager.context != null) {
+            ParamsManager.context.startActivity(intent);
+        }
     }
 
     /**
