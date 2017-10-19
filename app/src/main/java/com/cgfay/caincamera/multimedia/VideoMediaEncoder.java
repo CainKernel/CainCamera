@@ -37,14 +37,14 @@ public class VideoMediaEncoder extends MediaEncoder {
 
     private Surface mSurface;
 
-    private VideoRecordDrawer mRenderDrawer;
+    private RecordDrawer mRenderDrawer;
 
     public VideoMediaEncoder(MediaEncoderMuxer muxer, EncoderListener listener,
                              int width, int height) {
         super(muxer, listener);
         mWidth = width;
         mHeight = height;
-        mRenderDrawer = VideoRecordDrawer.createDrawer(TAG, mWidth, mHeight);
+        mRenderDrawer = new VideoRecordDrawer(TAG, mWidth, mHeight);
     }
 
     @Override
@@ -65,8 +65,13 @@ public class VideoMediaEncoder extends MediaEncoder {
     }
 
 
-    public void setEglContext(final EglCore egl, final int tex_id) {
-        mRenderDrawer.setEglContext(egl, tex_id, mSurface, true);
+    /**
+     * 设置OpenGLES 共享上下文
+     * @param eglCore
+     * @param tex_id
+     */
+    public void setEglContext(final EglCore eglCore, final int tex_id) {
+        mRenderDrawer.setEglContext(eglCore, tex_id, mSurface, true);
     }
 
     @Override
@@ -203,7 +208,7 @@ public class VideoMediaEncoder extends MediaEncoder {
      * 获取视频录制绘制器
      * @return
      */
-    public VideoRecordDrawer getVideoDrawer() {
+    public RecordDrawer getVideoDrawer() {
         return mRenderDrawer;
     }
 }

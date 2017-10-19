@@ -10,21 +10,21 @@ import android.view.Surface;
 import com.cgfay.caincamera.filter.base.DisplayFilter;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.WindowSurface;
+import com.cgfay.caincamera.multimedia.RecordDrawer;
 
 import java.lang.ref.WeakReference;
 
 /**
+ * 视频录制绘制器
  * Created by cain on 2017/10/19.
  */
 
-public class VideoRecordDrawer {
+public class VideoRecordDrawer implements RecordDrawer {
 
     private static final boolean VERBOSE = false;
     private static final String TAG = "VideoRecordDrawer";
 
     private final Object mSync = new Object();
-
-    private static VideoRecordDrawer mInstance;
 
     private HandlerThread mHandlerThread;
     private RecordRenderHandler mRenderHandler;
@@ -40,24 +40,15 @@ public class VideoRecordDrawer {
 
     private int mCurrentTextureId;
 
-    public static final VideoRecordDrawer createDrawer(final String name, int width, int height) {
-        if (mInstance == null) {
-            mInstance = new VideoRecordDrawer(width, height);
-            synchronized (mInstance.mSync) {
-                mInstance.create(!TextUtils.isEmpty(name) ? name : TAG);
-            }
-        }
-        return mInstance;
-    }
-
     /**
      * 构造函数
      * @param width
      * @param height
      */
-    private VideoRecordDrawer(int width, int height) {
+    public VideoRecordDrawer(String name, int width, int height) {
         mWidth = width;
         mHeight = height;
+        create(!TextUtils.isEmpty(name) ? name : TAG);
     }
 
     /**
@@ -248,7 +239,10 @@ public class VideoRecordDrawer {
          * 释放资源
          */
         private void release() {
-
+            if (mFilter != null) {
+                mFilter.release();
+                mFilter = null;
+            }
         }
     }
 
