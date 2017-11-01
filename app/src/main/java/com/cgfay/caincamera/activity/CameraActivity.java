@@ -371,31 +371,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     /**
-     * 切换预览宽高比(暂未调整完成)
-     */
-    private void changePreviewRatio() {
-        mRatioIndex++;
-        mRatioIndex %= mAspectRatio.length;
-        mCurrentRatio = mAspectRatio[mRatioIndex];
-        if (mAspectLayout != null) {
-            CameraUtils.setCurrentAspectRatio(mCurrentRatio);
-            mAspectLayout.setAspectRatio(CameraUtils.getCurrentRatio());
-            // 更新预览视图大小
-            ViewTreeObserver viewTreeObserver = mAspectLayout.getViewTreeObserver();
-            viewTreeObserver.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                @Override
-                public boolean onPreDraw() {
-                    int width = mAspectLayout.getWidth();
-                    int height = mAspectLayout.getHeight();
-                    CameraDrawer.INSTANCE.updatePreview(width, height);
-                    return true;
-                }
-            });
-            CameraDrawer.INSTANCE.updatePreviewImage();
-        }
-    }
-
-    /**
      * 点击SurfaceView
      * @param x x轴坐标
      * @param y y轴坐标

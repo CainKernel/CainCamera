@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.utils;
+package com.cgfay.caincamera.camera;
 
 import android.app.Activity;
 import android.graphics.SurfaceTexture;
@@ -8,6 +8,7 @@ import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.bean.CameraInfo;
 import com.cgfay.caincamera.bean.Size;
+import com.cgfay.caincamera.utils.CameraUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,35 +17,54 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Created by cain on 2017/7/9.
+ * 相机控制管理器
+ * 不能继承该类并进行修改
+ * Created by cain.huang on 2017/11/1.
  */
 
-public class CameraUtils {
+public final class CameraManager {
+
+    private static CameraManager mInstance;
 
     // 相机默认宽高，相机的宽度和高度跟屏幕坐标不一样，手机屏幕的宽度和高度是反过来的。
-    public static final int DEFAULT_WIDTH = 1280;
-    public static final int DEFAULT_HEIGHT = 720;
+    public final int DEFAULT_WIDTH = 1280;
+    public final int DEFAULT_HEIGHT = 720;
     // 期望fps
-    public static final int DESIRED_PREVIEW_FPS = 30;
+    public final int DESIRED_PREVIEW_FPS = 30;
 
     // 这里反过来是因为相机的分辨率跟屏幕的分辨率宽高刚好反过来
-    public static final float Ratio_4_3 = 0.75f;
-    public static final float Ratio_1_1 = 1.0f;
-    public static final float Ratio_16_9 = 0.5625f;
+    public final float Ratio_4_3 = 0.75f;
+    public final float Ratio_1_1 = 1.0f;
+    public final float Ratio_16_9 = 0.5625f;
 
-    private static int mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
-    private static Camera mCamera;
-    private static int mCameraPreviewFps;
-    private static int mOrientation = 0;
+    private int mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
+    private Camera mCamera;
+    private int mCameraPreviewFps;
+    private int mOrientation = 0;
 
     // 当前的宽高比
-    private static float mCurrentRatio = Ratio_16_9;
+    private float mCurrentRatio = Ratio_16_9;
+
+    /**
+     * 获取单例
+     * @return
+     */
+    public static CameraManager getInstance() {
+        if (mInstance == null) {
+            mInstance = new CameraManager();
+        }
+        return mInstance;
+    }
+
+    private CameraManager() {}
+
+
 
     /**
      * 打开相机，默认打开前置相机
      * @param expectFps
      */
-    public static void openCamera(int expectFps) {
+    public void openCamera(int expectFps) {
         openCamera(mCameraID, expectFps);
     }
 
@@ -53,22 +73,8 @@ public class CameraUtils {
      * @param cameraID
      * @param expectFps
      */
-    public static void openCamera(int cameraID, int expectFps) {
-        if (mCamera != null) {
-            throw new RuntimeException("camera already initialized!");
-        }
-        mCamera = Camera.open(cameraID);
-        if (mCamera == null) {
-            throw new RuntimeException("Unable to open camera");
-        }
-        mCameraID = cameraID;
-        Camera.Parameters parameters = mCamera.getParameters();
-        mCameraPreviewFps = CameraUtils.chooseFixedPreviewFps(parameters, expectFps * 1000);
-        parameters.setRecordingHint(true);
-        mCamera.setParameters(parameters);
-        setPreviewSize(mCamera, CameraUtils.DEFAULT_WIDTH, CameraUtils.DEFAULT_HEIGHT);
-        setPictureSize(mCamera, CameraUtils.DEFAULT_WIDTH, CameraUtils.DEFAULT_HEIGHT);
-        mCamera.setDisplayOrientation(mOrientation);
+    public void openCamera(int cameraID, int expectFps) {
+        openCamera(cameraID, expectFps, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
 
     /**
@@ -78,7 +84,7 @@ public class CameraUtils {
      * @param expectWidth
      * @param expectHeight
      */
-    public static void openCamera(int cameraID, int expectFps, int expectWidth, int expectHeight) {
+    public void openCamera(int cameraID, int expectFps, int expectWidth, int expectHeight) {
         if (mCamera != null) {
             throw new RuntimeException("camera already initialized!");
         }
@@ -88,7 +94,7 @@ public class CameraUtils {
         }
         mCameraID = cameraID;
         Camera.Parameters parameters = mCamera.getParameters();
-        mCameraPreviewFps = CameraUtils.chooseFixedPreviewFps(parameters, expectFps * 1000);
+        mCameraPreviewFps = chooseFixedPreviewFps(parameters, expectFps * 1000);
         parameters.setRecordingHint(true);
         mCamera.setParameters(parameters);
         setPreviewSize(mCamera, expectWidth, expectHeight);
@@ -97,10 +103,22 @@ public class CameraUtils {
     }
 
     /**
+     * 添加预览回调
+     * @param callback
+     * @param previewBuffer
+     */
+    public void setPreviewCallbackWithBuffer(Camera.PreviewCallback callback, byte[] previewBuffer) {
+        if (mCamera != null) {
+            mCamera.setPreviewCallbackWithBuffer(callback);
+            mCamera.addCallbackBuffer(previewBuffer);
+        }
+    }
+
+    /**
      * 开始预览
      * @param holder
      */
-    public static void startPreview(SurfaceHolder holder) {
+    public void startPreview(SurfaceHolder holder) {
         if (mCamera == null) {
             throw new IllegalStateException("Camera must be set when start preview");
         }
@@ -116,7 +134,7 @@ public class CameraUtils {
      * 开始预览
      * @param texture
      */
-    public static void startPreview(SurfaceTexture texture) {
+    public void startPreview(SurfaceTexture texture) {
         if (mCamera == null) {
             throw new IllegalStateException("Camera must be set when start preview");
         }
@@ -135,7 +153,7 @@ public class CameraUtils {
      * @param cameraID 相机Id
      * @param holder 绑定的SurfaceHolder
      */
-    public static void switchCamera(int cameraID, SurfaceHolder holder) {
+    public void switchCamera(int cameraID, SurfaceHolder holder) {
         if (mCameraID == cameraID) {
             return;
         }
@@ -153,7 +171,7 @@ public class CameraUtils {
      * @param cameraId 相机Id
      * @param texture 绑定的SurfaceTexture
      */
-    public static void switchCamera(int cameraId, SurfaceTexture texture) {
+    public void switchCamera(int cameraId, SurfaceTexture texture) {
         if (mCameraID == cameraId) {
             return;
         }
@@ -171,7 +189,7 @@ public class CameraUtils {
      * @param callback
      * @param buffer
      */
-    public static void switchCamera(int cameraId, SurfaceHolder holder,
+    public void switchCamera(int cameraId, SurfaceHolder holder,
                                     Camera.PreviewCallback callback, byte[] buffer) {
         if (mCameraID == cameraId) {
             return;
@@ -191,7 +209,7 @@ public class CameraUtils {
      * @param callback
      * @param buffer
      */
-    public static void switchCamera(int cameraId, SurfaceTexture texture,
+    public void switchCamera(int cameraId, SurfaceTexture texture,
                                     Camera.PreviewCallback callback, byte[] buffer) {
         if (mCameraID == cameraId) {
             return;
@@ -208,7 +226,7 @@ public class CameraUtils {
      * 重新打开相机
      * @param holder
      */
-    public static void reopenCamera(SurfaceHolder holder) {
+    public void reopenCamera(SurfaceHolder holder) {
         releaseCamera();
         openCamera(mCameraID, DESIRED_PREVIEW_FPS);
         startPreview(holder);
@@ -218,7 +236,7 @@ public class CameraUtils {
      * 重新打开相机
      * @param texture
      */
-    public static void reopenCamera(SurfaceTexture texture) {
+    public void reopenCamera(SurfaceTexture texture) {
         releaseCamera();
         openCamera(mCameraID, DESIRED_PREVIEW_FPS);
         startPreview(texture);
@@ -227,7 +245,7 @@ public class CameraUtils {
     /**
      * 停止预览
      */
-    public static void stopPreview() {
+    public void stopPreview() {
         if (mCamera != null) {
             mCamera.stopPreview();
         }
@@ -236,7 +254,7 @@ public class CameraUtils {
     /**
      * 释放相机
      */
-    public static void releaseCamera() {
+    public void releaseCamera() {
         if (mCamera != null) {
             mCamera.setPreviewCallbackWithBuffer(null);
             mCamera.stopPreview();
@@ -246,21 +264,9 @@ public class CameraUtils {
     }
 
     /**
-     * 添加预览回调
-     * @param callback
-     * @param previewBuffer
-     */
-    public static void setPreviewCallbackWithBuffer(Camera.PreviewCallback callback, byte[] previewBuffer) {
-        if (mCamera != null) {
-            mCamera.setPreviewCallbackWithBuffer(callback);
-            mCamera.addCallbackBuffer(previewBuffer);
-        }
-    }
-
-    /**
      * 拍照
      */
-    public static void takePicture(Camera.ShutterCallback shutterCallback,
+    public void takePicture(Camera.ShutterCallback shutterCallback,
                                    Camera.PictureCallback rawCallback,
                                    Camera.PictureCallback pictureCallback) {
         if (mCamera != null) {
@@ -274,7 +280,7 @@ public class CameraUtils {
      * @param expectWidth
      * @param expectHeight
      */
-    private static void setPreviewSize(Camera camera, int expectWidth, int expectHeight) {
+    private void setPreviewSize(Camera camera, int expectWidth, int expectHeight) {
         Camera.Parameters parameters = camera.getParameters();
         Camera.Size size = calculatePerfectSize(parameters.getSupportedPreviewSizes(),
                 expectWidth, expectHeight);
@@ -288,7 +294,7 @@ public class CameraUtils {
      * @param expectWidth
      * @param expectHeight
      */
-    private static void setPictureSize(Camera camera, int expectWidth, int expectHeight) {
+    private void setPictureSize(Camera camera, int expectWidth, int expectHeight) {
         Camera.Parameters parameters = camera.getParameters();
         Camera.Size size = calculatePerfectSize(parameters.getSupportedPictureSizes(),
                 expectWidth, expectHeight);
@@ -304,7 +310,7 @@ public class CameraUtils {
      * 这里Nexus5X的相机简直没法吐槽，后置摄像头倒置了，切换摄像头之后就出现问题了。
      * @param activity
      */
-    public static int calculateCameraPreviewOrientation(Activity activity) {
+    public int calculateCameraPreviewOrientation(Activity activity) {
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(mCameraID, info);
         int rotation = activity.getWindowManager().getDefaultDisplay()
@@ -342,7 +348,7 @@ public class CameraUtils {
      * 获取当前的Camera ID
      * @return
      */
-    public static int getCameraID() {
+    public int getCameraID() {
         return mCameraID;
     }
 
@@ -350,7 +356,7 @@ public class CameraUtils {
      * 获取照片大小
      * @return
      */
-    public static Size getPictureSize() {
+    public Size getPictureSize() {
         if (mCamera != null) {
             Camera.Size size = mCamera.getParameters().getPictureSize();
             Size result = new Size(size.width, size.height);
@@ -363,7 +369,7 @@ public class CameraUtils {
      * 获取预览大小
      * @return
      */
-    public static Size getPreviewSize() {
+    public Size getPreviewSize() {
         if (mCamera != null) {
             Camera.Size size = mCamera.getParameters().getPreviewSize();
             Size result = new Size(size.width, size.height);
@@ -376,7 +382,7 @@ public class CameraUtils {
      * 获取相机信息
      * @return
      */
-    public static CameraInfo getCameraInfo() {
+    public CameraInfo getCameraInfo() {
         if (mCamera != null) {
             Camera.CameraInfo info = new Camera.CameraInfo();
             Camera.getCameraInfo(mCameraID, info);
@@ -390,7 +396,7 @@ public class CameraUtils {
      * 获取当前预览的角度
      * @return
      */
-    public static int getPreviewOrientation() {
+    public int getPreviewOrientation() {
         return mOrientation;
     }
 
@@ -398,7 +404,7 @@ public class CameraUtils {
      * 获取FPS（千秒值）
      * @return
      */
-    public static int getCameraPreviewThousandFps() {
+    public int getCameraPreviewThousandFps() {
         return mCameraPreviewFps;
     }
 
@@ -406,7 +412,7 @@ public class CameraUtils {
      * 获取当前的宽高比
      * @return
      */
-    public static float getCurrentRatio() {
+    public float getCurrentRatio() {
         return mCurrentRatio;
     }
 
@@ -420,7 +426,7 @@ public class CameraUtils {
      * @param expectHeight
      * @return
      */
-    private static Camera.Size calculatePerfectSize(List<Camera.Size> sizes, int expectWidth,
+    private Camera.Size calculatePerfectSize(List<Camera.Size> sizes, int expectWidth,
                                                     int expectHeight) {
         sortList(sizes); // 根据宽度进行排序
 
@@ -490,14 +496,14 @@ public class CameraUtils {
      * 分辨率由大到小排序
      * @param list
      */
-    private static void sortList(List<Camera.Size> list) {
+    private void sortList(List<Camera.Size> list) {
         Collections.sort(list, new CompareAreaSize());
     }
 
     /**
      * 比较器
      */
-    private static class CompareAreaSize implements Comparator<Camera.Size> {
+    private class CompareAreaSize implements Comparator<Camera.Size> {
         @Override
         public int compare(Camera.Size pre, Camera.Size after) {
             return Long.signum((long) pre.width * pre.height -
@@ -511,7 +517,7 @@ public class CameraUtils {
      * @param expectedThoudandFps 期望的FPS
      * @return
      */
-    private static int chooseFixedPreviewFps(Camera.Parameters parameters, int expectedThoudandFps) {
+    private int chooseFixedPreviewFps(Camera.Parameters parameters, int expectedThoudandFps) {
         List<int[]> supportedFps = parameters.getSupportedPreviewFpsRange();
         for (int[] entry : supportedFps) {
             if (entry[0] == entry[1] && entry[0] == expectedThoudandFps) {
@@ -529,4 +535,6 @@ public class CameraUtils {
         }
         return guess;
     }
+
+
 }

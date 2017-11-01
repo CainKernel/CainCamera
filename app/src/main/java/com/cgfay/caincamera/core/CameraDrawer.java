@@ -433,7 +433,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                 case MSG_START_PREVIEW:
                     if (mCameraTexture != null && mCameraFilter != null) {
                         mCameraFilter.updateTextureBuffer();
-                        CameraUtils.startPreviewTexture(mCameraTexture);
+                        CameraUtils.startPreview(mCameraTexture);
+                        CameraUtils.setPreviewCallbackWithBuffer(mWeakPreviewCallback.get(), mPreviewBuffer);
                     }
                     break;
 
@@ -456,9 +457,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
 
                 // 切换相机操作
                 case MSG_SWITCH_CAMERA:
-                    CameraUtils.switchCamera(1 - CameraUtils.getCameraID(),
+                    CameraUtils.switchCamera(1 - CameraUtils.getCameraID(), mCameraTexture,
                             CameraDrawer.this, mPreviewBuffer);
-                    sendMessage(obtainMessage(MSG_START_PREVIEW));
                     break;
 
                 // PreviewCallback回调预览
@@ -536,8 +536,6 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             // 禁用深度测试和背面绘制
             GLES30.glDisable(GLES30.GL_DEPTH_TEST);
             GLES30.glDisable(GLES30.GL_CULL_FACE);
-            // 添加预览回调以及回调buffer，用于人脸检测
-            initPreviewCallback();
             // 初始化人脸检测工具
             initFaceDetection();
         }
@@ -548,7 +546,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             onFilterChanged();
             adjustViewSize();
             mCameraFilter.updateTextureBuffer();
-            CameraUtils.startPreviewTexture(mCameraTexture);
+            CameraUtils.startPreview(mCameraTexture);
+            // 添加预览回调以及回调buffer，用于人脸检测
+            initPreviewCallback();
             mFilter.onDisplayChanged(mViewWidth, mViewHeight);
             isPreviewing = true;
         }
@@ -585,14 +585,14 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
 
         /**
          * 初始化预览回调
-         * TODO MIUI中无法预览回调，这里需要修改
+         * 备注：在某些设备上，需要在startPreview后添加回调才能使得onPreviewFrame回调正常
          */
         private void initPreviewCallback() {
             if (mWeakPreviewCallback.get() != null) {
                 Size previewSize = CameraUtils.getPreviewSize();
                 int size = previewSize.getWidth() * previewSize.getHeight() * 3 / 2;
                 mPreviewBuffer = new byte[size];
-                CameraUtils.addPreviewCallbacks(mWeakPreviewCallback.get(), mPreviewBuffer);
+                CameraUtils.setPreviewCallbackWithBuffer(mWeakPreviewCallback.get(), mPreviewBuffer);
             }
         }
 
