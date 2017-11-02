@@ -541,8 +541,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             CameraUtils.setPreviewSurface(mCameraTexture);
             calculateImageSize();
             mCameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
-//            mFilter = FilterManager.getFilterGroup();
-//            mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
+            mFilter = FilterManager.getFilterGroup();
+            mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
             // 禁用深度测试和背面绘制
             GLES30.glDisable(GLES30.GL_DEPTH_TEST);
             GLES30.glDisable(GLES30.GL_CULL_FACE);
@@ -561,7 +561,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             // 开始预览
             CameraUtils.startPreview();
 
-//            mFilter.onDisplayChanged(mViewWidth, mViewHeight);
+            mFilter.onDisplayChanged(mViewWidth, mViewHeight);
             isPreviewing = true;
         }
 
