@@ -6,6 +6,9 @@ import android.os.HandlerThread;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
+import com.cgfay.caincamera.bean.CameraInfo;
+import com.cgfay.caincamera.bean.Size;
+import com.cgfay.caincamera.camera.CameraManager;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.WindowSurface;
 import com.cgfay.caincamera.utils.GlUtil;
@@ -29,7 +32,8 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
 
     private int mImageWidth;
     private int mImageHeight;
-
+    // 预览的角度
+    private int mOrientation;
 
     public RenderThread() {
         super(TAG);
@@ -117,12 +121,14 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
 
     /**
      * 设置图片大小
-     * @param width
-     * @param height
+     * @param width         宽度
+     * @param height        高度
+     * @param orientation   角度
      */
-    public void setImageSize(int width, int height) {
+    public void setImageSize(int width, int height, int orientation) {
         mImageWidth = width;
         mImageHeight = height;
+        mOrientation = orientation;
         checkHandleAvailable();
         mHandler.post(new Runnable() {
             @Override
@@ -147,7 +153,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
 
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        updateFrame();
+//        updateFrame();
     }
 
     // ------------------------------ 内部方法 -------------------------------------
@@ -189,9 +195,21 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 更新图片大小(相机流大小)
      */
     private void internalupdateImageSize() {
+        calculateImageSize();
         RenderManager.getInstance().onInputSizeChanged(mImageWidth, mImageHeight);
     }
 
+    /**
+     * 计算image的宽高
+     */
+    private void calculateImageSize() {
+        Log.d("calculateImageSize", "orientation = " + mOrientation);
+        if (mOrientation == 90 || mOrientation == 270) {
+            int temp = mImageWidth;
+            mImageWidth = mImageHeight;
+            mImageHeight = temp;
+        }
+    }
     /**
      * 渲染
      */

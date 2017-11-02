@@ -1,5 +1,7 @@
 package com.cgfay.caincamera.render;
 
+import android.util.Log;
+
 import com.cgfay.caincamera.core.FacePointsDrawer;
 import com.cgfay.caincamera.core.FilterManager;
 import com.cgfay.caincamera.filter.base.BaseImageFilterGroup;
@@ -78,7 +80,7 @@ public final class RenderManager {
     private void initFilters() {
         mCameraFilter = new CameraFilter();
         mFacePointsDrawer = new FacePointsDrawer();
-        mRealTimeFilter = FilterManager.getFilterGroup();
+//        mRealTimeFilter = FilterManager.getFilterGroup();
     }
 
     /**

@@ -90,9 +90,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
 
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        if (mDrawerHandler != null) {
-            mDrawerHandler.addNewFrame();
-        }
+//        if (mDrawerHandler != null) {
+//            mDrawerHandler.addNewFrame();
+//        }
     }
 
     /**
@@ -276,8 +276,12 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         mDrawerHandler = null;
     }
 
+    private long time = 0;
     @Override
     public void onPreviewFrame(final byte[] data, Camera camera) {
+        if (mDrawerHandler != null) {
+            mDrawerHandler.addNewFrame();
+        }
         if (mDrawerHandler != null) {
             synchronized (mSynOperation) {
                 if (isPreviewing || isRecording) {
@@ -289,6 +293,8 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
         if (mPreviewBuffer != null) {
             camera.addCallbackBuffer(mPreviewBuffer);
         }
+        Log.d("onPreviewFrame", "update time = " + (System.currentTimeMillis() - time));
+        time = System.currentTimeMillis();
     }
 
     private class CameraDrawerHandler extends Handler {
@@ -433,8 +439,9 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
                 case MSG_START_PREVIEW:
                     if (mCameraTexture != null && mCameraFilter != null) {
                         mCameraFilter.updateTextureBuffer();
-                        CameraUtils.startPreview(mCameraTexture);
+                        CameraUtils.setPreviewSurface(mCameraTexture);
                         CameraUtils.setPreviewCallbackWithBuffer(mWeakPreviewCallback.get(), mPreviewBuffer);
+                        CameraUtils.startPreview();
                     }
                     break;
 
@@ -528,14 +535,19 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             mCameraTextureId = GlUtil.createTextureOES();
             mCameraTexture = new SurfaceTexture(mCameraTextureId);
             mCameraTexture.setOnFrameAvailableListener(CameraDrawer.this);
+            // 打开相机
             CameraUtils.openCamera(CameraUtils.DESIRED_PREVIEW_FPS);
+            // 设置预览Surface
+            CameraUtils.setPreviewSurface(mCameraTexture);
             calculateImageSize();
             mCameraFilter.onInputSizeChanged(mImageWidth, mImageHeight);
-            mFilter = FilterManager.getFilterGroup();
-            mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
+//            mFilter = FilterManager.getFilterGroup();
+//            mFilter.onInputSizeChanged(mImageWidth, mImageHeight);
             // 禁用深度测试和背面绘制
             GLES30.glDisable(GLES30.GL_DEPTH_TEST);
             GLES30.glDisable(GLES30.GL_CULL_FACE);
+            // 添加预览回调以及回调buffer，用于人脸检测
+            initPreviewCallback();
             // 初始化人脸检测工具
             initFaceDetection();
         }
@@ -546,10 +558,10 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
             onFilterChanged();
             adjustViewSize();
             mCameraFilter.updateTextureBuffer();
-            CameraUtils.startPreview(mCameraTexture);
-            // 添加预览回调以及回调buffer，用于人脸检测
-            initPreviewCallback();
-            mFilter.onDisplayChanged(mViewWidth, mViewHeight);
+            // 开始预览
+            CameraUtils.startPreview();
+
+//            mFilter.onDisplayChanged(mViewWidth, mViewHeight);
             isPreviewing = true;
         }
 
@@ -585,7 +597,7 @@ public enum CameraDrawer implements SurfaceTexture.OnFrameAvailableListener,
 
         /**
          * 初始化预览回调
-         * 备注：在某些设备上，需要在startPreview后添加回调才能使得onPreviewFrame回调正常
+         * 备注：在某些设备上，需要在setPreviewTexture之后，startPreview之前添加回调才能使得onPreviewFrame回调正常
          */
         private void initPreviewCallback() {
             if (mWeakPreviewCallback.get() != null) {

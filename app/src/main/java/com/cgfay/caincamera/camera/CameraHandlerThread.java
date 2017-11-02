@@ -97,8 +97,8 @@ public class CameraHandlerThread extends HandlerThread {
 
     /**
      * 打开相机
-     * @param cameraId
-     * @param expectFps
+     * @param cameraId  相机Id
+     * @param expectFps 期望帧率
      */
     synchronized public void openCamera(final int cameraId, final int expectFps) {
         checkHandleAvailable();
@@ -114,12 +114,13 @@ public class CameraHandlerThread extends HandlerThread {
 
     /**
      * 打开相机
-     * @param cameraId
-     * @param expectFps
-     * @param expectWidth
-     * @param expectHeight
+     * @param cameraId      相机Id
+     * @param expectFps     期望帧率
+     * @param expectWidth   期望宽度
+     * @param expectHeight  期望高度
      */
-    synchronized public void openCamera(final int cameraId, final int expectFps, final int expectWidth, final int expectHeight) {
+    synchronized public void openCamera(final int cameraId, final int expectFps,
+                                        final int expectWidth, final int expectHeight) {
         checkHandleAvailable();
         mHandler.post(new Runnable() {
             @Override
@@ -142,9 +143,88 @@ public class CameraHandlerThread extends HandlerThread {
 
 
     /**
+     * 重新打开相机
+     */
+    synchronized public void reopenCamera() {
+        checkHandleAvailable();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                internalReopenCamera();
+                notifyCameraOpened();
+            }
+        });
+        waitUntilReady();
+    }
+
+    /**
+     * 重新打开相机
+     * @param expectFps 期望帧率
+     */
+    synchronized public void reopenCamera(final int expectFps) {
+        checkHandleAvailable();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                internalReopenCamera(expectFps);
+                notifyCameraOpened();
+            }
+        });
+        waitUntilReady();
+    }
+
+
+    /**
+     * 重新打开相机
+     * @param expectFps     期望帧率
+     * @param expectWidth   期望宽度
+     * @param expectHeight  期望高度
+     */
+    synchronized public void reopenCamera(final int expectFps,
+                                          final int expectWidth, final int expectHeight) {
+        checkHandleAvailable();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                internalReopenCamera(expectFps, expectWidth, expectHeight);
+                notifyCameraOpened();
+            }
+        });
+        waitUntilReady();
+    }
+
+    /**
+     * 设置预览Surface
+     * @param holder SurfaceHolder
+     */
+    public void setPreviewSurface(final SurfaceHolder holder) {
+        checkHandleAvailable();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                internalPreviewSurface(holder);
+            }
+        });
+    }
+
+    /**
+     * 设置预览Surface
+     * @param texture   SurfaceTexture
+     */
+    public void setPreviewSurface(final SurfaceTexture texture) {
+        checkHandleAvailable();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                internalPreviewSurface(texture);
+            }
+        });
+    }
+
+    /**
      * 设置预览回调
-     * @param callback
-     * @param buffer
+     * @param callback  回调
+     * @param buffer    缓冲
      */
     public void setPreviewCallbackWithBuffer(final Camera.PreviewCallback callback,
                                              final byte[] buffer) {
@@ -159,128 +239,15 @@ public class CameraHandlerThread extends HandlerThread {
 
     /**
      * 开始预览
-     * @param holder
      */
-    public void startPreview(final SurfaceHolder holder) {
+    public void startPreview() {
         checkHandleAvailable();
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                internalStartPreview(holder);
+                internalStartPreview();
             }
         });
-    }
-
-    /**
-     * 开始预览
-     * @param texture
-     */
-    public void startPreview(final SurfaceTexture texture) {
-        checkHandleAvailable();
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                internalStartPreview(texture);
-            }
-        });
-    }
-
-    /**
-     * 切换相机
-     * @param cameraId
-     * @param holder
-     */
-    public void switchCamera(final int cameraId, final SurfaceHolder holder) {
-        checkHandleAvailable();
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                internalSwitchCamera(cameraId, holder);
-            }
-        });
-    }
-
-    /**
-     * 切换相机
-     * @param cameraId
-     * @param texture
-     */
-    public void switchCamera(final int cameraId, final SurfaceTexture texture) {
-        checkHandleAvailable();
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                internalSwitchCamera(cameraId, texture);
-            }
-        });
-    }
-
-    /**
-     * 切换相机
-     * @param cameraId
-     * @param holder
-     * @param callback
-     * @param buffer
-     */
-    public void switchCamera(final int cameraId, final SurfaceHolder holder,
-                             final Camera.PreviewCallback callback, final byte[] buffer) {
-        checkHandleAvailable();
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                internalSwitchCamera(cameraId, holder, callback, buffer);
-            }
-        });
-    }
-
-    /**
-     * 切换相机
-     * @param cameraId
-     * @param texture
-     * @param callback
-     * @param buffer
-     */
-    public void switchCamera(final int cameraId, final SurfaceTexture texture,
-                             final Camera.PreviewCallback callback, final byte[] buffer) {
-        checkHandleAvailable();
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                internalSwitchCamera(cameraId, texture, callback, buffer);
-            }
-        });
-    }
-
-    /**
-     * 重新打开相机
-     * @param holder
-     */
-    synchronized public void reopenCamera(final SurfaceHolder holder) {
-        checkHandleAvailable();
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                internalReopenCamera(holder);
-                notifyCameraOpened();
-            }
-        });
-        waitUntilReady();
-    }
-
-    /**
-     * 重新打开相机
-     * @param texture
-     */
-    synchronized public void reopenCamera(final SurfaceTexture texture) {
-        checkHandleAvailable();
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                internalReopenCamera(texture);
-                notifyCameraOpened();
-            }
-        });
-        waitUntilReady();
     }
 
     /**
@@ -295,6 +262,90 @@ public class CameraHandlerThread extends HandlerThread {
             }
         });
     }
+
+    /**
+     * 切换相机
+     * @param cameraId 相机Id
+     */
+    public void switchCamera(final int cameraId) {
+        checkHandleAvailable();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                internalSwitchCamera(cameraId);
+            }
+        });
+    }
+
+    /**
+     * 切换相机
+     * @param cameraId  相机Id
+     * @param expectFps 期望帧率
+     */
+    public void switchCamera(final int cameraId, final int expectFps) {
+        checkHandleAvailable();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                internalSwitchCamera(cameraId, expectFps);
+            }
+        });
+    }
+
+    /**
+     * 切换相机
+     * @param cameraId      相机Id
+     * @param expectFps     期望帧率
+     * @param expectWidth   期望宽度
+     * @param expectHeight  期望高度
+     */
+    public void switchCamera(final int cameraId, final int expectFps, final int expectWidth, final int expectHeight) {
+        checkHandleAvailable();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                internalSwitchCamera(cameraId, expectFps, expectWidth, expectHeight);
+            }
+        });
+    }
+
+    /**
+     * 切换相机
+     * @param cameraId
+     * @param holder
+     * @param callback
+     * @param buffer
+     */
+    public void switchCameraAndPreview(final int cameraId, final SurfaceHolder holder,
+                             final Camera.PreviewCallback callback, final byte[] buffer) {
+        checkHandleAvailable();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                internalSwitchCameraAndPreview(cameraId, holder, callback, buffer);
+            }
+        });
+    }
+
+    /**
+     * 切换相机
+     * @param cameraId
+     * @param texture
+     * @param callback
+     * @param buffer
+     */
+    public void switchCameraAndPreview(final int cameraId, final SurfaceTexture texture,
+                             final Camera.PreviewCallback callback, final byte[] buffer) {
+        checkHandleAvailable();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                internalSwitchCameraAndPreview(cameraId, texture, callback, buffer);
+            }
+        });
+    }
+
+
 
     /**
      * 释放相机
@@ -398,8 +449,50 @@ public class CameraHandlerThread extends HandlerThread {
      * @param expectWidth   期望宽度
      * @param expectHeight  期望高度
      */
-    private void internalOpenCamera(int cameraId, int expectFps, int expectWidth, int expectHeight) {
+    private void internalOpenCamera(int cameraId, int expectFps,
+                                    int expectWidth, int expectHeight) {
         CameraManager.getInstance().openCamera(cameraId, expectFps, expectWidth, expectHeight);
+    }
+
+    /**
+     * 重新打开相机
+     */
+    private void internalReopenCamera() {
+        CameraManager.getInstance().reopenCamera();
+    }
+
+    /**
+     * 重新打开相机
+     * @param expectFps 期望帧率
+     */
+    private void internalReopenCamera(int expectFps) {
+        CameraManager.getInstance().reopenCamera();
+    }
+
+    /**
+     * 重新打开相机
+     * @param expectFps 期望帧率
+     * @param expectWidth   期望宽度
+     * @param expectHeight  期望高度
+     */
+    public void internalReopenCamera(int expectFps, int expectWidth, int expectHeight) {
+        CameraManager.getInstance().reopenCamera(expectFps, expectWidth, expectHeight);
+    }
+
+    /**
+     * 预览Surface
+     * @param holder
+     */
+    private void internalPreviewSurface(SurfaceHolder holder) {
+        CameraManager.getInstance().setPreviewSurface(holder);
+    }
+
+    /**
+     * 预览Surface
+     * @param texture
+     */
+    private void internalPreviewSurface(SurfaceTexture texture) {
+        CameraManager.getInstance().setPreviewSurface(texture);
     }
 
     /**
@@ -413,84 +506,69 @@ public class CameraHandlerThread extends HandlerThread {
 
     /**
      * 开始预览
-     * @param holder 绑定的SurfaceHolder
      */
-    private void internalStartPreview(SurfaceHolder holder) {
-        CameraManager.getInstance().startPreview(holder);
+    private void internalStartPreview() {
+        CameraManager.getInstance().startPreview();
     }
-
-    /**
-     * 开始预览
-     * @param texture 绑定的SurfaceTexture
-     */
-    private void internalStartPreview(SurfaceTexture texture) {
-        CameraManager.getInstance().startPreview(texture);
-    }
-
-    /**
-     * 切换相机
-     * @param cameraId  相机的Id
-     * @param holder    绑定的SurfaceHolder
-     */
-    private void internalSwitchCamera(int cameraId, SurfaceHolder holder) {
-        CameraManager.getInstance().switchCamera(cameraId, holder);
-    }
-
-    /**
-     * 切换相机
-     * @param cameraId  相机的Id
-     * @param texture   绑定的SurfaceTexture
-     */
-    private void internalSwitchCamera(int cameraId, SurfaceTexture texture) {
-        CameraManager.getInstance().switchCamera(cameraId, texture);
-    }
-
-    /**
-     * 切换相机
-     * @param cameraId  相机的Id
-     * @param holder    绑定的SurfaceHolder
-     * @param callback  预览回调
-     * @param buffer    缓冲buffer
-     */
-    private void internalSwitchCamera(int cameraId, SurfaceHolder holder,
-                                      Camera.PreviewCallback callback, byte[] buffer) {
-        CameraManager.getInstance().switchCamera(cameraId, holder, callback, buffer);
-    }
-
-    /**
-     * 切换相机
-     * @param cameraId  相机Id
-     * @param texture   绑定的SurfaceTexture
-     * @param callback  预览回调
-     * @param buffer    缓冲buffer
-     */
-    private void internalSwitchCamera(int cameraId, SurfaceTexture texture,
-                                      Camera.PreviewCallback callback, byte[] buffer) {
-        CameraManager.getInstance().switchCamera(cameraId, texture, callback, buffer);
-    }
-
-    /**
-     * 重新打开相机
-     * @param holder    绑定的SurfaceHolder
-     */
-    private void internalReopenCamera(SurfaceHolder holder) {
-        CameraManager.getInstance().reopenCamera(holder);
-    }
-
-    /**
-     * 重新打开相机
-     * @param texture   绑定的SurfaceTexture
-     */
-    private void internalReopenCamera(SurfaceTexture texture) {
-        CameraManager.getInstance().reopenCamera(texture);
-    }
-
 
     /**
      * 停止预览
      */
     private void internalStopPreview() {
         CameraManager.getInstance().stopPreview();
+    }
+
+    /**
+     * 切换相机
+     * @param cameraId  相机的Id
+     */
+    private void internalSwitchCamera(int cameraId) {
+        CameraManager.getInstance().switchCamera(cameraId);
+    }
+
+    /**
+     * 切换相机
+     * @param cameraId 相机Id
+     * @param expectFps 期望帧率
+     */
+    private void internalSwitchCamera(int cameraId, int expectFps) {
+        CameraManager.getInstance().switchCamera(cameraId, expectFps);
+    }
+
+    /**
+     * 切换相机
+     * @param cameraId      相机Id
+     * @param expectFps     期望帧率
+     * @param expectWidth   期望宽度
+     * @param expectHeight  期望高度
+     */
+    private void internalSwitchCamera(int cameraId, int expectFps,
+                                      int expectWidth, int expectHeight) {
+        CameraManager.getInstance().switchCamera(cameraId, expectFps, expectWidth, expectHeight);
+    }
+
+    /**
+     * 切换相机并预览
+     * @param cameraId  相机的Id
+     * @param holder    绑定的SurfaceHolder
+     * @param callback  预览回调
+     * @param buffer    缓冲buffer
+     */
+    private void internalSwitchCameraAndPreview(int cameraId, SurfaceHolder holder,
+                                                Camera.PreviewCallback callback, byte[] buffer) {
+        CameraManager.getInstance().switchCameraAndPreview(cameraId, holder, callback, buffer);
+    }
+
+    /**
+     * 切换相机并预览
+     * @param cameraId  相机Id
+     * @param texture   绑定的SurfaceTexture
+     * @param callback  预览回调
+     * @param buffer    缓冲buffer
+     */
+    private void internalSwitchCameraAndPreview(int cameraId, SurfaceTexture texture,
+                                      Camera.PreviewCallback callback, byte[] buffer) {
+        CameraManager.getInstance().switchCameraAndPreview(cameraId, texture, callback, buffer);
     }
 
     /**

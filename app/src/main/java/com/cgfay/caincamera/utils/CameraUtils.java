@@ -131,6 +131,46 @@ public class CameraUtils {
     }
 
     /**
+     * 设置预览Surface
+     * @param holder
+     */
+    public static void setPreviewSurface(SurfaceHolder holder) {
+        if (mCamera == null) {
+            throw new IllegalStateException("Camera must be set when start preview");
+        }
+        try {
+            mCamera.setPreviewDisplay(holder);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 设置预览Surface
+     * @param texture
+     */
+    public static void setPreviewSurface(SurfaceTexture texture) {
+        if (mCamera == null) {
+            throw new IllegalStateException("Camera must be set when start preview");
+        }
+        try {
+            mCamera.setPreviewTexture(texture);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 开始预览
+     */
+    public static void startPreview() {
+        if (mCamera == null) {
+            throw new IllegalStateException("Camera must be set when start preview");
+        }
+        mCamera.startPreview();
+    }
+
+    /**
      * 切换相机
      * @param cameraID 相机Id
      * @param holder 绑定的SurfaceHolder

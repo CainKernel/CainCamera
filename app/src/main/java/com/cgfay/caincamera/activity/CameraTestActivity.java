@@ -1,6 +1,5 @@
 package com.cgfay.caincamera.activity;
 
-import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -13,9 +12,12 @@ import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.camera.CameraHandlerThread;
 import com.cgfay.caincamera.camera.CameraManager;
 import com.cgfay.caincamera.render.RenderThread;
-import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.view.AspectFrameLayout;
 
+/**
+ * 双HandlerThread 测试, MTK的CPU在双HandlerThread模型上表现非常糟糕
+ * onPreviewFrame回调帧率只有单一HandlerThread模型的一半左右
+ */
 public class CameraTestActivity extends AppCompatActivity implements SurfaceHolder.Callback,
         Camera.PreviewCallback {
 
@@ -52,7 +54,6 @@ public class CameraTestActivity extends AppCompatActivity implements SurfaceHold
         mRenderThread = new RenderThread();
     }
 
-
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         mCameraThread.openCamera();
@@ -61,15 +62,18 @@ public class CameraTestActivity extends AppCompatActivity implements SurfaceHold
         mPreviewBuffer = new byte[size];
 
         mRenderThread.surfaceCreated(holder);
-        mRenderThread.setImageSize(previewSize.getWidth(), previewSize.getHeight());
+        mRenderThread.setImageSize(previewSize.getWidth(), previewSize.getHeight(),
+                mCameraThread.getPreviewOrientation());
 
+        // 设置预览SurfaceTexture
+        mCameraThread.setPreviewSurface(mRenderThread.getSurafceTexture());
         // 设置回调
         mCameraThread.setPreviewCallbackWithBuffer(CameraTestActivity.this, mPreviewBuffer);
-        mCameraThread.startPreview(mRenderThread.getSurafceTexture());
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        mCameraThread.startPreview();
         mRenderThread.surfaceChanged(width, height);
     }
 

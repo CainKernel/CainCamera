@@ -3,12 +3,12 @@ package com.cgfay.caincamera.camera;
 import android.app.Activity;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.bean.CameraInfo;
 import com.cgfay.caincamera.bean.Size;
-import com.cgfay.caincamera.utils.CameraUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,6 +59,12 @@ public final class CameraManager {
     private CameraManager() {}
 
 
+    /**
+     * 打开相机
+     */
+    public void openCamera() {
+        openCamera(DESIRED_PREVIEW_FPS);
+    }
 
     /**
      * 打开相机，默认打开前置相机
@@ -103,7 +109,64 @@ public final class CameraManager {
     }
 
     /**
-     * 添加预览回调
+     * 重新打开相机
+     */
+    public void reopenCamera() {
+        releaseCamera();
+        openCamera(mCameraID, DESIRED_PREVIEW_FPS);
+    }
+
+    /**
+     * 重新打开相机
+     * @param expectFps
+     */
+    public void reopenCamera(int expectFps) {
+        releaseCamera();
+        openCamera(mCameraID, expectFps);
+    }
+
+    /**
+     * 重新打开相机
+     * @param expectFps
+     * @param expectWidth
+     * @param expectHeight
+     */
+    public void reopenCamera(int expectFps, int expectWidth, int expectHeight) {
+        releaseCamera();
+        openCamera(mCameraID, expectFps, expectWidth, expectHeight);
+    }
+
+
+    /**
+     * 设置预览的Surface
+     * @param texture
+     */
+    public void setPreviewSurface(SurfaceTexture texture) {
+        if (mCamera != null) {
+            try {
+                mCamera.setPreviewTexture(texture);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 设置预览的Surface
+     * @param holder
+     */
+    public void setPreviewSurface(SurfaceHolder holder) {
+        if (mCamera != null) {
+            try {
+                mCamera.setPreviewDisplay(holder);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 添加预览回调 备注：预览回调需要在setPreviewSurface之后调用
      * @param callback
      * @param previewBuffer
      */
@@ -116,130 +179,11 @@ public final class CameraManager {
 
     /**
      * 开始预览
-     * @param holder
      */
-    public void startPreview(SurfaceHolder holder) {
-        if (mCamera == null) {
-            throw new IllegalStateException("Camera must be set when start preview");
-        }
-        try {
-            mCamera.setPreviewDisplay(holder);
+    public void startPreview() {
+        if (mCamera != null) {
             mCamera.startPreview();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-    }
-
-    /**
-     * 开始预览
-     * @param texture
-     */
-    public void startPreview(SurfaceTexture texture) {
-        if (mCamera == null) {
-            throw new IllegalStateException("Camera must be set when start preview");
-        }
-        // 先停止预览
-        stopPreview();
-        try {
-            mCamera.setPreviewTexture(texture);
-            mCamera.startPreview();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 切换相机
-     * @param cameraID 相机Id
-     * @param holder 绑定的SurfaceHolder
-     */
-    public void switchCamera(int cameraID, SurfaceHolder holder) {
-        if (mCameraID == cameraID) {
-            return;
-        }
-        mCameraID = cameraID;
-        // 释放原来的相机
-        releaseCamera();
-        // 打开相机
-        openCamera(cameraID, CameraUtils.DESIRED_PREVIEW_FPS);
-        // 打开预览
-        startPreview(holder);
-    }
-
-    /**
-     * 切换相机
-     * @param cameraId 相机Id
-     * @param texture 绑定的SurfaceTexture
-     */
-    public void switchCamera(int cameraId, SurfaceTexture texture) {
-        if (mCameraID == cameraId) {
-            return;
-        }
-        stopPreview();
-        mCameraID = cameraId;
-        releaseCamera();
-        openCamera(cameraId, DESIRED_PREVIEW_FPS);
-        startPreview(texture);
-    }
-
-    /**
-     * 切换相机
-     * @param cameraId
-     * @param holder
-     * @param callback
-     * @param buffer
-     */
-    public void switchCamera(int cameraId, SurfaceHolder holder,
-                                    Camera.PreviewCallback callback, byte[] buffer) {
-        if (mCameraID == cameraId) {
-            return;
-        }
-        stopPreview();
-        mCameraID = cameraId;
-        releaseCamera();
-        openCamera(cameraId, DESIRED_PREVIEW_FPS);
-        setPreviewCallbackWithBuffer(callback, buffer);
-        startPreview(holder);
-    }
-
-    /**
-     * 切换相机
-     * @param cameraId
-     * @param texture
-     * @param callback
-     * @param buffer
-     */
-    public void switchCamera(int cameraId, SurfaceTexture texture,
-                                    Camera.PreviewCallback callback, byte[] buffer) {
-        if (mCameraID == cameraId) {
-            return;
-        }
-        stopPreview();
-        mCameraID = cameraId;
-        releaseCamera();
-        openCamera(cameraId, DESIRED_PREVIEW_FPS);
-        setPreviewCallbackWithBuffer(callback, buffer);
-        startPreview(texture);
-    }
-
-    /**
-     * 重新打开相机
-     * @param holder
-     */
-    public void reopenCamera(SurfaceHolder holder) {
-        releaseCamera();
-        openCamera(mCameraID, DESIRED_PREVIEW_FPS);
-        startPreview(holder);
-    }
-
-    /**
-     * 重新打开相机
-     * @param texture
-     */
-    public void reopenCamera(SurfaceTexture texture) {
-        releaseCamera();
-        openCamera(mCameraID, DESIRED_PREVIEW_FPS);
-        startPreview(texture);
     }
 
     /**
@@ -249,6 +193,69 @@ public final class CameraManager {
         if (mCamera != null) {
             mCamera.stopPreview();
         }
+    }
+
+    /**
+     * 切换相机
+     * @param cameraID 相机Id
+     */
+    public void switchCamera(int cameraID) {
+        switchCamera(cameraID, DESIRED_PREVIEW_FPS);
+    }
+
+    /**
+     * 切换相机
+     * @param cameraId 相机Id
+     * @param expectFps 期望帧率
+     */
+    public void switchCamera(int cameraId, int expectFps) {
+        switchCamera(cameraId, expectFps, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    }
+
+    /**
+     * 切换相机
+     * @param cameraId      相机Id
+     * @param expectFps     期望帧率
+     * @param expectWidth   期望宽度
+     * @param expectHeight  期望高度
+     */
+    public void switchCamera(int cameraId, int expectFps, int expectWidth, int expectHeight) {
+        if (mCameraID == cameraId) {
+            return;
+        }
+        mCameraID = cameraId;
+        releaseCamera();
+        openCamera(cameraId, expectFps, expectWidth, expectHeight);
+    }
+
+    /**
+     * 切换相机并预览
+     * @param cameraId 相机Id
+     * @param holder    SurfaceHolder
+     * @param callback  回调
+     * @param buffer    缓冲
+     */
+    public void switchCameraAndPreview(int cameraId, SurfaceHolder holder,
+                                       Camera.PreviewCallback callback, byte[] buffer) {
+        switchCamera(cameraId);
+        setPreviewSurface(holder);
+        setPreviewCallbackWithBuffer(callback, buffer);
+        startPreview();
+    }
+
+    /**
+     * 切换相机并预览
+     * @param cameraId 相机Id
+     * @param texture    SurfaceTexture
+     * @param callback  回调
+     * @param buffer    缓冲
+     */
+    public void switchCameraAndPreview(int cameraId, SurfaceTexture texture,
+                                       Camera.PreviewCallback callback, byte[] buffer) {
+        switchCamera(cameraId);
+        setPreviewSurface(texture);
+        setPreviewCallbackWithBuffer(callback, buffer);
+        startPreview();
     }
 
     /**
@@ -286,6 +293,7 @@ public final class CameraManager {
                 expectWidth, expectHeight);
         parameters.setPreviewSize(size.width, size.height);
         camera.setParameters(parameters);
+        Log.d("setPreviewSize", "width = " + size.width + ", height = " + size.height);
     }
 
     /**
@@ -300,6 +308,7 @@ public final class CameraManager {
                 expectWidth, expectHeight);
         parameters.setPictureSize(size.width, size.height);
         camera.setParameters(parameters);
+        Log.d("setPictureSize", "width = " + size.width + ", height = " + size.height);
     }
 
 
