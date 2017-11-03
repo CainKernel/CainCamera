@@ -1,14 +1,12 @@
 package com.cgfay.caincamera.view;
 
 import android.content.Context;
-import android.graphics.BitmapFactory;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.cgfay.caincamera.R;
-import com.cgfay.caincamera.core.CameraDrawer;
+import com.cgfay.caincamera.core.DrawerManager;
 
 /**
  * Created by cain on 2017/7/9.
@@ -58,17 +56,17 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        CameraDrawer.INSTANCE.surfaceCreated(holder);
+        DrawerManager.getInstance().surfaceCreated(holder);
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        CameraDrawer.INSTANCE.surfacrChanged(width, height);
+        DrawerManager.getInstance().surfacrChanged(width, height);
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        CameraDrawer.INSTANCE.surfaceDestroyed();
+        DrawerManager.getInstance().surfaceDestroyed();
     }
 
 

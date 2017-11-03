@@ -14,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -22,7 +21,7 @@ import android.widget.LinearLayout;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.AspectRatioType;
-import com.cgfay.caincamera.core.CameraDrawer;
+import com.cgfay.caincamera.core.DrawerManager;
 import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.type.FilterType;
 import com.cgfay.caincamera.type.GalleryType;
@@ -214,7 +213,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         super.onResume();
         registerHomeReceiver();
         if (mCameraEnable) {
-            CameraDrawer.INSTANCE.startPreview();
+            DrawerManager.getInstance().startPreview();
             mOnPreviewing = true;
         } else {
             requestCameraPermission();
@@ -232,7 +231,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         super.onPause();
         unRegisterHomeReceiver();
         if (mCameraEnable) {
-            CameraDrawer.INSTANCE.stopPreview();
+            DrawerManager.getInstance().stopPreview();
             mOnPreviewing = false;
         }
     }
@@ -270,7 +269,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 // 当点击了home键时需要停止预览，防止后台一直持有相机
                 if (reason.equals(SYSTEM_DIALOG_REASON_HOME_KEY)) {
                     if (mOnPreviewing) {
-                        CameraDrawer.INSTANCE.stopPreview();
+                        DrawerManager.getInstance().stopPreview();
                     }
                 }
             }
@@ -342,13 +341,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void swipeBack() {
         Log.d(TAG, "swipeBack");
-        CameraDrawer.INSTANCE.changeFilterType(FilterType.SKETCH);
+        DrawerManager.getInstance().changeFilterType(FilterType.SKETCH);
     }
 
     @Override
     public void swipeFrontal() {
         Log.d(TAG, "swipeFrontal");
-        CameraDrawer.INSTANCE.changeFilterType(FilterType.WHITENORREDDEN);
+        DrawerManager.getInstance().changeFilterType(FilterType.WHITENORREDDEN);
     }
 
     @Override
@@ -399,13 +398,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             if (ParamsManager.mGalleryType == GalleryType.GIF) {
 
             } else if (ParamsManager.mGalleryType == GalleryType.PICTURE) {
-                CameraDrawer.INSTANCE.takePicture();
+                DrawerManager.getInstance().takePicture();
             } else if (ParamsManager.mGalleryType == GalleryType.VIDEO) {
                 if (mOnRecording) {
-                    CameraDrawer.INSTANCE.stopRecording();
+                    DrawerManager.getInstance().stopRecording();
                     mBtnTake.setBackgroundResource(R.drawable.round_green);
                 } else {
-                    CameraDrawer.INSTANCE.startRecording();
+                    DrawerManager.getInstance().startRecording();
                     mBtnTake.setBackgroundResource(R.drawable.round_red);
                 }
                 mOnRecording = !mOnRecording;
@@ -424,7 +423,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             return;
         }
         if (mCameraSurfaceView != null) {
-            CameraDrawer.INSTANCE.switchCamera();
+            DrawerManager.getInstance().switchCamera();
         }
     }
 
