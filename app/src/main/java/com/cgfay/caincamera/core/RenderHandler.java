@@ -23,7 +23,6 @@ public class RenderHandler extends Handler {
     static final int MSG_FILTER_TYPE = 0x004;
     static final int MSG_RESET = 0x005;
     static final int MSG_SURFACE_DESTROYED = 0x006;
-    static final int MSG_INIT = 0x007;
     static final int MSG_DESTROY = 0x008;
 
     static final int MSG_START_PREVIEW = 0x100;
@@ -43,21 +42,17 @@ public class RenderHandler extends Handler {
     // 切换滤镜组
     static final int MSG_FILTER_GROUP = 0x500;
 
-    private WeakReference<DrawerManager> mWeakDrawer;
+    private WeakReference<RenderThread> mWeakRender;
 
 
-    public RenderHandler(Looper looper, DrawerManager drawer) {
+    public RenderHandler(Looper looper, RenderThread renderThread) {
         super(looper);
-        mWeakDrawer = new WeakReference<DrawerManager>(drawer);
+        mWeakRender = new WeakReference<RenderThread>(renderThread);
     }
 
     @Override
     public void handleMessage(Message msg) {
         switch (msg.what) {
-
-            // 初始化
-            case MSG_INIT:
-                break;
 
             // 销毁
             case MSG_DESTROY:
@@ -66,43 +61,43 @@ public class RenderHandler extends Handler {
 
             // surfacecreated
             case MSG_SURFACE_CREATED:
-                if (mWeakDrawer != null && mWeakDrawer.get() != null) {
-                    mWeakDrawer.get().onSurfaceCreated((SurfaceHolder)msg.obj);
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().onSurfaceCreated((SurfaceHolder)msg.obj);
                 }
                 break;
 
             // surfaceChanged
             case MSG_SURFACE_CHANGED:
-                if (mWeakDrawer != null && mWeakDrawer.get() != null) {
-                    mWeakDrawer.get().onSurfaceChanged(msg.arg1, msg.arg2);
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().onSurfaceChanged(msg.arg1, msg.arg2);
                 }
                 break;
 
             // surfaceDestroyed;
             case MSG_SURFACE_DESTROYED:
-                if (mWeakDrawer != null && mWeakDrawer.get() != null) {
-                    mWeakDrawer.get().onSurfaceDestoryed();
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().onSurfaceDestoryed();
                 }
                 break;
 
             // 帧可用（考虑同步的问题）
             case MSG_FRAME:
-                if (mWeakDrawer != null && mWeakDrawer.get() != null) {
-                    mWeakDrawer.get().internalDrawFrame();
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().internalDrawFrame();
                 }
                 break;
 
             // 切换滤镜
             case MSG_FILTER_TYPE:
-                if (mWeakDrawer != null && mWeakDrawer.get() != null) {
-                    mWeakDrawer.get().internalChangeFilter((FilterType) msg.obj);
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().internalChangeFilter((FilterType) msg.obj);
                 }
                 break;
 
             // 切换滤镜组
             case MSG_FILTER_GROUP:
-                if (mWeakDrawer != null && mWeakDrawer.get() != null) {
-                    mWeakDrawer.get().internalChangeFilterGroup((FilterGroupType) msg.obj);
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().internalChangeFilterGroup((FilterGroupType) msg.obj);
                 }
                 break;
 
@@ -112,15 +107,15 @@ public class RenderHandler extends Handler {
 
             // 开始预览
             case MSG_START_PREVIEW:
-                if (mWeakDrawer != null && mWeakDrawer.get() != null) {
-                    mWeakDrawer.get().internalStartPreview();
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().internalStartPreview();
                 }
                 break;
 
             // 停止预览
             case MSG_STOP_PREVIEW:
-                if (mWeakDrawer != null && mWeakDrawer.get() != null) {
-                    mWeakDrawer.get().internalStopPreview();
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().internalStopPreview();
                 }
                 break;
 
@@ -136,29 +131,29 @@ public class RenderHandler extends Handler {
 
             // 切换相机操作
             case MSG_SWITCH_CAMERA:
-                if (mWeakDrawer != null && mWeakDrawer.get() != null) {
-                    mWeakDrawer.get().internalSwitchCamera();
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().internalSwitchCamera();
                 }
                 break;
 
             // PreviewCallback回调预览
             case MSG_PREVIEW_CALLBACK:
-                if (mWeakDrawer != null && mWeakDrawer.get() != null) {
-                    mWeakDrawer.get().internalPreviewCallback((byte[])msg.obj);
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().internalPreviewCallback((byte[])msg.obj);
                 }
                 break;
 
             // 开始录制
             case MSG_START_RECORDING:
-                if (mWeakDrawer != null && mWeakDrawer.get() != null) {
-                    mWeakDrawer.get().internalStartRecording();
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().internalStartRecording();
                 }
                 break;
 
             // 停止录制
             case MSG_STOP_RECORDING:
-                if (mWeakDrawer != null && mWeakDrawer.get() != null) {
-                    mWeakDrawer.get().internalStopRecording();
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().internalStopRecording();
                 }
                 break;
 
@@ -168,8 +163,8 @@ public class RenderHandler extends Handler {
 
             // 拍照
             case MSG_TAKE_PICTURE:
-                if (mWeakDrawer != null && mWeakDrawer.get() != null) {
-                    mWeakDrawer.get().internalTakePicture();
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().internalTakePicture();
                 }
                 break;
 
