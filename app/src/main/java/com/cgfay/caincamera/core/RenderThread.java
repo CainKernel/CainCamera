@@ -120,7 +120,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         time = System.currentTimeMillis();
     }
 
-    void onSurfaceCreated(SurfaceHolder holder) {
+    void surfaceCreated(SurfaceHolder holder) {
         mEglCore = new EglCore(null, EglCore.FLAG_RECORDABLE);
         mDisplaySurface = new WindowSurface(mEglCore, holder.getSurface(), false);
         mDisplaySurface.makeCurrent();
@@ -146,7 +146,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         initFaceDetection();
     }
 
-    void onSurfaceChanged(int width, int height) {
+    void surfaceChanged(int width, int height) {
         mViewWidth = width;
         mViewHeight = height;
         onFilterChanged();
@@ -160,7 +160,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         isPreviewing = true;
     }
 
-    void onSurfaceDestoryed() {
+    void surfaceDestoryed() {
         isPreviewing = false;
         CameraUtils.releaseCamera();
         FaceManager.getInstance().destory();
@@ -214,7 +214,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 预览回调
      * @param data
      */
-    void internalPreviewCallback(byte[] data) {
+    void onPreviewCallback(byte[] data) {
         if (isFaceDetecting)
             return;
         isFaceDetecting = true;
@@ -230,7 +230,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     /**
      * 开始预览
      */
-    void internalStartPreview() {
+    void startPreview() {
         isPreviewing = true;
         if (mCameraTexture != null) {
             RenderManager.getInstance().updateTextureBuffer();
@@ -244,7 +244,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     /**
      * 停止预览
      */
-    void internalStopPreview() {
+    void stopPreview() {
         isPreviewing = false;
         CameraUtils.stopPreview();
     }
@@ -286,7 +286,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 更新filter
      * @param type Filter类型
      */
-    void internalChangeFilter(FilterType type) {
+    void changeFilter(FilterType type) {
         RenderManager.getInstance().changeFilter(type);
     }
 
@@ -294,7 +294,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 切换滤镜组
      * @param type
      */
-    void internalChangeFilterGroup(FilterGroupType type) {
+    void changeFilterGroup(FilterGroupType type) {
         synchronized (mSyncIsLooping) {
             RenderManager.getInstance().changeFilterGroup(type);
         }
@@ -303,7 +303,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     /**
      * 绘制帧
      */
-    void internalDrawFrame() {
+    void drawFrame() {
         // 如果存在新的帧，则更新帧
         synchronized (mSyncFrameNum) {
             synchronized (mSyncTexture) {
@@ -389,14 +389,14 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     /**
      * 拍照
      */
-    void internalTakePicture() {
+    void takePicture() {
         isTakePicture = true;
     }
 
     /**
      * 开始录制
      */
-    void internalStartRecording() {
+    void startRecording() {
         File file = new File(ParamsManager.VideoPath
                 + "CainCamera_" + System.currentTimeMillis() + ".mp4");
         if (!file.getParentFile().exists()) {
@@ -418,7 +418,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     /**
      * 停止录制
      */
-    void internalStopRecording() {
+    void stopRecording() {
         synchronized (mSyncIsLooping) {
             mVideoEncoder.drainEncoder(true);
         }
@@ -437,7 +437,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     /**
      * 切换相机
      */
-    void internalSwitchCamera() {
+    void switchCamera() {
         CameraUtils.switchCamera(1 - CameraUtils.getCameraID(), mCameraTexture,
                 this, mPreviewBuffer);
     }
