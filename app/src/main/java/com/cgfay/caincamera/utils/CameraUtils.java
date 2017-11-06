@@ -1,6 +1,7 @@
 package com.cgfay.caincamera.utils;
 
 import android.app.Activity;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.view.Surface;
@@ -26,6 +27,9 @@ public class CameraUtils {
     public static final int DEFAULT_HEIGHT = 720;
     // 期望fps
     public static final int DESIRED_PREVIEW_FPS = 30;
+
+    // 对焦区域的weight
+    private static final int Weight = 1000;
 
     // 这里反过来是因为相机的分辨率跟屏幕的分辨率宽高刚好反过来
     public static final float Ratio_4_3 = 0.75f;
@@ -374,6 +378,27 @@ public class CameraUtils {
         }
         mOrientation = result;
         return result;
+    }
+
+    /**
+     * 设置对焦区域
+     * @param rect      已经调整好的区域
+     * @param callback  自动对焦回调
+     */
+    public static void setFocusArea(Rect rect, Camera.AutoFocusCallback callback) {
+        if (mCamera != null) {
+            Camera.Parameters parameters = mCamera.getParameters(); // 先获取当前相机的参数配置对象
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO); // 设置聚焦模式
+            if (parameters.getMaxNumFocusAreas() > 0) {
+                List<Camera.Area> focusAreas = new ArrayList<Camera.Area>();
+                focusAreas.add(new Camera.Area(rect, Weight));
+                parameters.setFocusAreas(focusAreas);
+            }
+            // 取消掉进程中所有的聚焦功能
+            mCamera.cancelAutoFocus();
+            mCamera.setParameters(parameters);
+            mCamera.autoFocus(callback);
+        }
     }
 
     //-------------------------------- setter and getter start -------------------------------------

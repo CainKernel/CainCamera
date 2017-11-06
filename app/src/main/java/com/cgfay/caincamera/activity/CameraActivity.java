@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -50,6 +51,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private static final int REQUEST_RECORD = 0x04;
     private static final int REQUEST_LOCATION = 0x05;
 
+    private static final int FocusSize = 100;
     // 权限使能标志
     private boolean mCameraEnable = false;
     private boolean mStorageWriteEnable = false;
@@ -375,7 +377,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      * @param y y轴坐标
      */
     private void surfaceViewClick(float x, float y) {
-
+        DrawerManager.getInstance().setFocusAres(focusOnTouch((int)x, (int)y));
     }
 
     /**
@@ -457,5 +459,26 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         } else if (currentIndex == 2) {
             ParamsManager.mGalleryType = GalleryType.VIDEO;
         }
+    }
+
+    /**
+     * 计算触摸区域
+     * @param x
+     * @param y
+     * @return
+     */
+    private Rect focusOnTouch(int x, int y) {
+        Rect rect = new Rect(x - FocusSize, y - FocusSize,
+                x + FocusSize, y + FocusSize);
+        int left = rect.left * 2000 / mCameraSurfaceView.getWidth() - 1000;
+        int top = rect.top * 2000 / mCameraSurfaceView.getHeight() - 1000;
+        int right = rect.right * 2000 / mCameraSurfaceView.getWidth() - 1000;
+        int bottom = rect.bottom * 2000 / mCameraSurfaceView.getHeight() - 1000;
+        // 归整到(-1000, -1000) 到 (1000, 1000)的区域内
+        left = left < -1000 ? -1000 : left;
+        top = top < -1000 ? -1000 : top;
+        right = right > 1000 ? 1000 : right;
+        bottom = bottom > 1000 ? 1000 : bottom;
+        return new Rect(left, top, right, bottom);
     }
 }

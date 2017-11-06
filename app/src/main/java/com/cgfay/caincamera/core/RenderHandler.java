@@ -1,5 +1,6 @@
 package com.cgfay.caincamera.core;
 
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -31,6 +32,8 @@ public class RenderHandler extends Handler {
     static final int MSG_UPDATE_PREVIEW_IMAGE_SIZE = 0x103;
     static final int MSG_SWITCH_CAMERA = 0x104;
     static final int MSG_PREVIEW_CALLBACK = 0x105;
+    // 触摸区域
+    static final int MSG_FOCUS_RECT = 0x106;
 
     static final int MSG_START_RECORDING = 0x200;
     static final int MSG_STOP_RECORDING = 0x201;
@@ -127,6 +130,13 @@ public class RenderHandler extends Handler {
             // 更新预览图片的大小
             case MSG_UPDATE_PREVIEW_IMAGE_SIZE:
 
+                break;
+
+            // 触摸区域
+            case MSG_FOCUS_RECT:
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().setFocusAres((Rect) msg.obj);
+                }
                 break;
 
             // 切换相机操作

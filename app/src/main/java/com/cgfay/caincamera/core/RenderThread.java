@@ -1,5 +1,6 @@
 package com.cgfay.caincamera.core;
 
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.GLES30;
@@ -265,6 +266,14 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         }
     }
 
+
+    /**
+     * 设置对焦区域
+     * @param rect
+     */
+    void setFocusAres(Rect rect) {
+        CameraUtils.setFocusArea(rect, null);
+    }
 
     /**
      * 滤镜或视图发生变化时调用

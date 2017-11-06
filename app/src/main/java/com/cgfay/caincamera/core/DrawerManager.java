@@ -1,5 +1,6 @@
 package com.cgfay.caincamera.core;
 
+import android.graphics.Rect;
 import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.type.FilterGroupType;
@@ -122,6 +123,20 @@ public class DrawerManager {
         synchronized (mSynOperation) {
             mRenderHandler.sendMessage(mRenderHandler
                     .obtainMessage(RenderHandler.MSG_STOP_PREVIEW));
+        }
+    }
+
+    /**
+     * 设置触摸区域
+     * @param rect 已经归整到(-1000, -1000)~(1000, 1000) 的区域
+     */
+    public void setFocusAres(Rect rect) {
+        if (mRenderHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(RenderHandler.MSG_FOCUS_RECT, rect));
         }
     }
 
