@@ -393,11 +393,11 @@ public class CameraUtils {
                 List<Camera.Area> focusAreas = new ArrayList<Camera.Area>();
                 focusAreas.add(new Camera.Area(rect, Weight));
                 parameters.setFocusAreas(focusAreas);
+                // 取消掉进程中所有的聚焦功能
+                mCamera.cancelAutoFocus();
+                mCamera.setParameters(parameters);
+                mCamera.autoFocus(callback);
             }
-            // 取消掉进程中所有的聚焦功能
-            mCamera.cancelAutoFocus();
-            mCamera.setParameters(parameters);
-            mCamera.autoFocus(callback);
         }
     }
 
