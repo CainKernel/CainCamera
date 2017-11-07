@@ -46,10 +46,6 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     // EGLSurface
     private WindowSurface mDisplaySurface;
 
-    // 录制视频用的EGLSurface
-    private WindowSurface mRecordWindowSurface;
-    private VideoEncoderCore mVideoEncoder;
-
     // CameraTexture对应的Id
     private int mCameraTextureId;
     private SurfaceTexture mCameraTexture;
@@ -72,13 +68,6 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     private int mFrameNum = 0;
     // 拍照
     private boolean isTakePicture = false;
-
-    // 录制比特率
-    private int mRecordBitrate;
-    // 录制帧率
-    private static final int FRAME_RATE = 25;
-    // 录制质量
-    private static final int BPP = 4;
 
     // 关键点绘制（调试用）
     private FacePointsDrawer mFacePointsDrawer;
@@ -341,12 +330,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
 
         // 是否处于录制状态
         if (isRecording) {
-            mRecordWindowSurface.makeCurrent();
-            mVideoEncoder.drainEncoder(false);
-            // draw();
-            RenderManager.getInstance().drawRecordingFrame();
-            mRecordWindowSurface.setPresentationTime(mCameraTexture.getTimestamp());
-            mRecordWindowSurface.swapBuffers();
+            RecorderManager.getInstance().drawRecorderFrame(mCameraTexture.getTimestamp());
         }
     }
 
@@ -398,43 +382,16 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 开始录制
      */
     void startRecording() {
-        File file = new File(ParamsManager.VideoPath
-                + "CainCamera_" + System.currentTimeMillis() + ".mp4");
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
-        }
-        // 计算帧率
-        mRecordBitrate = mViewWidth * mViewHeight * FRAME_RATE / BPP;
-        try {
-            mVideoEncoder = new VideoEncoderCore(mViewWidth, mViewHeight,
-                    mRecordBitrate, file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        mRecordWindowSurface = new WindowSurface(mEglCore,
-                mVideoEncoder.getInputSurface(), true);
+        RecorderManager.getInstance().startRecording(mEglCore, mViewWidth, mViewHeight);
         isRecording = true;
-        RenderManager.getInstance().initRecordingFilter();
     }
 
     /**
      * 停止录制
      */
     void stopRecording() {
-        synchronized (mSyncIsLooping) {
-            mVideoEncoder.drainEncoder(true);
-        }
+        RecorderManager.getInstance().stopRecording();
         isRecording = false;
-        RenderManager.getInstance().releaseRecordingFilter();
-        // 录制完成需要释放资源
-        if (mVideoEncoder != null) {
-            mVideoEncoder.release();
-            mVideoEncoder = null;
-        }
-        if (mRecordWindowSurface != null) {
-            mRecordWindowSurface.release();
-            mRecordWindowSurface = null;
-        }
     }
 
     /**

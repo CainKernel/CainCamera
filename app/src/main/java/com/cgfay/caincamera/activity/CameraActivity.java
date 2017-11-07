@@ -98,13 +98,23 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_camera);
-        mCameraEnable = PermissionUtils.permissionChecking(this, Manifest.permission.CAMERA);
-        mStorageWriteEnable = PermissionUtils.permissionChecking(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        mCameraEnable = PermissionUtils.permissionChecking(this,
+                Manifest.permission.CAMERA);
+        mStorageWriteEnable = PermissionUtils.permissionChecking(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        mRecordSoundEnable = PermissionUtils.permissionChecking(this,
+                Manifest.permission.RECORD_AUDIO);
+        ParamsManager.canRecordingAudio = mRecordSoundEnable;
         if (mCameraEnable && mStorageWriteEnable) {
             initView();
         } else {
             ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_CAMERA);
+        }
+        // 请求录音权限
+        if (!mRecordSoundEnable) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{ Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD);
         }
         requestFaceNetwork();
     }
@@ -185,6 +195,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 }
                 break;
 
+            // 存储权限
             case REQUEST_STORAGE_WRITE:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -197,6 +208,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mRecordSoundEnable = true;
+                    ParamsManager.canRecordingAudio = true;
                 }
                 break;
 
