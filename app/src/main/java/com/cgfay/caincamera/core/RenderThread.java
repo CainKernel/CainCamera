@@ -343,7 +343,8 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         if (isRecording) {
             mRecordWindowSurface.makeCurrent();
             mVideoEncoder.drainEncoder(false);
-            draw();
+            // draw();
+            RenderManager.getInstance().drawRecordingFrame();
             mRecordWindowSurface.setPresentationTime(mCameraTexture.getTimestamp());
             mRecordWindowSurface.swapBuffers();
         }
@@ -413,6 +414,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         mRecordWindowSurface = new WindowSurface(mEglCore,
                 mVideoEncoder.getInputSurface(), true);
         isRecording = true;
+        RenderManager.getInstance().initRecordingFilter();
     }
 
     /**
@@ -423,6 +425,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
             mVideoEncoder.drainEncoder(true);
         }
         isRecording = false;
+        RenderManager.getInstance().releaseRecordingFilter();
         // 录制完成需要释放资源
         if (mVideoEncoder != null) {
             mVideoEncoder.release();

@@ -1,6 +1,7 @@
 package com.cgfay.caincamera.core;
 
 import com.cgfay.caincamera.filter.base.BaseImageFilterGroup;
+import com.cgfay.caincamera.filter.base.DisplayFilter;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
 import com.cgfay.caincamera.type.FilterGroupType;
 import com.cgfay.caincamera.type.FilterType;
@@ -27,6 +28,10 @@ public final class RenderManager {
     private CameraFilter mCameraFilter;
     // 实时滤镜组
     private BaseImageFilterGroup mRealTimeFilter;
+
+    // 当前的TextureId
+    private int mCurrentTextureId;
+    private DisplayFilter mRecordFilter;
 
     // 输入流大小
     private int mTextureWidth;
@@ -273,9 +278,11 @@ public final class RenderManager {
     public void drawFrame(int textureId) {
         if (mRealTimeFilter == null) {
             mCameraFilter.drawFrame(textureId);
+            mCurrentTextureId = textureId;
         } else {
             int id = mCameraFilter.drawFrameBuffer(textureId);
             mRealTimeFilter.drawFrame(id, mVertexBuffer, mTextureBuffer);
+            mCurrentTextureId = mRealTimeFilter.getCurrentTextureId();
         }
     }
 
@@ -289,5 +296,29 @@ public final class RenderManager {
         mCameraFilter.initFramebuffer(mTextureWidth, mTextureHeight);
     }
 
+    /**
+     * 初始化录制的Filter
+     */
+    public void initRecordingFilter() {
+        if (mRecordFilter == null) {
+            mRecordFilter = new DisplayFilter();
+        }
+        mRecordFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
+        mRecordFilter.onDisplayChanged(mDisplayWidth, mDisplayHeight);
+    }
 
+    /**
+     * 释放录制的Filter资源
+     */
+    public void releaseRecordingFilter() {
+        mRecordFilter.release();
+        mRecordFilter = null;
+    }
+
+    /**
+     * 渲染录制的帧
+     */
+    public void drawRecordingFrame() {
+        mRecordFilter.drawFrame(mCurrentTextureId);
+    }
 }

@@ -18,6 +18,7 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
     private static int[] mFramebuffers;
     private static int[] mFrameBufferTextures;
 
+    private int mCurrentTextureId;
     protected List<BaseImageFilter> mFilters = new ArrayList<BaseImageFilter>();
 
     public BaseImageFilterGroup() {
@@ -67,19 +68,19 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
             return;
         }
         int size = mFilters.size();
-        int previewTexture = textureId;
+        mCurrentTextureId = textureId;
         for (int i = 0; i < size; i++) {
             BaseImageFilter filter = mFilters.get(i);
             if (i < size - 1) {
                 GLES30.glViewport(0, 0, mImageWidth, mImageHeight);
                 GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[i]);
                 GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-                filter.drawFrame(previewTexture);
+                filter.drawFrame(mCurrentTextureId);
                 GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
-                previewTexture = mFrameBufferTextures[i];
+                mCurrentTextureId = mFrameBufferTextures[i];
             } else {
                 GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
-                filter.drawFrame(previewTexture);
+                filter.drawFrame(mCurrentTextureId);
             }
         }
     }
@@ -90,19 +91,19 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
             return;
         }
         int size = mFilters.size();
-        int previewTexture = textureId;
+        mCurrentTextureId = textureId;
         for (int i = 0; i < size; i++) {
             BaseImageFilter filter = mFilters.get(i);
             if (i < size - 1) {
                 GLES30.glViewport(0, 0, mImageWidth, mImageHeight);
                 GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[i]);
                 GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-                filter.drawFrame(previewTexture, vertexBuffer, textureBuffer);
+                filter.drawFrame(mCurrentTextureId, vertexBuffer, textureBuffer);
                 GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
-                previewTexture = mFrameBufferTextures[i];
+                mCurrentTextureId = mFrameBufferTextures[i];
             } else {
                 GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
-                filter.drawFrame(previewTexture, vertexBuffer, textureBuffer);
+                filter.drawFrame(mCurrentTextureId, vertexBuffer, textureBuffer);
             }
         }
     }
@@ -241,5 +242,13 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
             // 添加Framebuffers
             addFrambuffers();
         }
+    }
+
+    /**
+     * 获取当前滤镜TextureId
+     * @return
+     */
+    public int getCurrentTextureId() {
+        return mCurrentTextureId;
     }
 }
