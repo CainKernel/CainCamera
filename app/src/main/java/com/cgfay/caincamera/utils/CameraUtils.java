@@ -103,6 +103,7 @@ public class CameraUtils {
     /**
      * 开始预览
      * @param holder
+     * 部分手机预览会失效，慎用
      */
     public static void startPreview(SurfaceHolder holder) {
         if (mCamera == null) {
@@ -119,6 +120,7 @@ public class CameraUtils {
     /**
      * 开始预览
      * @param texture
+     * 部分手机预览会失效，慎用
      */
     public static void startPreview(SurfaceTexture texture) {
         if (mCamera == null) {
@@ -178,6 +180,7 @@ public class CameraUtils {
      * 切换相机
      * @param cameraID 相机Id
      * @param holder 绑定的SurfaceHolder
+     * 备注：此时没有回调，部分手机预览会失效，慎用
      */
     public static void switchCamera(int cameraID, SurfaceHolder holder) {
         if (mCameraID == cameraID) {
@@ -196,6 +199,7 @@ public class CameraUtils {
      * 切换相机
      * @param cameraId 相机Id
      * @param texture 绑定的SurfaceTexture
+     * 备注：此时没有回调，部分手机预览会失效，慎用
      */
     public static void switchCamera(int cameraId, SurfaceTexture texture) {
         if (mCameraID == cameraId) {
@@ -251,6 +255,7 @@ public class CameraUtils {
     /**
      * 重新打开相机
      * @param holder
+     * 备注：此时没有回调，部分手机预览会失效，慎用
      */
     public static void reopenCamera(SurfaceHolder holder) {
         releaseCamera();
@@ -261,11 +266,42 @@ public class CameraUtils {
     /**
      * 重新打开相机
      * @param texture
+     * 备注：此时没有回调，部分手机预览会失效，慎用
      */
     public static void reopenCamera(SurfaceTexture texture) {
         releaseCamera();
         openCamera(mCameraID, DESIRED_PREVIEW_FPS);
         startPreview(texture);
+    }
+
+    /**
+     * 重新打开相机
+     * @param holder
+     * @param callback
+     * @param buffer
+     */
+    public static void reopenCamera(SurfaceHolder holder,
+                                    Camera.PreviewCallback callback, byte[] buffer) {
+        releaseCamera();
+        openCamera(mCameraID, DESIRED_PREVIEW_FPS);
+        setPreviewSurface(holder);
+        setPreviewCallbackWithBuffer(callback, buffer);
+        startPreview();
+    }
+
+    /**
+     * 重新打开相机
+     * @param texture
+     * @param callback
+     * @param buffer
+     */
+    public static void reopenCamera(SurfaceTexture texture,
+                                    Camera.PreviewCallback callback, byte[] buffer) {
+        releaseCamera();
+        openCamera(mCameraID, DESIRED_PREVIEW_FPS);
+        setPreviewSurface(texture);
+        setPreviewCallbackWithBuffer(callback, buffer);
+        startPreview();
     }
 
     /**
