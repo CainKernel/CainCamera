@@ -353,6 +353,8 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
                                 mFacePointsDrawer.addPoints(null);
                             }
                         }
+                        // 强制刷新
+                        addNewFrame();
                     }
                 });
     }
