@@ -353,8 +353,14 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 切换相机
      */
     void switchCamera() {
-        CameraUtils.switchCamera(1 - CameraUtils.getCameraID(), mCameraTexture,
+        int cameraId = 1 - CameraUtils.getCameraID();
+        CameraUtils.switchCamera(cameraId, mCameraTexture,
                 this, mPreviewBuffer);
+        // 允许人脸关键点检测
+        if (ParamsManager.canFaceTrack) {
+            FaceTrackManager.getInstance()
+                    .setBackCamera(cameraId == Camera.CameraInfo.CAMERA_FACING_BACK);
+        }
     }
 
     /**

@@ -11,7 +11,6 @@ public interface FaceTrackerCallback {
     /**
      * 检测完成回调
      * @param hasFaces      是否存在人脸
-     * @param facePoints    人脸关键点集合
      */
-    void onTrackingFinish(boolean hasFaces, ArrayList<ArrayList> facePoints);
+    void onTrackingFinish(boolean hasFaces);
 }

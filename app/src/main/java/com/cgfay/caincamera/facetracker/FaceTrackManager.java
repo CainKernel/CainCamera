@@ -29,7 +29,7 @@ public class FaceTrackManager {
     private static FaceTrackManager mInstance;
 
     // 是否开启调试模式
-    private boolean isDebug = true;
+    private boolean isDebug = false;
 
     // 属性值
     private boolean is3DPose = false;
@@ -37,7 +37,7 @@ public class FaceTrackManager {
     private boolean is106Points = true;
     private boolean isBackCamera = false;
     private boolean isFaceProperty = false;
-    private boolean isOneFaceTrackig = false;
+    private boolean isOneFaceTracking = false;
 
     // 检测模式
     private int mTrackModel = Facepp.FaceppConfig.DETECTION_MODE_TRACKING;
@@ -50,9 +50,9 @@ public class FaceTrackManager {
     private Facepp facepp;
 
     // 最小人脸大小
-    private int min_face_size = 200;
+    private int mMinFaceSize = 200;
     // 检测时间检测
-    private int detection_interval = 25;
+    private int mDetectionInterval = 25;
 
     // 传感器监听器
     private SensorEventUtil mSensorUtil;
@@ -62,7 +62,10 @@ public class FaceTrackManager {
     private int Angle;
 
     // 是否处于检测过程中
-    boolean isDetecting = false;
+    private boolean isDetecting = false;
+
+    // 是否存在人脸
+    private boolean mHasFace = false;
 
     // 置信度
     float confidence;
@@ -136,13 +139,13 @@ public class FaceTrackManager {
                 String errorCode = facepp.init(context, ConUtil.getFileContent(context,
                         R.raw.megviifacepp_0_4_7_model));
                 Facepp.FaceppConfig faceppConfig = facepp.getFaceppConfig();
-                faceppConfig.interval = detection_interval;
-                faceppConfig.minFaceSize = min_face_size;
+                faceppConfig.interval = mDetectionInterval;
+                faceppConfig.minFaceSize = mMinFaceSize;
                 faceppConfig.roi_left = left;
                 faceppConfig.roi_top = top;
                 faceppConfig.roi_right = right;
                 faceppConfig.roi_bottom = bottom;
-                if (isOneFaceTrackig)
+                if (isOneFaceTracking)
                     faceppConfig.one_face_tracking = 1;
                 else
                     faceppConfig.one_face_tracking = 0;
@@ -237,16 +240,20 @@ public class FaceTrackManager {
 
                     setConfig(rotation);
 
+                    mHasFace = false;
+
                     final Facepp.Face[] faces = facepp.detect(data, width, height, Facepp.IMAGEMODE_NV21);
                     if (isDebug) {
                         final long algorithmTime = System.currentTimeMillis() - faceDetectTime_action;
                         Log.d("onFaceTracking", "track time = " + algorithmTime);
                     }
+
+                    FacePointsManager.getInstance().prepareToAddPoints();
                     if (faces != null) {
-                        // 所有人脸关键点集合
                         ArrayList<ArrayList> facePoints = new ArrayList<ArrayList>();
                         confidence = 0.0f;
                         if (faces.length >= 0) {
+                            mHasFace = true;
                             for (int index = 0; index < faces.length; index++) {
                                 if (is106Points)
                                     facepp.getLandmark(faces[index], Facepp.FPP_GET_LANDMARK106);
@@ -282,6 +289,16 @@ public class FaceTrackManager {
                                 roll = faces[index].roll;
                                 confidence = faces[index].confidence;
 
+                                // 添加姿态角
+                                float euler[] = new float[4];
+                                euler[0] = pitch;
+                                euler[1] = yaw;
+                                euler[2] = roll;
+                                FacePointsManager.getInstance().addEulers(euler);
+
+
+                                Log.d("onFaceTracking", "rect = " + faces[index].rect);
+
                                 // 调整宽高
                                 if (orientation == 1 || orientation == 2) {
                                     width = size.getHeight();
@@ -303,43 +320,43 @@ public class FaceTrackManager {
                                     if (orientation == 3)
                                         pointf = new float[] { -x, -y, 0.0f };
 
-                                    FloatBuffer fb = GlUtil.createFloatBuffer(pointf);
-                                    onePoints.add(fb);
+                                    // 添加一个关键点
+                                    FacePointsManager.getInstance().addOnePoint(pointf);
+
+                                    // 是否允许绘制关键点
+                                    if (ParamsManager.enableDrawingPoints) {
+                                        FloatBuffer fb = GlUtil.createFloatBuffer(pointf);
+                                        onePoints.add(fb);
+                                    }
                                 }
-                                facePoints.add(onePoints);
+                                if (ParamsManager.enableDrawingPoints) {
+                                    facePoints.add(onePoints);
+                                }
+                                // 添加一个人脸的关键点
+                                FacePointsManager.getInstance().addOneFacePoints();
                             }
 
                             if (ParamsManager.enableDrawingPoints) {
-                                synchronized (mFacePointsDrawer) {
-                                    mFacePointsDrawer.points = facePoints;
-                                }
-                            }
-
-                            if (mFaceTrackerCallback != null) {
-                                mFaceTrackerCallback.onTrackingFinish(true, facePoints);
+                                mFacePointsDrawer.points = facePoints;
                             }
                         } else {
                             pitch = 0.0f;
                             yaw = 0.0f;
                             roll = 0.0f;
-
-                            if (mFaceTrackerCallback != null) {
-                                mFaceTrackerCallback.onTrackingFinish(false, null);
-                            }
-                        }
-                    } else {
-                        if (mFaceTrackerCallback != null) {
-                            mFaceTrackerCallback.onTrackingFinish(false, null);
                         }
                     }
+                    // 更新关键点
+                    FacePointsManager.getInstance().updateFacePoints();
                     isDetecting = false;
                 }
             });
         } else {
-            // 人脸关键点回调
-            if (mFaceTrackerCallback != null) {
-                mFaceTrackerCallback.onTrackingFinish(false, null);
-            }
+            // 重置人脸关键点
+            FacePointsManager.getInstance().resetFacePoints();
+        }
+        // 人脸关键点检测完成回调
+        if (mFaceTrackerCallback != null) {
+            mFaceTrackerCallback.onTrackingFinish(mHasFace);
         }
     }
 
@@ -348,7 +365,10 @@ public class FaceTrackManager {
      */
     public void drawTrackPoints() {
         // 回执关键点
-        Matrix.setLookAtM(mVMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1f, 0f);
+        Matrix.setLookAtM(mVMatrix, 0,
+                0, 0, -3,
+                0f, 0f, 0f,
+                0f, 1f, 0f);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
 
         GLES30.glViewport(0, 0, mViewWidth, mViewHeight);
@@ -366,62 +386,76 @@ public class FaceTrackManager {
 
     //--------------------------- setter and getter ----------------------------
 
-    public void setIs3DPose(boolean is3DPose) {
+    public void enable3DPose(boolean is3DPose) {
         this.is3DPose = is3DPose;
     }
 
-    public void setROIDetect(boolean ROIDetect) {
+    public void enableROIDetect(boolean ROIDetect) {
         isROIDetect = ROIDetect;
     }
 
-    public void setIs106Points(boolean is106Points) {
-        this.is106Points = is106Points;
+    /**
+     * 是否检测106个点
+     * @return
+     */
+    public boolean isIs106Points() {
+        return is106Points;
     }
 
+    /**
+     * 是否允许106个点
+     * @param enable
+     */
+    public void enable106Points(boolean enable) {
+        is106Points = enable;
+    }
+
+    /**
+     * 是否后置相机
+     * @param backCamera
+     */
     public void setBackCamera(boolean backCamera) {
         isBackCamera = backCamera;
     }
 
+    /**
+     * 是否允许检测人脸属性(男女、年龄等)
+     * @param faceProperty
+     */
     public void setFaceProperty(boolean faceProperty) {
         isFaceProperty = faceProperty;
     }
 
-    public void setOneFaceTrackig(boolean oneFaceTrackig) {
-        isOneFaceTrackig = oneFaceTrackig;
+    /**
+     * 是否只检测一个人脸
+     * @param oneFaceTracking
+     */
+    public void setOneFaceTracking(boolean oneFaceTracking) {
+        isOneFaceTracking = oneFaceTracking;
     }
 
-    // 设置检测模式
+    /**
+     * 设置检测模式
+     * @param trackModel
+     */
     public void setTrackModel(int trackModel) {
-        this.mTrackModel = trackModel;
+        mTrackModel = trackModel;
     }
 
-    // 设置最小人脸大小
-    public void setMin_face_size(int min_face_size) {
-        this.min_face_size = min_face_size;
+    /**
+     * 设置最小人脸大小
+     * @param minSize
+     */
+    public void setMinFaceSize(int minSize) {
+        mMinFaceSize = minSize;
     }
 
-    // 设置检测间隔
-    public void setDetection_interval(int detection_interval) {
-        this.detection_interval = detection_interval;
+    /**
+     * 设置检测间隔
+     * @param interval
+     */
+    public void setDetectionInterval(int interval) {
+        mDetectionInterval = interval;
     }
 
-    // 置信度
-    public float getConfidence() {
-        return confidence;
-    }
-
-    // 姿态角x轴
-    public float getPitch() {
-        return pitch;
-    }
-
-    // 姿态角y轴
-    public float getYaw() {
-        return yaw;
-    }
-
-    // 姿态角z轴
-    public float getRoll() {
-        return roll;
-    }
 }
