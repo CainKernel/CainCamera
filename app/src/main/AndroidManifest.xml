@@ -54,7 +54,25 @@
             <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
             <!-- </intent-filter> -->
         </activity>
-        <activity android:name=".activity.CapturePreviewActivity"></activity>
+        <activity android:name=".activity.CapturePreviewActivity" />
+
+        <!-- 人脸关键点检测Test Activity start -->
+        <activity android:name=".activity.facetrack.FaceTrackActivity">
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        </activity>
+        <activity android:name=".activity.facetrack.FaceTrack2Activity">
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        </activity>
+        <!-- 人脸关键点检测Test Activity end -->
+
     </application>
 
 </manifest>

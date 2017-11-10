@@ -338,6 +338,17 @@ public class CameraUtils {
     }
 
     /**
+     * 添加预览回调
+     * @param callback
+     */
+    public static void setPreviewCallback(Camera.PreviewCallback callback) {
+        if (mCamera != null) {
+            mCamera.setPreviewCallback(callback);
+        }
+    }
+
+
+    /**
      * 拍照
      */
     public static void takePicture(Camera.ShutterCallback shutterCallback,
@@ -438,6 +449,14 @@ public class CameraUtils {
     }
 
     //-------------------------------- setter and getter start -------------------------------------
+
+    /**
+     * 获取相机对象
+     * @return
+     */
+    public static Camera getCamera() {
+        return mCamera;
+    }
 
     /**
      * 获取当前的Camera ID
