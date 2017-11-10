@@ -10,11 +10,9 @@ import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.bean.CameraInfo;
 import com.cgfay.caincamera.bean.Size;
-import com.cgfay.caincamera.facedetector.DetectorCallback;
-import com.cgfay.caincamera.facedetector.FaceManager;
+import com.cgfay.caincamera.facetracker.FaceTrackManager;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.WindowSurface;
-import com.cgfay.caincamera.multimedia.VideoEncoderCore;
 import com.cgfay.caincamera.type.FilterGroupType;
 import com.cgfay.caincamera.type.FilterType;
 import com.cgfay.caincamera.utils.CameraUtils;
@@ -68,9 +66,6 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     private int mFrameNum = 0;
     // 拍照
     private boolean isTakePicture = false;
-
-    // 关键点绘制（调试用）
-    private FacePointsDrawer mFacePointsDrawer;
 
     // 预览回调缓存，解决previewCallback回调内存抖动问题
     private byte[] mPreviewBuffer;
@@ -147,12 +142,16 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         // 渲染视图变化
         RenderManager.getInstance().onDisplaySizeChanged(mViewWidth, mViewHeight);
         isPreviewing = true;
+        // 配置检测点的宽高
+        if (ParamsManager.enableDrawingPoints) {
+            FaceTrackManager.getInstance().onDisplayChanged(mViewWidth, mViewHeight);
+        }
     }
 
     void surfaceDestoryed() {
         isPreviewing = false;
+        FaceTrackManager.getInstance().release();
         CameraUtils.releaseCamera();
-        FaceManager.getInstance().destory();
         if (mCameraTexture != null) {
             mCameraTexture.release();
             mCameraTexture = null;
@@ -164,10 +163,6 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         if (mEglCore != null) {
             mEglCore.release();
             mEglCore = null;
-        }
-        if (mFacePointsDrawer != null) {
-            mFacePointsDrawer.release();
-            mFacePointsDrawer = null;
         }
         RenderManager.getInstance().release();
     }
@@ -187,16 +182,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 初始化人脸检测工具
      */
     private void initFaceDetection() {
-        FaceManager.getInstance().createHandleThread();
-        if (ParamsManager.canFaceTrack) {
-            FaceManager.getInstance().initFaceConfig(mImageWidth, mImageHeight);
-            FaceManager.getInstance().getFaceDetector().setBackCamera(CameraUtils.getCameraID()
-                    == Camera.CameraInfo.CAMERA_FACING_BACK);
-            addDetectorCallback();
-            if (ParamsManager.enableDrawingPoints) {
-                mFacePointsDrawer = new FacePointsDrawer();
-            }
-        }
+        FaceTrackManager.getInstance().initFaceTracking(ParamsManager.context);
     }
 
     /**
@@ -204,15 +190,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * @param data
      */
     void onPreviewCallback(byte[] data) {
-        if (isFaceDetecting)
-            return;
-        isFaceDetecting = true;
-        if (ParamsManager.canFaceTrack) {
-            synchronized (mSyncIsLooping) {
-                FaceManager.getInstance().faceDetecting(data, mImageHeight, mImageWidth);
-            }
-        }
-        isFaceDetecting = false;
+        FaceTrackManager.getInstance().onFaceTracking(data);
     }
 
 
@@ -335,40 +313,15 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     }
 
     /**
-     * 添加检测回调
-     */
-    private void addDetectorCallback() {
-        FaceManager.getInstance().getFaceDetector()
-                .addDetectorCallback(new DetectorCallback() {
-                    @Override
-                    public void onTrackingFinish(boolean hasFaces) {
-                        // 如果有人脸并且允许绘制关键点，则添加数据
-                        if (hasFaces) {
-                            if (ParamsManager.enableDrawingPoints && mFacePointsDrawer != null) {
-                                mFacePointsDrawer.addPoints(FaceManager.getInstance()
-                                        .getFaceDetector().getFacePoints());
-                            }
-                        } else {
-                            if (ParamsManager.enableDrawingPoints && mFacePointsDrawer != null) {
-                                mFacePointsDrawer.addPoints(null);
-                            }
-                        }
-                        // 强制刷新
-                        addNewFrame();
-                    }
-                });
-    }
-
-    /**
      * 绘制图像数据到FBO
      */
     private void draw() {
         // 绘制
         RenderManager.getInstance().drawFrame(mCameraTextureId);
 
-        // 是否绘制点
-        if (ParamsManager.enableDrawingPoints && mFacePointsDrawer != null) {
-            mFacePointsDrawer.drawPoints();
+        // 是否绘制关键点
+        if (ParamsManager.enableDrawingPoints) {
+            FaceTrackManager.getInstance().drawTrackPoints();
         }
     }
 

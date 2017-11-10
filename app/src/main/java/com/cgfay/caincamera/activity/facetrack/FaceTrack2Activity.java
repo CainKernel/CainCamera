@@ -3,7 +3,6 @@ package com.cgfay.caincamera.activity.facetrack;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.GLES30;
-import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -19,6 +18,7 @@ import android.widget.RelativeLayout;
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.core.ParamsManager;
+import com.cgfay.caincamera.facetracker.FacePointsDrawer;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.WindowSurface;
@@ -32,9 +32,6 @@ import com.megvii.licensemanager.sdk.LicenseManager;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
-
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
 
 /**
  * Face++ 人脸检测
@@ -247,7 +244,7 @@ public class FaceTrack2Activity extends AppCompatActivity implements SurfaceHold
 
     private int mTextureID = -1;
     private SurfaceTexture mSurface;
-    private PointsMatrix mPointsMatrix;
+    private FacePointsDrawer mFacePointsDrawer;
 
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
@@ -357,8 +354,8 @@ public class FaceTrack2Activity extends AppCompatActivity implements SurfaceHold
                             roll = 0.0f;
                         }
 
-                        synchronized (mPointsMatrix) {
-                            mPointsMatrix.points = pointsOpengl;
+                        synchronized (mFacePointsDrawer) {
+                            mFacePointsDrawer.points = pointsOpengl;
                         }
                     }
                     isSuccess = false;
@@ -398,7 +395,7 @@ public class FaceTrack2Activity extends AppCompatActivity implements SurfaceHold
         mSurface = new SurfaceTexture(mTextureID);
         mSurface.setOnFrameAvailableListener(this);
         // 定点
-        mPointsMatrix = new PointsMatrix();
+        mFacePointsDrawer = new FacePointsDrawer();
 
         // 渲染初始化
         Size size = CameraUtils.getPreviewSize();
@@ -511,7 +508,7 @@ public class FaceTrack2Activity extends AppCompatActivity implements SurfaceHold
             Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
 
             GLES30.glViewport(0, 0, mViewWidth, mViewHeight);
-            mPointsMatrix.draw(mMVPMatrix);
+            mFacePointsDrawer.draw(mMVPMatrix);
             mDisplaySurface.swapBuffers();
 
             if (isDebug) {

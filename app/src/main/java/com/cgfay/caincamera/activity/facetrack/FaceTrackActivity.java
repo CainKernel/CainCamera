@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.core.ParamsManager;
+import com.cgfay.caincamera.facetracker.FacePointsDrawer;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.GlUtil;
@@ -267,7 +268,7 @@ public class FaceTrackActivity extends AppCompatActivity implements Camera.Previ
 
     private int mTextureID = -1;
     private SurfaceTexture mSurface;
-    private PointsMatrix mPointsMatrix;
+    private FacePointsDrawer mFacePointsDrawer;
 
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
@@ -377,8 +378,8 @@ public class FaceTrackActivity extends AppCompatActivity implements Camera.Previ
                             roll = 0.0f;
                         }
 
-                        synchronized (mPointsMatrix) {
-                            mPointsMatrix.points = pointsOpengl;
+                        synchronized (mFacePointsDrawer) {
+                            mFacePointsDrawer.points = pointsOpengl;
                         }
                     }
                     isSuccess = false;
@@ -401,7 +402,7 @@ public class FaceTrackActivity extends AppCompatActivity implements Camera.Previ
         mSurface = new SurfaceTexture(mTextureID);
         mSurface.setOnFrameAvailableListener(this);
         // 定点
-        mPointsMatrix = new PointsMatrix();
+        mFacePointsDrawer = new FacePointsDrawer();
 
         // 渲染初始化
         Size size = CameraUtils.getPreviewSize();
@@ -458,7 +459,7 @@ public class FaceTrackActivity extends AppCompatActivity implements Camera.Previ
         Matrix.setLookAtM(mVMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1f, 0f);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
         GLES30.glViewport(0, 0, mViewWidth, mViewHeight);
-        mPointsMatrix.draw(mMVPMatrix);
+        mFacePointsDrawer.draw(mMVPMatrix);
         if (isDebug) {
             long endTime = System.currentTimeMillis() - actionTime;
             Log.d("onDrawFrame", "printTime = " + endTime);

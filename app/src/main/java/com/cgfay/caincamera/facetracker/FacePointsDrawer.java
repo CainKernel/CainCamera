@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.activity.facetrack;
+package com.cgfay.caincamera.facetracker;
 
 import android.opengl.GLES30;
 
@@ -7,7 +7,11 @@ import com.cgfay.caincamera.utils.GlUtil;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
-public class PointsMatrix {
+/**
+ * 人脸关键点渲染器
+ * Created by cain.huang on 2017/11/10.
+ */
+public class FacePointsDrawer {
 	private final String vertexShaderCode =
 			"uniform mat4 uMVPMatrix;" +
 			"attribute vec4 vPosition;" +
@@ -35,7 +39,7 @@ public class PointsMatrix {
 	// 画点
 	public ArrayList<ArrayList> points = new ArrayList<ArrayList>();
 
-	public PointsMatrix() {
+	public FacePointsDrawer() {
 		mProgramHandle = GlUtil.createProgram(vertexShaderCode, fragmentShaderCode);
 	}
 
