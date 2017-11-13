@@ -89,6 +89,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // 持有当前上下文
+        ParamsManager.context = this;
         String phoneName = Build.MODEL;
         if (phoneName.toLowerCase().contains("bullhead")
                 || phoneName.toLowerCase().contains("nexus 5x")) {
@@ -236,8 +238,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         if (PermissionUtils.permissionChecking(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             mStorageWriteEnable = true;
         }
-        // 持有当前上下文
-        ParamsManager.context = this;
     }
 
     @Override
@@ -251,8 +251,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onDestroy() {
+        super.onDestroy();
         // 在停止时需要释放上下文，防止内存泄漏
         ParamsManager.context = null;
     }
