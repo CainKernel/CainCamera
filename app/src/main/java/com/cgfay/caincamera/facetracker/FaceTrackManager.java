@@ -110,6 +110,9 @@ public class FaceTrackManager {
 
             mSensorUtil = new SensorEventUtil(ParamsManager.context);
 
+            if (mTrackerThread == null) {
+                mTrackerThread = new HandlerThread("FaceTrackThread");
+            }
             mTrackerThread.start();
             mTrackerHandler = new Handler(mTrackerThread.getLooper());
 
