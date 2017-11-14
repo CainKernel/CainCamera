@@ -360,6 +360,9 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         if (ParamsManager.canFaceTrack) {
             FaceTrackManager.getInstance()
                     .setBackCamera(cameraId == Camera.CameraInfo.CAMERA_FACING_BACK);
+            // 切换之后需要重新初始化检测器
+            FaceTrackManager.getInstance().release();
+            FaceTrackManager.getInstance().initFaceTracking(ParamsManager.context);
         }
     }
 

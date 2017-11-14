@@ -106,6 +106,9 @@ public class FaceTrackManager {
     public void initFaceTracking(Context context) {
         if (ParamsManager.canFaceTrack) {
 
+            if (facepp != null) {
+                facepp.release();
+            }
             facepp = new Facepp();
 
             mSensorUtil = new SensorEventUtil(ParamsManager.context);
@@ -225,6 +228,9 @@ public class FaceTrackManager {
             mTrackerHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (facepp == null) {
+                        return;
+                    }
                     Size size = CameraUtils.getPreviewSize();
                     int width = size.getWidth();
                     int height = size.getHeight();
@@ -312,16 +318,34 @@ public class FaceTrackManager {
                                 ArrayList<FloatBuffer> onePoints = new ArrayList<FloatBuffer>();
                                 for (int i = 0; i < faces[index].points.length; i++) {
                                     float x = (faces[index].points[i].x / height) * 2 - 1;
-                                    if (isBackCamera)
-                                        x = -x;
                                     float y = 1 - (faces[index].points[i].y / width) * 2;
+                                    // TODO: Nexus 5X 背面相机正常，其他手机待检测
+                                    if (orientation == 0 || orientation == 3) { // 竖屏状态下
+                                        if (isBackCamera) {
+                                            x = -x;
+                                        }
+                                    }
                                     float[] pointf = new float[] { x, y, 0.0f };
-                                    if (orientation == 1)
-                                        pointf = new float[] { -y, x, 0.0f };
-                                    if (orientation == 2)
-                                        pointf = new float[] { y, -x, 0.0f };
-                                    if (orientation == 3)
+
+                                    if (orientation == 1) {
+                                        if (isBackCamera) {
+                                            pointf = new float[] { y, x, 0.0f };
+                                        } else {
+                                            pointf = new float[] { -y, x, 0.0f };
+                                        }
+                                    }
+
+                                    if (orientation == 2) {
+                                        if (isBackCamera) {
+                                            pointf = new float[] { -y, -x, 0.0f };
+                                        } else {
+                                            pointf = new float[] { y, -x, 0.0f };
+                                        }
+                                    }
+
+                                    if (orientation == 3) {
                                         pointf = new float[] { -x, -y, 0.0f };
+                                    }
 
                                     // 添加一个关键点
                                     FacePointsManager.getInstance().addOnePoint(pointf);
