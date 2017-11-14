@@ -10,18 +10,20 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.RelativeLayout;
+import android.widget.FrameLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.PhotoViewAdapter;
 import com.cgfay.caincamera.bean.ImageMeta;
+import com.cgfay.caincamera.photo_edit.PhotoEditManager;
 import com.cgfay.caincamera.utils.PermissionUtils;
+import com.cgfay.caincamera.view.AspectFrameLayout;
 import com.cgfay.caincamera.view.AsyncRecyclerview;
 import com.cgfay.caincamera.view.PhotoEditSurfaceView;
 
@@ -52,8 +54,6 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
     private boolean multiSelectEnable = false;
     private int mCurrentSelecetedIndex = -1; // 单选模式下的当前位置
 
-    // toolbar
-    private Toolbar mToolbar;
     // 显示列表
     private AsyncRecyclerview mPhototView;
     private GridLayoutManager mLayoutManager;
@@ -62,7 +62,8 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
     List<ImageMeta> mImageLists;
 
     // 编辑图片
-    private RelativeLayout mPhotoEditLayout;
+    private FrameLayout mPhotoEditLayout;
+    private AspectFrameLayout mAspectFrameLayout;
     private PhotoEditSurfaceView mPhotoEditView;
     private SeekBar mSeekbar;
     private Button mBrightness;
@@ -79,6 +80,9 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_photo_view);
         multiSelectEnable = getIntent().getBooleanExtra("multiSelect", false);
         initView();
@@ -90,17 +94,14 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
     }
 
     private void initView() {
-        // toolbar
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(mToolbar);
         // 显示媒体库数据
         mPhototView = (AsyncRecyclerview) findViewById(R.id.photo_view);
         mLayoutManager = new GridLayoutManager(PhotoViewActivity.this, COLUMNSIZE);
         mPhototView.setLayoutManager(mLayoutManager);
         mImageLists = new ArrayList<ImageMeta>();
         // 编辑图片
-        mPhotoEditLayout = (RelativeLayout) findViewById(R.id.layout_photo_edit);
-        mPhotoEditView = (PhotoEditSurfaceView) findViewById(R.id.photo_edit_view);
+        mPhotoEditLayout = (FrameLayout) findViewById(R.id.layout_photo_edit);
+        mAspectFrameLayout = (AspectFrameLayout) findViewById(R.id.layout_aspect);
 
         mSeekbar = (SeekBar) findViewById(R.id.edit_value);
         mBrightness = (Button) findViewById(R.id.btn_brightness);
@@ -119,6 +120,18 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
         mHue.setOnClickListener(this);
         mSaturation.setOnClickListener(this);
         mSharpness.setOnClickListener(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        PhotoEditManager.getInstance().startPhotoEditThread();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        PhotoEditManager.getInstance().destoryPhotoEditThread();
     }
 
     /**
@@ -232,9 +245,17 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
      * 显示图片编辑界面
      */
     private void showPhotoEditView() {
+        // 在开始预览之前先设置图像元数据
+        ImageMeta imageMeta = mImageLists.get(mCurrentSelecetedIndex);
+        PhotoEditManager.getInstance().setImageMeta(imageMeta);
+        // 显示预览画面
         mPhototView.setVisibility(View.GONE);
         mPhotoEditLayout.setVisibility(View.VISIBLE);
-        mPhotoEditView.setImageMeta(mImageLists.get(mCurrentSelecetedIndex));
+        mPhotoEditView = new PhotoEditSurfaceView(this);
+        mAspectFrameLayout.addView(mPhotoEditView);
+
+        float ratio = (float) imageMeta.getWidth() / (float) imageMeta.getHeight();
+        mAspectFrameLayout.setAspectRatio(ratio);
     }
 
     @Override
@@ -242,42 +263,42 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
         switch (v.getId()) {
             // 亮度
             case R.id.btn_brightness:
-                mPhotoEditView.setBrightness(mValues[BrightnessIndex]);
+                PhotoEditManager.getInstance().setBrightness(mValues[BrightnessIndex]);
                 mCurrentFilterIndex = BrightnessIndex;
                 mSeekbar.setProgress((int) (mValues[BrightnessIndex] * SeekBarMax));
                 break;
 
             // 对比度
             case R.id.btn_contrast:
-                mPhotoEditView.setContrast(mValues[ContrastIndex]);
+                PhotoEditManager.getInstance().setContrast(mValues[ContrastIndex]);
                 mCurrentFilterIndex = ContrastIndex;
                 mSeekbar.setProgress((int) (mValues[ContrastIndex] * SeekBarMax / 2.0f));
                 break;
 
             // 曝光
             case R.id.btn_exposure:
-                mPhotoEditView.setExposure(mValues[ExposureIndex]);
+                PhotoEditManager.getInstance().setExposure(mValues[ExposureIndex]);
                 mCurrentFilterIndex = ExposureIndex;
                 mSeekbar.setProgress((int) (mValues[ExposureIndex] * SeekBarMax));
                 break;
 
             // 色调
             case R.id.btn_hue:
-                mPhotoEditView.setHue(mValues[HueIndex]);
+                PhotoEditManager.getInstance().setHue(mValues[HueIndex]);
                 mCurrentFilterIndex = HueIndex;
                 mSeekbar.setProgress((int) (mValues[HueIndex] * SeekBarMax / 360f));
                 break;
 
             // 饱和度
             case R.id.btn_saturation:
-                mPhotoEditView.setSaturation(mValues[SaturationIndex]);
+                PhotoEditManager.getInstance().setSaturation(mValues[SaturationIndex]);
                 mCurrentFilterIndex = SaturationIndex;
                 mSeekbar.setProgress((int) (mValues[SaturationIndex] * SeekBarMax / 2.0f));
                 break;
 
             // 锐度
             case R.id.btn_sharpness:
-                mPhotoEditView.setSharpness(mValues[SharpnessIndex]);
+                PhotoEditManager.getInstance().setSharpness(mValues[SharpnessIndex]);
                 mCurrentFilterIndex = SharpnessIndex;
                 mSeekbar.setProgress((int) (mValues[SharpnessIndex] * SeekBarMax));
                 break;
@@ -321,27 +342,27 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
         mValues[mCurrentFilterIndex] = value;
         switch (mCurrentFilterIndex) {
             case BrightnessIndex:
-                mPhotoEditView.setBrightness(value);
+                PhotoEditManager.getInstance().setBrightness(value);
                 break;
 
             case ContrastIndex:
-                mPhotoEditView.setContrast(value);
+                PhotoEditManager.getInstance().setContrast(value);
                 break;
 
             case ExposureIndex:
-                mPhotoEditView.setExposure(value);
+                PhotoEditManager.getInstance().setExposure(value);
                 break;
 
             case HueIndex:
-                mPhotoEditView.setHue(value);
+                PhotoEditManager.getInstance().setHue(value);
                 break;
 
             case SaturationIndex:
-                mPhotoEditView.setSaturation(value);
+                PhotoEditManager.getInstance().setSaturation(value);
                 break;
 
             case SharpnessIndex:
-                mPhotoEditView.setSharpness(value);
+                PhotoEditManager.getInstance().setSharpness(value);
                 break;
         }
     }
@@ -351,12 +372,12 @@ public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.
      */
     private void resetFilterValues() {
         mValues = OriginalValues;
-        mPhotoEditView.setBrightness(OriginalValues[BrightnessIndex]);
-        mPhotoEditView.setContrast(OriginalValues[ContrastIndex]);
-        mPhotoEditView.setExposure(OriginalValues[ExposureIndex]);
-        mPhotoEditView.setHue(OriginalValues[HueIndex]);
-        mPhotoEditView.setSaturation(OriginalValues[SaturationIndex]);
-        mPhotoEditView.setSharpness(OriginalValues[SharpnessIndex]);
+        PhotoEditManager.getInstance().setBrightness(OriginalValues[BrightnessIndex]);
+        PhotoEditManager.getInstance().setContrast(OriginalValues[ContrastIndex]);
+        PhotoEditManager.getInstance().setExposure(OriginalValues[ExposureIndex]);
+        PhotoEditManager.getInstance().setHue(OriginalValues[HueIndex]);
+        PhotoEditManager.getInstance().setSaturation(OriginalValues[SaturationIndex]);
+        PhotoEditManager.getInstance().setSharpness(OriginalValues[SharpnessIndex]);
     }
 
     // 扫描媒体库

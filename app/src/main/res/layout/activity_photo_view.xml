@@ -8,14 +8,6 @@
     android:orientation="vertical"
     tools:context="com.cgfay.caincamera.activity.PhotoViewActivity">
 
-    <!--ToolBar-->
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_height="?attr/actionBarSize"
-        android:layout_width="match_parent"
-        android:background="?attr/colorPrimary" >
-    </android.support.v7.widget.Toolbar>
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -27,19 +19,26 @@
         </com.cgfay.caincamera.view.AsyncRecyclerview>
 
         <!-- 图片预览编辑 -->
-        <RelativeLayout
+        <FrameLayout
             android:id="@+id/layout_photo_edit"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@android:color/white"
             android:visibility="gone">
+            <com.cgfay.caincamera.view.AspectFrameLayout
+                android:id="@+id/layout_aspect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|center_horizontal">
+            </com.cgfay.caincamera.view.AspectFrameLayout>
+
             <RelativeLayout
                 android:id="@+id/layout_edit_bar"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/photo_edit_function_height"
                 android:orientation="horizontal"
                 android:layout_margin="@dimen/layout_margin_height"
-                android:layout_alignParentBottom="true">
+                android:layout_gravity="bottom">
                 <SeekBar
                     android:id="@+id/edit_value"
                     android:layout_width="match_parent"
@@ -97,12 +96,7 @@
                         android:text="@string/sharpness"/>
                 </LinearLayout>
             </RelativeLayout>
-            <com.cgfay.caincamera.view.PhotoEditSurfaceView
-                android:id="@+id/photo_edit_view"
-                android:layout_above="@id/layout_edit_bar"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </RelativeLayout>
+        </FrameLayout>
         <!--用于显示滤镜值-->
         <TextView
             android:id="@+id/show_value"
