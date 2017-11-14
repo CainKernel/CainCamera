@@ -155,7 +155,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
         mBottomIndicator.setIndicators(mIndicatorText);
         mBottomIndicator.addIndicatorListener(this);
-        CameraUtils.calculateCameraPreviewOrientation(CameraActivity.this);
     }
 
     private void requestCameraPermission() {

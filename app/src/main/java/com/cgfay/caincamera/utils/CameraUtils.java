@@ -9,6 +9,7 @@ import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.bean.CameraInfo;
 import com.cgfay.caincamera.bean.Size;
+import com.cgfay.caincamera.core.ParamsManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,6 +73,7 @@ public class CameraUtils {
         mCamera.setParameters(parameters);
         setPreviewSize(mCamera, CameraUtils.DEFAULT_WIDTH, CameraUtils.DEFAULT_HEIGHT);
         setPictureSize(mCamera, CameraUtils.DEFAULT_WIDTH, CameraUtils.DEFAULT_HEIGHT);
+        calculateCameraPreviewOrientation((Activity) ParamsManager.context);
         mCamera.setDisplayOrientation(mOrientation);
     }
 
