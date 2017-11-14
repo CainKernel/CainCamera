@@ -43,7 +43,7 @@ public class FaceTrackManager {
     private int mTrackModel = Facepp.FaceppConfig.DETECTION_MODE_TRACKING;
 
     // 检测线程
-    private HandlerThread mTrackerThread = new HandlerThread("FaceTrackThread");
+    private HandlerThread mTrackerThread;
     private Handler mTrackerHandler;
 
     // 人脸检测实体
@@ -100,6 +100,44 @@ public class FaceTrackManager {
     }
 
     /**
+     * 开始检测线程
+     */
+    public void startFaceTrackThread() {
+        mTrackerThread = new HandlerThread("FaceTrackThread");
+        mTrackerThread.start();
+        mTrackerHandler = new Handler(mTrackerThread.getLooper());
+    }
+
+    /**
+     * 停止检测线程
+     */
+    public void stopFaceTrackingThread() {
+        // 释放检测线程以及Handler回调
+        if (mTrackerHandler == null) {
+            if (mTrackerThread != null) {
+                mTrackerThread.quitSafely();
+                try {
+                    mTrackerThread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                mTrackerThread = null;
+            }
+            return;
+        }
+        mTrackerHandler.removeCallbacksAndMessages(null);
+        mTrackerThread.quitSafely();
+        try {
+            mTrackerThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        mTrackerThread = null;
+        mTrackerHandler = null;
+        
+    }
+
+    /**
      * 初始化人脸检测
      * 备注：在相机打开之后调用
      */
@@ -113,11 +151,8 @@ public class FaceTrackManager {
 
             mSensorUtil = new SensorEventUtil(ParamsManager.context);
 
-            if (mTrackerThread == null) {
-                mTrackerThread = new HandlerThread("FaceTrackThread");
-            }
-            mTrackerThread.start();
-            mTrackerHandler = new Handler(mTrackerThread.getLooper());
+            // 开启检测线程
+            startFaceTrackThread();
 
             ConUtil.acquireWakeLock(context);
 
@@ -187,15 +222,8 @@ public class FaceTrackManager {
      *  释放资源
      */
     public void release() {
-        // 释放检测线程以及Handler回调
-        if (mTrackerHandler != null) {
-            mTrackerHandler.removeCallbacksAndMessages(null);
-            mTrackerHandler = null;
-        }
-        if (mTrackerThread != null) {
-            mTrackerThread.quitSafely();
-            mTrackerThread = null;
-        }
+        // 停止检测线程
+        stopFaceTrackingThread();
         // 释放检测实体
         if (facepp != null) {
             facepp.release();
@@ -208,6 +236,9 @@ public class FaceTrackManager {
      * @param rotation 当前的角度
      */
     private void setConfig(int rotation) {
+        if (facepp == null) {
+            return;
+        }
         Facepp.FaceppConfig faceppConfig = facepp.getFaceppConfig();
         if (faceppConfig.rotation != rotation) {
             faceppConfig.rotation = rotation;
