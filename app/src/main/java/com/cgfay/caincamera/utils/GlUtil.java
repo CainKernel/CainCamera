@@ -218,6 +218,56 @@ public class GlUtil {
     }
 
     /**
+     * 创建Texture
+     * @param bytes
+     * @param width
+     * @param height
+     * @return
+     */
+    public static int createTexture(byte[] bytes, int width, int height) {
+        if(bytes.length != width * height * 4) {
+            throw new RuntimeException("Illegal byte array");
+        }
+        return createTexture(ByteBuffer.wrap(bytes), width, height);
+    }
+
+    /**
+     * 创建Texture
+     * @param byteBuffer
+     * @param width
+     * @param height
+     * @return
+     */
+    public static int createTexture(ByteBuffer byteBuffer, int width, int height) {
+        if(byteBuffer.array().length!=width*height*4) throw new RuntimeException("Illegal byte array");
+        final int[] texture = new int[1];
+        GLES30.glGenTextures(1,texture,0);
+        if (texture[0]==0){
+            Log.d(TAG,"Failed at glGenTextures");
+            return 0;
+        }
+
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D,texture[0]);
+
+        GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+        GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA,
+                width,height, 0,
+                GLES30.GL_RGBA,
+                GLES30.GL_UNSIGNED_BYTE,
+                byteBuffer);
+
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D,0);
+        return texture[0];
+    }
+
+    /**
      * 创建OES 类型的Texture
      * @return
      */

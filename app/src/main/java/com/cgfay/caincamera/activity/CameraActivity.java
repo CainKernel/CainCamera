@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.AspectRatioType;
+import com.cgfay.caincamera.core.ColorFilterManager;
 import com.cgfay.caincamera.core.DrawerManager;
 import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.type.FilterType;
@@ -85,6 +86,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     };
     private int mRatioIndex = 0;
     private AspectRatioType mCurrentRatio = mAspectRatio[0];
+
+    private int mColorIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -349,14 +352,23 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void swipeBack() {
-        Log.d(TAG, "swipeBack");
-        DrawerManager.getInstance().changeFilterType(FilterType.SKETCH);
+        mColorIndex++;
+        if (mColorIndex > ColorFilterManager.getInstance().getColorFilterCount()) {
+            mColorIndex = 0;
+        }
+        DrawerManager.getInstance()
+                .changeFilterType(ColorFilterManager.getInstance().getColorFilterType(mColorIndex));
     }
 
     @Override
     public void swipeFrontal() {
-        Log.d(TAG, "swipeFrontal");
-        DrawerManager.getInstance().changeFilterType(FilterType.WHITENORREDDEN);
+        mColorIndex--;
+        if (mColorIndex < 0) {
+            int count = ColorFilterManager.getInstance().getColorFilterCount();
+            mColorIndex = count > 0 ? count - 1 : 0;
+        }
+        DrawerManager.getInstance()
+                .changeFilterType(ColorFilterManager.getInstance().getColorFilterType(mColorIndex));
     }
 
     @Override

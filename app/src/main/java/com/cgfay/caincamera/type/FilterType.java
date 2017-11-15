@@ -27,7 +27,18 @@ public enum FilterType {
     MAKEUP, // 彩妆
 
     // 颜色滤镜
-    SKETCH, // 素描
+    ANTIQUE,        // 古董
+    BLACKCAT,       // 黑猫
+    BLACKWHITE,     // 黑白
+    COOL,           // 冷色调
+    EMERALD,        // 翡翠
+    EVERGREEN,      // 常绿
+    LATTE,          // 拿铁
+    NOSTALGIA,      // 怀旧之情
+    ROMANCE,        // 浪漫
+    SAKURA,         // 樱花
+    SKETCH,         // 素描
+    WHITECAT,       // 白猫
     WHITENORREDDEN, // 白皙还是红润
 
 

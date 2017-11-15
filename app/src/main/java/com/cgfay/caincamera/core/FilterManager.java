@@ -4,6 +4,17 @@ import com.cgfay.caincamera.filter.advanced.SketchFilter;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.base.BaseImageFilterGroup;
 import com.cgfay.caincamera.filter.base.DisplayFilter;
+import com.cgfay.caincamera.filter.color.AnitqueFilter;
+import com.cgfay.caincamera.filter.color.BlackCatFilter;
+import com.cgfay.caincamera.filter.color.BlackWhiteFilter;
+import com.cgfay.caincamera.filter.color.CoolFilter;
+import com.cgfay.caincamera.filter.color.EmeraldFilter;
+import com.cgfay.caincamera.filter.color.EvergreenFilter;
+import com.cgfay.caincamera.filter.color.LatteFilter;
+import com.cgfay.caincamera.filter.color.NostalgiaFilter;
+import com.cgfay.caincamera.filter.color.RomanceFilter;
+import com.cgfay.caincamera.filter.color.SakuraFilter;
+import com.cgfay.caincamera.filter.color.WhiteCatFilter;
 import com.cgfay.caincamera.filter.group.DefaultFilterGroup;
 import com.cgfay.caincamera.filter.beauty.RealtimeBeautify;
 import com.cgfay.caincamera.filter.beauty.WhitenOrReddenFilter;
@@ -61,8 +72,19 @@ public class FilterManager {
 
 
         // 颜色滤镜
-        mIndexMap.put(FilterType.WHITENORREDDEN, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.ANTIQUE, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.BLACKCAT, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.BLACKWHITE, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.COOL, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.EMERALD, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.EVERGREEN, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.LATTE, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.NOSTALGIA, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.ROMANCE, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.SAKURA, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.SKETCH, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.WHITECAT, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.WHITENORREDDEN, FilterIndex.ColorIndex);
     }
 
     private FilterManager() {}
@@ -111,7 +133,49 @@ public class FilterManager {
             case REALTIMEBEAUTY:
                 return new RealtimeBeautify();
 
+            // 古董
+            case ANTIQUE:
+                return new AnitqueFilter();
 
+            // 黑猫
+            case BLACKCAT:
+                return new BlackCatFilter();
+
+            // 黑白
+            case BLACKWHITE:
+                return new BlackWhiteFilter();
+
+            // 冷色调
+            case COOL:
+                return new CoolFilter();
+
+            // 翡翠
+            case EMERALD:
+                return new EmeraldFilter();
+
+            // 常绿
+            case EVERGREEN:
+                return new EvergreenFilter();
+
+            // 拿铁
+            case LATTE:
+                return new LatteFilter();
+
+            // 怀旧之情
+            case NOSTALGIA:
+                return new NostalgiaFilter();
+
+            // 浪漫
+            case ROMANCE:
+                return new RomanceFilter();
+
+            // 樱花
+            case SAKURA:
+                return new SakuraFilter();
+
+            // 白猫
+            case WHITECAT:
+                return new WhiteCatFilter();
 
             default:
                 return new DisplayFilter();
