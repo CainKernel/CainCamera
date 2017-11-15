@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.view.View;
 import android.view.Window;
@@ -32,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class PhotoViewActivity extends BaseActivity implements PhotoViewAdapter.OnItemClickLitener,
+public class PhotoViewActivity extends AppCompatActivity implements PhotoViewAdapter.OnItemClickLitener,
         SeekBar.OnSeekBarChangeListener, View.OnClickListener {
 
     private static final int REQUEST_STORAGE_READ = 0x01;
