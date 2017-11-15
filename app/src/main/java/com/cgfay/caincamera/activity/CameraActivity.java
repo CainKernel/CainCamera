@@ -95,6 +95,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         if (phoneName.toLowerCase().contains("bullhead")
                 || phoneName.toLowerCase().contains("nexus 5x")) {
             TextureRotationUtils.setBackReverse(true);
+            ParamsManager.mBackReverse = true;
         }
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,

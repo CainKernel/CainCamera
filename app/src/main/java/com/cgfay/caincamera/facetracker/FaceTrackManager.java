@@ -350,7 +350,6 @@ public class FaceTrackManager {
                                 for (int i = 0; i < faces[index].points.length; i++) {
                                     float x = (faces[index].points[i].x / height) * 2 - 1;
                                     float y = 1 - (faces[index].points[i].y / width) * 2;
-                                    // TODO: Nexus 5X 背面相机正常，其他手机待检测
                                     if (orientation == 0 || orientation == 3) { // 竖屏状态下
                                         if (isBackCamera) {
                                             x = -x;
@@ -360,7 +359,11 @@ public class FaceTrackManager {
 
                                     if (orientation == 1) {
                                         if (isBackCamera) {
-                                            pointf = new float[] { y, x, 0.0f };
+                                            if (ParamsManager.mBackReverse) {
+                                                pointf = new float[] { y, x, 0.0f };
+                                            } else {
+                                                pointf = new float[] { -y, -x, 0.0f };
+                                            }
                                         } else {
                                             pointf = new float[] { -y, x, 0.0f };
                                         }
@@ -368,7 +371,11 @@ public class FaceTrackManager {
 
                                     if (orientation == 2) {
                                         if (isBackCamera) {
-                                            pointf = new float[] { -y, -x, 0.0f };
+                                            if (ParamsManager.mBackReverse) {
+                                                pointf = new float[]{-y, -x, 0.0f};
+                                            } else {
+                                                pointf = new float[] { y, x, 0.0f };
+                                            }
                                         } else {
                                             pointf = new float[] { y, -x, 0.0f };
                                         }

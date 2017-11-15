@@ -45,4 +45,7 @@ public class ParamsManager {
 
     // 是否允许位置
     public static boolean canRecordingLocation = false;
+
+    // 是否倒置(Nexus 5X与其他手机不一样，后置摄像头图像会倒置)
+    public static boolean mBackReverse = false;
 }
