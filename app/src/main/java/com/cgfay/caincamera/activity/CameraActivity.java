@@ -114,11 +114,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_CAMERA);
         }
-        // 请求录音权限
-        if (!mRecordSoundEnable) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{ Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD);
-        }
         requestFaceNetwork();
     }
 
@@ -470,6 +465,11 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             ParamsManager.mGalleryType = GalleryType.PICTURE;
         } else if (currentIndex == 2) {
             ParamsManager.mGalleryType = GalleryType.VIDEO;
+            // 请求录音权限
+            if (!mRecordSoundEnable) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{ Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD);
+            }
         }
     }
 

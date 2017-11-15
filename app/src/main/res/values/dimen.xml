@@ -7,7 +7,7 @@
     <dimen name="photo_edit_function_height">120dp</dimen>
     <dimen name="layout_margin_height">20dp</dimen>
     <!--字体-->
-    <dimen name="edit_size">10sp</dimen>
+    <dimen name="edit_size">9sp</dimen>
     <dimen name="show_value_size">20sp</dimen>
 
     <!--拍照按钮宽高-->
