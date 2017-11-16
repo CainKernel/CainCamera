@@ -36,6 +36,8 @@ dependencies {
     })
     compile(name: 'MGFaceppSDK-0.4.7', ext: 'aar')
     compile(name: 'MGLicenseManagerSDK-0.3.0', ext: 'aar')
+    compile files('libs/zip4j_1.3.2.jar')
+    compile files('libs/java-unrar-decryption-supported-20120613.jar')
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support:recyclerview-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
