@@ -4,22 +4,32 @@ import com.cgfay.caincamera.filter.advanced.SketchFilter;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.base.BaseImageFilterGroup;
 import com.cgfay.caincamera.filter.base.DisplayFilter;
+import com.cgfay.caincamera.filter.beauty.RealtimeBeautify;
+import com.cgfay.caincamera.filter.beauty.WhitenOrReddenFilter;
 import com.cgfay.caincamera.filter.color.AmaroFilter;
 import com.cgfay.caincamera.filter.color.AnitqueFilter;
 import com.cgfay.caincamera.filter.color.BlackCatFilter;
 import com.cgfay.caincamera.filter.color.BlackWhiteFilter;
 import com.cgfay.caincamera.filter.color.BrooklynFilter;
+import com.cgfay.caincamera.filter.color.CalmFilter;
 import com.cgfay.caincamera.filter.color.CoolFilter;
+import com.cgfay.caincamera.filter.color.EarlyBirdFilter;
 import com.cgfay.caincamera.filter.color.EmeraldFilter;
 import com.cgfay.caincamera.filter.color.EvergreenFilter;
+import com.cgfay.caincamera.filter.color.FairyTaleFilter;
+import com.cgfay.caincamera.filter.color.FreudFilter;
+import com.cgfay.caincamera.filter.color.HealthyFilter;
+import com.cgfay.caincamera.filter.color.HefeFilter;
+import com.cgfay.caincamera.filter.color.HudsonFilter;
+import com.cgfay.caincamera.filter.color.KevinFilter;
 import com.cgfay.caincamera.filter.color.LatteFilter;
+import com.cgfay.caincamera.filter.color.LomoFilter;
 import com.cgfay.caincamera.filter.color.NostalgiaFilter;
 import com.cgfay.caincamera.filter.color.RomanceFilter;
 import com.cgfay.caincamera.filter.color.SakuraFilter;
+import com.cgfay.caincamera.filter.color.SunsetFilter;
 import com.cgfay.caincamera.filter.color.WhiteCatFilter;
 import com.cgfay.caincamera.filter.group.DefaultFilterGroup;
-import com.cgfay.caincamera.filter.beauty.RealtimeBeautify;
-import com.cgfay.caincamera.filter.beauty.WhitenOrReddenFilter;
 import com.cgfay.caincamera.filter.group.MakeUpFilterGroup;
 import com.cgfay.caincamera.filter.image.BrightnessFilter;
 import com.cgfay.caincamera.filter.image.ContrastFilter;
@@ -29,7 +39,6 @@ import com.cgfay.caincamera.filter.image.HueFilter;
 import com.cgfay.caincamera.filter.image.MirrorFilter;
 import com.cgfay.caincamera.filter.image.SaturationFilter;
 import com.cgfay.caincamera.filter.image.SharpnessFilter;
-import com.cgfay.caincamera.filter.sticker.StickerFilter;
 import com.cgfay.caincamera.type.FilterGroupType;
 import com.cgfay.caincamera.type.FilterIndex;
 import com.cgfay.caincamera.type.FilterType;
@@ -41,7 +50,7 @@ import java.util.HashMap;
  * Created by cain on 17-7-25.
  */
 
-public class FilterManager {
+public final class FilterManager {
 
     private static HashMap<FilterType, FilterIndex> mIndexMap = new HashMap<FilterType, FilterIndex>();
     static {
@@ -79,15 +88,25 @@ public class FilterManager {
         mIndexMap.put(FilterType.BLACKCAT, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.BLACKWHITE, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.BROOKLYN, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.CALM, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.COOL, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.EARLYBIRD, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.EMERALD, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.EVERGREEN, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.FAIRYTALE, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.FREUD, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.HEALTHY, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.HEFE, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.HUDSON, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.KEVIN, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.LATTE, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.LOMO, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.NOSTALGIA, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.ROMANCE, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.SAKURA, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.SKETCH, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.SOURCE, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.SUNSET, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.WHITECAT, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.WHITENORREDDEN, FilterIndex.ColorIndex);
     }
@@ -123,13 +142,10 @@ public class FilterManager {
             case SHARPNESS:
                 return new SharpnessFilter();
 
-            //  素描
-            case SKETCH:
-                return new SketchFilter();
-
-            // 贴纸
+            // TODO 贴纸滤镜需要人脸关键点计算得到
             case STICKER:
-                return new StickerFilter();
+                return new DisplayFilter();
+//                return new StickerFilter();
 
             // 白皙还是红润
             case WHITENORREDDEN:
@@ -157,9 +173,17 @@ public class FilterManager {
             case BROOKLYN:
                 return new BrooklynFilter();
 
+            // 冷静
+            case CALM:
+                return new CalmFilter();
+
             // 冷色调
             case COOL:
                 return new CoolFilter();
+
+            // 晨鸟
+            case EARLYBIRD:
+                return new EarlyBirdFilter();
 
             // 翡翠
             case EMERALD:
@@ -169,9 +193,37 @@ public class FilterManager {
             case EVERGREEN:
                 return new EvergreenFilter();
 
+            // 童话
+            case FAIRYTALE:
+                return new FairyTaleFilter();
+
+            // 佛洛伊特
+            case FREUD:
+                return new FreudFilter();
+
+            // 健康
+            case HEALTHY:
+                return new HealthyFilter();
+
+            // 酵母
+            case HEFE:
+                return new HefeFilter();
+
+            // 哈德森
+            case HUDSON:
+                return new HudsonFilter();
+
+            // 凯文
+            case KEVIN:
+                return new KevinFilter();
+
             // 拿铁
             case LATTE:
                 return new LatteFilter();
+
+            // LOMO
+            case LOMO:
+                return new LomoFilter();
 
             // 怀旧之情
             case NOSTALGIA:
@@ -184,6 +236,14 @@ public class FilterManager {
             // 樱花
             case SAKURA:
                 return new SakuraFilter();
+
+            //  素描
+            case SKETCH:
+                return new SketchFilter();
+
+            // 日落
+            case SUNSET:
+                return new SunsetFilter();
 
             // 白猫
             case WHITECAT:

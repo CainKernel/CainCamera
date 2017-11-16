@@ -33,14 +33,24 @@ public enum FilterType {
     BLACKCAT,       // 黑猫
     BLACKWHITE,     // 黑白
     BROOKLYN,       // 布鲁克林
+    CALM,           // 冷静
     COOL,           // 冷色调
+    EARLYBIRD,      // 晨鸟
     EMERALD,        // 翡翠
     EVERGREEN,      // 常绿
+    FAIRYTALE,      // 童话
+    FREUD,          // 佛洛伊特
+    HEALTHY,        // 健康
+    HEFE,           // 酵母
+    HUDSON,         // 哈德森
+    KEVIN,          // 凯文
     LATTE,          // 拿铁
+    LOMO,           // LOMO
     NOSTALGIA,      // 怀旧之情
     ROMANCE,        // 浪漫
     SAKURA,         // 樱花
     SKETCH,         // 素描
+    SUNSET,         // 日落
     WHITECAT,       // 白猫
     WHITENORREDDEN, // 白皙还是红润
 

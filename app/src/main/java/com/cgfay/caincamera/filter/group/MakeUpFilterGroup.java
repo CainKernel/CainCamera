@@ -92,7 +92,13 @@ public class MakeUpFilterGroup extends BaseImageFilterGroup {
      * @param type
      */
     private void changeFaceStretchFilter(FilterType type) {
-
+        if (mFilters != null) {
+            mFilters.get(FaceStretchIndex).release();
+            mFilters.set(FaceStretchIndex, FilterManager.getFilter(type));
+            // 设置宽高
+            mFilters.get(FaceStretchIndex).onInputSizeChanged(mImageWidth, mImageHeight);
+            mFilters.get(FaceStretchIndex).onDisplayChanged(mDisplayWidth, mDisplayHeight);
+        }
     }
 
     /**
@@ -100,7 +106,7 @@ public class MakeUpFilterGroup extends BaseImageFilterGroup {
      * @param type
      */
     private void changeStickerFilter(FilterType type) {
-
+        // Do nothing，贴纸滤镜在默认的滤镜组里面，不和彩妆同组
     }
 
     /**
@@ -108,6 +114,12 @@ public class MakeUpFilterGroup extends BaseImageFilterGroup {
      * @param type
      */
     private void changeMakeupFilter(FilterType type) {
-
+        if (mFilters != null) {
+            mFilters.get(MakeupIndex).release();
+            mFilters.set(MakeupIndex, FilterManager.getFilter(type));
+            // 设置宽高
+            mFilters.get(MakeupIndex).onInputSizeChanged(mImageWidth, mImageHeight);
+            mFilters.get(MakeupIndex).onDisplayChanged(mDisplayWidth, mDisplayHeight);
+        }
     }
 }

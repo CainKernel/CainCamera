@@ -20,6 +20,8 @@ public class DefaultFilterGroup extends BaseImageFilterGroup {
     private static final int ColorIndex = 1;
     // 瘦脸大眼层
     private static final int FaceStretchIndex = 2;
+    // 贴纸
+    private static final int StickersIndex = 3;
 
     public DefaultFilterGroup() {
         this(initFilters());
@@ -34,6 +36,7 @@ public class DefaultFilterGroup extends BaseImageFilterGroup {
         filters.add(BeautyfyIndex, FilterManager.getFilter(FilterType.REALTIMEBEAUTY));
         filters.add(ColorIndex, FilterManager.getFilter(FilterType.NONE));
         filters.add(FaceStretchIndex, FilterManager.getFilter(FilterType.FACESTRETCH));
+        filters.add(StickersIndex, FilterManager.getFilter(FilterType.STICKER));
         return filters;
     }
 
@@ -86,7 +89,13 @@ public class DefaultFilterGroup extends BaseImageFilterGroup {
      * @param type
      */
     private void changeFaceStretchFilter(FilterType type) {
-
+        if (mFilters != null) {
+            mFilters.get(FaceStretchIndex).release();
+            mFilters.set(FaceStretchIndex, FilterManager.getFilter(type));
+            // 设置宽高
+            mFilters.get(FaceStretchIndex).onInputSizeChanged(mImageWidth, mImageHeight);
+            mFilters.get(FaceStretchIndex).onDisplayChanged(mDisplayWidth, mDisplayHeight);
+        }
     }
 
     /**
@@ -94,7 +103,13 @@ public class DefaultFilterGroup extends BaseImageFilterGroup {
      * @param type
      */
     private void changeStickerFilter(FilterType type) {
-
+        if (mFilters != null) {
+            mFilters.get(StickersIndex).release();
+            mFilters.set(StickersIndex, FilterManager.getFilter(type));
+            // 设置宽高
+            mFilters.get(StickersIndex).onInputSizeChanged(mImageWidth, mImageHeight);
+            mFilters.get(StickersIndex).onDisplayChanged(mDisplayWidth, mDisplayHeight);
+        }
     }
 
     /**
@@ -102,6 +117,6 @@ public class DefaultFilterGroup extends BaseImageFilterGroup {
      * @param type
      */
     private void changeMakeupFilter(FilterType type) {
-
+        // Do nothing, 彩妆滤镜放在彩妆滤镜组里面
     }
 }

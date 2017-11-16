@@ -41,14 +41,24 @@ public final class ColorFilterManager {
         mFilterType.add(FilterType.BLACKCAT);
         mFilterType.add(FilterType.BLACKWHITE);
         mFilterType.add(FilterType.BROOKLYN);
+        mFilterType.add(FilterType.CALM);
         mFilterType.add(FilterType.COOL);
+        mFilterType.add(FilterType.EARLYBIRD);
         mFilterType.add(FilterType.EMERALD);
         mFilterType.add(FilterType.EVERGREEN);
+        mFilterType.add(FilterType.FAIRYTALE);
+        mFilterType.add(FilterType.FREUD);
+        mFilterType.add(FilterType.HEALTHY);
+        mFilterType.add(FilterType.HEFE);
+        mFilterType.add(FilterType.HUDSON);
+        mFilterType.add(FilterType.KEVIN);
         mFilterType.add(FilterType.LATTE);
+        mFilterType.add(FilterType.LOMO);
         mFilterType.add(FilterType.NOSTALGIA);
         mFilterType.add(FilterType.ROMANCE);
         mFilterType.add(FilterType.SAKURA);
         mFilterType.add(FilterType.SKETCH);
+        mFilterType.add(FilterType.SUNSET);
         mFilterType.add(FilterType.WHITECAT);
 
 
@@ -60,14 +70,24 @@ public final class ColorFilterManager {
         mFilterName.add("黑猫");
         mFilterName.add("黑白");
         mFilterName.add("布鲁克林");
+        mFilterName.add("冷静");
         mFilterName.add("冷色调");
+        mFilterName.add("晨鸟");
         mFilterName.add("翡翠");
         mFilterName.add("常绿");
+        mFilterName.add("童话");
+        mFilterName.add("佛洛伊特");
+        mFilterName.add("健康");
+        mFilterName.add("酵母");
+        mFilterName.add("哈德森");
+        mFilterName.add("凯文");
         mFilterName.add("拿铁");
+        mFilterName.add("LOMO");
         mFilterName.add("怀旧之情");
         mFilterName.add("浪漫");
         mFilterName.add("樱花");
         mFilterName.add("素描");
+        mFilterName.add("日落");
         mFilterName.add("白猫");
 
     }
