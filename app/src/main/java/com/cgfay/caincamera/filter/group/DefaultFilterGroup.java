@@ -34,7 +34,7 @@ public class DefaultFilterGroup extends BaseImageFilterGroup {
     private static List<BaseImageFilter> initFilters() {
         List<BaseImageFilter> filters = new ArrayList<BaseImageFilter>();
         filters.add(BeautyfyIndex, FilterManager.getFilter(FilterType.REALTIMEBEAUTY));
-        filters.add(ColorIndex, FilterManager.getFilter(FilterType.NONE));
+        filters.add(ColorIndex, FilterManager.getFilter(FilterType.SOURCE));
         filters.add(FaceStretchIndex, FilterManager.getFilter(FilterType.FACESTRETCH));
         filters.add(StickersIndex, FilterManager.getFilter(FilterType.STICKER));
         return filters;
