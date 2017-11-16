@@ -145,4 +145,9 @@ public class EmeraldFilter extends BaseImageFilter {
         GLES30.glUniform1i(mCurveTextureLoc, 1);
     }
 
+    @Override
+    public void release() {
+        GLES30.glDeleteTextures(1, new int[]{mCurveTexture}, 0);
+        super.release();
+    }
 }

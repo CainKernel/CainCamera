@@ -4,9 +4,11 @@ import com.cgfay.caincamera.filter.advanced.SketchFilter;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.base.BaseImageFilterGroup;
 import com.cgfay.caincamera.filter.base.DisplayFilter;
+import com.cgfay.caincamera.filter.color.AmaroFilter;
 import com.cgfay.caincamera.filter.color.AnitqueFilter;
 import com.cgfay.caincamera.filter.color.BlackCatFilter;
 import com.cgfay.caincamera.filter.color.BlackWhiteFilter;
+import com.cgfay.caincamera.filter.color.BrooklynFilter;
 import com.cgfay.caincamera.filter.color.CoolFilter;
 import com.cgfay.caincamera.filter.color.EmeraldFilter;
 import com.cgfay.caincamera.filter.color.EvergreenFilter;
@@ -72,9 +74,11 @@ public class FilterManager {
 
 
         // 颜色滤镜
+        mIndexMap.put(FilterType.AMARO, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.ANTIQUE, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.BLACKCAT, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.BLACKWHITE, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.BROOKLYN, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.COOL, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.EMERALD, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.EVERGREEN, FilterIndex.ColorIndex);
@@ -83,6 +87,7 @@ public class FilterManager {
         mIndexMap.put(FilterType.ROMANCE, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.SAKURA, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.SKETCH, FilterIndex.ColorIndex);
+        mIndexMap.put(FilterType.SOURCE, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.WHITECAT, FilterIndex.ColorIndex);
         mIndexMap.put(FilterType.WHITENORREDDEN, FilterIndex.ColorIndex);
     }
@@ -133,6 +138,9 @@ public class FilterManager {
             case REALTIMEBEAUTY:
                 return new RealtimeBeautify();
 
+            // AMARO
+            case AMARO:
+                return new AmaroFilter();
             // 古董
             case ANTIQUE:
                 return new AnitqueFilter();
@@ -144,6 +152,10 @@ public class FilterManager {
             // 黑白
             case BLACKWHITE:
                 return new BlackWhiteFilter();
+
+            // 布鲁克林
+            case BROOKLYN:
+                return new BrooklynFilter();
 
             // 冷色调
             case COOL:
@@ -177,6 +189,8 @@ public class FilterManager {
             case WHITECAT:
                 return new WhiteCatFilter();
 
+            case NONE:      // 没有滤镜
+            case SOURCE:    // 原图
             default:
                 return new DisplayFilter();
         }

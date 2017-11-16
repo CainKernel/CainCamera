@@ -337,7 +337,9 @@ public class FaceTrackManager {
                                 FacePointsManager.getInstance().addEulers(euler);
 
 
-                                Log.d("onFaceTracking", "rect = " + faces[index].rect);
+                                if (isDebug) {
+                                    Log.d("onFaceTracking", "rect = " + faces[index].rect);
+                                }
 
                                 // 调整宽高
                                 if (orientation == 1 || orientation == 2) {

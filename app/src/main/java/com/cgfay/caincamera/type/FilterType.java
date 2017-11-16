@@ -5,7 +5,7 @@ package com.cgfay.caincamera.type;
  */
 
 public enum FilterType {
-    NONE,
+    NONE, // 没有滤镜
 
     // 图片编辑滤镜
     BRIGHTNESS, // 亮度
@@ -27,9 +27,12 @@ public enum FilterType {
     MAKEUP, // 彩妆
 
     // 颜色滤镜
+    SOURCE,         // 原图
+    AMARO,          // 阿马罗
     ANTIQUE,        // 古董
     BLACKCAT,       // 黑猫
     BLACKWHITE,     // 黑白
+    BROOKLYN,       // 布鲁克林
     COOL,           // 冷色调
     EMERALD,        // 翡翠
     EVERGREEN,      // 常绿

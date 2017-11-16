@@ -89,6 +89,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     private int mColorIndex = 0;
 
+    private boolean isDebug = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -315,7 +317,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
                     @Override
                     public void onFailed(int i, byte[] bytes) {
-                        Log.d("LicenseManager", "Failed to register license!");
+                        if (isDebug) {
+                            Log.d("LicenseManager", "Failed to register license!");
+                        }
                         ParamsManager.canFaceTrack = false;
                     }
                 });
@@ -353,11 +357,15 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void swipeBack() {
         mColorIndex++;
-        if (mColorIndex > ColorFilterManager.getInstance().getColorFilterCount()) {
+        if (mColorIndex >= ColorFilterManager.getInstance().getColorFilterCount()) {
             mColorIndex = 0;
         }
         DrawerManager.getInstance()
                 .changeFilterType(ColorFilterManager.getInstance().getColorFilterType(mColorIndex));
+        if (isDebug) {
+            Log.d("changeFilter", "index = " + mColorIndex + ", filter name = "
+                    + ColorFilterManager.getInstance().getColorFilterName(mColorIndex));
+        }
     }
 
     @Override
@@ -369,6 +377,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
         DrawerManager.getInstance()
                 .changeFilterType(ColorFilterManager.getInstance().getColorFilterType(mColorIndex));
+        if (isDebug) {
+            Log.d("changeFilter", "index = " + mColorIndex + ", filter name = "
+                    + ColorFilterManager.getInstance().getColorFilterName(mColorIndex));
+        }
     }
 
     @Override

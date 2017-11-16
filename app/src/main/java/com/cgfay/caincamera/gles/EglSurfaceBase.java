@@ -26,7 +26,7 @@ import android.util.Log;
 import com.cgfay.caincamera.activity.CapturePreviewActivity;
 import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.utils.GlUtil;
-import com.cgfay.caincamera.utils.ImageUtils;
+import com.cgfay.caincamera.utils.BitmapUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -193,8 +193,8 @@ public class EglSurfaceBase {
             bos = new BufferedOutputStream(new FileOutputStream(filename));
             Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             bmp.copyPixelsFromBuffer(buf);
-            bmp = ImageUtils.getRotatedBitmap(bmp, 180);
-            bmp = ImageUtils.getFlipBitmap(bmp);
+            bmp = BitmapUtils.getRotatedBitmap(bmp, 180);
+            bmp = BitmapUtils.getFlipBitmap(bmp);
             bmp.compress(Bitmap.CompressFormat.JPEG, 90, bos);
             bmp.recycle();
         } finally {
@@ -223,7 +223,7 @@ public class EglSurfaceBase {
 
         Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bmp.copyPixelsFromBuffer(buf);
-        return ImageUtils.getRotatedBitmap(bmp, 180);
+        return BitmapUtils.getRotatedBitmap(bmp, 180);
     }
 
 }

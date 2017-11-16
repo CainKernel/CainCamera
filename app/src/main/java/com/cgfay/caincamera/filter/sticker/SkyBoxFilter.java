@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
 
+import com.cgfay.caincamera.utils.BitmapUtils;
 import com.cgfay.caincamera.utils.GlUtil;
 import com.cgfay.caincamera.utils.MatrixHelper;
 
@@ -70,7 +71,7 @@ public class SkyBoxFilter {
     private Bitmap mBitmap;
 
     public SkyBoxFilter(Context context, String path) {
-        mBitmap = GlUtil.getImageFromAssetsFile(context, path);
+        mBitmap = BitmapUtils.getImageFromAssetsFile(context, path);
     }
 
     public void createProgram() {

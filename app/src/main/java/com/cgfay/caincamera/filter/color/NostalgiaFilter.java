@@ -210,4 +210,10 @@ public class NostalgiaFilter extends BaseImageFilter {
         GLES30.glBindTexture(getTextureType(), mCurveTexture1);
         GLES30.glUniform1i(mCurveTexture1Loc, 2);
     }
+
+    @Override
+    public void release() {
+        GLES30.glDeleteTextures(2, new int[]{mCurveTexture, mCurveTexture1}, 0);
+        super.release();
+    }
 }
