@@ -5,6 +5,7 @@ import android.util.Log;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.WindowSurface;
 import com.cgfay.caincamera.multimedia.MediaAudioEncoder;
+import com.cgfay.caincamera.multimedia.MediaEncoder;
 import com.cgfay.caincamera.multimedia.MediaMuxerWrapper;
 import com.cgfay.caincamera.multimedia.MediaVideoEncoder;
 
@@ -41,10 +42,14 @@ public final class RecorderManager {
 
     // 录制视频用的EGLSurface
     private WindowSurface mRecordWindowSurface;
-//    private VideoEncoderCore mVideoEncoder;
 
     private MediaMuxerWrapper mMuxer;
 
+    // 录制文件路径
+    private String mRecorderOutputPath = null;
+
+    // 是否允许录音
+    private boolean isEnableAudioRecording = true;
 
     public static RecorderManager getInstance() {
         if (mInstance == null) {
@@ -58,14 +63,33 @@ public final class RecorderManager {
     }
 
     /**
-     * 开始录制
+     * 初始化录制器，此时耗时大约280ms左右
+     * 如果放在渲染线程里执行，会导致一开始录制出来的视频开头严重掉帧
+     * @param width
+     * @param height
      */
-    synchronized void startRecording(EglCore eglCore, int width, int height) {
+    synchronized public void initRecorder(int width, int height) {
+        initRecorder(width, height, null);
+    }
+
+    /**
+     * 初始化录制器，耗时大约208ms左右
+     * 如果放在渲染线程里面执行，会导致一开始录制出来的视频开头严重掉帧
+     * @param width
+     * @param height
+     * @param listener
+     */
+    synchronized public void initRecorder(int width, int height,
+                                          MediaEncoder.MediaEncoderListener listener) {
         mVideoWidth = width;
         mVideoHeight = height;
-
-        File file = new File(ParamsManager.VideoPath
-                + "CainCamera_" + System.currentTimeMillis() + ".mp4");
+        // 如果路径为空，则生成默认的李靖
+        if (mRecorderOutputPath == null || mRecorderOutputPath.isEmpty()) {
+            mRecorderOutputPath = ParamsManager.VideoPath
+                    + "CainCamera_" + System.currentTimeMillis() + ".mp4";
+            Log.d(TAG, "the outpath is empty, auto-created path is : " + mRecorderOutputPath);
+        }
+        File file = new File(mRecorderOutputPath);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }
@@ -77,20 +101,28 @@ public final class RecorderManager {
         try {
 
             mMuxer = new MediaMuxerWrapper(file.getAbsolutePath());
-            new MediaVideoEncoder(mMuxer, null, mVideoWidth, mVideoHeight);
-            new MediaAudioEncoder(mMuxer, null);
+            new MediaVideoEncoder(mMuxer, listener, mVideoWidth, mVideoHeight);
+            if (isEnableAudioRecording) {
+                new MediaAudioEncoder(mMuxer, listener);
+            }
 
             mMuxer.prepare();
-            mMuxer.startRecording();
-
         } catch (IOException e) {
             Log.e(TAG, "startRecording:", e);
         }
+    }
+
+    /**
+     * 开始录制
+     */
+    synchronized void startRecording(EglCore eglCore) {
         mRecordWindowSurface = new WindowSurface(eglCore,
                 ((MediaVideoEncoder) mMuxer.getVideoEncoder()).getInputSurface(),
                 true);
-
         RenderManager.getInstance().initRecordingFilter();
+        if (mMuxer != null) {
+            mMuxer.startRecording();
+        }
     }
 
     /**
@@ -127,6 +159,7 @@ public final class RecorderManager {
             mRecordWindowSurface.release();
             mRecordWindowSurface = null;
         }
+        RenderManager.getInstance().releaseRecordingFilter();
     }
 
     /**
@@ -143,5 +176,31 @@ public final class RecorderManager {
      */
     public void enableHighDefinition(boolean enable) {
         mEnableHD = enable;
+    }
+
+
+    /**
+     * 是否允许录音
+     * @param enable
+     */
+    public void setEnableAudioRecording(boolean enable) {
+        isEnableAudioRecording = enable;
+    }
+
+    /**
+     * 获取输出路径
+     * @return
+     */
+    public String getOutputPath() {
+        return mRecorderOutputPath;
+    }
+
+    /**
+     * 设置输出路径
+     * @param path
+     * @return
+     */
+    public void setOutputPath(String path) {
+        mRecorderOutputPath = null;
     }
 }

@@ -343,7 +343,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 开始录制
      */
     void startRecording() {
-        RecorderManager.getInstance().startRecording(mEglCore, mViewWidth, mViewHeight);
+        RecorderManager.getInstance().startRecording(mEglCore);
         isRecording = true;
     }
 

@@ -18,6 +18,10 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
     private static int[] mFramebuffers;
     private static int[] mFrameBufferTextures;
 
+    // 备注：仅用于滤镜组作为某个滤镜组的子滤镜时，调用drawFrameBuffer时使用
+    private static int mExtraFramebuffer = GlUtil.GL_NOT_INIT;
+    private static int mExtraFramebufferTexture = GlUtil.GL_NOT_INIT;
+
     private int mCurrentTextureId;
     protected List<BaseImageFilter> mFilters = new ArrayList<BaseImageFilter>();
 
@@ -47,6 +51,8 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
             mImageWidth = height;
         }
         initFramebuffer(width, height);
+        // 当输入发生变化时，需要销毁可能存在的额外的Framebuffer
+        destoryExtraFramebuffer();
     }
 
     @Override
@@ -109,6 +115,64 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
     }
 
     @Override
+    public int drawFrameBuffer(int textureId) {
+        if (mFramebuffers == null || mFrameBufferTextures == null || mFilters.size() <= 0) {
+            return textureId;
+        }
+        int size = mFilters.size();
+        mCurrentTextureId = textureId;
+        for (int i = 0; i < size; i++) {
+            BaseImageFilter filter = mFilters.get(i);
+            GLES30.glViewport(0, 0, mImageWidth, mImageHeight);
+            if (i < size - 1) {
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[i]);
+                GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                filter.drawFrame(mCurrentTextureId);
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+                mCurrentTextureId = mFrameBufferTextures[i];
+            } else {
+                initExtraFramebuffer();
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mExtraFramebuffer);
+                GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                filter.drawFrame(mCurrentTextureId);
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+                mCurrentTextureId = mExtraFramebufferTexture;
+            }
+        }
+        GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
+        return mCurrentTextureId;
+    }
+
+    @Override
+    public int drawFrameBuffer(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
+        if (mFramebuffers == null || mFrameBufferTextures == null || mFilters.size() <= 0) {
+            return textureId;
+        }
+        int size = mFilters.size();
+        mCurrentTextureId = textureId;
+        for (int i = 0; i < size; i++) {
+            BaseImageFilter filter = mFilters.get(i);
+            GLES30.glViewport(0, 0, mImageWidth, mImageHeight);
+            if (i < size - 1) {
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[i]);
+                GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                filter.drawFrame(mCurrentTextureId, vertexBuffer, textureBuffer);
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+                mCurrentTextureId = mFrameBufferTextures[i];
+            } else {
+                initExtraFramebuffer();
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mExtraFramebuffer);
+                GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                filter.drawFrame(mCurrentTextureId, vertexBuffer, textureBuffer);
+                GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+                mCurrentTextureId = mExtraFramebufferTexture;
+            }
+        }
+        GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
+        return mCurrentTextureId;
+    }
+
+    @Override
     public void release() {
         if (mFilters != null) {
             for (BaseImageFilter filter : mFilters) {
@@ -117,6 +181,7 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
             mFilters.clear();
         }
         destroyFramebuffer();
+        destoryExtraFramebuffer();
     }
 
     /**
@@ -129,6 +194,34 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
             mFramebuffers = new int[size - 1];
             mFrameBufferTextures = new int[size - 1];
             createFramebuffer(0, size - 1);
+        }
+    }
+
+    /**
+     * 初始化额外的framebuffer，主要用于drawFramebuffer方法调用
+     */
+    private void initExtraFramebuffer() {
+        if (mExtraFramebuffer == GlUtil.GL_NOT_INIT
+                || mExtraFramebufferTexture == GlUtil.GL_NOT_INIT) {
+            int[] fbo = new int[1];
+            int[] texture = new int[1];
+            GlUtil.createSampler2DFrameBuff(fbo, texture, mImageWidth, mImageHeight);
+            mExtraFramebuffer = fbo[0];
+            mExtraFramebufferTexture = texture[0];
+        }
+    }
+
+    /**
+     * 销毁额外的framebuffer
+     */
+    private void destoryExtraFramebuffer() {
+        if (mExtraFramebufferTexture != GlUtil.GL_NOT_INIT) {
+            GLES30.glDeleteTextures(1, new int[]{mExtraFramebufferTexture}, 0);
+            mExtraFramebufferTexture = GlUtil.GL_NOT_INIT;
+        }
+        if (mExtraFramebuffer != GlUtil.GL_NOT_INIT) {
+            GLES30.glDeleteFramebuffers(1, new int[]{mExtraFramebuffer}, 0);
+            mExtraFramebuffer = GlUtil.GL_NOT_INIT;
         }
     }
 

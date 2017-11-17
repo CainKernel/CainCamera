@@ -28,6 +28,9 @@ import com.cgfay.caincamera.core.AspectRatioType;
 import com.cgfay.caincamera.core.ColorFilterManager;
 import com.cgfay.caincamera.core.DrawerManager;
 import com.cgfay.caincamera.core.ParamsManager;
+import com.cgfay.caincamera.core.RecorderManager;
+import com.cgfay.caincamera.multimedia.MediaEncoder;
+import com.cgfay.caincamera.multimedia.MediaVideoEncoder;
 import com.cgfay.caincamera.type.GalleryType;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.PermissionUtils;
@@ -532,8 +535,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                     DrawerManager.getInstance().stopRecording();
                     mBtnTake.setBackgroundResource(R.drawable.round_green);
                 } else {
-                    DrawerManager.getInstance().startRecording();
-                    mBtnTake.setBackgroundResource(R.drawable.round_red);
+                    // 设置输出路径
+                    String path = ParamsManager.VideoPath
+                            + "CainCamera_" + System.currentTimeMillis() + ".mp4";
+                    RecorderManager.getInstance().setOutputPath(path);
+                    // 初始化录制器
+                    RecorderManager.getInstance().initRecorder(mCameraSurfaceView.getWidth(),
+                            mCameraSurfaceView.getHeight(), mEncoderListener);
                 }
                 mOnRecording = !mOnRecording;
             }
@@ -541,6 +549,35 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             requestStorageWritePermission();
         }
     }
+
+    /**
+     * 录制监听器
+     */
+    private MediaEncoder.MediaEncoderListener
+            mEncoderListener = new MediaEncoder.MediaEncoderListener() {
+
+        @Override
+        public void onPrepared(MediaEncoder encoder) {
+            if (encoder instanceof MediaVideoEncoder) {
+                // 准备完成，开始录制
+                DrawerManager.getInstance().startRecording();
+                mBtnTake.setBackgroundResource(R.drawable.round_red);
+            }
+        }
+
+        @Override
+        public void onStopped(MediaEncoder encoder) {
+            if (encoder instanceof MediaVideoEncoder) {
+                // 录制完成跳转预览页面
+                String outputPath = RecorderManager.getInstance().getOutputPath();
+                // 清空原来的路径
+                RecorderManager.getInstance().setOutputPath(null);
+                Intent intent = new Intent(CameraActivity.this, CapturePreviewActivity.class);
+                intent.putExtra(CapturePreviewActivity.PATH, outputPath);
+                startActivity(intent);
+            }
+        }
+    };
 
     /**
      * 切换相机

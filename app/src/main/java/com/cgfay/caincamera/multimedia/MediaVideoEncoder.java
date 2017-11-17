@@ -37,19 +37,34 @@ public class MediaVideoEncoder extends MediaEncoder {
 
     private static final String MIME_TYPE = "video/avc";
     private static final int FRAME_RATE = 24;
-//    private static final float BPP = 0.039f;
-    private static final float BPP = 4.0f;
+    private static final float BPP = 0.1f;
+
+    // 高清录制时的帧率倍数
+    private static final int HDValue = 16;
+    // 是否允许高清
+    private boolean isEnableHD = false;
 
     private final int mWidth;
     private final int mHeight;
     private Surface mSurface;
 
-    public MediaVideoEncoder(final MediaMuxerWrapper muxer, final MediaEncoderListener listener, final int width, final int height) {
+    public MediaVideoEncoder(final MediaMuxerWrapper muxer, final MediaEncoderListener listener,
+                             final int width, final int height) {
         super(muxer, listener, true);
         if (DEBUG) Log.i(TAG, "MediaVideoEncoder: ");
         mWidth = width;
         mHeight = height;
     }
+
+    public MediaVideoEncoder(final MediaMuxerWrapper muxer, final MediaEncoderListener listener,
+                             final int width, final int height, final boolean enableHD) {
+        super(muxer, listener, true);
+        if (DEBUG) Log.i(TAG, "MediaVideoEncoder: ");
+        mWidth = width;
+        mHeight = height;
+        isEnableHD = enableHD;
+    }
+
 
     @Override
     public boolean frameAvailableSoon() {
@@ -114,7 +129,10 @@ public class MediaVideoEncoder extends MediaEncoder {
     }
 
     private int calcBitRate() {
-        final int bitrate = (int) (BPP * FRAME_RATE * mWidth * mHeight);
+        int bitrate = (int) (BPP * FRAME_RATE * mWidth * mHeight);
+        if (isEnableHD) {
+            bitrate *= HDValue;
+        }
         Log.i(TAG, String.format("bitrate = % 5.2f[Mbps]", bitrate / 1024f / 1024f));
         return bitrate;
     }
@@ -211,4 +229,11 @@ public class MediaVideoEncoder extends MediaEncoder {
         mIsEOS = true;
     }
 
+    /**
+     * 是否允许录制高清视频
+     * @param enable
+     */
+    public void enableHighDefinition(boolean enable) {
+        isEnableHD = enable;
+    }
 }
