@@ -94,11 +94,19 @@ public final class RecorderManager {
     }
 
     /**
+     * 帧可用时调用
+     */
+    public void frameAvailable() {
+        if (mMuxer != null && mMuxer.getVideoEncoder() != null) {
+            mMuxer.getVideoEncoder().frameAvailableSoon();
+        }
+    }
+
+    /**
      * 发送渲染指令
      * @param timeStamp 时间戳
      */
     public void drawRecorderFrame(long timeStamp) {
-        mMuxer.getVideoEncoder().frameAvailableSoon();
         if (mRecordWindowSurface != null) {
             mRecordWindowSurface.makeCurrent();
             RenderManager.getInstance().drawRecordingFrame();

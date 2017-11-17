@@ -83,7 +83,9 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
 
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-
+        if (isRecording) { // 帧可用时，同步更新MediaCodec
+            RecorderManager.getInstance().frameAvailable();
+        }
     }
 
     private long time = 0;
