@@ -499,6 +499,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      * @param y y轴坐标
      */
     private void surfaceViewClick(float x, float y) {
+        if (isShowingEffect) {
+            isShowingEffect = false;
+            mEffectListView.setVisibility(View.GONE);
+        }
         DrawerManager.getInstance().setFocusAres(focusOnTouch((int)x, (int)y));
     }
 
