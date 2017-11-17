@@ -1,8 +1,12 @@
 package com.cgfay.caincamera.core;
 
+import android.util.Log;
+
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.WindowSurface;
-import com.cgfay.caincamera.multimedia.VideoEncoderCore;
+import com.cgfay.caincamera.multimedia.MediaAudioEncoder;
+import com.cgfay.caincamera.multimedia.MediaMuxerWrapper;
+import com.cgfay.caincamera.multimedia.MediaVideoEncoder;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +41,10 @@ public final class RecorderManager {
 
     // 录制视频用的EGLSurface
     private WindowSurface mRecordWindowSurface;
-    private VideoEncoderCore mVideoEncoder;
+//    private VideoEncoderCore mVideoEncoder;
+
+    private MediaMuxerWrapper mMuxer;
+
 
     public static RecorderManager getInstance() {
         if (mInstance == null) {
@@ -68,13 +75,20 @@ public final class RecorderManager {
             mRecordBitrate *= HDValue;
         }
         try {
-            mVideoEncoder = new VideoEncoderCore(mVideoWidth, mVideoHeight,
-                    mRecordBitrate, file);
+
+            mMuxer = new MediaMuxerWrapper(file.getAbsolutePath());
+            new MediaVideoEncoder(mMuxer, null, mVideoWidth, mVideoHeight);
+            new MediaAudioEncoder(mMuxer, null);
+
+            mMuxer.prepare();
+            mMuxer.startRecording();
+
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, "startRecording:", e);
         }
         mRecordWindowSurface = new WindowSurface(eglCore,
-                mVideoEncoder.getInputSurface(), true);
+                ((MediaVideoEncoder) mMuxer.getVideoEncoder()).getInputSurface(),
+                true);
 
         RenderManager.getInstance().initRecordingFilter();
     }
@@ -84,9 +98,9 @@ public final class RecorderManager {
      * @param timeStamp 时间戳
      */
     public void drawRecorderFrame(long timeStamp) {
-        if (mRecordWindowSurface != null && mVideoEncoder != null) {
+        mMuxer.getVideoEncoder().frameAvailableSoon();
+        if (mRecordWindowSurface != null) {
             mRecordWindowSurface.makeCurrent();
-            mVideoEncoder.drainEncoder(false);
             RenderManager.getInstance().drawRecordingFrame();
             mRecordWindowSurface.setPresentationTime(timeStamp);
             mRecordWindowSurface.swapBuffers();
@@ -97,14 +111,9 @@ public final class RecorderManager {
      * 停止录制
      */
     synchronized void stopRecording() {
-        if (mVideoEncoder != null) {
-            mVideoEncoder.drainEncoder(true);
-        }
-        RenderManager.getInstance().releaseRecordingFilter();
-        // 录制完成需要释放资源
-        if (mVideoEncoder != null) {
-            mVideoEncoder.release();
-            mVideoEncoder = null;
+        if (mMuxer != null) {
+            mMuxer.stopRecording();
+            mMuxer = null;
         }
         if (mRecordWindowSurface != null) {
             mRecordWindowSurface.release();
