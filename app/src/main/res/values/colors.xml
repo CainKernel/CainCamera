@@ -7,4 +7,6 @@
     <color name="colorValueShow">#ff9e9e9e</color>
 
     <color name="colorHorizontalIndicator">#FFCC00</color>
+
+    <color name="effect_item_color">#60EEEEEE</color>
 </resources>

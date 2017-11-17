@@ -81,10 +81,9 @@ public class FileUtils {
 
     /**
      * 删除文件
-     * @param context
      * @param fileName
      */
-    public static void deleteFile(Context context, String fileName) {
+    public static void deleteFile(String fileName) {
         File file = new File(fileName);
         if (file != null) {
             file.delete();

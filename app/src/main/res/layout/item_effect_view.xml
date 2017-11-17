@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center">
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+        <com.cgfay.caincamera.view.SquareImageView
+            android:id="@+id/effect_image"
+            android:layout_width="@dimen/effect_item_size"
+            android:layout_height="@dimen/effect_item_size"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center" />
+        <TextView
+            android:id="@+id/effect_name"
+            android:layout_width="@dimen/effect_item_size"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:textColor="@android:color/white"
+            android:background="@color/effect_item_color"
+            android:gravity="center"
+            android:textAlignment="center" />
+    </FrameLayout>
+</LinearLayout>

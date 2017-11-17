@@ -3,6 +3,7 @@ package com.cgfay.caincamera.core;
 import com.cgfay.caincamera.type.FilterType;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 色彩滤镜管理器
@@ -126,5 +127,20 @@ public final class ColorFilterManager {
         return mFilterType == null ? 0 : mFilterType.size();
     }
 
+    /**
+     * 获取滤镜类型
+     * @return
+     */
+    public List<FilterType> getFilterType() {
+        return mFilterType;
+    }
+
+    /**
+     * 获取滤镜名称
+     * @return
+     */
+    public List<String> getFilterName() {
+        return mFilterName;
+    }
 
 }

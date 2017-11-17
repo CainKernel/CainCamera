@@ -107,10 +107,7 @@ public class CapturePreviewActivity extends AppCompatActivity
      */
     private void executeCancel() {
         // 删除文件
-        File file = new File(mPath);
-        if (file.exists()) {
-            file.delete();
-        }
+        FileUtils.deleteFile(mPath);
         // 关掉页面
         finish();
     }
@@ -123,6 +120,8 @@ public class CapturePreviewActivity extends AppCompatActivity
         File file = new File(mPath);
         String newPath = ParamsManager.AlbumPath + file.getName();
         FileUtils.copyFile(mPath, newPath);
+        // 删除旧文件
+        FileUtils.deleteFile(mPath);
         finish();
     }
 

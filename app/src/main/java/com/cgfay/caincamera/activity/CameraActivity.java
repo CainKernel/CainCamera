@@ -12,6 +12,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -21,11 +23,11 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 
 import com.cgfay.caincamera.R;
+import com.cgfay.caincamera.adapter.EffectFilterAdapter;
 import com.cgfay.caincamera.core.AspectRatioType;
 import com.cgfay.caincamera.core.ColorFilterManager;
 import com.cgfay.caincamera.core.DrawerManager;
 import com.cgfay.caincamera.core.ParamsManager;
-import com.cgfay.caincamera.type.FilterType;
 import com.cgfay.caincamera.type.GalleryType;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.PermissionUtils;
@@ -33,6 +35,7 @@ import com.cgfay.caincamera.utils.TextureRotationUtils;
 import com.cgfay.caincamera.utils.faceplus.ConUtil;
 import com.cgfay.caincamera.utils.faceplus.Util;
 import com.cgfay.caincamera.view.AspectFrameLayout;
+import com.cgfay.caincamera.view.AsyncRecyclerview;
 import com.cgfay.caincamera.view.CameraSurfaceView;
 import com.cgfay.caincamera.view.HorizontalIndicatorView;
 import com.megvii.facepp.sdk.Facepp;
@@ -74,6 +77,16 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private Button mBtnStickers;
     private Button mBtnTake;
     private Button mBtnFilters;
+
+    // 显示滤镜
+    private boolean isShowingEffect = false;
+    private AsyncRecyclerview mEffectListView;
+    private LinearLayoutManager mEffectManager;
+    // 是否需要滚动
+    private boolean mEffectNeedToMove = false;
+
+    // 显示贴纸
+    private boolean isShowingStickers = false;
 
     // 底部指示器
     private List<String> mIndicatorText = new ArrayList<String>();
@@ -156,6 +169,39 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
         mBottomIndicator.setIndicators(mIndicatorText);
         mBottomIndicator.addIndicatorListener(this);
+
+        initEffectListView();
+
+    }
+
+    /**
+     * 初始化滤镜显示
+     */
+    private void initEffectListView() {
+        // 初始化滤镜图片
+        mEffectListView = (AsyncRecyclerview) findViewById(R.id.effect_list);
+        mEffectListView.setVisibility(View.GONE);
+        mEffectManager = new LinearLayoutManager(this);
+        mEffectManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        mEffectListView.setLayoutManager(mEffectManager);
+
+        EffectFilterAdapter adapter = new EffectFilterAdapter(this,
+                ColorFilterManager.getInstance().getFilterType(),
+                ColorFilterManager.getInstance().getFilterName());
+
+        mEffectListView.setAdapter(adapter);
+        adapter.addItemClickListener(new EffectFilterAdapter.OnItemClickLitener() {
+            @Override
+            public void onItemClick(int position) {
+                mColorIndex = position;
+                DrawerManager.getInstance().changeFilterType(
+                        ColorFilterManager.getInstance().getColorFilterType(position));
+                if (isDebug) {
+                    Log.d("changeFilter", "index = " + mColorIndex + ", filter name = "
+                            + ColorFilterManager.getInstance().getColorFilterName(mColorIndex));
+                }
+            }
+        });
     }
 
     private void requestCameraPermission() {
@@ -238,6 +284,27 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         if (PermissionUtils.permissionChecking(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             mStorageWriteEnable = true;
         }
+        if (isShowingEffect) {
+            scrollToCurrentEffect();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isShowingEffect) {
+            isShowingEffect = false;
+            if (mEffectListView != null) {
+                mEffectListView.setVisibility(View.GONE);
+            }
+            return;
+        }
+        if (isShowingStickers) {
+            isShowingStickers = false;
+            // TODO 隐藏贴纸选项
+
+            return;
+        }
+        super.onBackPressed();
     }
 
     @Override
@@ -362,6 +429,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
         DrawerManager.getInstance()
                 .changeFilterType(ColorFilterManager.getInstance().getColorFilterType(mColorIndex));
+        scrollToCurrentEffect();
         if (isDebug) {
             Log.d("changeFilter", "index = " + mColorIndex + ", filter name = "
                     + ColorFilterManager.getInstance().getColorFilterName(mColorIndex));
@@ -377,9 +445,32 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
         DrawerManager.getInstance()
                 .changeFilterType(ColorFilterManager.getInstance().getColorFilterType(mColorIndex));
+
+        scrollToCurrentEffect();
+
         if (isDebug) {
             Log.d("changeFilter", "index = " + mColorIndex + ", filter name = "
                     + ColorFilterManager.getInstance().getColorFilterName(mColorIndex));
+        }
+    }
+
+    /**
+     * 滚动到当前位置
+     */
+    private void scrollToCurrentEffect() {
+        if (isShowingEffect) {
+            Log.d("scrollToCurrentEffect", "hahaha");
+            int firstItem = mEffectManager.findFirstVisibleItemPosition();
+            int lastItem = mEffectManager.findLastVisibleItemPosition();
+            if (mColorIndex <= firstItem) {
+                mEffectListView.scrollToPosition(mColorIndex);
+            } else if (mColorIndex <= lastItem) {
+                int top = mEffectListView.getChildAt(mColorIndex - firstItem).getTop();
+                mEffectListView.scrollBy(0, top);
+            } else {
+                mEffectListView.scrollToPosition(mColorIndex);
+                mEffectNeedToMove = true;
+            }
         }
     }
 
@@ -478,7 +569,11 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      * 显示滤镜
      */
     private void showFilters() {
-
+        isShowingEffect = true;
+        if (mEffectListView != null) {
+            mEffectListView.setVisibility(View.VISIBLE);
+            // TODO 如果是先滑动滤镜再显示，调用scrollToCurrentEffect会数据越界，后续再解决
+        }
     }
 
     @Override
