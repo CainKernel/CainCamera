@@ -73,6 +73,19 @@
         </activity>
         <!-- 人脸关键点检测Test Activity end -->
 
+
+        <!-- Camera 单双线程测试 start -->
+        <activity android:name=".activity.camera.CameraTestActivity">
+
+        </activity>
+        <activity android:name=".activity.camera.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <!-- Camera 单双线程测试 end -->
     </application>
 
 </manifest>

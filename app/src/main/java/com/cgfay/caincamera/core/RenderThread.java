@@ -31,7 +31,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
 
     private static final String TAG = "RenderThread";
 
-    private boolean isDebug = false;
+    private boolean isDebug = true;
     // 操作锁
     private final Object mSynOperation = new Object();
     // Looping锁
@@ -92,14 +92,14 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     @Override
     public void onPreviewFrame(final byte[] data, Camera camera) {
         addNewFrame();
-        if (mRenderHandler != null) {
-            synchronized (mSynOperation) {
-                if (isPreviewing || isRecording) {
-                    mRenderHandler.sendMessage(mRenderHandler
-                            .obtainMessage(RenderHandler.MSG_PREVIEW_CALLBACK, data));
-                }
-            }
-        }
+//        if (mRenderHandler != null) {
+//            synchronized (mSynOperation) {
+//                if (isPreviewing || isRecording) {
+//                    mRenderHandler.sendMessage(mRenderHandler
+//                            .obtainMessage(RenderHandler.MSG_PREVIEW_CALLBACK, data));
+//                }
+//            }
+//        }
         if (mPreviewBuffer != null) {
             camera.addCallbackBuffer(mPreviewBuffer);
         }

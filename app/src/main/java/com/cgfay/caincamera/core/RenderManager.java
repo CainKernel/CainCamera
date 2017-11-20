@@ -87,7 +87,7 @@ public final class RenderManager {
      */
     private void initFilters() {
         mCameraFilter = new CameraFilter();
-        mRealTimeFilter = FilterManager.getFilterGroup();
+//        mRealTimeFilter = FilterManager.getFilterGroup();
     }
 
     /**

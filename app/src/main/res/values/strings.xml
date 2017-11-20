@@ -33,4 +33,10 @@
         <item>拍照</item>
         <item>视频</item>
     </string-array>
+
+    <string name="test_description">CainCamera目前采用单一HandlerThread 同时处理Camera相机流和渲染逻辑，请参考CameraActivity
+        一条HandlerThread控制Camera，一条HandlerThread控制渲染的方式在相当大一部分部分MTK的CPU上onPreviewFrame回调时间过长。
+        详情请参考CameraTesActivity里面的得到的测试结果</string>
+
+    <string name="test_allright">项目地址：https://github.com/CainKernel/CainCamera </string>
 </resources>
