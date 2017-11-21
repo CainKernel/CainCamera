@@ -41,47 +41,31 @@ public class FacePointsDrawer {
 
 	public FacePointsDrawer() {
 		mProgramHandle = GlUtil.createProgram(vertexShaderCode, fragmentShaderCode);
+		mPositionHandle = GLES30.glGetAttribLocation(mProgramHandle, "vPosition");
+		mColorHandle = GLES30.glGetUniformLocation(mProgramHandle, "vColor");
+		mMVPMatrixHandle = GLES30.glGetUniformLocation(mProgramHandle, "uMVPMatrix");
+		GlUtil.checkGlError("glGetUniformLocation");
 	}
 
 	public void draw(float[] mvpMatrix) {
-		// Add program to OpenGL environment
 		GLES30.glUseProgram(mProgramHandle);
-
-		// get handle to vertex shader's vPosition member
-		mPositionHandle = GLES30.glGetAttribLocation(mProgramHandle, "vPosition");
-
-		// get handle to fragment shader's vColor member
-		mColorHandle = GLES30.glGetUniformLocation(mProgramHandle, "vColor");
-
-		// get handle to shape's transformation matrix
-		mMVPMatrixHandle = GLES30.glGetUniformLocation(mProgramHandle, "uMVPMatrix");
-		GlUtil.checkGlError("glGetUniformLocation");
-
-		// Apply the projection and view transformation
 		GLES30.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
-		GlUtil.checkGlError("glUniformMatrix4fv");
-		// Enable a handle to the triangle vertices
 		GLES30.glEnableVertexAttribArray(mPositionHandle);
-		// Set color for drawing the triangle
 		GLES30.glUniform4fv(mColorHandle, 1, color_rect, 0);
-
 		GLES30.glUniform4fv(mColorHandle, 1, color, 0);
-
 		synchronized (this) {
 			for (int i = 0; i < points.size(); i++) {
 				ArrayList<FloatBuffer> triangleVBList = points.get(i);
 				for (int j = 0; j < triangleVBList.size(); j++) {
 					FloatBuffer fb = triangleVBList.get(j);
 					if (fb != null) {
-						GLES30.glVertexAttribPointer(mPositionHandle, 3, GLES30.GL_FLOAT, false, 0, fb);
-						// Draw the point
+						GLES30.glVertexAttribPointer(mPositionHandle, 3,
+								GLES30.GL_FLOAT, false, 0, fb);
 						GLES30.glDrawArrays(GLES30.GL_POINTS, 0, 1);
 					}
 				}
 			}
 		}
-
-		// Disable vertex array
 		GLES30.glDisableVertexAttribArray(mPositionHandle);
 	}
 

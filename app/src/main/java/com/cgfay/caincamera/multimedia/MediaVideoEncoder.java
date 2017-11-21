@@ -39,6 +39,8 @@ public class MediaVideoEncoder extends MediaEncoder {
     private static final int FRAME_RATE = 24;
     private static final float BPP = 0.1f;
 
+    // 比特率
+    private int mBitRate = 0;
     // 高清录制时的帧率倍数
     private static final int HDValue = 16;
     // 是否允许高清
@@ -90,7 +92,11 @@ public class MediaVideoEncoder extends MediaEncoder {
         int videoHeight = mHeight % 2 == 0 ? mHeight : mHeight - 1;
         final MediaFormat format = MediaFormat.createVideoFormat(MIME_TYPE, videoWidth, videoHeight);
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);    // API >= 18
-        format.setInteger(MediaFormat.KEY_BIT_RATE, calcBitRate());
+        if (mBitRate > 0) {
+            format.setInteger(MediaFormat.KEY_BIT_RATE, mBitRate);
+        } else {
+            format.setInteger(MediaFormat.KEY_BIT_RATE, calcBitRate());
+        }
         format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 240);
         if (DEBUG) Log.i(TAG, "format: " + format);
@@ -135,6 +141,14 @@ public class MediaVideoEncoder extends MediaEncoder {
         }
         Log.i(TAG, String.format("bitrate = % 5.2f[Mbps]", bitrate / 1024f / 1024f));
         return bitrate;
+    }
+
+    /**
+     * 设置比特率
+     * @param bitRate
+     */
+    public void setBitRate(int bitRate) {
+        mBitRate = bitRate;
     }
 
     /**
