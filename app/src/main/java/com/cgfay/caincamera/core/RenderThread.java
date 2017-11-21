@@ -57,8 +57,8 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     // 预览图片大小
     private int mImageWidth, mImageHeight;
 
-    // 是否处于检测阶段
-    private boolean isFaceDetecting = false;
+    // 是否处于渲染过程
+    private boolean isRendering = false;
 
     // 更新帧的锁
     private final Object mSyncFrameNum = new Object();
@@ -86,20 +86,23 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         if (isRecording) { // 帧可用时，同步更新MediaCodec
             RecorderManager.getInstance().frameAvailable();
         }
+        if (!isRendering) {
+            addNewFrame();
+        }
     }
 
     private long time = 0;
     @Override
     public void onPreviewFrame(final byte[] data, Camera camera) {
         addNewFrame();
-//        if (mRenderHandler != null) {
-//            synchronized (mSynOperation) {
-//                if (isPreviewing || isRecording) {
-//                    mRenderHandler.sendMessage(mRenderHandler
-//                            .obtainMessage(RenderHandler.MSG_PREVIEW_CALLBACK, data));
-//                }
-//            }
-//        }
+        if (mRenderHandler != null) {
+            synchronized (mSynOperation) {
+                if (isPreviewing || isRecording) {
+                    mRenderHandler.sendMessage(mRenderHandler
+                            .obtainMessage(RenderHandler.MSG_PREVIEW_CALLBACK, data));
+                }
+            }
+        }
         if (mPreviewBuffer != null) {
             camera.addCallbackBuffer(mPreviewBuffer);
         }
@@ -290,6 +293,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
                 }
             }
         }
+        isRendering = true;
         // 切换渲染上下文
         mDisplaySurface.makeCurrent();
         mCameraTexture.getTransformMatrix(mMatrix);
@@ -316,6 +320,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         if (isRecording) {
             RecorderManager.getInstance().drawRecorderFrame(mCameraTexture.getTimestamp());
         }
+        isRendering = false;
     }
 
     /**

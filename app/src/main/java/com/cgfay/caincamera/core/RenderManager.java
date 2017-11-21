@@ -1,11 +1,15 @@
 package com.cgfay.caincamera.core;
 
+import android.opengl.Matrix;
+import android.util.Log;
+
 import com.cgfay.caincamera.filter.base.BaseImageFilterGroup;
 import com.cgfay.caincamera.filter.base.DisplayFilter;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
 import com.cgfay.caincamera.type.FilterGroupType;
 import com.cgfay.caincamera.type.FilterType;
 import com.cgfay.caincamera.type.ScaleType;
+import com.cgfay.caincamera.utils.GlUtil;
 import com.cgfay.caincamera.utils.TextureRotationUtils;
 
 import java.nio.ByteBuffer;
@@ -39,6 +43,9 @@ public final class RenderManager {
     // 显示大小
     private int mDisplayWidth;
     private int mDisplayHeight;
+    // 录制渲染的视频大小
+    private int mVideoWidth;
+    private int mVideoHeight;
 
     private ScaleType mScaleType = ScaleType.CENTER_CROP;
     private FloatBuffer mVertexBuffer;
@@ -87,7 +94,7 @@ public final class RenderManager {
      */
     private void initFilters() {
         mCameraFilter = new CameraFilter();
-//        mRealTimeFilter = FilterManager.getFilterGroup();
+        mRealTimeFilter = FilterManager.getFilterGroup();
     }
 
     /**
@@ -298,6 +305,7 @@ public final class RenderManager {
 
     /**
      * 初始化录制的Filter
+     * TODO 录制视频大小跟渲染大小、显示大小拆分成不同的大小
      */
     public void initRecordingFilter() {
         if (mRecordFilter == null) {
@@ -313,6 +321,36 @@ public final class RenderManager {
     public void releaseRecordingFilter() {
         mRecordFilter.release();
         mRecordFilter = null;
+    }
+
+    /**
+     * 设置视频大小
+     * @param width
+     * @param height
+     */
+    public void setVideoSize(int width, int height) {
+        mVideoWidth = width;
+        mVideoHeight = height;
+    }
+
+    private void updateViewport() {
+        float[] mvpMatrix = GlUtil.IDENTITY_MATRIX;
+        if (mVideoWidth == 0 || mVideoHeight == 0) {
+            mVideoWidth = mTextureWidth;
+            mVideoHeight = mTextureHeight;
+        }
+        final double scale_x = mDisplayWidth / mVideoWidth;
+        final double scale_y = mDisplayHeight / mVideoHeight;
+        final double scale = (mScaleType == ScaleType.CENTER_CROP)
+                ? Math.max(scale_x,  scale_y) : Math.min(scale_x, scale_y);
+        final double width = scale * mVideoWidth;
+        final double height = scale * mVideoHeight;
+        Matrix.scaleM(mvpMatrix, 0, (float)(width / mDisplayWidth),
+                (float)(height / mDisplayHeight), 1.0f);
+        if (mRecordFilter != null) {
+            mRecordFilter.setMVPMatrix(mvpMatrix);
+//            mRecordFilter.setTexMatrix(mvpMatrix);
+        }
     }
 
     /**

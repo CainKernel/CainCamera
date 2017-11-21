@@ -83,7 +83,8 @@ public final class RecorderManager {
                                           MediaEncoder.MediaEncoderListener listener) {
         mVideoWidth = width;
         mVideoHeight = height;
-        // 如果路径为空，则生成默认的李靖
+        RenderManager.getInstance().setVideoSize(mVideoWidth, mVideoHeight);
+        // 如果路径为空，则生成默认的路径
         if (mRecorderOutputPath == null || mRecorderOutputPath.isEmpty()) {
             mRecorderOutputPath = ParamsManager.VideoPath
                     + "CainCamera_" + System.currentTimeMillis() + ".mp4";

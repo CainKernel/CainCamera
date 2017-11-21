@@ -20,12 +20,13 @@ public class BaseImageFilter {
 
     protected static final String VERTEX_SHADER =
             "uniform mat4 uMVPMatrix;                                   \n" +
+            "uniform mat4 uTexMatrix;                                   \n" +
             "attribute vec4 aPosition;                                  \n" +
             "attribute vec4 aTextureCoord;                              \n" +
             "varying vec2 textureCoordinate;                            \n" +
             "void main() {                                              \n" +
             "    gl_Position = uMVPMatrix * aPosition;                  \n" +
-            "    textureCoordinate = aTextureCoord.xy;                  \n" +
+            "    textureCoordinate =(uTexMatrix * aTextureCoord).xy;    \n" +
             "}                                                          \n";
 
     protected static final String FRAGMENT_SHADER_2D =
@@ -55,6 +56,7 @@ public class BaseImageFilter {
     protected int maPositionLoc;
     protected int maTextureCoordLoc;
     protected int mInputTextureLoc;
+    protected int mTexMatrixLoc;
 
     // 渲染的Image的宽高
     protected int mImageWidth;
@@ -72,6 +74,8 @@ public class BaseImageFilter {
     protected float[] mModelMatrix = new float[16];
     // 变换矩阵
     protected float[] mMVPMatrix = new float[16];
+    // 缩放矩阵
+    protected float[] mTexMatrix = new float[16];
     // 模型矩阵欧拉角的实际角度
     protected float mYawAngle = 0.0f;
     protected float mPitchAngle = 0.0f;
@@ -97,6 +101,7 @@ public class BaseImageFilter {
         maTextureCoordLoc = GLES30.glGetAttribLocation(mProgramHandle, "aTextureCoord");
         muMVPMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uMVPMatrix");
         mInputTextureLoc = GLES30.glGetUniformLocation(mProgramHandle, "inputTexture");
+        mTexMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uTexMatrix");
         initIdentityMatrix();
     }
 
@@ -153,6 +158,7 @@ public class BaseImageFilter {
         GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
 
         GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
+        GLES30.glUniformMatrix4fv(mTexMatrixLoc, 1, false, mTexMatrix, 0);
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(getTextureType(), textureId);
         GLES30.glUniform1i(mInputTextureLoc, 0);
@@ -200,6 +206,7 @@ public class BaseImageFilter {
         GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
 
         GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
+        GLES30.glUniformMatrix4fv(mTexMatrixLoc, 1, false, mTexMatrix, 0);
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(getTextureType(), textureId);
         GLES30.glUniform1i(mInputTextureLoc, 0);
@@ -282,6 +289,7 @@ public class BaseImageFilter {
         Matrix.setIdentityM(mProjectionMatrix, 0);
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.setIdentityM(mMVPMatrix, 0);
+        Matrix.setIdentityM(mTexMatrix, 0);
     }
 
     /**
@@ -336,6 +344,14 @@ public class BaseImageFilter {
         if (!Arrays.equals(mMVPMatrix, matrix)) {
             mMVPMatrix = matrix;
         }
+    }
+
+    /**
+     * 设置Texture缩放矩阵
+     * @param matrix
+     */
+    public void setTexMatrix(float[] matrix) {
+
     }
 
     /**
