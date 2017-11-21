@@ -14,7 +14,9 @@ import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.GlUtil;
 import com.cgfay.caincamera.utils.SensorEventUtil;
 import com.cgfay.caincamera.utils.faceplus.ConUtil;
+import com.cgfay.caincamera.utils.faceplus.Util;
 import com.megvii.facepp.sdk.Facepp;
+import com.megvii.licensemanager.sdk.LicenseManager;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -29,7 +31,7 @@ public class FaceTrackManager {
     private static FaceTrackManager mInstance;
 
     // 是否开启调试模式
-    private boolean isDebug = false;
+    private boolean isDebug = true;
 
     // 属性值
     private boolean is3DPose = false;
@@ -97,6 +99,42 @@ public class FaceTrackManager {
             mInstance = new FaceTrackManager();
         }
         return mInstance;
+    }
+
+    /**
+     * Face++SDK联网请求
+     */
+    public void requestFaceNetwork(Context context) {
+        if (Facepp.getSDKAuthType(ConUtil.getFileContent(context, R.raw
+                .megviifacepp_0_4_7_model)) == 2) {// 非联网授权
+            ParamsManager.canFaceTrack = true;
+            return;
+        }
+        final LicenseManager licenseManager = new LicenseManager(context);
+        licenseManager.setExpirationMillis(Facepp.getApiExpirationMillis(context,
+                ConUtil.getFileContent(context, R.raw.megviifacepp_0_4_7_model)));
+
+        String uuid = ConUtil.getUUIDString(context);
+        long apiName = Facepp.getApiName();
+
+        licenseManager.setAuthTimeBufferMillis(0);
+
+        licenseManager.takeLicenseFromNetwork(uuid, Util.API_KEY, Util.API_SECRET, apiName,
+                LicenseManager.DURATION_30DAYS, "Landmark", "1", true,
+                new LicenseManager.TakeLicenseCallback() {
+                    @Override
+                    public void onSuccess() {
+                        ParamsManager.canFaceTrack = true;
+                    }
+
+                    @Override
+                    public void onFailed(int i, byte[] bytes) {
+                        if (isDebug) {
+                            Log.d("LicenseManager", "Failed to register license!");
+                        }
+                        ParamsManager.canFaceTrack = false;
+                    }
+                });
     }
 
     /**

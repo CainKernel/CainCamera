@@ -29,6 +29,7 @@ import com.cgfay.caincamera.core.ColorFilterManager;
 import com.cgfay.caincamera.core.DrawerManager;
 import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.core.RecorderManager;
+import com.cgfay.caincamera.facetracker.FaceTrackManager;
 import com.cgfay.caincamera.multimedia.MediaEncoder;
 import com.cgfay.caincamera.multimedia.MediaVideoEncoder;
 import com.cgfay.caincamera.type.GalleryType;
@@ -135,7 +136,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_CAMERA);
         }
-        requestFaceNetwork();
+        // Face++请求联网认证
+        FaceTrackManager.getInstance().requestFaceNetwork(this);
     }
 
     private void initView() {
@@ -360,40 +362,40 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
     };
 
-    /**
-     * Face++SDK联网请求
-     */
-    private void requestFaceNetwork() {
-        if (Facepp.getSDKAuthType(ConUtil.getFileContent(this, R.raw
-                .megviifacepp_0_4_7_model)) == 2) {// 非联网授权
-            ParamsManager.canFaceTrack = true;
-            return;
-        }
-        final LicenseManager licenseManager = new LicenseManager(this);
-        licenseManager.setExpirationMillis(Facepp.getApiExpirationMillis(this, ConUtil.getFileContent(this, R.raw
-                .megviifacepp_0_4_7_model)));
-
-        String uuid = ConUtil.getUUIDString(this);
-        long apiName = Facepp.getApiName();
-
-        licenseManager.setAuthTimeBufferMillis(0);
-
-        licenseManager.takeLicenseFromNetwork(uuid, Util.API_KEY, Util.API_SECRET, apiName,
-                LicenseManager.DURATION_30DAYS, "Landmark", "1", true, new LicenseManager.TakeLicenseCallback() {
-                    @Override
-                    public void onSuccess() {
-                        ParamsManager.canFaceTrack = true;
-                    }
-
-                    @Override
-                    public void onFailed(int i, byte[] bytes) {
-                        if (isDebug) {
-                            Log.d("LicenseManager", "Failed to register license!");
-                        }
-                        ParamsManager.canFaceTrack = false;
-                    }
-                });
-    }
+//    /**
+//     * Face++SDK联网请求
+//     */
+//    private void requestFaceNetwork(Context context) {
+//        if (Facepp.getSDKAuthType(ConUtil.getFileContent(context, R.raw
+//                .megviifacepp_0_4_7_model)) == 2) {// 非联网授权
+//            ParamsManager.canFaceTrack = true;
+//            return;
+//        }
+//        final LicenseManager licenseManager = new LicenseManager(context);
+//        licenseManager.setExpirationMillis(Facepp.getApiExpirationMillis(context, ConUtil.getFileContent(context, R.raw
+//                .megviifacepp_0_4_7_model)));
+//
+//        String uuid = ConUtil.getUUIDString(context);
+//        long apiName = Facepp.getApiName();
+//
+//        licenseManager.setAuthTimeBufferMillis(0);
+//
+//        licenseManager.takeLicenseFromNetwork(uuid, Util.API_KEY, Util.API_SECRET, apiName,
+//                LicenseManager.DURATION_30DAYS, "Landmark", "1", true, new LicenseManager.TakeLicenseCallback() {
+//                    @Override
+//                    public void onSuccess() {
+//                        ParamsManager.canFaceTrack = true;
+//                    }
+//
+//                    @Override
+//                    public void onFailed(int i, byte[] bytes) {
+//                        if (isDebug) {
+//                            Log.d("LicenseManager", "Failed to register license!");
+//                        }
+//                        ParamsManager.canFaceTrack = false;
+//                    }
+//                });
+//    }
 
     @Override
     public void onClick(View v) {
