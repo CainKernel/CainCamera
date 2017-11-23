@@ -11,6 +11,7 @@ import android.view.SurfaceHolder;
 import com.cgfay.caincamera.bean.CameraInfo;
 import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.facetracker.FaceTrackManager;
+import com.cgfay.caincamera.facetracker.FaceTrackerCallback;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.WindowSurface;
 import com.cgfay.caincamera.type.FilterGroupType;
@@ -27,7 +28,7 @@ import java.io.IOException;
  */
 
 public class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvailableListener,
-        Camera.PreviewCallback {
+        Camera.PreviewCallback, FaceTrackerCallback {
 
     private static final String TAG = "RenderThread";
 
@@ -57,9 +58,6 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     // 预览图片大小
     private int mImageWidth, mImageHeight;
 
-    // 是否处于渲染过程
-    private boolean isRendering = false;
-
     // 更新帧的锁
     private final Object mSyncFrameNum = new Object();
     private final Object mSyncTexture = new Object();
@@ -86,15 +84,11 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         if (isRecording) { // 帧可用时，同步更新MediaCodec
             RecorderManager.getInstance().frameAvailable();
         }
-        if (!isRendering) {
-            addNewFrame();
-        }
     }
 
     private long time = 0;
     @Override
     public void onPreviewFrame(final byte[] data, Camera camera) {
-        addNewFrame();
         if (mRenderHandler != null) {
             synchronized (mSynOperation) {
                 if (isPreviewing || isRecording) {
@@ -192,6 +186,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      */
     private void initFaceDetection() {
         FaceTrackManager.getInstance().initFaceTracking(ParamsManager.context);
+        FaceTrackManager.getInstance().setFaceCallback(this);
     }
 
     /**
@@ -199,9 +194,20 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * @param data
      */
     void onPreviewCallback(byte[] data) {
-        FaceTrackManager.getInstance().onFaceTracking(data);
+        // 如果允许关键点检测，则进入关键点检测阶段，否则立即更新帧
+        if (ParamsManager.canFaceTrack) {
+            FaceTrackManager.getInstance().onFaceTracking(data);
+        } else {
+            addNewFrame();
+        }
     }
 
+
+    @Override
+    public void onTrackingFinish(boolean hasFaces) {
+        // 检测完成回调，不管是否存在人脸，都需要强制更新帧
+        addNewFrame();
+    }
 
     /**
      * 开始预览
@@ -276,10 +282,12 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         }
     }
 
+    private long temp = 0;
     /**
      * 绘制帧
      */
     void drawFrame() {
+        temp = System.currentTimeMillis();
         // 如果存在新的帧，则更新帧
         synchronized (mSyncFrameNum) {
             synchronized (mSyncTexture) {
@@ -293,7 +301,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
                 }
             }
         }
-        isRendering = true;
+
         // 切换渲染上下文
         mDisplaySurface.makeCurrent();
         mCameraTexture.getTransformMatrix(mMatrix);
@@ -320,7 +328,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         if (isRecording) {
             RecorderManager.getInstance().drawRecorderFrame(mCameraTexture.getTimestamp());
         }
-        isRendering = false;
+        Log.d(TAG, "drawFrame time = " + (System.currentTimeMillis() - temp));
     }
 
     /**

@@ -290,6 +290,9 @@ public class FaceTrackManager {
      */
     public void onFaceTracking(final byte[] data) {
         if (isDetecting) {
+            if (mFaceTrackerCallback != null) {
+                mFaceTrackerCallback.onTrackingFinish(mHasFace);
+            }
             return;
         }
         isDetecting = true;
@@ -373,11 +376,6 @@ public class FaceTrackManager {
                                 euler[1] = yaw;
                                 euler[2] = roll;
                                 FacePointsManager.getInstance().addEulers(euler);
-
-
-                                if (isDebug) {
-                                    Log.d("onFaceTracking", "rect = " + faces[index].rect);
-                                }
 
                                 // 调整宽高
                                 if (orientation == 1 || orientation == 2) {
