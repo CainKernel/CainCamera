@@ -32,7 +32,7 @@ public class ParamsManager {
     public static final String GifPath = StoragePath + "/CainCamera/Gif/";
 
     // 是否绘制人脸关键点
-    public static boolean enableDrawingPoints = false;
+    public static boolean enableDrawingPoints = true;
 
     // 人脸识别是否正常
     public static boolean canFaceTrack = false;

@@ -2,114 +2,92 @@ package com.cgfay.caincamera.filter.sticker;
 
 import android.graphics.Bitmap;
 import android.opengl.GLES30;
-import android.opengl.GLES30;
-import android.opengl.GLUtils;
-import android.opengl.Matrix;
 
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.utils.GlUtil;
+import com.cgfay.caincamera.utils.TextureRotationUtils;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 
 /**
- * 贴纸滤镜
- * Created by cain.huang on 2017/8/4.
+ * 贴纸滤镜，贴纸在经过透视变换、人脸在侧脸、抬头、低头等都会产生一个姿态角，
+ * 根据姿态角做综合变换，我们可以得到贴纸在视锥体中的实际三维坐标。贴纸在经过三维坐标的变换后，如果需要跟
+ * 原来的图像做混合处理，则需要自己手动计算透视变换，取得变换后投影到屏幕的实际UV坐标，然后在fragment shader
+ * 里面做混合处理，比如我要变换各种颜色、色调等，则可以改变贴纸的颜色、色调、明亮程度等、然后再跟原图像进行混合
+ * 这样同一个贴纸也能产生不同的颜色、色调效果
+ * Created by cain.huang on 2017/11/24.
  */
 
 public class StickerFilter extends BaseImageFilter {
 
     private static final String VERTEX_SHADER =
-            "uniform mat4 uMVPMatrix;        // 变换矩阵\n" +
-                    "attribute vec4 aPosition;       // 位置坐标\n" +
-                    "attribute vec2 aTextureCoord;   // 原始纹理坐标\n" +
-                    "attribute vec2 aBitmapCoord;    // 贴图坐标\n" +
-                    "\n" +
-                    "varying vec2 textureCoordinate; // 输出texture坐标\n" +
-                    "varying vec2 mipmapCoordinate;  // 输出mipmap坐标\n" +
-                    "\n" +
-                    "void main() {\n" +
-                    "    // texture的坐标\n" +
-                    "    textureCoordinate = aTextureCoord;\n" +
-                    "    mipmapCoordinate = aBitmapCoord;\n" +
-                    "    gl_Position = uMVPMatrix * aPosition;\n" +
-                    "}";
+            "uniform mat4 uMVPMatrix;        // 总变换矩阵\n" +
+            "uniform mat4 uTexMatrix;        // 输入图像的缩放矩阵\n" +
+            "attribute vec4 aPosition;       // 输入图像的位置坐标\n" +
+            "attribute vec4 aTextureCoord;   // 输入图像纹理坐标\n" +
+            "\n" +
+            "attribute vec4 aMipmapCoord;    // 贴纸在视锥体空间中的垂直于z轴的假想坐标\n" +
+            "\n" +
+            "uniform int centerX;          // 贴纸处于屏幕的中心位置x\n" +
+            "uniform int centerY;          // 贴纸处于屏幕的中心位置y\n" +
+            "\n" +
+            "varying vec2 textureCoordinate; // 输出texture坐标\n" +
+            "varying vec2 mipmapCoordinate;  // 输出mipmap坐标\n" +
+            "\n" +
+            "/**\n" +
+            " * 计算贴纸投影到屏幕的UV坐标\n" +
+            " */\n" +
+            "vec2 calculateUVPosition(vec4 modelPosition, mat4 mvpMatrix) {\n" +
+            "    vec4 tmp = vec4(modelPosition);\n" +
+            "    tmp = mvpMatrix * tmp; // gl_Position\n" +
+            "    tmp /= tmp.w; // 经过这个步骤，tmp就是归一化标准坐标了.\n" +
+            "    tmp = tmp * 0.5 + vec4(0.5f, 0.5f, 0.5f, 0.5f); // NDC坐标\n" +
+            "    tmp += vec4(centerx, centerY, 0.5f, 0.5f);// 平移到贴纸中心\n" +
+            "    return vec2(tmp.x, tmp.y); // 屏幕的UV坐标\n" +
+            "}\n" +
+            "\n" +
+            "void main() {\n" +
+            "    // texture的坐标\n" +
+            "    textureCoordinate = (uTexMatrix * aTextureCoord).xy;;\n" +
+            "    // 变换矩阵\n" +
+            "    mipmapCoordinate = calculateUVPosition(aMipmapCoord, uMVPMatrix);\n" +
+            "    gl_Position = aPosition;\n" +
+            "}";
 
     private static final String FRAGMENT_SHADER =
             "precision mediump float;\n" +
-                    "varying vec2 textureCoordinate;    // texture坐标\n" +
-                    "varying vec2 mipmapCoordinate;     // mipmap坐标\n" +
-                    "uniform vec4 color;\n" +
-                    "uniform sampler2D inputTexture;    // 原始Texture\n" +
-                    "uniform sampler2D mipmapTexture;   // 贴图Texture\n" +
-                    "\n" +
-                    "uniform vec2 v_mid; // 旋转中心点\n" +
-                    "uniform vec3 v_Rotation; // 旋转角度\n" +
-                    "uniform vec2 v_scale; //缩放\n" +
-                    "\n" +
-                    "void main()\n" +
-                    "{\n" +
-                    " vec2 rotated = vec2(cos(v_Rotation[2])*(mipmapCoordinate.x - v_mid.x)*v_scale.x\n" +
-                    "                      + sin(v_Rotation[2])*(mipmapCoordinate.y - v_mid.y)*v_scale.y + v_mid.x,\n" +
-                    "                    cos(v_Rotation[2])*(mipmapCoordinate.y - v_mid.y)*v_scale.y\n" +
-                    "                    - sin(v_Rotation[2])*(mipmapCoordinate.x - v_mid.x)*v_scale.x + v_mid.y);\n" +
-                    "    lowp vec4 sourceColor = texture2D(inputTexture, 1.0 - textureCoordinate);\n" +
-                    "    lowp vec4 mipmapColor = texture2D(mipmapTexture, rotated);\n" +
-                    "    vec4 resultColor;\n" +
-                    "    resultColor[3] = sourceColor[3];\n" +
-                    "\n" +
-                    "    if( sourceColor[3] > 0.0 ) {\n" +
-                    "        resultColor[3] = color[3] * sourceColor[3];\n" +
-                    "        resultColor[0] = (pow(mipmapColor[0], 5.0) * color[3] + sourceColor[0] * (1.0 - color[3])) * sourceColor[3];\n" +
-                    "        resultColor[1] = (pow(mipmapColor[1], 5.0) * color[3] + sourceColor[1] * (1.0 - color[3])) * sourceColor[3];\n" +
-                    "        resultColor[2] = (pow(mipmapColor[2], 5.0) * color[3] + sourceColor[2] * (1.0 - color[3])) * sourceColor[3];\n" +
-                    "    }\n" +
-                    "    gl_FragColor = resultColor;\n" +
-                    "}";
+            "varying vec2 textureCoordinate;    // texture的uv坐标\n" +
+            "varying vec2 mipmapCoordinate;     // mipmap经过透视变换到屏幕上的uv坐标\n" +
+            "\n" +
+            "uniform sampler2D inputTexture;    // 原始Texture\n" +
+            "uniform sampler2D mipmapTexture;   // 贴图Texture\n" +
+            "\n" +
+            "void main()\n" +
+            "{\n" +
+            "    lowp vec4 sourceColor = texture2D(inputTexture, 1.0 - textureCoordinate);\n" +
+            "    lowp vec4 mipmapColor = texture2D(mipmapTexture, mipmapCoordinate);\n" +
+            "    // 混合处理，此时可以做各种混合处理，比如变换透明度，变换颜色等等\n" +
+            "    gl_FragColor = mipmapColor * mipmapColor.a + sourceColor * (1.0 - mipmapColor.a);\n" +
+            "}";
 
-    private float[] OrgVertices = new float[] {
-            -1.0f, -1.0f, 0.0f, // x ,y, z
-            1.0f, -1.0f, 0.0f,
-            -1.0f,  1.0f, 0.0f,
-            1.0f,  1.0f, 0.0f
-    };
+    private int mMipmapCoordLoc;
 
-    private float[] TrackVertices = new float[] {
-            -1.0f, -1.0f, 0.0f, // x ,y, z
-            1.0f, -1.0f, 0.0f,
-            -1.0f,  1.0f, 0.0f,
-            1.0f,  1.0f, 0.0f
-    };
+    // 贴纸在屏幕上的中心点
+    private int mCenterXLoc;
+    private int mCenterYLoc;
 
-    private float[] TextureVertices = new float[] {
-            0.0f, 0.0f,     // 0 bottom left
-            1.0f, 0.0f,     // 1 bottom right
-            0.0f, 1.0f,     // 2 top left
-            1.0f, 1.0f      // 3 top right
-    };
+    private int mMipmapTextureLoc;
 
-    private short mIndices[] = {0, 1, 2, 0, 2, 3};
-    private int mIndicesLength;
+    // 贴纸的texture
+    private int mStickerTexture;
 
-    private ShortBuffer mIndicesBuffers;
+    // 贴纸坐标缓冲
+    private FloatBuffer mStickerVertexBuffer;
 
-    private FloatBuffer mVertexBuffer;
-
-    private int mBitmapTextureLoc;
-    private int mColorLoc;
-    private int maBitmapCoordLoc;
-    private int mRotationLoc;
-    private int mMiddleLoc;
-    private int mScaleLoc;
-
-    private FloatBuffer mTextureBuffer;
-
-    private float[] ColorValues = { 1.0f, 1.0f, 1.0f, 0.5f};
-
-    private Bitmap mBitmap;
-    private int[] mTextures = new int[1];
+    // 贴纸中心点
+    private int mCenterX = 0;
+    private int mCenterY = 0;
 
     public StickerFilter() {
         this(VERTEX_SHADER, FRAGMENT_SHADER);
@@ -117,175 +95,109 @@ public class StickerFilter extends BaseImageFilter {
 
     public StickerFilter(String vertexShader, String fragmentShader) {
         super(vertexShader, fragmentShader);
-        maBitmapCoordLoc = GLES30.glGetAttribLocation(mProgramHandle, "aBitmapCoord");
-        mBitmapTextureLoc = GLES30.glGetUniformLocation(mProgramHandle, "mipmapTexture");
-        mColorLoc = GLES30.glGetUniformLocation(mProgramHandle, "color");
-        mRotationLoc = GLES30.glGetUniformLocation(mProgramHandle, "v_Rotation");
-        mMiddleLoc = GLES30.glGetUniformLocation(mProgramHandle, "v_mid");
-        mScaleLoc = GLES30.glGetUniformLocation(mProgramHandle, "v_scale");
-        // 视图矩阵
-        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -1, 0f, 0f, 0f, 0f, 1f, 0f);
-        // 计算变换矩阵，将图像翻转
-        Matrix.rotateM(mMVPMatrix, 0, 180, 0, 0, 1);
-        setTrackScale(0.5f);
-        setTextures(TextureVertices);
-
-        setFloatVec2(mMiddleLoc, new float[]{ 0.5f, 0.5f});
-        setFloatVec2(mScaleLoc, new float[]{1.0f, 1.0f});
-        setFloatVec3(mRotationLoc, new float[]{0, 60, 45});
-    }
-
-    /**
-     * 初始化索引
-     * @param mIndices
-     */
-    private void setIndices(short[] mIndices) {
-        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(mIndices.length * 2);
-        byteBuffer.order(ByteOrder.nativeOrder());
-        mIndicesBuffers = byteBuffer.asShortBuffer();
-        mIndicesBuffers.put(mIndices);
-        mIndicesBuffers.position(0);
-        mIndicesLength = mIndices.length;
-    }
-
-    /**
-     * 设置顶点
-     * @param vertices
-     */
-    private void setVertices(float[] vertices) {
-        ByteBuffer mByteBuffers = ByteBuffer.allocateDirect(vertices.length * 4);
-        mByteBuffers.order(ByteOrder.nativeOrder());
-        mVertexBuffer = mByteBuffers.asFloatBuffer();
-        mVertexBuffer.position(0);
-        mVertexBuffer.put(vertices);
-        mVertexBuffer.position(0);
+        mMipmapCoordLoc = GLES30.glGetAttribLocation(mProgramHandle, "aMipmapCoord");
+        mCenterXLoc = GLES30.glGetUniformLocation(mProgramHandle, "centerX");
+        mCenterYLoc = GLES30.glGetUniformLocation(mProgramHandle, "centerY");
+        mMipmapTextureLoc = GLES30.glGetUniformLocation(mProgramHandle, "mipmapTexture");
+        // 默认全屏
+        mStickerVertexBuffer = GlUtil.createFloatBuffer(TextureRotationUtils.CubeVertices);
     }
 
     @Override
-    public void onInputSizeChanged(int width, int height) {
-        super.onInputSizeChanged(width, height);
-        float aspect = (float) width / height; // 计算宽高比
-//        aspect = 1; // 如果是1的话，这里是不会发生变形之类的，强制变成宽高比的话，会将画面拉伸变形为正方形
-//        Matrix.frustumM(mProjectionMatrix, 0, -aspect, aspect, -1, 1, 1, 10);
-        Matrix.perspectiveM(mProjectionMatrix, 0, 60, aspect, 2, 10);
-    }
+    public void onDrawArraysBegin() {
+        super.onDrawArraysBegin();
+        // 设置中心点
+        GLES30.glUniform1i(mCenterXLoc, mCenterX);
+        GLES30.glUniform1i(mCenterYLoc, mCenterY);
 
-    @Override
-    public void drawFrame(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
-        super.drawFrame(textureId, vertexBuffer, textureBuffer);
-        if (textureId == GlUtil.GL_NOT_INIT) {
-            return;
-        }
-        // 绘制贴纸
-        GLES30.glEnable(GLES30.GL_DEPTH_TEST);
-        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
-        GLES30.glUseProgram(mProgramHandle);
-//        calculateMVPMatrix();
-        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
-        runPendingOnDrawTasks();
-        // 顶点坐标
-        GLES30.glEnableVertexAttribArray(maPositionLoc);
-        GLES30.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
-                GLES30.GL_FLOAT, false, mVertexStride, vertexBuffer);
-        // texture坐标
-        GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
-        GLES30.glVertexAttribPointer(maTextureCoordLoc, CoordsPerTexture,
-                GLES30.GL_FLOAT, false, mTexCoordStride, textureBuffer);
-        // Bitmap坐标
-        GLES30.glEnableVertexAttribArray(maBitmapCoordLoc);
-        GLES30.glVertexAttribPointer(maBitmapCoordLoc, CoordsPerTexture,
-                GLES30.GL_FLOAT, false, mTexCoordStride, mTextureBuffer);
-        // 绑定纹理0
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
-        GLES30.glBindTexture(getTextureType(), textureId);
-        GLES30.glUniform1i(mInputTextureLoc, 0);
-        // 绑定纹理1
+        // 贴纸坐标定点绑定
+        mStickerVertexBuffer.position(0);
+        GLES30.glVertexAttribPointer(mMipmapCoordLoc, 3,
+                GLES30.GL_FLOAT, false, 0, mStickerVertexBuffer);
+        GLES30.glEnableVertexAttribArray(mMipmapCoordLoc);
+        // 计算总变换(贴纸部分)
+        calculateMVPMatrix();
+        // 将贴纸绑定到Texture1的位置
         GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
-        GLES30.glBindTexture(getTextureType(), mTextures[0]);
-        GLES30.glUniform1i(mBitmapTextureLoc, 1);
-
-        GLES30.glUniform4fv(mColorLoc, 1, FloatBuffer.wrap(ColorValues));
-
-        onDrawArraysBegin();
-        // 绘制
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
-        onDrawArraysAfter();
-        GLES30.glDisableVertexAttribArray(maPositionLoc);
-        GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
-        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
-        GLES30.glBindTexture(getTextureType(), 0);
-        GLES30.glUseProgram(0);
+        GLES30.glBindTexture(getTextureType(), mStickerTexture);
+        GLES30.glUniform1i(mMipmapTextureLoc, 1);
     }
 
-    /**
-     * 设置贴纸图片
-     * @param bitmap
-     */
-    public void setStickerBitmap(Bitmap bitmap) {
-        if (mBitmap != null) {
-            mBitmap.recycle();
-            mBitmap = null;
-        }
-        mBitmap = bitmap;
-        if (mTextures.length > 0 && mTextures[0] != 0) {
-            GLES30.glDeleteTextures(1, mTextures, 0);
-        }
-        createBitmapTexture();
-        mBitmap.recycle();
-    }
-
-    /**
-     * 创建Texture
-     */
-    private void createBitmapTexture() {
-        if (mBitmap != null && !mBitmap.isRecycled()) {
-            if (mBitmap != null) {
-                // 创建texture
-                GLES30.glGenTextures(1, mTextures, 0);
-                // 绑定texture
-                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTextures[0]);
-                // 设置参数
-                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
-                        GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_NEAREST);
-                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
-                        GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_NEAREST);
-                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
-                        GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_LINEAR);
-                GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
-                        GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_LINEAR);
-                // 创建mip贴图
-                GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, mBitmap, 0);
-                // 创建完成之后解绑
-                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
-            }
-        }
-    }
-
-    /**
-     * 设置缩放
-     * @param trackScale
-     */
-    public void setTrackScale(float trackScale) {
-        for(int i = 0; i < 4; i++) {
-            TrackVertices[i * 3] = OrgVertices[i * 3] * trackScale;
-            TrackVertices[i * 3 + 1] = OrgVertices[i * 3 + 1] * trackScale;
-            TrackVertices[i * 3 + 2] = OrgVertices[i * 3 + 2] * trackScale;
-        }
-        setVertices(TrackVertices);
-    }
-
-    private void setTextures(float[] textureVertices) {
-        ByteBuffer mByteBuffers = ByteBuffer.allocateDirect(textureVertices.length * 4);
-        mByteBuffers.order(ByteOrder.nativeOrder());
-        mTextureBuffer = mByteBuffers.asFloatBuffer();
-        mTextureBuffer.position(0);
-        mTextureBuffer.put(textureVertices);
-        mTextureBuffer.position(0);
+    @Override
+    public void onDrawArraysAfter() {
+        super.onDrawArraysAfter();
+        GLES30.glDisableVertexAttribArray(mMipmapCoordLoc);
     }
 
     @Override
     public void release() {
         super.release();
-        GLES30.glDeleteTextures(1, mTextures, 0);
+        // 释放 texture资源，避免内存泄漏
+        GLES30.glDeleteTextures(1, new int[]{ mStickerTexture }, 0);
     }
+
+    @Override
+    public int getTextureType() {
+        return GLES30.GL_TEXTURE_2D;
+    }
+
+    /**
+     * 设置贴纸顶点坐标
+     * @param vertices
+     */
+    public void setStickerVertex(float[] vertices) {
+        mStickerVertexBuffer.clear();
+        mStickerVertexBuffer.put(vertices);
+        mStickerVertexBuffer.position(0);
+    }
+
+    /**
+     * 设置贴纸顶点坐标
+     * @param vertexBuffer
+     */
+    public void setStickerVertex(FloatBuffer vertexBuffer) {
+        mStickerVertexBuffer.clear();
+        mStickerVertexBuffer.put(vertexBuffer);
+        mStickerVertexBuffer.position(0);
+    }
+
+    /**
+     * 设置贴纸Texture 切换成新的贴纸
+     * @param texture
+     */
+    public void setStickerTexture(int texture) {
+        GLES30.glDeleteTextures(1, new int[]{ mStickerTexture }, 0);
+        // 绑定新贴纸
+        mStickerTexture = texture;
+    }
+
+    /**
+     * 更新贴纸Texture 用于实现贴纸动画
+     * @param bitmap
+     */
+    public void updateTexture(Bitmap bitmap) {
+        mStickerTexture = GlUtil.createTexctureWithOldTexture(mStickerTexture, bitmap);
+    }
+
+    /**
+     * 更新贴纸Texture 用于实现贴纸动画
+     * @param buffer
+     * @param width
+     * @param height
+     */
+    public void updateTexture(ByteBuffer buffer, int width, int height) {
+        mStickerTexture = GlUtil.createTexctureWithOldTexture(mStickerTexture,
+                buffer, width, height);
+    }
+
+    /**
+     * 设置贴纸的中心点位置
+     * @param x
+     * @param y
+     */
+    public void setCenterPosition(int x, int y) {
+        mCenterX = x;
+        mCenterY = y;
+    }
+
 }

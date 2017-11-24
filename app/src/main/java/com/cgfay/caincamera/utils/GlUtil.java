@@ -276,6 +276,51 @@ public class GlUtil {
     }
 
     /**
+     * 使用旧的Texture 创建新的Texture (宽高不能大于旧Texture的宽高，主要用于贴纸不断切换图片)
+     * @param texture
+     * @param bitmap
+     * @return
+     */
+    public static int createTexctureWithOldTexture(int texture, Bitmap bitmap) {
+        int[] result = new int[1];
+        result[0] = texture;
+        if (bitmap != null && !bitmap.isRecycled()) {
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, result[0]);
+            GLUtils.texSubImage2D(GLES30.GL_TEXTURE_2D, 0, 0, 0, bitmap);
+        }
+        return result[0];
+    }
+
+    /**
+     * 使用旧的Texture 创建新的Texture (宽高不能大于旧Texture的宽高，主要用于贴纸不断切换图片)
+     * @param texture
+     * @param byteBuffer
+     * @param width
+     * @param height
+     * @return
+     */
+    public static int createTexctureWithOldTexture(int texture, ByteBuffer byteBuffer,
+                                                   int width, int height) {
+
+        if(byteBuffer.array().length != width * height * 4) {
+            throw new RuntimeException("Illegal byte array");
+        }
+        int result[] = new int[1];
+        if (texture == GL_NOT_INIT) {
+            return createTexture(byteBuffer, width, height);
+        } else {
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
+            GLES30.glTexSubImage2D(GLES30.GL_TEXTURE_2D,0,0,0,
+                    width, height,
+                    GLES30.GL_RGBA,
+                    GLES30.GL_UNSIGNED_BYTE,
+                    byteBuffer);
+            result[0] = texture;
+        }
+        return result[0];
+    }
+
+    /**
      * 加载mipmap纹理
      * @param context
      * @param name
