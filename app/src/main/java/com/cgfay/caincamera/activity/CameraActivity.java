@@ -362,41 +362,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
     };
 
-//    /**
-//     * Face++SDK联网请求
-//     */
-//    private void requestFaceNetwork(Context context) {
-//        if (Facepp.getSDKAuthType(ConUtil.getFileContent(context, R.raw
-//                .megviifacepp_0_4_7_model)) == 2) {// 非联网授权
-//            ParamsManager.canFaceTrack = true;
-//            return;
-//        }
-//        final LicenseManager licenseManager = new LicenseManager(context);
-//        licenseManager.setExpirationMillis(Facepp.getApiExpirationMillis(context, ConUtil.getFileContent(context, R.raw
-//                .megviifacepp_0_4_7_model)));
-//
-//        String uuid = ConUtil.getUUIDString(context);
-//        long apiName = Facepp.getApiName();
-//
-//        licenseManager.setAuthTimeBufferMillis(0);
-//
-//        licenseManager.takeLicenseFromNetwork(uuid, Util.API_KEY, Util.API_SECRET, apiName,
-//                LicenseManager.DURATION_30DAYS, "Landmark", "1", true, new LicenseManager.TakeLicenseCallback() {
-//                    @Override
-//                    public void onSuccess() {
-//                        ParamsManager.canFaceTrack = true;
-//                    }
-//
-//                    @Override
-//                    public void onFailed(int i, byte[] bytes) {
-//                        if (isDebug) {
-//                            Log.d("LicenseManager", "Failed to register license!");
-//                        }
-//                        ParamsManager.canFaceTrack = false;
-//                    }
-//                });
-//    }
-
     @Override
     public void onClick(View v) {
         switch (v.getId()) {

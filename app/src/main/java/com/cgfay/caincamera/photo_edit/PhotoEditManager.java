@@ -1,9 +1,16 @@
 package com.cgfay.caincamera.photo_edit;
 
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.Log;
-import android.view.SurfaceHolder;
+import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.cgfay.caincamera.bean.ImageMeta;
+
+import java.lang.ref.WeakReference;
 
 /**
  * 图片编辑管理器
@@ -16,8 +23,14 @@ public final class PhotoEditManager {
 
     private static PhotoEditManager mInstance;
 
-    private PhotoEditThread mThread;
-    private PhotoEditHandler mHandler;
+    // 图像元数据
+    private ImageMeta mImageMeta;
+
+    private WeakReference<Context> mWeakContext;
+    private WeakReference<ImageView> mWeakImageView;
+
+    // 原图像
+    private Bitmap mSource;
 
     public static PhotoEditManager getInstance() {
         if (mInstance == null) {
@@ -28,70 +41,28 @@ public final class PhotoEditManager {
 
     private PhotoEditManager() {}
 
-
-    public void surfaceCreated(SurfaceHolder holder) {
-        if (mHandler != null) {
-            mHandler.sendMessage(mHandler
-                    .obtainMessage(PhotoEditHandler.MSG_SURFACE_CREATED, holder));
+    /**
+     * 设置共享上下文
+     * @param context
+     */
+    public void setContext(Context context) {
+        if (mWeakContext != null) {
+            mWeakContext.clear();
+            mWeakContext = null;
         }
-    }
-
-    public void surfaceChanged(int width, int height) {
-        if (mHandler != null) {
-            mHandler.sendMessage(mHandler
-                    .obtainMessage(PhotoEditHandler.MSG_SURFACE_CHANGED, width, height));
-        }
+        mWeakContext = new WeakReference<Context>(context);
     }
 
     /**
-     * 销毁时需要同步进行
+     * 设置需要返回的视图
+     * @param imageView
      */
-    public void surfaceDestoryed() {
-        if (mHandler != null) {
-            mHandler.sendMessage(mHandler
-                    .obtainMessage(PhotoEditHandler.MSG_SURFACE_DESTORYED));
+    public void setImageView(ImageView imageView) {
+        if (mWeakImageView != null) {
+            mWeakImageView.clear();
+            mWeakImageView = null;
         }
-    }
-
-    /**
-     * 等待操作完成
-     */
-    private void waitUntilReady() {
-        try {
-            wait();
-        } catch (InterruptedException e) {
-            Log.w(TAG, "wait was interrupted");
-        }
-    }
-
-    /**
-     * 开启图片编辑线程
-     */
-    public void startPhotoEditThread() {
-        mThread = new PhotoEditThread("Photo Edit Thread!");
-        mThread.start();
-        mHandler = new PhotoEditHandler(mThread.getLooper(), mThread);
-        mThread.setPhotoEditHandler(mHandler);
-    }
-
-    /**
-     * 销毁图片编辑线程
-     */
-    public void destoryPhotoEditThread() {
-        if (mHandler != null) {
-            mHandler.removeCallbacksAndMessages(null);
-            mHandler = null;
-        }
-        if (mThread != null) {
-            mThread.quitSafely();
-            try {
-                mThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        mThread = null;
-        mHandler = null;
+        mWeakImageView = new WeakReference<ImageView>(imageView);
     }
 
     /**
@@ -99,12 +70,43 @@ public final class PhotoEditManager {
      * @param imageMeta
      */
     public void setImageMeta(ImageMeta imageMeta) {
+        mImageMeta = imageMeta;
+    }
 
-        if (mHandler != null) {
-            mHandler.sendMessage(mHandler
-                    .obtainMessage(PhotoEditHandler.MSG_SET_IMAGE_META, imageMeta));
+    /**
+     * 释放持有的资源
+     */
+    public void release() {
+        if (mImageMeta != null) {
+            mImageMeta = null;
         }
+        if (mWeakImageView != null) {
+            mWeakImageView.clear();
+            mWeakImageView = null;
+        }
+        if (mWeakContext != null) {
+            mWeakContext.clear();
+            mWeakContext = null;
+        }
+    }
 
+
+    /**
+     * 显示图片
+     */
+    public void showImage() {
+        if (mImageMeta == null) {
+            return;
+        }
+        Glide.with(mWeakContext.get()).asBitmap().load(mImageMeta.getPath()).into(new SimpleTarget<Bitmap>() {
+            @Override
+            public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
+                mSource = resource;
+                if (mWeakImageView != null && mWeakImageView.get() != null) {
+                    mWeakImageView.get().setImageBitmap(mSource);
+                }
+            }
+        });
     }
 
     /**
@@ -112,10 +114,7 @@ public final class PhotoEditManager {
      * @param brightness
      */
     public void setBrightness(float brightness) {
-        if (mHandler != null) {
-            mHandler.sendMessage(mHandler
-                    .obtainMessage(PhotoEditHandler.MSG_SET_BRIGHTNESS, brightness));
-        }
+        Log.d(TAG, "brightness = " + brightness);
     }
 
     /**
@@ -123,10 +122,7 @@ public final class PhotoEditManager {
      * @param contrast
      */
     public void setContrast(float contrast) {
-        if (mHandler != null) {
-            mHandler.sendMessage(mHandler
-                    .obtainMessage(PhotoEditHandler.MSG_SET_CONTRAST, contrast));
-        }
+        Log.d(TAG, "contrast = " + contrast);
     }
 
     /**
@@ -134,10 +130,7 @@ public final class PhotoEditManager {
      * @param exposure
      */
     public void setExposure(float exposure) {
-        if (mHandler != null) {
-            mHandler.sendMessage(mHandler
-                    .obtainMessage(PhotoEditHandler.MSG_SET_EXPOSURE, exposure));
-        }
+        Log.d(TAG, "exposure = " + exposure);
     }
 
     /**
@@ -145,10 +138,7 @@ public final class PhotoEditManager {
      * @param hue
      */
     public void setHue(float hue) {
-        if (mHandler != null) {
-            mHandler.sendMessage(mHandler
-                    .obtainMessage(PhotoEditHandler.MSG_SET_HUE, hue));
-        }
+        Log.d(TAG, "hue = " + hue);
     }
 
     /**
@@ -156,10 +146,7 @@ public final class PhotoEditManager {
      * @param saturation
      */
     public void setSaturation(float saturation) {
-        if (mHandler != null) {
-            mHandler.sendMessage(mHandler
-                    .obtainMessage(PhotoEditHandler.MSG_SET_SATURATION, saturation));
-        }
+        Log.d(TAG, "saturation = " + saturation);
     }
 
     /**
@@ -167,10 +154,7 @@ public final class PhotoEditManager {
      * @param sharpness
      */
     public void setSharpness(float sharpness) {
-        if (mHandler != null) {
-            mHandler.sendMessage(mHandler
-                    .obtainMessage(PhotoEditHandler.MSG_SET_SHARPNESS, sharpness));
-        }
+        Log.d(TAG, "sharpness = " + sharpness);
     }
 
 }

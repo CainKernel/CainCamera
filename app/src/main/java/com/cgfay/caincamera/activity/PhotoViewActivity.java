@@ -11,30 +11,33 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.PhotoViewAdapter;
 import com.cgfay.caincamera.bean.ImageMeta;
+import com.cgfay.caincamera.facetracker.FaceTrackManager;
+import com.cgfay.caincamera.facetracker.FaceTrackerCallback;
 import com.cgfay.caincamera.photo_edit.PhotoEditManager;
 import com.cgfay.caincamera.utils.PermissionUtils;
-import com.cgfay.caincamera.view.AspectFrameLayout;
 import com.cgfay.caincamera.view.AsyncRecyclerview;
-import com.cgfay.caincamera.view.PhotoEditSurfaceView;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class PhotoViewActivity extends AppCompatActivity implements PhotoViewAdapter.OnItemClickLitener,
-        SeekBar.OnSeekBarChangeListener, View.OnClickListener {
+public class PhotoViewActivity extends AppCompatActivity
+        implements PhotoViewAdapter.OnItemClickLitener, SeekBar.OnSeekBarChangeListener,
+        View.OnClickListener, FaceTrackerCallback {
 
     private static final int REQUEST_STORAGE_READ = 0x01;
     private static final int COLUMNSIZE = 3;
@@ -63,9 +66,8 @@ public class PhotoViewActivity extends AppCompatActivity implements PhotoViewAda
     List<ImageMeta> mImageLists;
 
     // 编辑图片
-    private FrameLayout mPhotoEditLayout;
-    private AspectFrameLayout mAspectFrameLayout;
-    private PhotoEditSurfaceView mPhotoEditView;
+    private RelativeLayout mPhotoEditLayout;
+    private ImageView mEditImageView;
     private SeekBar mSeekbar;
     private Button mBrightness;
     private Button mContrast;
@@ -92,6 +94,9 @@ public class PhotoViewActivity extends AppCompatActivity implements PhotoViewAda
         } else {
             requestStorageReadPermission();
         }
+        // Face++请求联网认证
+        FaceTrackManager.getInstance().requestFaceNetwork(this);
+        FaceTrackManager.getInstance().setFaceCallback(this);
     }
 
     private void initView() {
@@ -101,8 +106,14 @@ public class PhotoViewActivity extends AppCompatActivity implements PhotoViewAda
         mPhototView.setLayoutManager(mLayoutManager);
         mImageLists = new ArrayList<ImageMeta>();
         // 编辑图片
-        mPhotoEditLayout = (FrameLayout) findViewById(R.id.layout_photo_edit);
-        mAspectFrameLayout = (AspectFrameLayout) findViewById(R.id.layout_aspect);
+        // 编辑图片
+        mPhotoEditLayout = (RelativeLayout) findViewById(R.id.layout_photo_edit);
+        mEditImageView = (ImageView) findViewById(R.id.photo_edit);
+        mValueShow = (TextView) findViewById(R.id.show_value);
+
+        // 绑定图片显示视图
+        PhotoEditManager.getInstance().setContext(this);
+        PhotoEditManager.getInstance().setImageView(mEditImageView);
 
         mSeekbar = (SeekBar) findViewById(R.id.edit_value);
         mBrightness = (Button) findViewById(R.id.btn_brightness);
@@ -124,15 +135,9 @@ public class PhotoViewActivity extends AppCompatActivity implements PhotoViewAda
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        PhotoEditManager.getInstance().startPhotoEditThread();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        PhotoEditManager.getInstance().destoryPhotoEditThread();
+    protected void onDestroy() {
+        PhotoEditManager.getInstance().release();
+        super.onDestroy();
     }
 
     /**
@@ -246,17 +251,19 @@ public class PhotoViewActivity extends AppCompatActivity implements PhotoViewAda
      * 显示图片编辑界面
      */
     private void showPhotoEditView() {
-        // 在开始预览之前先设置图像元数据
-        ImageMeta imageMeta = mImageLists.get(mCurrentSelecetedIndex);
-        PhotoEditManager.getInstance().setImageMeta(imageMeta);
         // 显示预览画面
         mPhototView.setVisibility(View.GONE);
         mPhotoEditLayout.setVisibility(View.VISIBLE);
-        mPhotoEditView = new PhotoEditSurfaceView(this);
-        mAspectFrameLayout.addView(mPhotoEditView);
+        // 在开始预览之前先设置图像元数据
+        ImageMeta imageMeta = mImageLists.get(mCurrentSelecetedIndex);
+        PhotoEditManager.getInstance().setImageMeta(imageMeta);
+        // 显示图片
+        PhotoEditManager.getInstance().showImage();
+    }
 
-        float ratio = (float) imageMeta.getWidth() / (float) imageMeta.getHeight();
-        mAspectFrameLayout.setAspectRatio(ratio);
+    @Override
+    public void onTrackingFinish(boolean hasFaces) {
+        Log.d("onTracking", "has faces ? " + hasFaces);
     }
 
     @Override

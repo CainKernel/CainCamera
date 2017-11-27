@@ -19,36 +19,31 @@
         </com.cgfay.caincamera.view.AsyncRecyclerview>
 
         <!-- 图片预览编辑 -->
-        <FrameLayout
+        <RelativeLayout
             android:id="@+id/layout_photo_edit"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@android:color/white"
             android:visibility="gone">
-            <com.cgfay.caincamera.view.AspectFrameLayout
-                android:id="@+id/layout_aspect"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="top|center_horizontal">
-            </com.cgfay.caincamera.view.AspectFrameLayout>
 
-            <RelativeLayout
+            <LinearLayout
                 android:id="@+id/layout_edit_bar"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/photo_edit_function_height"
-                android:orientation="horizontal"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:layout_margin="@dimen/layout_margin_height"
-                android:layout_gravity="bottom">
+                android:layout_alignParentBottom="true">
+
                 <SeekBar
                     android:id="@+id/edit_value"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
+
                 <LinearLayout
+                    android:id="@+id/layout_edit_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="@dimen/layout_margin_height"
-                    android:layout_alignParentBottom="true">
+                    android:orientation="horizontal">
                     <Button
                         android:id="@+id/btn_brightness"
                         android:layout_width="wrap_content"
@@ -95,8 +90,17 @@
                         android:textSize="@dimen/edit_size"
                         android:text="@string/sharpness"/>
                 </LinearLayout>
-            </RelativeLayout>
-        </FrameLayout>
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/photo_edit"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitCenter"
+                android:layout_above="@+id/layout_edit_bar"/>
+
+        </RelativeLayout>
         <!--用于显示滤镜值-->
         <TextView
             android:id="@+id/show_value"
