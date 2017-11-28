@@ -32,7 +32,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
 
     private static final String TAG = "RenderThread";
 
-    private boolean isDebug = true;
+    private boolean isDebug = false;
     // 操作锁
     private final Object mSynOperation = new Object();
     // Looping锁
@@ -40,6 +40,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
 
     private boolean isPreviewing = false;   // 是否预览状态
     private boolean isRecording = false;    // 是否录制状态
+    private boolean isRecordingPause = false;   // 是否处于暂停录制状态
 
     // EGL共享上下文
     private EglCore mEglCore;
@@ -81,9 +82,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
 
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        if (isRecording) { // 帧可用时，同步更新MediaCodec
-            RecorderManager.getInstance().frameAvailable();
-        }
+
     }
 
     private long time = 0;
@@ -325,10 +324,13 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         mDisplaySurface.swapBuffers();
 
         // 是否处于录制状态
-        if (isRecording) {
+        if (isRecording && !isRecordingPause) {
+            RecorderManager.getInstance().frameAvailable();
             RecorderManager.getInstance().drawRecorderFrame(mCameraTexture.getTimestamp());
         }
-        Log.d(TAG, "drawFrame time = " + (System.currentTimeMillis() - temp));
+        if (isDebug) {
+            Log.d(TAG, "drawFrame time = " + (System.currentTimeMillis() - temp));
+        }
     }
 
     /**
@@ -358,6 +360,22 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     void startRecording() {
         RecorderManager.getInstance().startRecording(mEglCore);
         isRecording = true;
+    }
+
+    /**
+     * 暂停录制
+     */
+    void pauseRecording() {
+        RecorderManager.getInstance().pauseRecording();
+        isRecordingPause = true;
+    }
+
+    /**
+     * 继续录制
+     */
+    void continueRecording() {
+        RecorderManager.getInstance().continueRecording();
+        isRecordingPause = false;
     }
 
     /**

@@ -197,6 +197,32 @@ public class DrawerManager {
     }
 
     /**
+     * 暂停录制
+     */
+    public void pauseRecording() {
+        if (mRenderHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(RenderHandler.MSG_PAUSE_RECORDING));
+        }
+    }
+
+    /**
+     * 继续录制
+     */
+    public void continueRecording() {
+        if (mRenderHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(RenderHandler.MSG_CONTINUE_RECORDING));
+        }
+    }
+
+    /**
      * 停止录制
      */
     public void stopRecording() {

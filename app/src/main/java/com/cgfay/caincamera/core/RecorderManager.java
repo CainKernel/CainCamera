@@ -51,6 +51,9 @@ public final class RecorderManager {
     // 是否允许录音
     private boolean isEnableAudioRecording = true;
 
+    // 是否处于录制状态
+    private boolean isRecording = false;
+
     public static RecorderManager getInstance() {
         if (mInstance == null) {
             mInstance = new RecorderManager();
@@ -124,13 +127,14 @@ public final class RecorderManager {
         if (mMuxer != null) {
             mMuxer.startRecording();
         }
+        isRecording = true;
     }
 
     /**
      * 帧可用时调用
      */
     public void frameAvailable() {
-        if (mMuxer != null && mMuxer.getVideoEncoder() != null) {
+        if (mMuxer != null && mMuxer.getVideoEncoder() != null && isRecording) {
             mMuxer.getVideoEncoder().frameAvailableSoon();
         }
     }
@@ -152,6 +156,7 @@ public final class RecorderManager {
      * 停止录制
      */
     synchronized void stopRecording() {
+        isRecording = false;
         if (mMuxer != null) {
             mMuxer.stopRecording();
             mMuxer = null;
@@ -161,6 +166,24 @@ public final class RecorderManager {
             mRecordWindowSurface = null;
         }
         RenderManager.getInstance().releaseRecordingFilter();
+    }
+
+    /**
+     * 暂停录制
+     */
+    synchronized void pauseRecording() {
+        if (mMuxer != null && isRecording) {
+            mMuxer.pauseRecording();
+        }
+    }
+
+    /**
+     * 继续录制
+     */
+    synchronized void continueRecording() {
+        if (mMuxer != null && isRecording) {
+            mMuxer.continueRecording();
+        }
     }
 
     /**
@@ -202,6 +225,6 @@ public final class RecorderManager {
      * @return
      */
     public void setOutputPath(String path) {
-        mRecorderOutputPath = null;
+        mRecorderOutputPath = path;
     }
 }

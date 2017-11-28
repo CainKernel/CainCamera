@@ -32,6 +32,7 @@ import android.media.MediaRecorder;
 import android.util.Log;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
 public class MediaAudioEncoder extends MediaEncoder {
@@ -93,6 +94,18 @@ public class MediaAudioEncoder extends MediaEncoder {
 	}
 
 	@Override
+	void pauseRecording(boolean isPause) {
+		super.pauseRecording(isPause);
+		if (mAudioThread != null) {
+			if (isPause) {
+				mAudioThread.stopRecording();
+			} else {
+				mAudioThread.startRecording();
+			}
+		}
+	}
+
+	@Override
     protected void release() {
 		mAudioThread = null;
 		super.release();
@@ -111,6 +124,9 @@ public class MediaAudioEncoder extends MediaEncoder {
 	 * and write them to the MediaCodec encoder
 	 */
     private class AudioThread extends Thread {
+
+    	private WeakReference<AudioRecord> mWeakRecorder;
+
     	@Override
     	public void run() {
     		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
@@ -136,6 +152,7 @@ public class MediaAudioEncoder extends MediaEncoder {
 					if (audioRecord != null) break;
 				}
 				if (audioRecord != null) {
+					mWeakRecorder = new WeakReference<AudioRecord>(audioRecord);
 		            try {
 						if (mIsCapturing) {
 		    				if (DEBUG) Log.v(TAG, "AudioThread:start audio recording");
@@ -165,6 +182,10 @@ public class MediaAudioEncoder extends MediaEncoder {
 		            	}
 		            } finally {
 		            	audioRecord.release();
+		            	if (mWeakRecorder != null) {
+		            		mWeakRecorder.clear();
+		            		mWeakRecorder = null;
+						}
 		            }
 				} else {
 					Log.e(TAG, "failed to initialize AudioRecord");
@@ -174,6 +195,25 @@ public class MediaAudioEncoder extends MediaEncoder {
     		}
 			if (DEBUG) Log.v(TAG, "AudioThread:finished");
     	}
+
+		/**
+		 * 开始录音
+		 */
+		public void startRecording() {
+			if (mWeakRecorder != null && mWeakRecorder.get() != null) {
+				mWeakRecorder.get().startRecording();
+			}
+		}
+
+		/**
+		 * 停止录音
+		 */
+		public void stopRecording() {
+			if (mWeakRecorder != null && mWeakRecorder.get() != null) {
+				mWeakRecorder.get().stop();
+			}
+		}
+
     }
 
     /**

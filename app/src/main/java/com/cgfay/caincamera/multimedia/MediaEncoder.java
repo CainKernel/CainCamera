@@ -139,9 +139,11 @@ public abstract class MediaEncoder implements Runnable {
             synchronized (mSync) {
                 localRequestStop = mRequestStop;
                 localRequestDrain = (mRequestDrain > 0);
-                if (localRequestDrain)
+                if (localRequestDrain) {
                     mRequestDrain--;
+                }
             }
+            // 停止
             if (localRequestStop) {
                 drain();
                 // request stop recording
@@ -152,6 +154,11 @@ public abstract class MediaEncoder implements Runnable {
                 release();
                 break;
             }
+            // 如果处于暂停状态，则继续下一次循环
+            if (isPause) {
+                continue;
+            }
+            // 录制
             if (localRequestDrain) {
                 drain();
             } else {
@@ -163,8 +170,11 @@ public abstract class MediaEncoder implements Runnable {
                     }
                 }
             }
-        } // end of while
-        if (DEBUG) Log.d(TAG, "Encoder thread exiting");
+        }
+
+        if (DEBUG) {
+            Log.d(TAG, "Encoder thread exiting");
+        }
 
         synchronized (mSync) {
             mRequestStop = true;
@@ -180,8 +190,13 @@ public abstract class MediaEncoder implements Runnable {
    /*package*/
     abstract void prepare() throws IOException;
 
+    /**
+     * 开始录制
+     */
     /*package*/ void startRecording() {
-        if (DEBUG) Log.v(TAG, "startRecording");
+        if (DEBUG) {
+            Log.v(TAG, "startRecording");
+        }
         synchronized (mSync) {
             mIsCapturing = true;
             mRequestStop = false;
@@ -189,6 +204,10 @@ public abstract class MediaEncoder implements Runnable {
         }
     }
 
+    /**
+     * 是否处于暂停状态
+     * @param isPause
+     */
     void pauseRecording(boolean isPause) {
         this.isPause = isPause;
         if (isPause) {
@@ -200,9 +219,12 @@ public abstract class MediaEncoder implements Runnable {
 
     /**
      * the method to request stop encoding
+     * 停止录制
      */
     /*package*/ void stopRecording() {
-        if (DEBUG) Log.v(TAG, "stopRecording");
+        if (DEBUG) {
+            Log.v(TAG, "stopRecording");
+        }
         synchronized (mSync) {
             if (!mIsCapturing || mRequestStop) {
                 return;
@@ -253,16 +275,18 @@ public abstract class MediaEncoder implements Runnable {
     }
 
     protected void signalEndOfInputStream() {
-        if (DEBUG) Log.d(TAG, "sending EOS to encoder");
+        if (DEBUG) {
+            Log.d(TAG, "sending EOS to encoder");
+        }
         encode(null, 0, getPTSUs());
     }
 
     /**
      * Method to set byte array to the MediaCodec encoder
-     *
-     * @param buffer
-     * @param length             　length of byte array, zero means EOS.
-     * @param presentationTimeUs
+     * 将byte字节数据输送给MediaCodec编码器
+     * @param buffer                byte数组的Buffer缓冲
+     * @param length                字节数组长度，0表示结束
+     * @param presentationTimeUs    显示的时间
      */
     protected void encode(final ByteBuffer buffer, final int length, final long presentationTimeUs) {
         if (!mIsCapturing) return;
@@ -278,7 +302,9 @@ public abstract class MediaEncoder implements Runnable {
                 if (length <= 0) {
                     // send EOS
                     mIsEOS = true;
-                    if (DEBUG) Log.i(TAG, "send BUFFER_FLAG_END_OF_STREAM");
+                    if (DEBUG) {
+                        Log.i(TAG, "send BUFFER_FLAG_END_OF_STREAM");
+                    }
                     mMediaCodec.queueInputBuffer(inputBufferIndex, 0, 0,
                             presentationTimeUs, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
                     break;
@@ -297,6 +323,7 @@ public abstract class MediaEncoder implements Runnable {
 
     /**
      * drain encoded data and write them to muxer
+     * 消耗编码数据并写入混合器
      */
     protected void drain() {
         if (mMediaCodec == null) return;
@@ -319,11 +346,15 @@ public abstract class MediaEncoder implements Runnable {
                         break LOOP;        // out of while
                 }
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
-                if (DEBUG) Log.v(TAG, "INFO_OUTPUT_BUFFERS_CHANGED");
+                if (DEBUG) {
+                    Log.v(TAG, "INFO_OUTPUT_BUFFERS_CHANGED");
+                }
                 // this shoud not come when encoding
                 encoderOutputBuffers = mMediaCodec.getOutputBuffers();
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                if (DEBUG) Log.v(TAG, "INFO_OUTPUT_FORMAT_CHANGED");
+                if (DEBUG) {
+                    Log.v(TAG, "INFO_OUTPUT_FORMAT_CHANGED");
+                }
                 // this status indicate the output format of codec is changed
                 // this should come only once before actual encoded data
                 // but this status never come on Android4.3 or less
@@ -343,6 +374,7 @@ public abstract class MediaEncoder implements Runnable {
                 mMuxerStarted = true;
                 if (!muxer.start()) {
                     // we should wait until muxer is ready
+                    // 等待混合器准备完成
                     synchronized (muxer) {
                         while (!muxer.isStarted())
                             try {
@@ -354,8 +386,10 @@ public abstract class MediaEncoder implements Runnable {
                 }
             } else if (encoderStatus < 0) {
                 // unexpected status
-                if (DEBUG)
-                    Log.w(TAG, "drain:unexpected result from encoder#dequeueOutputBuffer: " + encoderStatus);
+                if (DEBUG) {
+                    Log.w(TAG, "drain:unexpected result from encoder#dequeueOutputBuffer: "
+                            + encoderStatus);
+                }
             } else {
                 final ByteBuffer encodedData = encoderOutputBuffers[encoderStatus];
                 if (encodedData == null) {
@@ -367,7 +401,9 @@ public abstract class MediaEncoder implements Runnable {
                     // but MediaCodec#getOutputFormat can not call here(because INFO_OUTPUT_FORMAT_CHANGED don't come yet)
                     // therefor we should expand and prepare output format from buffer data.
                     // This sample is for API>=18(>=Android 4.3), just ignore this flag here
-                    if (DEBUG) Log.d(TAG, "drain:BUFFER_FLAG_CODEC_CONFIG");
+                    if (DEBUG) {
+                        Log.d(TAG, "drain:BUFFER_FLAG_CODEC_CONFIG");
+                    }
                     mBufferInfo.size = 0;
                 }
 
@@ -402,11 +438,11 @@ public abstract class MediaEncoder implements Runnable {
 
     /**
      * get next encoding presentationTimeUs
-     *
+     * 获取下一个编码的显示时间，这里需要减去暂停的时间
      * @return
      */
     protected long getPTSUs() {
         long result = System.nanoTime();
-        return (result - totalNans)/1000L;
+        return (result - totalNans) / 1000L;
     }
 }

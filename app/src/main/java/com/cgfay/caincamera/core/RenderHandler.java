@@ -35,8 +35,11 @@ public class RenderHandler extends Handler {
     // 触摸区域
     static final int MSG_FOCUS_RECT = 0x106;
 
+    // 录制状态
     static final int MSG_START_RECORDING = 0x200;
     static final int MSG_STOP_RECORDING = 0x201;
+    static final int MSG_PAUSE_RECORDING = 0x202;
+    static final int MSG_CONTINUE_RECORDING = 0x203;
 
     static final int MSG_RESET_BITRATE = 0x300;
 
@@ -157,6 +160,20 @@ public class RenderHandler extends Handler {
             case MSG_START_RECORDING:
                 if (mWeakRender != null && mWeakRender.get() != null) {
                     mWeakRender.get().startRecording();
+                }
+                break;
+
+            // 暂停录制
+            case MSG_PAUSE_RECORDING:
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().pauseRecording();
+                }
+                break;
+
+            // 继续录制
+            case MSG_CONTINUE_RECORDING:
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().continueRecording();
                 }
                 break;
 

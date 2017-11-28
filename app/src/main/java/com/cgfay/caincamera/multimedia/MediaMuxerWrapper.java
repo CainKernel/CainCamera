@@ -42,7 +42,6 @@ public class MediaMuxerWrapper {
     private static final String DIR_NAME = "AVRecSample";
     private static final SimpleDateFormat mDateTimeFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US);
 
-    private String mOutputPath;
     private final MediaMuxer mMediaMuxer;    // API >= 18
     private int mEncoderCount, mStatredCount;
     private boolean mIsStarted;
@@ -60,10 +59,10 @@ public class MediaMuxerWrapper {
         mIsStarted = false;
     }
 
-    public String getOutputPath() {
-        return mOutputPath;
-    }
-
+    /**
+     * 编码器录制开始前的准备
+     * @throws IOException
+     */
     public void prepare() throws IOException {
         if (mVideoEncoder != null)
             mVideoEncoder.prepare();
@@ -71,6 +70,9 @@ public class MediaMuxerWrapper {
             mAudioEncoder.prepare();
     }
 
+    /**
+     * 开始录制
+     */
     public void startRecording() {
         if (mVideoEncoder != null)
             mVideoEncoder.startRecording();
@@ -78,10 +80,33 @@ public class MediaMuxerWrapper {
             mAudioEncoder.startRecording();
     }
 
-    public MediaEncoder getVideoEncoder() {
-        return mVideoEncoder;
+    /**
+     * 暂停录制
+     */
+    public void pauseRecording() {
+        if (mAudioEncoder != null){
+            mAudioEncoder.pauseRecording(true);
+        }
+        if (mVideoEncoder != null){
+            mVideoEncoder.pauseRecording(true);
+        }
     }
 
+    /**
+     * 继续录制
+     */
+    public void continueRecording() {
+        if (mAudioEncoder != null){
+            mAudioEncoder.pauseRecording(false);
+        }
+        if (mVideoEncoder != null){
+            mVideoEncoder.pauseRecording(false);
+        }
+    }
+
+    /**
+     * 停止录制
+     */
     public void stopRecording() {
         if (mVideoEncoder != null)
             mVideoEncoder.stopRecording();
@@ -91,8 +116,28 @@ public class MediaMuxerWrapper {
         mAudioEncoder = null;
     }
 
+    /**
+     * 是否已经开始
+     * @return
+     */
     public synchronized boolean isStarted() {
         return mIsStarted;
+    }
+
+    /**
+     * 获取视频编码器
+     * @return
+     */
+    public MediaEncoder getVideoEncoder() {
+        return mVideoEncoder;
+    }
+
+    /**
+     * 获取音频编码器
+     * @return
+     */
+    public MediaEncoder getAudioEncoder() {
+        return mAudioEncoder;
     }
 
 //**********************************************************************
@@ -164,15 +209,6 @@ public class MediaMuxerWrapper {
         if (DEBUG)
             Log.i(TAG, "addTrack:trackNum=" + mEncoderCount + ",trackIx=" + trackIx + ",format=" + format);
         return trackIx;
-    }
-
-    public void setIsPause(boolean isPause) {
-        if (mAudioEncoder != null){
-            mAudioEncoder.pauseRecording(isPause);
-        }
-        if (mVideoEncoder != null){
-            mVideoEncoder.pauseRecording(isPause);
-        }
     }
 
     /**
