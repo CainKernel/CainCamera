@@ -506,9 +506,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                     String path = ParamsManager.VideoPath
                             + "CainCamera_" + System.currentTimeMillis() + ".mp4";
                     RecorderManager.getInstance().setOutputPath(path);
+                    // 是否允许录音
+                    RecorderManager.getInstance().setEnableAudioRecording(mRecordSoundEnable);
+                    // 是否允许高清录制
+                    RecorderManager.getInstance().enableHighDefinition(true);
                     // 初始化录制器
-                    RecorderManager.getInstance().initRecorder(mCameraSurfaceView.getWidth(),
-                            mCameraSurfaceView.getHeight(), mEncoderListener);
+                    RecorderManager.getInstance().initRecorder(RecorderManager.RECORD_WIDTH,
+                            RecorderManager.RECORD_HEIGHT, mEncoderListener);
                 }
                 mOnRecording = !mOnRecording;
             }

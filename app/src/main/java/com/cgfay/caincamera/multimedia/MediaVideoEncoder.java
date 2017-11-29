@@ -37,12 +37,12 @@ public class MediaVideoEncoder extends MediaEncoder {
 
     private static final String MIME_TYPE = "video/avc";
     private static final int FRAME_RATE = 24;
-    private static final float BPP = 0.1f;
+    private static final float BPP = 0.25f;
 
     // 比特率
     private int mBitRate = 0;
     // 高清录制时的帧率倍数
-    private static final int HDValue = 16;
+    private static final int HDValue = 4;
     // 是否允许高清
     private boolean isEnableHD = false;
 
@@ -138,6 +138,8 @@ public class MediaVideoEncoder extends MediaEncoder {
         int bitrate = (int) (BPP * FRAME_RATE * mWidth * mHeight);
         if (isEnableHD) {
             bitrate *= HDValue;
+        } else {
+            bitrate *= 2;
         }
         Log.i(TAG, String.format("bitrate = % 5.2f[Mbps]", bitrate / 1024f / 1024f));
         return bitrate;

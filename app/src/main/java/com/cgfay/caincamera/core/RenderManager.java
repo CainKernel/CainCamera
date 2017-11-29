@@ -1,8 +1,10 @@
 package com.cgfay.caincamera.core;
 
+import android.opengl.GLES30;
 import android.opengl.Matrix;
 import android.util.Log;
 
+import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.base.BaseImageFilterGroup;
 import com.cgfay.caincamera.filter.base.DisplayFilter;
 import com.cgfay.caincamera.filter.camera.CameraFilter;
@@ -12,6 +14,7 @@ import com.cgfay.caincamera.type.ScaleType;
 import com.cgfay.caincamera.utils.GlUtil;
 import com.cgfay.caincamera.utils.TextureRotationUtils;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -32,6 +35,8 @@ public final class RenderManager {
     private CameraFilter mCameraFilter;
     // 实时滤镜组
     private BaseImageFilterGroup mRealTimeFilter;
+    // 显示输出
+    private BaseImageFilter mDisplayFilter;
 
     // 当前的TextureId
     private int mCurrentTextureId;
@@ -93,8 +98,12 @@ public final class RenderManager {
      * 初始化滤镜
      */
     private void initFilters() {
+        // 相机输入流
         mCameraFilter = new CameraFilter();
+        // 渲染滤镜组
         mRealTimeFilter = FilterManager.getFilterGroup();
+        // 显示输出
+        mDisplayFilter = FilterManager.getFilter(FilterType.NONE);
     }
 
     /**
@@ -214,6 +223,9 @@ public final class RenderManager {
         if (mRealTimeFilter != null) {
             mRealTimeFilter.onInputSizeChanged(width, height);
         }
+        if (mDisplayFilter != null) {
+            mDisplayFilter.onInputSizeChanged(width, height);
+        }
     }
 
     /**
@@ -228,6 +240,9 @@ public final class RenderManager {
         adjustViewSize();
         if (mRealTimeFilter != null) {
             mRealTimeFilter.onDisplayChanged(width, height);
+        }
+        if (mDisplayFilter != null) {
+            mDisplayFilter.onDisplayChanged(width, height);
         }
     }
 
@@ -283,13 +298,21 @@ public final class RenderManager {
      * @param textureId
      */
     public void drawFrame(int textureId) {
-        if (mRealTimeFilter == null) {
-            mCameraFilter.drawFrame(textureId);
-            mCurrentTextureId = textureId;
-        } else {
-            int id = mCameraFilter.drawFrameBuffer(textureId);
-            mRealTimeFilter.drawFrame(id, mVertexBuffer, mTextureBuffer);
-            mCurrentTextureId = mRealTimeFilter.getCurrentTextureId();
+
+        mCurrentTextureId = textureId;
+
+        // 将相机流绘制到FBO中
+        if (mCameraFilter != null) {
+            mCurrentTextureId = mCameraFilter.drawFrameBuffer(mCurrentTextureId);
+        }
+        // 如果存在滤镜，则绘制滤镜
+        if (mRealTimeFilter != null) {
+            mCurrentTextureId = mRealTimeFilter.drawFrameBuffer(mCurrentTextureId, mVertexBuffer, mTextureBuffer);
+        }
+        // 显示输出，需要调整视口大小
+        if (mDisplayFilter != null) {
+            GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
+            mDisplayFilter.drawFrame(mCurrentTextureId);
         }
     }
 
@@ -312,7 +335,7 @@ public final class RenderManager {
             mRecordFilter = new DisplayFilter();
         }
         mRecordFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-        mRecordFilter.onDisplayChanged(mDisplayWidth, mDisplayHeight);
+        mRecordFilter.onDisplayChanged(mVideoWidth, mVideoHeight);
     }
 
     /**
@@ -331,8 +354,12 @@ public final class RenderManager {
     public void setVideoSize(int width, int height) {
         mVideoWidth = width;
         mVideoHeight = height;
+        updateViewport();
     }
 
+    /**
+     * 调整视口大小
+     */
     private void updateViewport() {
         float[] mvpMatrix = GlUtil.IDENTITY_MATRIX;
         if (mVideoWidth == 0 || mVideoHeight == 0) {
@@ -349,7 +376,6 @@ public final class RenderManager {
                 (float)(height / mDisplayHeight), 1.0f);
         if (mRecordFilter != null) {
             mRecordFilter.setMVPMatrix(mvpMatrix);
-//            mRecordFilter.setTexMatrix(mvpMatrix);
         }
     }
 
@@ -357,6 +383,9 @@ public final class RenderManager {
      * 渲染录制的帧
      */
     public void drawRecordingFrame() {
-        mRecordFilter.drawFrame(mCurrentTextureId);
+        if (mRecordFilter != null) {
+            GLES30.glViewport(0, 0, mVideoWidth, mVideoHeight);
+            mRecordFilter.drawFrame(mCurrentTextureId);
+        }
     }
 }

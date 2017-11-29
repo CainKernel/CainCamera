@@ -21,6 +21,9 @@ public final class RecorderManager {
 
     private static final String TAG = "RecorderManager";
 
+    public static final int RECORD_WIDTH = 540;
+    public static final int RECORD_HEIGHT = 960;
+
     private static RecorderManager mInstance;
 
     // 录制比特率
@@ -33,7 +36,7 @@ public final class RecorderManager {
     // 是否允许高清视频
     private boolean mEnableHD = false;
     // 码率乘高清值
-    private int HDValue = 4;
+    private int HDValue = 16;
 
     // 视频宽度
     private int mVideoWidth;
