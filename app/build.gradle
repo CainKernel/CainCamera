@@ -14,6 +14,9 @@ android {
             cmake {
                 cppFlags "-std=c++11"
             }
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
         }
     }
     buildTypes {
@@ -22,6 +25,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    sourceSets.main {
+        jniLibs.srcDirs = ['libs']
+        jni.srcDirs = []
+    }
+
     externalNativeBuild {
         cmake {
             path "CMakeLists.txt"

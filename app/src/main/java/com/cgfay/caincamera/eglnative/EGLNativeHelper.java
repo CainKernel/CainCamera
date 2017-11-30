@@ -5,9 +5,15 @@ package com.cgfay.caincamera.eglnative;
  */
 
 public class EGLNativeHelper {
+
     static {
-        System.loadLibrary("");
+        System.loadLibrary("native-lib");
     }
     private EGLNativeHelper(){}
 
+    /**
+     * avcodec配置
+     * @return
+     */
+    public native String configurationFromFFmpeg();
 }
