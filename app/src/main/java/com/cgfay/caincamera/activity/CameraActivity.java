@@ -661,6 +661,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             if (mListPath.size() == 0) {
                 mBtnRecordDelete.setVisibility(View.GONE);
                 mBtnRecordDone.setVisibility(View.GONE);
+                // 复位状态
+                mEnableToChangeState = true;
+                mNeedToWaitStop = false;
+                mOnRecording = false;
             }
         }
     }

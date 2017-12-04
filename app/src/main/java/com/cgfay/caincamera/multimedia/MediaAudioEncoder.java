@@ -114,6 +114,7 @@ public class MediaAudioEncoder extends MediaEncoder {
 
 	@Override
     protected void release() {
+		mAudioThread.stopRecording();
 		mAudioThread = null;
 		super.release();
     }
@@ -165,7 +166,7 @@ public class MediaAudioEncoder extends MediaEncoder {
 		    				if (DEBUG) Log.v(TAG, "AudioThread:start audio recording");
 							final ByteBuffer buf = ByteBuffer.allocateDirect(SAMPLES_PER_FRAME);
 			                int readBytes;
-			                audioRecord.startRecording();
+							mWeakRecorder.get().startRecording();
 			                try {
 					    		for (; mIsCapturing && !mRequestStop && !mIsEOS;) {
 					    			// read audio data from internal mic
@@ -173,7 +174,7 @@ public class MediaAudioEncoder extends MediaEncoder {
 										continue;
 									}
 									buf.clear();
-					    			readBytes = audioRecord.read(buf, SAMPLES_PER_FRAME);
+					    			readBytes = mWeakRecorder.get().read(buf, SAMPLES_PER_FRAME);
 					    			if (readBytes > 0 ) {
 					    			    // set audio data to encoder
 										buf.position(readBytes);
@@ -184,11 +185,11 @@ public class MediaAudioEncoder extends MediaEncoder {
 					    		}
 			    				frameAvailableSoon();
 			                } finally {
-			                	audioRecord.stop();
+								mWeakRecorder.get().stop();
 			                }
 		            	}
 		            } finally {
-		            	audioRecord.release();
+						mWeakRecorder.get().release();
 		            	if (mWeakRecorder != null) {
 		            		mWeakRecorder.clear();
 		            		mWeakRecorder = null;

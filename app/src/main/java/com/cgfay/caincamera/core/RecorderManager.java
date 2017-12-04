@@ -123,6 +123,9 @@ public final class RecorderManager {
      * 开始录制
      */
     synchronized void startRecording(EglCore eglCore) {
+        if (mMuxer.getVideoEncoder() == null) {
+            return;
+        }
         mRecordWindowSurface = new WindowSurface(eglCore,
                 ((MediaVideoEncoder) mMuxer.getVideoEncoder()).getInputSurface(),
                 true);
