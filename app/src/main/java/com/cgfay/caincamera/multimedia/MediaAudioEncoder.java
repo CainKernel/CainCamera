@@ -91,6 +91,13 @@ public class MediaAudioEncoder extends MediaEncoder {
 	        mAudioThread = new AudioThread();
 			mAudioThread.start();
 		}
+		if (mListener != null) {
+			try {
+				mListener.onStarted(this);
+			} catch (final Exception e) {
+				Log.e(TAG, "prepare:", e);
+			}
+		}
 	}
 
 	@Override

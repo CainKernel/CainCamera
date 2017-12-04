@@ -97,7 +97,7 @@ public class VideoSurfaceView extends PreviewSurfaceView implements MoviePlayer.
         clearSurface(surface);
         MoviePlayer player = null;
         try {
-            player = new MoviePlayer(new File(mPath), surface, callback);
+            player = new MoviePlayer(new File(mPath.get(0)), surface, callback);
         } catch (IOException e) {
             if (VERBOSE) {
                 Log.d(TAG, "unable to play movie", e);

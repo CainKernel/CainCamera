@@ -4,13 +4,16 @@ import android.content.Context;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by cain on 2017/10/4.
  */
 
 public abstract class PreviewSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
     // 路径
-    protected String mPath;
+    protected List<String> mPath;
 
     protected SurfaceHolder mHolder;
 
@@ -20,7 +23,7 @@ public abstract class PreviewSurfaceView extends SurfaceView implements SurfaceH
         mHolder.addCallback(this);
     }
 
-    public void setPath(String path) {
+    public void setPath(List<String> path) {
         mPath = path;
     }
 

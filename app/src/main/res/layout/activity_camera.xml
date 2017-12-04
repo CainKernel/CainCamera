@@ -80,13 +80,32 @@
                 android:layout_marginStart="@dimen/button_margin_horizontal"
                 android:background="@drawable/gallery_sticker" />
 
-            <Button
+            <com.cgfay.caincamera.view.PictureVideoActionButton
                 android:id="@+id/btn_take"
                 android:layout_width="@dimen/record_width_height"
                 android:layout_height="@dimen/record_width_height"
                 android:layout_centerInParent="true"
-                android:layout_gravity="center"
-                android:background="@drawable/round_green" />
+                android:layout_gravity="center" />
+
+            <Button
+                android:id="@+id/btn_record_delete"
+                android:layout_width="@dimen/button_preview_width_height"
+                android:layout_height="@dimen/button_preview_width_height"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/button_preview_margin"
+                android:layout_toStartOf="@+id/btn_take"
+                android:background="@drawable/preview_video_delete_black"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/btn_record_done"
+                android:layout_width="@dimen/button_preview_width_height"
+                android:layout_height="@dimen/button_preview_width_height"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/button_preview_margin"
+                android:layout_toEndOf="@+id/btn_take"
+                android:background="@drawable/preview_video_done_black"
+                android:visibility="gone"/>
 
             <Button
                 android:id="@+id/btn_filters"

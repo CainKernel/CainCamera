@@ -34,6 +34,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 
 /**
  * Common base class for EGL surfaces.
@@ -200,8 +201,11 @@ public class EglSurfaceBase {
         } finally {
             if (bos != null) bos.close();
         }
+
+        ArrayList<String> path = new ArrayList<String>();
+        path.add(filename);
         Intent intent = new Intent(ParamsManager.context, CapturePreviewActivity.class);
-        intent.putExtra(CapturePreviewActivity.PATH, filename);
+        intent.putExtra(CapturePreviewActivity.PATH, path);
         if (ParamsManager.context != null) {
             ParamsManager.context.startActivity(intent);
         }

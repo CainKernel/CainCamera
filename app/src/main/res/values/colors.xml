@@ -9,4 +9,11 @@
     <color name="colorHorizontalIndicator">#FFCC00</color>
 
     <color name="effect_item_color">#60EEEEEE</color>
+
+    <!-- PictureVideoActionButton -->
+    <color name="green">@android:color/holo_green_light</color>
+    <color name="yellow">#eFcD54</color>
+    <color name="red">#FF4300</color>
+    <color name="video_window_background">#1A1A1A</color>
+
 </resources>

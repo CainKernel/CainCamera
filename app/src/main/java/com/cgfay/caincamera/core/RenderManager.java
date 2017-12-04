@@ -342,8 +342,10 @@ public final class RenderManager {
      * 释放录制的Filter资源
      */
     public void releaseRecordingFilter() {
-        mRecordFilter.release();
-        mRecordFilter = null;
+        if (mRecordFilter != null) {
+            mRecordFilter.release();
+            mRecordFilter = null;
+        }
     }
 
     /**

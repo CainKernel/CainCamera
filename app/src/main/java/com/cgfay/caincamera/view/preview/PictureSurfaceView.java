@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * 显示图片
@@ -65,10 +66,17 @@ public class PictureSurfaceView extends PreviewSurfaceView {
     }
 
     @Override
+    public void setPath(List<String> path) {
+        super.setPath(path);
+        if (mPath != null && mPath.size() > 0) {
+            mBitmap = BitmapFactory.decodeFile(mPath.get(0));
+        }
+    }
+
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        if (!TextUtils.isEmpty(mPath)) {
-            mBitmap = BitmapFactory.decodeFile(mPath);
+        if (mBitmap != null && !mBitmap.isRecycled()) {
             // gif宽高
             mWidth = mBitmap.getWidth();
             mHeight = mBitmap.getHeight();

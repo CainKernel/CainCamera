@@ -37,9 +37,18 @@ public abstract class MediaEncoder implements Runnable {
     protected static final int TIMEOUT_USEC = 10000;    // 10[msec]
 
     public interface MediaEncoderListener {
+
+        // 准备好了
         public void onPrepared(MediaEncoder encoder);
 
+        // 开始了
+        public void onStarted(MediaEncoder encoder);
+
+        // 停止状态
         public void onStopped(MediaEncoder encoder);
+
+        // 完全释放
+        void onReleased(MediaEncoder encoder);
     }
 
     protected final Object mSync = new Object();
@@ -272,6 +281,9 @@ public abstract class MediaEncoder implements Runnable {
             }
         }
         mBufferInfo = null;
+        if (mListener != null) {
+            mListener.onReleased(this);
+        }
     }
 
     protected void signalEndOfInputStream() {

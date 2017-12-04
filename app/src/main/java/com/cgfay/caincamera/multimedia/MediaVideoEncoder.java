@@ -117,6 +117,18 @@ public class MediaVideoEncoder extends MediaEncoder {
         }
     }
 
+    @Override
+    void startRecording() {
+        super.startRecording();
+        if (mListener != null) {
+            try {
+                mListener.onStarted(this);
+            } catch (final Exception e) {
+                Log.e(TAG, "prepare:", e);
+            }
+        }
+    }
+
     /**
      * Returns the encoder's input surface.
      */
