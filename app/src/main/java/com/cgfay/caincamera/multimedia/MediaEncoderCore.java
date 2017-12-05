@@ -1,11 +1,13 @@
 package com.cgfay.caincamera.multimedia;
 
 import android.media.AudioFormat;
+import android.media.AudioRecord;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.media.MediaRecorder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
@@ -19,40 +21,61 @@ import java.nio.ByteBuffer;
  * Created by cain.huang on 2017/12/5.
  */
 
-public class VideoEncoder {
+public class MediaEncoderCore {
 
     private static final String TAG = "MediaEncoder";
 
     private static final boolean VERBOSE = false;
 
+    // 录音源
+    private static final int[] AUDIO_SOURCES = new int[] {
+            MediaRecorder.AudioSource.MIC,
+            MediaRecorder.AudioSource.DEFAULT,
+            MediaRecorder.AudioSource.CAMCORDER,
+            MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+            MediaRecorder.AudioSource.VOICE_RECOGNITION,
+    };
+
     // 超时
     private static final int TIMEOUT_USEC = 10000;
 
+    // VideoCodec参数
     private static final String VIDEO_TYPE = "video/avc";
     private static final int IFRAME_INTERVAL = 240;
     private static final int FRAME_RATE = 25;
     private static final float BPP = 0.25f;
 
-
+    // AudioCodec参数
     private static final String AUDIO_TYPE = "audio/mp4a-latm";
     private static final int SAMPLE_RATE = 44100;
     private static final int BIT_RATE = 64000;
     public static final int SAMPLES_PER_FRAME = 1024;	// AAC, bytes/frame/channel
     public static final int FRAMES_PER_BUFFER = 25; 	// AAC, frame/buffer/sec
 
-    private Surface mSurface;
+    // 录制渲染的Surface
+    private Surface mInputSurface;
 
     // 录制视频
     private MediaCodec mVideoEncoder;
+    private MediaCodec.BufferInfo mVideoBufferInfo;
 
     // 录制音频
     private MediaCodec mAudioEncoder;
+    private MediaCodec.BufferInfo mAudioBufferInfo;
+
+    //  AudioRecord录音器
+    private AudioRecord mAudioRecord;
+    // 录音缓冲大小
+    private int mAudioBufferSize;
 
     // 复用器
     private MediaMuxer mMuxer;
 
     // 复用器开始标志
     private boolean mMuxerStarted;
+
+    private int mVideoTrackIndex;
+    private int mAudioTrackIndex;
 
     // 录制线程
     private HandlerThread mEncoderThread;
@@ -78,7 +101,7 @@ public class VideoEncoder {
      * @param height    录制视频高度
      * @param bitRate   比特率
      */
-    public VideoEncoder(int width, int height, int bitRate)  {
+    public MediaEncoderCore(int width, int height, int bitRate)  {
         mWidth = width;
         mHeight = height;
         mBitRate = bitRate;
@@ -89,7 +112,7 @@ public class VideoEncoder {
      * @param width
      * @param height
      */
-    public VideoEncoder(int width, int height) {
+    public MediaEncoderCore(int width, int height) {
         mWidth = width;
         mHeight = height;
     }
@@ -100,6 +123,9 @@ public class VideoEncoder {
      * @throws IOException
      */
     public void prepare(String path) throws IOException {
+
+        mVideoBufferInfo = new MediaCodec.BufferInfo();
+
         // 初始化录制视频所需要的MediaCodec
         final MediaCodecInfo videoCodecInfo = selectVideoCodec(VIDEO_TYPE);
         if (videoCodecInfo == null) {
@@ -133,7 +159,7 @@ public class VideoEncoder {
         mVideoEncoder.configure(format, null, null,
                 MediaCodec.CONFIGURE_FLAG_ENCODE);
 
-        mSurface = mVideoEncoder.createInputSurface();
+        mInputSurface = mVideoEncoder.createInputSurface();
         mVideoEncoder.start();
 
         if (VERBOSE) {
@@ -141,6 +167,7 @@ public class VideoEncoder {
         }
 
         // 初始化录制音频所需要的MediaCodec
+        mAudioBufferInfo = new MediaCodec.BufferInfo();
         final MediaCodecInfo audioCodecInfo = selectAudioCodec(AUDIO_TYPE);
         if (audioCodecInfo == null) {
             Log.e(TAG, "Unable to find an appropriate codec for " + AUDIO_TYPE);
@@ -199,7 +226,7 @@ public class VideoEncoder {
      * @return
      */
     public Surface getInputSurface() {
-        return mSurface;
+        return mInputSurface;
     }
 
     /**
@@ -234,6 +261,13 @@ public class VideoEncoder {
             mAudioEncoder = null;
         }
 
+        // 释放录音器
+        if (mAudioRecord != null) {
+            mAudioRecord.stop();
+            mAudioRecord.release();
+            mAudioRecord = null;
+        }
+
         // 释放复用器
         if (mMuxer != null) {
             mMuxer.release();
@@ -241,17 +275,10 @@ public class VideoEncoder {
         }
 
         // 释放surface
-        if (mSurface != null) {
-            mSurface.release();
-            mSurface = null;
+        if (mInputSurface != null) {
+            mInputSurface.release();
+            mInputSurface = null;
         }
-    }
-
-    /**
-     * 帧可用
-     */
-    public void frameAvailableSoon() {
-
     }
 
     /**
@@ -268,8 +295,114 @@ public class VideoEncoder {
             }
             mVideoEncoder.signalEndOfInputStream();
         }
+
+        // 得到解码后的数据
+        ByteBuffer[] encoderOutputBuffers = mVideoEncoder.getOutputBuffers();
+        // 将数据写入复用器，完成视频编码
+        while (true) {
+            int encoderStatus = mVideoEncoder.dequeueOutputBuffer(mVideoBufferInfo, TIMEOUT_USEC);
+            // 等待
+            if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
+                if (!endOfStream) {
+                    break;
+                } else {
+                    if (VERBOSE) {
+                        Log.d(TAG, "no output available, spinning to await EOS");
+                    }
+                }
+            } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) { // 重新获得解码数据
+                encoderOutputBuffers = mVideoEncoder.getOutputBuffers();
+            } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                if (mMuxerStarted) {
+                    throw new RuntimeException("format changed twice");
+                }
+                MediaFormat format = mVideoEncoder.getOutputFormat();
+                Log.d(TAG, "encoder output format changed: " + format);
+                // 复用器开始
+                mVideoTrackIndex = mMuxer.addTrack(format);
+                mMuxer.start();
+                mMuxerStarted = true;
+
+            } else if (encoderStatus < 0) {
+                Log.w(TAG, "unexpected result from encoder.dequeueOutputBuffer: " +
+                encoderStatus);
+            } else {
+                // 获取编码后的缓冲数据
+                ByteBuffer encodedData = encoderOutputBuffers[encoderStatus];
+                if (encodedData == null) {
+                    throw new RuntimeException("encoderOutputBuffer "
+                            + encoderStatus + " was null");
+                }
+
+                if ((mVideoBufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
+                    if (VERBOSE) {
+                        Log.d(TAG, "ignoring BUFFER_FLAG_CODEC_CONFIG");
+                    }
+                    mVideoBufferInfo.size = 0;
+                }
+
+                if (mVideoBufferInfo.size != 0) {
+                    if (!mMuxerStarted) {
+                        throw new RuntimeException("muxer hasn't started");
+                    }
+
+                    encodedData.position(mVideoBufferInfo.offset);
+                    encodedData.limit(mVideoBufferInfo.offset + mVideoBufferInfo.size);
+
+                    // 写入数据
+                    mMuxer.writeSampleData(mVideoTrackIndex, encodedData, mVideoBufferInfo);
+                    if (VERBOSE) {
+                        Log.d(TAG, "sent " + mVideoBufferInfo.size
+                                + " bytes to muxer, ts = " + mVideoBufferInfo.presentationTimeUs);
+                    }
+                }
+
+                // 释放缓冲
+                mVideoEncoder.releaseOutputBuffer(encoderStatus, false);
+
+                if ((mVideoBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                    if (!endOfStream) {
+                        Log.w(TAG, "reached end of stream unexpectdedly");
+                    } else {
+                        if (VERBOSE) {
+                            Log.d(TAG, "end of stream reached");
+                        }
+                    }
+                    break;
+                }
+            }
+        }
     }
 
+    /**
+     * 初始化录音器
+     */
+    private void initAudioRecord() {
+        final int min_buffer_size = AudioRecord.getMinBufferSize(
+                SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_16BIT);
+        mAudioBufferSize = SAMPLES_PER_FRAME * FRAMES_PER_BUFFER;
+        if (mAudioBufferSize < min_buffer_size)
+            mAudioBufferSize = ((min_buffer_size / SAMPLES_PER_FRAME) + 1) * SAMPLES_PER_FRAME * 2;
+
+        AudioRecord audioRecord = null;
+        for (final int source : AUDIO_SOURCES) {
+            try {
+                audioRecord = new AudioRecord(
+                        source, SAMPLE_RATE,
+                        AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, mAudioBufferSize);
+                if (audioRecord.getState() != AudioRecord.STATE_INITIALIZED)
+                    audioRecord = null;
+            } catch (final Exception e) {
+                audioRecord = null;
+            }
+            if (audioRecord != null) break;
+        }
+        mAudioRecord = audioRecord;
+        if (mAudioRecord != null) {
+            mAudioRecord.startRecording();
+        }
+    }
 
     /**
      * 从音频编码器中提取所有待处理的数据并转发给复用器
@@ -277,6 +410,117 @@ public class VideoEncoder {
      */
     private void drainAudioEncoder(boolean endOfStream) {
 
+        if (VERBOSE) {
+            Log.d(TAG, "drainVideoEncoder(" + endOfStream + ")");
+        }
+        if (endOfStream) {
+            if (VERBOSE) {
+                Log.d(TAG, "sending EOS to encoder");
+            }
+            mAudioEncoder.signalEndOfInputStream();
+        }
+
+        // 从AudioRecord中获取录音的字节数据
+        byte[] buffer = new byte[mAudioBufferSize];
+        int bufferReadResult = mAudioRecord.read(buffer, 0, mAudioBufferSize);
+
+        if(bufferReadResult == AudioRecord.ERROR_BAD_VALUE
+                || bufferReadResult == AudioRecord.ERROR_INVALID_OPERATION) {
+            Log.e(TAG, "Read error");
+        }
+
+        // 填充需要编码的录音数据(数据从AudioRecord中取得)
+        ByteBuffer[] mAudioInputBuffers = mAudioEncoder.getInputBuffers();
+        int index = mAudioEncoder.dequeueInputBuffer(TIMEOUT_USEC);
+        if (index >= 0 && mAudioRecord != null) {
+            ByteBuffer inputBuffer = mAudioInputBuffers[index];
+            inputBuffer.clear();
+            inputBuffer.put(buffer);
+
+            // 字节大小
+            int size = inputBuffer.limit();
+            // 将Buffer传递给解码器
+            mAudioEncoder.queueInputBuffer(index, 0 /* offset */,
+                    size, mAudioBufferInfo.presentationTimeUs /* timeUs */, 0);
+        }
+
+        // 得到解码后的数据缓冲
+        ByteBuffer[] encoderOutputBuffers = mAudioEncoder.getOutputBuffers();
+
+        // 将数据写入复用器，完成音频编码
+        while (true) {
+            int encoderStatus = mAudioEncoder.dequeueOutputBuffer(mAudioBufferInfo, TIMEOUT_USEC);
+            // 等待
+            if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
+                if (!endOfStream) {
+                    break;
+                } else {
+                    if (VERBOSE) {
+                        Log.d(TAG, "no output available, spinning to await EOS");
+                    }
+                }
+            } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) { // 重新获得解码数据
+                encoderOutputBuffers = mAudioEncoder.getOutputBuffers();
+            } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                if (mMuxerStarted) {
+                    throw new RuntimeException("format changed twice");
+                }
+                MediaFormat format = mAudioEncoder.getOutputFormat();
+                Log.d(TAG, "encoder output format changed: " + format);
+                // 复用器开始
+                mAudioTrackIndex = mMuxer.addTrack(format);
+                mMuxer.start();
+                mMuxerStarted = true;
+
+            } else if (encoderStatus < 0) {
+                Log.w(TAG, "unexpected result from encoder.dequeueOutputBuffer: " +
+                        encoderStatus);
+            } else {
+                // 获取编码输出PCM数据的缓冲
+                ByteBuffer encodedData = encoderOutputBuffers[encoderStatus];
+                if (encodedData == null) {
+                    throw new RuntimeException("encoderOutputBuffer "
+                            + encoderStatus + " was null");
+                }
+
+                if ((mAudioBufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
+                    if (VERBOSE) {
+                        Log.d(TAG, "ignoring BUFFER_FLAG_CODEC_CONFIG");
+                    }
+                    mAudioBufferInfo.size = 0;
+                }
+
+                if (mAudioBufferInfo.size != 0) {
+                    if (!mMuxerStarted) {
+                        throw new RuntimeException("muxer hasn't started");
+                    }
+
+                    // 编码数据的偏移和大小限制
+                    encodedData.position(mAudioBufferInfo.offset);
+                    encodedData.limit(mAudioBufferInfo.offset + mAudioBufferInfo.size);
+                    // 跟Video进行同步时间戳
+                    mAudioBufferInfo.presentationTimeUs = mVideoBufferInfo.presentationTimeUs;
+                    // 写入数据
+                    mMuxer.writeSampleData(mAudioTrackIndex, encodedData, mAudioBufferInfo);
+                    if (VERBOSE) {
+                        Log.d(TAG, "sent " + mAudioBufferInfo.size
+                                + " bytes to muxer, ts = " + mAudioBufferInfo.presentationTimeUs);
+                    }
+                }
+                // 释放Buffer
+                mAudioEncoder.releaseOutputBuffer(encoderStatus, false);
+                if ((mAudioBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                    if (!endOfStream) {
+                        Log.w(TAG, "reached end of stream unexpectdedly");
+                    } else {
+                        if (VERBOSE) {
+                            Log.d(TAG, "end of stream reached");
+                        }
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     /**
