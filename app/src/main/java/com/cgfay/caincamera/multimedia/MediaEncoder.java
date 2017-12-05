@@ -335,7 +335,7 @@ public abstract class MediaEncoder implements Runnable {
 
     /**
      * drain encoded data and write them to muxer
-     * 消耗编码数据并写入混合器
+     * 消耗编码数据并写入复用器
      */
     protected void drain() {
         if (mMediaCodec == null) return;
@@ -386,7 +386,7 @@ public abstract class MediaEncoder implements Runnable {
                 mMuxerStarted = true;
                 if (!muxer.start()) {
                     // we should wait until muxer is ready
-                    // 等待混合器准备完成
+                    // 等待复用器准备完成
                     synchronized (muxer) {
                         while (!muxer.isStarted())
                             try {

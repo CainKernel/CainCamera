@@ -604,7 +604,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
 
         @Override
-        public void onReleased(MediaEncoder encoder) { // 混合器释放完成
+        public void onReleased(MediaEncoder encoder) { // 复用器释放完成
             if (encoder instanceof MediaVideoEncoder) {
                 // 录制完成跳转预览页面
                 String outputPath = RecorderManager.getInstance().getOutputPath();
