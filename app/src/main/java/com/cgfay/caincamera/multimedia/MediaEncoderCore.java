@@ -77,11 +77,6 @@ public class MediaEncoderCore {
     private int mVideoTrackIndex;
     private int mAudioTrackIndex;
 
-    // 录制线程
-    private HandlerThread mEncoderThread;
-    private Handler mHandler;
-
-
     // 录制视频的宽高
     private int mWidth;
     private int mHeight;
@@ -94,6 +89,19 @@ public class MediaEncoderCore {
     // 是否允许高清
     private boolean isEnableHD = false;
 
+    /**
+     * 构造器
+     * @param width
+     * @param height
+     * @param bitRate
+     * @param enableHD
+     */
+    public MediaEncoderCore(int width, int height, int bitRate, boolean enableHD) {
+        mWidth = width;
+        mHeight = height;
+        mBitRate = bitRate;
+        isEnableHD = enableHD;
+    }
 
     /**
      * 构造器
@@ -102,9 +110,17 @@ public class MediaEncoderCore {
      * @param bitRate   比特率
      */
     public MediaEncoderCore(int width, int height, int bitRate)  {
-        mWidth = width;
-        mHeight = height;
-        mBitRate = bitRate;
+        this(width, height, bitRate, false);
+    }
+
+    /**
+     * 构造器
+     * @param width
+     * @param height
+     * @param enableHD 是否允许高清录制
+     */
+    public MediaEncoderCore(int width, int height, boolean enableHD)  {
+        this(width, height, 0, enableHD);
     }
 
     /**
@@ -113,8 +129,7 @@ public class MediaEncoderCore {
      * @param height
      */
     public MediaEncoderCore(int width, int height) {
-        mWidth = width;
-        mHeight = height;
+        this(width, height, 0, false);
     }
 
     /**
@@ -199,10 +214,9 @@ public class MediaEncoderCore {
         mMuxer = new MediaMuxer(path, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
         mMuxerStarted = false;
 
-        // 启动录制线程
-        mEncoderThread = new HandlerThread("Recorder Thread");
-        mEncoderThread.start();
-        mHandler = new Handler(mEncoderThread.getLooper());
+        // 复位trackIndex
+        mVideoTrackIndex = -1;
+        mAudioTrackIndex = -1;
 
     }
 
@@ -236,16 +250,6 @@ public class MediaEncoderCore {
         if (VERBOSE) {
             Log.d(TAG, "releasing encoder objects");
         }
-        // 停止线程
-        mHandler.removeCallbacksAndMessages(null);
-        mEncoderThread.quit();
-        try {
-            mEncoderThread.join();
-        } catch (InterruptedException e) {
-            Log.w(TAG, "Encoder Thread join() was interrupted", e);
-        }
-        mHandler = null;
-        mEncoderThread = null;
 
         // 释放视频的MediaCodec
         if (mVideoEncoder != null) {
@@ -522,15 +526,6 @@ public class MediaEncoderCore {
             }
         }
     }
-
-    /**
-     * 设置是否允许高清拍照
-     * @param enable
-     */
-    public void setEnableHD(boolean enable) {
-        isEnableHD = enable;
-    }
-
 
     /**
      * 获取Audio的信息
