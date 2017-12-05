@@ -1,27 +1,40 @@
 package com.cgfay.caincamera.activity;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.session.PlaybackState;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.ParamsManager;
+import com.cgfay.caincamera.multimedia.MediaPlayerManager;
 import com.cgfay.caincamera.type.GalleryType;
 import com.cgfay.caincamera.utils.FileUtils;
-import com.cgfay.caincamera.view.AspectFrameLayout;
-import com.cgfay.caincamera.view.preview.PictureSurfaceView;
-import com.cgfay.caincamera.view.preview.PreviewSurfaceView;
-import com.cgfay.caincamera.view.preview.VideoSurfaceView;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 
 import java.io.File;
 import java.util.ArrayList;
 
 public class CapturePreviewActivity extends AppCompatActivity
-        implements View.OnClickListener {
+        implements View.OnClickListener, ExoPlayer.EventListener {
     private static final String TAG = "CapturePreviewActivity";
     private static final boolean VERBOSE = true;
 
@@ -31,9 +44,11 @@ public class CapturePreviewActivity extends AppCompatActivity
     private ArrayList<String> mPath;
 
     // layout
-    private AspectFrameLayout mPreviewLayout;
-    // 预览
-    private PreviewSurfaceView mSurfaceView;
+    private FrameLayout mPreviewLayout;
+    // 预览图片
+    private ImageView mImageView;
+    // 预览视频或者GIF视频
+    private SurfaceView mSurfaceView;
     // 取消
     private Button mBtnCancel;
     // 保存
@@ -56,16 +71,32 @@ public class CapturePreviewActivity extends AppCompatActivity
      * 初始化视图
      */
     private void initView() {
-        mPreviewLayout = (AspectFrameLayout) findViewById(R.id.layout_preview);
+        mPreviewLayout = (FrameLayout) findViewById(R.id.layout_preview);
 
         if (ParamsManager.mGalleryType == GalleryType.PICTURE) {
-            mSurfaceView = new PictureSurfaceView(this);
+            mImageView = new ImageView(this);
+            mImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            mPreviewLayout.addView(mImageView);
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            params.gravity = Gravity.CENTER;
+            mImageView.setLayoutParams(params);
+
+            if (mPath != null && mPath.size() > 0) {
+                Bitmap bitmap = BitmapFactory.decodeFile(mPath.get(0));
+                mImageView.setImageBitmap(bitmap);
+            }
+
         } else if (ParamsManager.mGalleryType == GalleryType.VIDEO
                 || ParamsManager.mGalleryType == GalleryType.GIF) {
-            mSurfaceView = new VideoSurfaceView(this, mPreviewLayout);
+            mSurfaceView = new SurfaceView(this);
+            mPreviewLayout.addView(mSurfaceView);
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            params.gravity = Gravity.CENTER;
+            mSurfaceView.setLayoutParams(params);
+            initMediaPlayer();
         }
-        mSurfaceView.setPath(mPath);
-        mPreviewLayout.addView(mSurfaceView);
 
         mBtnCancel = (Button) findViewById(R.id.btn_cancel);
         mBtnSave = (Button) findViewById(R.id.btn_save);
@@ -74,6 +105,18 @@ public class CapturePreviewActivity extends AppCompatActivity
         mBtnCancel.setOnClickListener(this);
         mBtnSave.setOnClickListener(this);
         mBtnShare.setOnClickListener(this);
+    }
+
+    /**
+     * 初始化视频播放器
+     */
+    private void initMediaPlayer() {
+        MediaPlayerManager.getInstance().createMediaPlayer(this);
+        MediaPlayerManager.getInstance().setPlayerSurface(mSurfaceView);
+        MediaPlayerManager.getInstance().setPlayerListener(this);
+        MediaPlayerManager.getInstance().preparePlayer(this, mPath);
+        MediaPlayerManager.getInstance().setRepeatMode(Player.REPEAT_MODE_ALL);
+        MediaPlayerManager.getInstance().start();
     }
 
     @Override
@@ -97,6 +140,13 @@ public class CapturePreviewActivity extends AppCompatActivity
     public void onBackPressed() {
         super.onBackPressed();
         executeDeleteFile();
+    }
+
+    @Override
+    protected void onDestroy() {
+        MediaPlayerManager.getInstance().stop();
+        MediaPlayerManager.getInstance().release();
+        super.onDestroy();
     }
 
     /**
@@ -147,6 +197,131 @@ public class CapturePreviewActivity extends AppCompatActivity
      * 执行分享操作
      */
     private void executeShare() {
+
+    }
+
+
+
+    @Override
+    public void onTimelineChanged(Timeline timeline, Object manifest) {
+        if (VERBOSE) {
+            Log.d(TAG,"onTimelineChanged - " + timeline.toString());
+        }
+    }
+
+    @Override
+    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+        if (VERBOSE) {
+            Log.d(TAG,"TrackGroupArray - trackGroups: " + trackGroups + ", trackSelections: " + trackSelections);
+        }
+    }
+
+    @Override
+    public void onLoadingChanged(boolean isLoading) {
+        if (VERBOSE) {
+            Log.d(TAG,"onLoadingChanged - isLoading ? " + isLoading);
+        }
+    }
+
+    @Override
+    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+        switch (playbackState) {
+            case PlaybackState.STATE_PLAYING:
+                if (VERBOSE) {
+                    Log.d(TAG,"onPlayerStateChanged - STATE_PLAYING");
+                }
+                break;
+
+            case PlaybackState.STATE_BUFFERING:
+                if (VERBOSE) {
+                    Log.d(TAG,"onPlayerStateChanged - STATE_BUFFERING");
+                }
+                break;
+
+            case PlaybackState.STATE_CONNECTING:
+                if (VERBOSE) {
+                    Log.d(TAG,"onPlayerStateChanged - STATE_CONNECTING");
+                }
+                break;
+
+            case PlaybackState.STATE_ERROR:
+                if (VERBOSE) {
+                    Log.d(TAG,"onPlayerStateChanged - STATE_ERROR");
+                }
+                break;
+
+            case PlaybackState.STATE_FAST_FORWARDING:
+                if (VERBOSE) {
+                    Log.d(TAG,"onPlayerStateChanged - STATE_FAST_FORWARDING");
+                }
+                MediaPlayerManager.getInstance().pause();
+                break;
+
+            case PlaybackState.STATE_NONE:
+                if (VERBOSE) {
+                    Log.d(TAG,"onPlayerStateChanged - STATE_NONE");
+                }
+                break;
+
+            case PlaybackState.STATE_PAUSED:
+                Log.d(TAG,"onPlayerStateChanged - STATE_PAUSED");
+                break;
+
+            case PlaybackState.STATE_REWINDING:
+                if (VERBOSE) {
+                    Log.d(TAG,"onPlayerStateChanged - STATE_REWINDING");
+                }
+                break;
+
+            case PlaybackState.STATE_SKIPPING_TO_NEXT:
+                if (VERBOSE) {
+                    Log.d(TAG,"onPlayerStateChanged - STATE_SKIPPING_TO_NEXT");
+                }
+                break;
+
+            case PlaybackState.STATE_SKIPPING_TO_PREVIOUS:
+                if (VERBOSE) {
+                    Log.d(TAG,"onPlayerStateChanged - STATE_SKIPPING_TO_PREVIOUS");
+                }
+                break;
+
+            case PlaybackState.STATE_SKIPPING_TO_QUEUE_ITEM:
+                if (VERBOSE) {
+                    Log.d(TAG,"onPlayerStateChanged - STATE_SKIPPING_TO_QUEUE_ITEM");
+                }
+                break;
+
+            case PlaybackState.STATE_STOPPED:
+                if (VERBOSE) {
+                    Log.d(TAG,"onPlayerStateChanged - STATE_STOPPED");
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onRepeatModeChanged(int repeatMode) {
+        if (VERBOSE) {
+            Log.d(TAG,"onRepeatModeChanged");
+        }
+    }
+
+    @Override
+    public void onPlayerError(ExoPlaybackException error) {
+        if (VERBOSE) {
+            Log.d(TAG,"onPlayerError  ");
+        }
+    }
+
+    @Override
+    public void onPositionDiscontinuity() {
+        if (VERBOSE) {
+            Log.d(TAG,"onPositionDiscontinuity  ");
+        }
+    }
+
+    @Override
+    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
 
     }
 }

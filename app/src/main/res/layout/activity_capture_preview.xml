@@ -5,13 +5,13 @@
     android:layout_height="match_parent"
     tools:context="com.cgfay.caincamera.activity.CapturePreviewActivity">
 
-    <com.cgfay.caincamera.view.AspectFrameLayout
+    <FrameLayout
         android:id="@+id/layout_preview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center">
-    </com.cgfay.caincamera.view.AspectFrameLayout>
+    </FrameLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
