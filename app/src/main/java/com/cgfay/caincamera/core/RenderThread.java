@@ -153,6 +153,9 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     void surfaceDestoryed() {
         isPreviewing = false;
         FaceTrackManager.getInstance().release();
+        // 释放回调，否则会提示 camera handler回调到一个dead thread的出错信息
+        CameraUtils.setPreviewCallbackWithBuffer(null, null);
+        // 释放相机
         CameraUtils.releaseCamera();
         if (mCameraTexture != null) {
             mCameraTexture.release();
