@@ -32,7 +32,6 @@ import android.media.MediaRecorder;
 import android.util.Log;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
 public class MediaAudioEncoder extends MediaEncoder {
@@ -91,30 +90,10 @@ public class MediaAudioEncoder extends MediaEncoder {
 	        mAudioThread = new AudioThread();
 			mAudioThread.start();
 		}
-		if (mListener != null) {
-			try {
-				mListener.onStarted(this);
-			} catch (final Exception e) {
-				Log.e(TAG, "prepare:", e);
-			}
-		}
-	}
-
-	@Override
-	void pauseRecording(boolean isPause) {
-		super.pauseRecording(isPause);
-		if (mAudioThread != null) {
-			if (isPause) {
-				mAudioThread.stopRecording();
-			} else {
-				mAudioThread.startRecording();
-			}
-		}
 	}
 
 	@Override
     protected void release() {
-		mAudioThread.stopRecording();
 		mAudioThread = null;
 		super.release();
     }
@@ -132,9 +111,6 @@ public class MediaAudioEncoder extends MediaEncoder {
 	 * and write them to the MediaCodec encoder
 	 */
     private class AudioThread extends Thread {
-
-    	private WeakReference<AudioRecord> mWeakRecorder;
-
     	@Override
     	public void run() {
     		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
@@ -160,21 +136,22 @@ public class MediaAudioEncoder extends MediaEncoder {
 					if (audioRecord != null) break;
 				}
 				if (audioRecord != null) {
-					mWeakRecorder = new WeakReference<AudioRecord>(audioRecord);
 		            try {
 						if (mIsCapturing) {
-		    				if (DEBUG) Log.v(TAG, "AudioThread:start audio recording");
+		    				if (DEBUG) {
+		    					Log.d(TAG, "AudioThread:start audio recording");
+							}
 							final ByteBuffer buf = ByteBuffer.allocateDirect(SAMPLES_PER_FRAME);
 			                int readBytes;
-							mWeakRecorder.get().startRecording();
+			                audioRecord.startRecording();
 			                try {
 					    		for (; mIsCapturing && !mRequestStop && !mIsEOS;) {
 					    			// read audio data from internal mic
-									if(isPause){
+									if (isPause) {
 										continue;
 									}
 									buf.clear();
-					    			readBytes = mWeakRecorder.get().read(buf, SAMPLES_PER_FRAME);
+					    			readBytes = audioRecord.read(buf, SAMPLES_PER_FRAME);
 					    			if (readBytes > 0 ) {
 					    			    // set audio data to encoder
 										buf.position(readBytes);
@@ -185,15 +162,11 @@ public class MediaAudioEncoder extends MediaEncoder {
 					    		}
 			    				frameAvailableSoon();
 			                } finally {
-								mWeakRecorder.get().stop();
+			                	audioRecord.stop();
 			                }
 		            	}
 		            } finally {
-						mWeakRecorder.get().release();
-		            	if (mWeakRecorder != null) {
-		            		mWeakRecorder.clear();
-		            		mWeakRecorder = null;
-						}
+		            	audioRecord.release();
 		            }
 				} else {
 					Log.e(TAG, "failed to initialize AudioRecord");
@@ -201,27 +174,10 @@ public class MediaAudioEncoder extends MediaEncoder {
     		} catch (final Exception e) {
     			Log.e(TAG, "AudioThread#run", e);
     		}
-			if (DEBUG) Log.v(TAG, "AudioThread:finished");
+			if (DEBUG) {
+    			Log.d(TAG, "AudioThread:finished");
+			}
     	}
-
-		/**
-		 * 开始录音
-		 */
-		public void startRecording() {
-			if (mWeakRecorder != null && mWeakRecorder.get() != null) {
-				mWeakRecorder.get().startRecording();
-			}
-		}
-
-		/**
-		 * 停止录音
-		 */
-		public void stopRecording() {
-			if (mWeakRecorder != null && mWeakRecorder.get() != null) {
-				mWeakRecorder.get().stop();
-			}
-		}
-
     }
 
     /**
@@ -230,7 +186,9 @@ public class MediaAudioEncoder extends MediaEncoder {
      * @return
      */
     private static final MediaCodecInfo selectAudioCodec(final String mimeType) {
-    	if (DEBUG) Log.v(TAG, "selectAudioCodec:");
+    	if (DEBUG) {
+    		Log.d(TAG, "selectAudioCodec:");
+		}
 
     	MediaCodecInfo result = null;
     	// get the list of available codecs
@@ -242,7 +200,9 @@ LOOP:	for (int i = 0; i < numCodecs; i++) {
             }
             final String[] types = codecInfo.getSupportedTypes();
             for (int j = 0; j < types.length; j++) {
-            	if (DEBUG) Log.i(TAG, "supportedType:" + codecInfo.getName() + ",MIME=" + types[j]);
+            	if (DEBUG) {
+            		Log.d(TAG, "supportedType:" + codecInfo.getName() + ",MIME=" + types[j]);
+				}
                 if (types[j].equalsIgnoreCase(mimeType)) {
                 	if (result == null) {
                 		result = codecInfo;
