@@ -24,9 +24,6 @@ package com.cgfay.caincamera.multimedia;
 
 import android.media.MediaCodec;
 import android.media.MediaFormat;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 
 import java.io.IOException;
@@ -34,14 +31,8 @@ import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
 public abstract class MediaEncoder implements Runnable {
-
     private static final boolean DEBUG = false;    // TODO set false on release
     private static final String TAG = "MediaEncoder";
-
-    private static final int MSG_FRAME_AVAILABLE = 0;
-    private static final int MSG_START_RECORDING = 1;
-    private static final int MSG_STOP_RECORDING = 2;
-    private static final int MSG_QUIT = 3;
 
     protected static final int TIMEOUT_USEC = 10000;    // 10[msec]
 
@@ -105,9 +96,6 @@ public abstract class MediaEncoder implements Runnable {
 
     private boolean mbIsVideo;
 
-    // 编码线程Handler回调
-    private EncoderHandler mHandler;
-
     public MediaEncoder(final MediaMuxerWrapper muxer, final MediaEncoderListener listener, boolean isVideo) {
         mWeakMuxer = new WeakReference<MediaMuxerWrapper>(muxer);
         muxer.addEncoder(this);
@@ -139,9 +127,6 @@ public abstract class MediaEncoder implements Runnable {
             mRequestDrain++;
             mSync.notifyAll();
         }
-        if (mHandler != null) {
-            mHandler.sendMessage(mHandler.obtainMessage(MSG_FRAME_AVAILABLE));
-        }
         return true;
     }
 
@@ -150,14 +135,51 @@ public abstract class MediaEncoder implements Runnable {
      */
     @Override
     public void run() {
-        Looper.prepare();
+//		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
         synchronized (mSync) {
-            mHandler = new EncoderHandler(this);
             mRequestStop = false;
             mRequestDrain = 0;
             mSync.notify();
         }
-        Looper.loop();
+        final boolean isRunning = true;
+        boolean localRequestStop;
+        boolean localRequestDrain;
+        while (isRunning) {
+            synchronized (mSync) {
+                localRequestStop = mRequestStop;
+                localRequestDrain = (mRequestDrain > 0);
+                if (localRequestDrain) {
+                    mRequestDrain--;
+                }
+            }
+            // 停止
+            if (localRequestStop) {
+                drain();
+                // request stop recording
+                signalEndOfInputStream();
+                // process output data again for EOS signale
+                drain();
+                // release all related objects
+                release();
+                break;
+            }
+            // 如果处于暂停状态，则继续下一次循环
+            if (isPause) {
+                continue;
+            }
+            // 录制
+            if (localRequestDrain) {
+                drain();
+            } else {
+                synchronized (mSync) {
+                    try {
+                        mSync.wait();
+                    } catch (final InterruptedException e) {
+                        break;
+                    }
+                }
+            }
+        }
 
         if (DEBUG) {
             Log.d(TAG, "Encoder thread exiting");
@@ -166,7 +188,6 @@ public abstract class MediaEncoder implements Runnable {
         synchronized (mSync) {
             mRequestStop = true;
             mIsCapturing = false;
-            mHandler = null;
         }
     }
 
@@ -181,7 +202,7 @@ public abstract class MediaEncoder implements Runnable {
     /**
      * 开始录制
      */
-    void startRecording() {
+    /*package*/ void startRecording() {
         if (DEBUG) {
             Log.v(TAG, "startRecording");
         }
@@ -190,9 +211,6 @@ public abstract class MediaEncoder implements Runnable {
             mRequestStop = false;
             mSync.notifyAll();
         }
-        if (mHandler != null) {
-            mHandler.sendMessage(mHandler.obtainMessage(MSG_START_RECORDING));
-        }
     }
 
     /**
@@ -200,14 +218,11 @@ public abstract class MediaEncoder implements Runnable {
      * @param isPause
      */
     void pauseRecording(boolean isPause) {
-        synchronized (mSync) {
-            this.isPause = isPause;
-            if (isPause) {
-                pauseBeginNans = System.nanoTime();
-            } else {
-                totalNans += System.nanoTime() - pauseBeginNans;
-            }
-            mSync.notifyAll();
+        this.isPause = isPause;
+        if (isPause) {
+            pauseBeginNans = System.nanoTime();
+        } else {
+            totalNans += System.nanoTime() - pauseBeginNans;
         }
     }
 
@@ -215,7 +230,7 @@ public abstract class MediaEncoder implements Runnable {
      * the method to request stop encoding
      * 停止录制
      */
-    void stopRecording() {
+    /*package*/ void stopRecording() {
         if (DEBUG) {
             Log.v(TAG, "stopRecording");
         }
@@ -223,17 +238,18 @@ public abstract class MediaEncoder implements Runnable {
             if (!mIsCapturing || mRequestStop) {
                 return;
             }
-            mRequestStop = true;
+            mRequestStop = true;    // for rejecting newer frame
             mSync.notifyAll();
-        }
-        if (mHandler != null) {
-            mHandler.sendMessage(mHandler.obtainMessage(MSG_STOP_RECORDING));
-            mHandler.sendMessage(mHandler.obtainMessage(MSG_QUIT));
+            // We can not know when the encoding and writing finish.
+            // so we return immediately after request to avoid delay of caller thread
         }
     }
 
+//********************************************************************************
+//********************************************************************************
+
     /**
-     * 释放资源
+     * Release all releated objects
      */
     protected void release() {
         if (DEBUG) Log.d(TAG, "release:");
@@ -270,9 +286,6 @@ public abstract class MediaEncoder implements Runnable {
         }
     }
 
-    /**
-     * 绘制结束帧
-     */
     protected void signalEndOfInputStream() {
         if (DEBUG) {
             Log.d(TAG, "sending EOS to encoder");
@@ -281,6 +294,7 @@ public abstract class MediaEncoder implements Runnable {
     }
 
     /**
+     * Method to set byte array to the MediaCodec encoder
      * 将byte字节数据输送给MediaCodec编码器
      * @param buffer                byte数组的Buffer缓冲
      * @param length                字节数组长度，0表示结束
@@ -320,6 +334,7 @@ public abstract class MediaEncoder implements Runnable {
     }
 
     /**
+     * drain encoded data and write them to muxer
      * 消耗编码数据并写入复用器
      */
     protected void drain() {
@@ -415,6 +430,7 @@ public abstract class MediaEncoder implements Runnable {
                     // write encoded data to muxer(need to adjust presentationTimeUs.
                     mBufferInfo.presentationTimeUs = getPTSUs();
                     muxer.writeSampleData(mTrackIndex, encodedData, mBufferInfo);
+                    prevOutputPTSUs = mBufferInfo.presentationTimeUs;
                 }
                 // return buffer to encoder
                 mMediaCodec.releaseOutputBuffer(encoderStatus, false);
@@ -428,91 +444,17 @@ public abstract class MediaEncoder implements Runnable {
     }
 
     /**
+     * previous presentationTimeUs for writing
+     */
+    private long prevOutputPTSUs = 0;
+
+    /**
+     * get next encoding presentationTimeUs
      * 获取下一个编码的显示时间，这里需要减去暂停的时间
      * @return
      */
     protected long getPTSUs() {
         long result = System.nanoTime();
         return (result - totalNans) / 1000L;
-    }
-
-
-    /**
-     * 回调开始录制
-     */
-    void handleStartRecording() {
-        /* do something you want */
-    }
-
-    /**
-     * 回调停止录制
-     */
-    void handleStopRecording() {
-        drain();
-        signalEndOfInputStream();
-        drain();
-        release();
-    }
-
-    /**
-     * 回调帧可用
-     */
-    void handleFrameAvailable() {
-        boolean needToDrain = false;
-        synchronized (mSync) {
-            if (mRequestDrain > 0) {
-                mRequestDrain--;
-                needToDrain = true;
-            }
-        }
-        // 是否需要将数据传给复用器，暂停状态下不需要传递
-        if (needToDrain && isPause) {
-            drain();
-        }
-    }
-
-    /**
-     * 线程Handler回调
-     */
-    private static class EncoderHandler extends Handler {
-        private WeakReference<MediaEncoder> mWeakEncoder;
-
-        public EncoderHandler(MediaEncoder encoder) {
-            mWeakEncoder = new WeakReference<MediaEncoder>(encoder);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            int what = msg.what;
-
-            MediaEncoder encoder = mWeakEncoder.get();
-            if (encoder == null) {
-                Log.w(TAG, "EncoderHandler.handlerMessage: encoder is null");
-                return;
-            }
-
-            switch (what) {
-                // 帧可用
-                case MSG_FRAME_AVAILABLE:
-                    encoder.handleFrameAvailable();
-                    break;
-
-                // 开始录制
-                case MSG_START_RECORDING:
-                    encoder.handleStartRecording();
-                    break;
-
-                // 停止录制
-                case MSG_STOP_RECORDING:
-                    encoder.handleStopRecording();
-                    break;
-
-                // 退出线程
-                case MSG_QUIT:
-                    Looper.myLooper().quit();
-                    break;
-
-            }
-        }
     }
 }
