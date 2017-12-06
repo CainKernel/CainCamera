@@ -9,11 +9,13 @@ import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.media.MediaRecorder;
 import android.os.Handler;
-import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.Surface;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
 /**
@@ -21,7 +23,7 @@ import java.nio.ByteBuffer;
  * Created by cain.huang on 2017/12/5.
  */
 
-public class MediaEncoderCore {
+public class MediaEncoderCore implements Runnable {
 
     private static final String TAG = "MediaEncoder";
 
@@ -49,8 +51,8 @@ public class MediaEncoderCore {
     private static final String AUDIO_TYPE = "audio/mp4a-latm";
     private static final int SAMPLE_RATE = 44100;
     private static final int BIT_RATE = 64000;
-    public static final int SAMPLES_PER_FRAME = 1024;	// AAC, bytes/frame/channel
-    public static final int FRAMES_PER_BUFFER = 25; 	// AAC, frame/buffer/sec
+    private static final int SAMPLES_PER_FRAME = 1024;	// AAC, bytes/frame/channel
+    private static final int FRAMES_PER_BUFFER = 25; 	// AAC, frame/buffer/sec
 
     // 录制渲染的Surface
     private Surface mInputSurface;
@@ -89,6 +91,36 @@ public class MediaEncoderCore {
     // 是否允许高清
     private boolean isEnableHD = false;
 
+    // 编码状态回调监听
+    private EncoderStateListener mListener;
+
+    private EncoderHandler mHandler;
+
+    // 线程状态标志
+    private volatile boolean mReady;
+    private volatile boolean mRunning;
+
+    private Object mReadyFence = new Object();
+
+
+    // 录制状态标志
+    private volatile boolean mRecording;
+
+    // 是否允许录音
+    private boolean mEnableAudioRecording = true;
+
+    /**
+     * 编码状态回调
+     */
+    public interface EncoderStateListener {
+
+        // MediaCodec准备好
+        void onPrepared();
+
+        // 完全停止了
+        void onStopped();
+    }
+
     /**
      * 构造器
      * @param width
@@ -101,43 +133,157 @@ public class MediaEncoderCore {
         mHeight = height;
         mBitRate = bitRate;
         isEnableHD = enableHD;
+        synchronized (mReadyFence) {
+            if (mRunning) {
+                Log.w(TAG, "Encoder thread already running");
+                return;
+            }
+            mRunning = true;
+            new Thread(this, "EncoderThread").start();
+            while (!mReady) {
+                try {
+                    mReadyFence.wait();
+                } catch (InterruptedException e) {
+                    /* no expected */
+                }
+            }
+        }
+    }
+
+    @Override
+    public void run() {
+        Looper.prepare();
+        synchronized (mReadyFence) {
+            mHandler = new EncoderHandler(this);
+            mReady = true;
+            mReadyFence.notify();
+        }
+        Looper.loop();
+
+        Log.d(TAG, "Encoder Thread exiting");
+        synchronized (mReadyFence) {
+            mReady = mRunning = false;
+            mHandler = null;
+        }
     }
 
     /**
-     * 构造器
-     * @param width     录制视频宽度
-     * @param height    录制视频高度
-     * @param bitRate   比特率
+     * 设置编码状态监听
+     * @param listener
      */
-    public MediaEncoderCore(int width, int height, int bitRate)  {
-        this(width, height, bitRate, false);
-    }
-
-    /**
-     * 构造器
-     * @param width
-     * @param height
-     * @param enableHD 是否允许高清录制
-     */
-    public MediaEncoderCore(int width, int height, boolean enableHD)  {
-        this(width, height, 0, enableHD);
-    }
-
-    /**
-     * 构造器
-     * @param width
-     * @param height
-     */
-    public MediaEncoderCore(int width, int height) {
-        this(width, height, 0, false);
+    public void setEncoderStateListener(EncoderStateListener listener) {
+        mListener = listener;
     }
 
     /**
      * 准备编码器
      * @param path 视频路径
-     * @throws IOException
      */
-    public void prepare(String path) throws IOException {
+    public void prepare(String path) {
+        if (mHandler != null) {
+            mHandler.sendMessage(mHandler.obtainMessage(EncoderHandler.MSG_PREPARE, path));
+        }
+    }
+
+    /**
+     * 设置是否允许录音
+     * @param enable
+     */
+    public void setAudioRecording(boolean enable) {
+        mEnableAudioRecording = enable;
+    }
+
+    /**
+     * 获取Surface
+     * @return
+     */
+    public Surface getInputSurface() {
+        return mInputSurface;
+    }
+
+    /**
+     * 释放资源
+     */
+    public void release() {
+        if (VERBOSE) {
+            Log.d(TAG, "releasing encoder objects");
+        }
+
+        // 释放视频的MediaCodec
+        if (mVideoEncoder != null) {
+            mVideoEncoder.stop();
+            mVideoEncoder.release();
+            mVideoEncoder = null;
+        }
+
+        // 释放音频的MediaCodec
+        if (mAudioEncoder != null) {
+            mAudioEncoder.stop();
+            mAudioEncoder.release();
+            mAudioEncoder = null;
+        }
+
+        // 释放录音器
+        if (mAudioRecord != null) {
+            mAudioRecord.stop();
+            mAudioRecord.release();
+            mAudioRecord = null;
+        }
+
+        // 释放复用器
+        if (mMuxer != null) {
+            mMuxer.release();
+            mMuxer = null;
+        }
+
+        // 释放surface
+        if (mInputSurface != null) {
+            mInputSurface.release();
+            mInputSurface = null;
+        }
+    }
+
+    /**
+     * 开始录制编码
+     */
+    public void startRecording() {
+        mRecording = true;
+        if (mHandler != null) {
+            mHandler.sendMessage(mHandler.obtainMessage(EncoderHandler.MSG_START_RECORDING));
+        }
+    }
+
+    /**
+     * 帧可用时
+     */
+    public void frameAvailable() {
+        if (mHandler != null) {
+
+            mHandler.sendMessage(mHandler.obtainMessage(EncoderHandler.MSG_FRAME_AVAILABLE));
+        }
+    }
+
+
+    /**
+     * 停止录制
+     */
+    public void stopRecording() {
+        mRecording = false;
+        if (mHandler != null) {
+            mHandler.sendMessage(mHandler.obtainMessage(EncoderHandler.MSG_STOP_RECORDING));
+        }
+
+        if (mListener != null) {
+            mListener.onStopped();
+        }
+    }
+
+
+    /**
+     * 准备MediaCodec
+     * @param path
+     */
+    private void handlePrepare(String path) throws Exception {
 
         mVideoBufferInfo = new MediaCodec.BufferInfo();
 
@@ -218,6 +364,9 @@ public class MediaEncoderCore {
         mVideoTrackIndex = -1;
         mAudioTrackIndex = -1;
 
+        if (mListener != null) {
+            mListener.onPrepared();
+        }
     }
 
     /**
@@ -236,54 +385,109 @@ public class MediaEncoderCore {
     }
 
     /**
-     * 获取Surface
-     * @return
+     * 开始录制
      */
-    public Surface getInputSurface() {
-        return mInputSurface;
+    private void handleStartRecording() {
+        // 初始化录音器
+        initAudioRecord();
     }
 
     /**
-     * 释放资源
+     * 帧可用
      */
-    public void release() {
-        if (VERBOSE) {
-            Log.d(TAG, "releasing encoder objects");
-        }
-
-        // 释放视频的MediaCodec
-        if (mVideoEncoder != null) {
-            mVideoEncoder.stop();
-            mVideoEncoder.release();
-            mVideoEncoder = null;
-        }
-
-        // 释放音频的MediaCodec
-        if (mAudioEncoder != null) {
-            mAudioEncoder.stop();
-            mAudioEncoder.release();
-            mAudioEncoder = null;
-        }
-
-        // 释放录音器
-        if (mAudioRecord != null) {
-            mAudioRecord.stop();
-            mAudioRecord.release();
-            mAudioRecord = null;
-        }
-
-        // 释放复用器
-        if (mMuxer != null) {
-            mMuxer.release();
-            mMuxer = null;
-        }
-
-        // 释放surface
-        if (mInputSurface != null) {
-            mInputSurface.release();
-            mInputSurface = null;
+    private void handleFrameAvailable() {
+        if (mReady) {
+            if (mRecording) { // 处于录制过程
+                drainVideoEncoder(false);
+                drainAudioEncoder(false);
+            } else { // 结束
+                drainVideoEncoder(true);
+                drainAudioEncoder(true);
+            }
         }
     }
+
+    /**
+     * 停止录制
+     */
+    private void handleStopRecording() {
+        release();
+        if (mHandler != null) {
+            mHandler.sendMessage(mHandler.obtainMessage(EncoderHandler.MSG_QUIT));
+        }
+    }
+
+    /**
+     * 编码线程Handler回调
+     */
+    private static class EncoderHandler extends Handler {
+        private static final int MSG_SET_LISTENER = 0;
+        private static final int MSG_PREPARE = 1;
+        private static final int MSG_START_RECORDING = 2;
+        private static final int MSG_FRAME_AVAILABLE = 3;
+        private static final int MSG_STOP_RECORDING = 4;
+        private static final int MSG_QUIT = 5;
+
+        private WeakReference<MediaEncoderCore> mWeakEncoder;
+
+        public EncoderHandler(MediaEncoderCore encoder) {
+            mWeakEncoder = new WeakReference<MediaEncoderCore>(encoder);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            int what = msg.what;
+            if (VERBOSE) {
+                Log.v(TAG, "EncoderHandler: what=" + what);
+            }
+
+            MediaEncoderCore encoder = mWeakEncoder.get();
+            if (encoder == null) {
+                Log.w(TAG, "EncoderHandler.handleMessage: weak ref is null");
+                return;
+            }
+
+            switch (what) {
+
+                // 设置监听
+                case MSG_SET_LISTENER:
+
+                    break;
+
+                // 准备MediaCodec
+                case MSG_PREPARE:
+                    try {
+                        encoder.handlePrepare((String)msg.obj);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+
+                // 开始录制
+                case MSG_START_RECORDING:
+                    encoder.handleStartRecording();
+                    break;
+
+                // 帧可用
+                case MSG_FRAME_AVAILABLE:
+                    encoder.handleFrameAvailable();
+                    break;
+
+                // 停止录制
+                case MSG_STOP_RECORDING:
+                    encoder.handleStopRecording();
+                    break;
+
+                case MSG_QUIT:
+                    Looper.myLooper().quit();
+                    break;
+
+                default:
+                    throw new RuntimeException("unknown message " + what);
+            }
+        }
+    }
+
 
     /**
      * 从视频编码器中提取所有待处理的数据并转发给复用器
@@ -412,7 +616,7 @@ public class MediaEncoderCore {
      * 从音频编码器中提取所有待处理的数据并转发给复用器
      * @param endOfStream
      */
-    private void drainAudioEncoder(boolean endOfStream) {
+    public void drainAudioEncoder(boolean endOfStream) {
 
         if (VERBOSE) {
             Log.d(TAG, "drainVideoEncoder(" + endOfStream + ")");
