@@ -133,6 +133,8 @@ public class MediaAudioEncoder extends MediaEncoder {
 	 */
     private class AudioThread extends Thread {
 
+    	private Object mSync = new Object();
+    	private volatile boolean mAudioStarted = false;
     	private WeakReference<AudioRecord> mWeakRecorder;
 
     	@Override
@@ -163,10 +165,15 @@ public class MediaAudioEncoder extends MediaEncoder {
 					mWeakRecorder = new WeakReference<AudioRecord>(audioRecord);
 		            try {
 						if (mIsCapturing) {
-		    				if (DEBUG) Log.v(TAG, "AudioThread:start audio recording");
+		    				if (DEBUG) {
+		    					Log.d(TAG, "AudioThread:start audio recording");
+							}
 							final ByteBuffer buf = ByteBuffer.allocateDirect(SAMPLES_PER_FRAME);
 			                int readBytes;
-							mWeakRecorder.get().startRecording();
+			                synchronized (mSync) {
+								mWeakRecorder.get().startRecording();
+								mAudioStarted = true;
+							}
 			                try {
 					    		for (; mIsCapturing && !mRequestStop && !mIsEOS;) {
 					    			// read audio data from internal mic
@@ -185,14 +192,20 @@ public class MediaAudioEncoder extends MediaEncoder {
 					    		}
 			    				frameAvailableSoon();
 			                } finally {
-								mWeakRecorder.get().stop();
+			                	synchronized (mSync) {
+									mAudioStarted = false;
+									mWeakRecorder.get().stop();
+								}
 			                }
 		            	}
 		            } finally {
-						mWeakRecorder.get().release();
-		            	if (mWeakRecorder != null) {
-		            		mWeakRecorder.clear();
-		            		mWeakRecorder = null;
+		            	synchronized (mSync) {
+							mAudioStarted = false;
+							mWeakRecorder.get().release();
+							if (mWeakRecorder != null) {
+								mWeakRecorder.clear();
+								mWeakRecorder = null;
+							}
 						}
 		            }
 				} else {
@@ -208,8 +221,14 @@ public class MediaAudioEncoder extends MediaEncoder {
 		 * 开始录音
 		 */
 		public void startRecording() {
-			if (mWeakRecorder != null && mWeakRecorder.get() != null) {
-				mWeakRecorder.get().startRecording();
+			if (mAudioStarted) {
+				return;
+			}
+			synchronized (mSync) {
+				if (mWeakRecorder != null && mWeakRecorder.get() != null) {
+					mWeakRecorder.get().startRecording();
+					mAudioStarted = true;
+				}
 			}
 		}
 
@@ -217,8 +236,14 @@ public class MediaAudioEncoder extends MediaEncoder {
 		 * 停止录音
 		 */
 		public void stopRecording() {
-			if (mWeakRecorder != null && mWeakRecorder.get() != null) {
-				mWeakRecorder.get().stop();
+			if (!mAudioStarted) {
+				return;
+			}
+			synchronized (mSync) {
+				if (mWeakRecorder != null && mWeakRecorder.get() != null) {
+					mWeakRecorder.get().stop();
+					mAudioStarted = false;
+				}
 			}
 		}
 
