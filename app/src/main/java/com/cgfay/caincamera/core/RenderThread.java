@@ -362,7 +362,12 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 开始录制
      */
     void startRecording() {
-        RecordManager.getInstance().startRecording(EGL14.eglGetCurrentContext());
+        if (mEglCore != null && isPreviewing) {
+            // 这里将EGLContext传递到录制线程共享。
+            // 由于EGLContext是当前线程手动创建，也就是OpenGLES的mainThread
+            // 这里需要传自己手动创建的EglContext
+            RecordManager.getInstance().startRecording(mEglCore.getEGLContext());
+        }
         isRecording = true;
     }
 
