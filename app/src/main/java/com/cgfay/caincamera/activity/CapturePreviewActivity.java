@@ -143,6 +143,18 @@ public class CapturePreviewActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        MediaPlayerManager.getInstance().continuePlay();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MediaPlayerManager.getInstance().pause();
+    }
+
+    @Override
     protected void onDestroy() {
         MediaPlayerManager.getInstance().stop();
         MediaPlayerManager.getInstance().release();
