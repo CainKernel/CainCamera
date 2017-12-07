@@ -27,7 +27,7 @@ import com.cgfay.caincamera.core.AspectRatioType;
 import com.cgfay.caincamera.core.ColorFilterManager;
 import com.cgfay.caincamera.core.DrawerManager;
 import com.cgfay.caincamera.core.ParamsManager;
-import com.cgfay.caincamera.core.RecorderManager;
+import com.cgfay.caincamera.core.RecordManager;
 import com.cgfay.caincamera.facetracker.FaceTrackManager;
 import com.cgfay.caincamera.multimedia.MediaEncoder;
 import com.cgfay.caincamera.multimedia.MediaVideoEncoder;
@@ -539,17 +539,19 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void startRecord() {
 
+        // 初始化录制线程
+        RecordManager.getInstance().initThread();
         // 设置输出路径
         String path = ParamsManager.VideoPath
                 + "CainCamera_" + System.currentTimeMillis() + ".mp4";
-        RecorderManager.getInstance().setOutputPath(path);
+        RecordManager.getInstance().setOutputPath(path);
         // 是否允许录音
-        RecorderManager.getInstance().setEnableAudioRecording(mRecordSoundEnable);
+        RecordManager.getInstance().setEnableAudioRecording(mRecordSoundEnable);
         // 是否允许高清录制
-        RecorderManager.getInstance().enableHighDefinition(true);
+        RecordManager.getInstance().enableHighDefinition(true);
         // 初始化录制器
-        RecorderManager.getInstance().initRecorder(RecorderManager.RECORD_WIDTH,
-                RecorderManager.RECORD_HEIGHT, mEncoderListener);
+        RecordManager.getInstance().initRecorder(RecordManager.RECORD_WIDTH,
+                RecordManager.RECORD_HEIGHT, mEncoderListener);
 
         // 隐藏删除按钮
         mBtnRecordDelete.setVisibility(View.GONE);
@@ -607,10 +609,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         public void onReleased(MediaEncoder encoder) { // 复用器释放完成
             if (encoder instanceof MediaVideoEncoder) {
                 // 录制完成跳转预览页面
-                String outputPath = RecorderManager.getInstance().getOutputPath();
+                String outputPath = RecordManager.getInstance().getOutputPath();
                 mListPath.add(outputPath);
                 // 清空原来的路径
-                RecorderManager.getInstance().setOutputPath(null);
+                RecordManager.getInstance().setOutputPath(null);
 
                 // 显示删除按钮
                 runOnUiThread(new Runnable() {

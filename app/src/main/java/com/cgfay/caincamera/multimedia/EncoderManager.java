@@ -1,30 +1,26 @@
-package com.cgfay.caincamera.core;
+package com.cgfay.caincamera.multimedia;
 
+import android.opengl.EGLContext;
 import android.util.Log;
 
+import com.cgfay.caincamera.core.ParamsManager;
+import com.cgfay.caincamera.core.RenderManager;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.WindowSurface;
-import com.cgfay.caincamera.multimedia.MediaAudioEncoder;
-import com.cgfay.caincamera.multimedia.MediaEncoder;
-import com.cgfay.caincamera.multimedia.MediaMuxerWrapper;
-import com.cgfay.caincamera.multimedia.MediaVideoEncoder;
 
 import java.io.File;
 import java.io.IOException;
 
 /**
- * 视频录制管理器
- * Created by cain.huang on 2017/11/3.
+ * 录制编码管理器
+ * Created by cain.huang on 2017/12/7.
  */
 
-public final class RecorderManager {
+public class EncoderManager {
 
-    private static final String TAG = "RecorderManager";
+    private static final String TAG = "EncoderManager";
 
-    public static final int RECORD_WIDTH = 540;
-    public static final int RECORD_HEIGHT = 960;
-
-    private static RecorderManager mInstance;
+    private static EncoderManager mInstance;
 
     // 录制比特率
     private int mRecordBitrate;
@@ -43,10 +39,12 @@ public final class RecorderManager {
     // 视频高度
     private int mVideoHeight;
 
+    private EglCore mEglCore;
     // 录制视频用的EGLSurface
     private WindowSurface mRecordWindowSurface;
 
-    private MediaMuxerWrapper mMuxer;
+    // 复用器管理器
+    private MediaMuxerWrapper mMuxerManager;
 
     // 录制文件路径
     private String mRecorderOutputPath = null;
@@ -57,14 +55,14 @@ public final class RecorderManager {
     // 是否处于录制状态
     private boolean isRecording = false;
 
-    public static RecorderManager getInstance() {
+    public static EncoderManager getInstance() {
         if (mInstance == null) {
-            mInstance = new RecorderManager();
+            mInstance = new EncoderManager();
         }
         return mInstance;
     }
 
-    private RecorderManager() {
+    private EncoderManager() {
 
     }
 
@@ -107,31 +105,45 @@ public final class RecorderManager {
         }
         try {
 
-            mMuxer = new MediaMuxerWrapper(file.getAbsolutePath());
-            new MediaVideoEncoder(mMuxer, listener, mVideoWidth, mVideoHeight);
+            mMuxerManager = new MediaMuxerWrapper(file.getAbsolutePath());
+            new MediaVideoEncoder(mMuxerManager, listener, mVideoWidth, mVideoHeight);
             if (isEnableAudioRecording) {
-                new MediaAudioEncoder(mMuxer, listener);
+                new MediaAudioEncoder(mMuxerManager, listener);
             }
 
-            mMuxer.prepare();
+            mMuxerManager.prepare();
         } catch (IOException e) {
             Log.e(TAG, "startRecording:", e);
         }
     }
 
     /**
-     * 开始录制
+     * 开始录制，共享EglContext实现多线程录制
      */
-    synchronized void startRecording(EglCore eglCore) {
-        if (mMuxer.getVideoEncoder() == null) {
+    public synchronized void startRecording(EGLContext eglContext) {
+        if (mMuxerManager.getVideoEncoder() == null) {
             return;
         }
-        mRecordWindowSurface = new WindowSurface(eglCore,
-                ((MediaVideoEncoder) mMuxer.getVideoEncoder()).getInputSurface(),
-                true);
+        // 释放之前的Egl
+        if (mRecordWindowSurface != null) {
+            mRecordWindowSurface.releaseEglSurface();
+        }
+        if (mEglCore != null) {
+            mEglCore.release();
+        }
+        // 重新创建一个EglContext 和 Window Surface
+        mEglCore = new EglCore(eglContext, EglCore.FLAG_RECORDABLE);
+        if (mRecordWindowSurface != null) {
+            mRecordWindowSurface.recreate(mEglCore);
+        } else {
+            mRecordWindowSurface = new WindowSurface(mEglCore,
+                    ((MediaVideoEncoder) mMuxerManager.getVideoEncoder()).getInputSurface(),
+                    true);
+        }
+        mRecordWindowSurface.makeCurrent();
         RenderManager.getInstance().initRecordingFilter();
-        if (mMuxer != null) {
-            mMuxer.startRecording();
+        if (mMuxerManager != null) {
+            mMuxerManager.startRecording();
         }
         isRecording = true;
     }
@@ -140,8 +152,8 @@ public final class RecorderManager {
      * 帧可用时调用
      */
     public void frameAvailable() {
-        if (mMuxer != null && mMuxer.getVideoEncoder() != null && isRecording) {
-            mMuxer.getVideoEncoder().frameAvailableSoon();
+        if (mMuxerManager != null && mMuxerManager.getVideoEncoder() != null && isRecording) {
+            mMuxerManager.getVideoEncoder().frameAvailableSoon();
         }
     }
 
@@ -161,11 +173,11 @@ public final class RecorderManager {
     /**
      * 停止录制
      */
-    synchronized void stopRecording() {
+    public synchronized void stopRecording() {
         isRecording = false;
-        if (mMuxer != null) {
-            mMuxer.stopRecording();
-            mMuxer = null;
+        if (mMuxerManager != null) {
+            mMuxerManager.stopRecording();
+            mMuxerManager = null;
         }
         if (mRecordWindowSurface != null) {
             mRecordWindowSurface.release();
@@ -177,18 +189,18 @@ public final class RecorderManager {
     /**
      * 暂停录制
      */
-    synchronized void pauseRecording() {
-        if (mMuxer != null && isRecording) {
-            mMuxer.pauseRecording();
+    public synchronized void pauseRecording() {
+        if (mMuxerManager != null && isRecording) {
+            mMuxerManager.pauseRecording();
         }
     }
 
     /**
      * 继续录制
      */
-    synchronized void continueRecording() {
-        if (mMuxer != null && isRecording) {
-            mMuxer.continueRecording();
+    public synchronized void continueRecording() {
+        if (mMuxerManager != null && isRecording) {
+            mMuxerManager.continueRecording();
         }
     }
 
@@ -215,14 +227,6 @@ public final class RecorderManager {
      */
     public void setEnableAudioRecording(boolean enable) {
         isEnableAudioRecording = enable;
-    }
-
-    /**
-     * 获取输出路径
-     * @return
-     */
-    public String getOutputPath() {
-        return mRecorderOutputPath;
     }
 
     /**

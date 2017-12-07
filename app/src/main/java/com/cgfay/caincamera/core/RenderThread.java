@@ -3,6 +3,7 @@ package com.cgfay.caincamera.core;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.opengl.EGL14;
 import android.opengl.GLES30;
 import android.os.HandlerThread;
 import android.util.Log;
@@ -328,8 +329,8 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
 
         // 是否处于录制状态
         if (isRecording && !isRecordingPause) {
-            RecorderManager.getInstance().frameAvailable();
-            RecorderManager.getInstance().drawRecorderFrame(mCameraTexture.getTimestamp());
+            RecordManager.getInstance().frameAvailable();
+            RecordManager.getInstance().drawRecorderFrame(mCameraTexture.getTimestamp());
         }
         if (isDebug) {
             Log.d(TAG, "drawFrame time = " + (System.currentTimeMillis() - temp));
@@ -361,7 +362,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 开始录制
      */
     void startRecording() {
-        RecorderManager.getInstance().startRecording(mEglCore);
+        RecordManager.getInstance().startRecording(EGL14.eglGetCurrentContext());
         isRecording = true;
     }
 
@@ -369,7 +370,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 暂停录制
      */
     void pauseRecording() {
-        RecorderManager.getInstance().pauseRecording();
+        RecordManager.getInstance().pauseRecording();
         isRecordingPause = true;
     }
 
@@ -377,7 +378,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 继续录制
      */
     void continueRecording() {
-        RecorderManager.getInstance().continueRecording();
+        RecordManager.getInstance().continueRecording();
         isRecordingPause = false;
     }
 
@@ -385,7 +386,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 停止录制
      */
     void stopRecording() {
-        RecorderManager.getInstance().stopRecording();
+        RecordManager.getInstance().stopRecording();
         isRecording = false;
     }
 
