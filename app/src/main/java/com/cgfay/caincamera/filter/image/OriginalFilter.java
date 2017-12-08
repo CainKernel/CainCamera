@@ -44,10 +44,10 @@ public class OriginalFilter extends BaseImageFilter {
      * @param vertexBuffer
      * @param textureBuffer
      */
-    public void drawFrame(int textureId, FloatBuffer vertexBuffer,
+    public boolean drawFrame(int textureId, FloatBuffer vertexBuffer,
                           FloatBuffer textureBuffer) {
         if (textureId == GlUtil.GL_NOT_INIT) {
-            return;
+            return false;
         }
         GLES30.glUseProgram(mProgramHandle);
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
@@ -68,6 +68,7 @@ public class OriginalFilter extends BaseImageFilter {
         onDrawArraysAfter();
         GLES30.glBindTexture(getTextureType(), 0);
         GLES30.glUseProgram(0);
+        return true;
     }
 
     /**

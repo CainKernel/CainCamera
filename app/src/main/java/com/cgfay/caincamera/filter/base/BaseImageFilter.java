@@ -129,8 +129,8 @@ public class BaseImageFilter {
      * 绘制Frame
      * @param textureId
      */
-    public void drawFrame(int textureId) {
-        drawFrame(textureId, mVertexArray, mTexCoordArray);
+    public boolean drawFrame(int textureId) {
+        return drawFrame(textureId, mVertexArray, mTexCoordArray);
     }
 
     /**
@@ -139,10 +139,10 @@ public class BaseImageFilter {
      * @param vertexBuffer
      * @param textureBuffer
      */
-    public void drawFrame(int textureId, FloatBuffer vertexBuffer,
+    public boolean drawFrame(int textureId, FloatBuffer vertexBuffer,
                           FloatBuffer textureBuffer) {
         if (textureId == GlUtil.GL_NOT_INIT) {
-            return;
+            return false;
         }
         GLES30.glUseProgram(mProgramHandle);
         runPendingOnDrawTasks();
@@ -169,6 +169,7 @@ public class BaseImageFilter {
         GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
         GLES30.glBindTexture(getTextureType(), 0);
         GLES30.glUseProgram(0);
+        return true;
     }
 
     /**

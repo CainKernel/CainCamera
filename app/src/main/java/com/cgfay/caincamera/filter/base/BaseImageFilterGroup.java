@@ -63,9 +63,9 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
     }
 
     @Override
-    public void drawFrame(int textureId) {
+    public boolean drawFrame(int textureId) {
         if (mFramebuffers == null || mFrameBufferTextures == null || mFilters.size() <= 0) {
-            return;
+            return false;
         }
         int size = mFilters.size();
         mCurrentTextureId = textureId;
@@ -75,20 +75,22 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
                 GLES30.glViewport(0, 0, mImageWidth, mImageHeight);
                 GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[i]);
                 GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-                filter.drawFrame(mCurrentTextureId);
+                if (filter.drawFrame(mCurrentTextureId)) {
+                    mCurrentTextureId = mFrameBufferTextures[i];
+                }
                 GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
-                mCurrentTextureId = mFrameBufferTextures[i];
             } else {
                 GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
                 filter.drawFrame(mCurrentTextureId);
             }
         }
+        return true;
     }
 
     @Override
-    public void drawFrame(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
+    public boolean drawFrame(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
         if (mFramebuffers == null || mFrameBufferTextures == null || mFilters.size() <= 0) {
-            return;
+            return false;
         }
         int size = mFilters.size();
         mCurrentTextureId = textureId;
@@ -106,6 +108,7 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
                 filter.drawFrame(mCurrentTextureId, vertexBuffer, textureBuffer);
             }
         }
+        return true;
     }
 
     @Override
@@ -119,9 +122,10 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
         for (int i = 0; i < size; i++) {
             GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[i]);
             GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            mFilters.get(i).drawFrame(mCurrentTextureId);
+            if (mFilters.get(i).drawFrame(mCurrentTextureId)) {
+                mCurrentTextureId = mFrameBufferTextures[i];
+            }
             GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
-            mCurrentTextureId = mFrameBufferTextures[i];
         }
         return mCurrentTextureId;
     }
@@ -137,9 +141,10 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
         for (int i = 0; i < size; i++) {
             GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[i]);
             GLES30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            mFilters.get(i).drawFrame(mCurrentTextureId, vertexBuffer, textureBuffer);
+            if (mFilters.get(i).drawFrame(mCurrentTextureId, vertexBuffer, textureBuffer)) {
+                mCurrentTextureId = mFrameBufferTextures[i];
+            }
             GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
-            mCurrentTextureId = mFrameBufferTextures[i];
         }
         return mCurrentTextureId;
     }
