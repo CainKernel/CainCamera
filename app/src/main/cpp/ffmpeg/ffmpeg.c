@@ -334,7 +334,8 @@ sigterm_handler(int sig)
         write(2/*STDERR_FILENO*/, "Received > 3 system signals, hard exiting\n",
                            strlen("Received > 3 system signals, hard exiting\n"));
 
-        exit(123);
+        //exit(123);
+        exit_program(123);
     }
 }
 
@@ -4723,10 +4724,23 @@ static int64_t getmaxrss(void)
 
 static void log_callback_null(void *ptr, int level, const char *fmt, va_list vl)
 {
+    // 添加调试代码
+    static int print_prefix = 1;
+    static int count;
+    static char prev[1024];
+    char line[1024];
+    static int is_atty;
+
+    av_log_format_line(ptr, level, fmt, vl, line, sizeof(line), &print_prefix);
+
+    strcpy(prev, line);
+
 }
 
-int main(int argc, char **argv)
+int run(int argc, char **argv)
 {
+    LOGI("ffmpeg run...");
+    av_log(NULL, AV_LOG_FATAL, "run>>>>>>>>>>\n");
     int i, ret;
     int64_t ti;
 
@@ -4739,11 +4753,12 @@ int main(int argc, char **argv)
     av_log_set_flags(AV_LOG_SKIP_REPEATED);
     parse_loglevel(argc, argv, options);
 
-    if(argc>1 && !strcmp(argv[1], "-d")){
+    // 判断ffmpeg命令的最后一个参数是否为 -d， 不是的话就把Log关掉，为了方便封装
+    if(argc>1 && !strcmp(argv[argc - 1], "-d")){
         run_as_daemon=1;
         av_log_set_callback(log_callback_null);
         argc--;
-        argv++;
+        // argv++;
     }
 
     avcodec_register_all();

@@ -34,6 +34,31 @@
 #undef main /* We don't want SDL to override our main() */
 #endif
 
+#ifdef FFMPEG_RUN_LIB
+
+#ifdef ANDROID
+
+#include <android/log.h>
+#ifndef LOG_TAG
+#define LOG_TAG "FFMPEG"
+#endif
+#define XLOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
+#define XLOGD(...) __android_log_print(ANDROID_LOG_DEBUG ,  LOG_TAG, __VA_ARGS__)
+#define XLOGI(...) __android_log_print(ANDROID_LOG_INFO  ,  LOG_TAG, __VA_ARGS__)
+#define XLOGW(...) __android_log_print(ANDROID_LOG_WARN  ,  LOG_TAG, __VA_ARGS__)
+#define XLOGE(...) __android_log_print(ANDROID_LOG_ERROR  , LOG_TAG, __VA_ARGS__)
+
+#else
+#include <stdio.h>
+#define XLOGV(format, ...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG ": " format "\n", ##__VA_ARGS__)
+#define XLOGD(format, ...) __android_log_print(ANDROID_LOG_DEBUG ,  LOG_TAG ": " format "\n", ##__VA_ARGS__)
+#define XLOGI(format, ...) __android_log_print(ANDROID_LOG_INFO  ,  LOG_TAG ": " format "\n", ##__VA_ARGS__)
+#define XLOGW(format, ...) __android_log_print(ANDROID_LOG_WARN  ,  LOG_TAG ": " format "\n", ##__VA_ARGS__)
+#define XLOGE(format, ...) __android_log_print(ANDROID_LOG_ERROR  , LOG_TAG ": " format "\n", ##__VA_ARGS__)
+
+#endif // ANDROID
+#endif // FFMPEG_RUN_LIB
+
 /**
  * program name, defined by the program for show_version().
  */

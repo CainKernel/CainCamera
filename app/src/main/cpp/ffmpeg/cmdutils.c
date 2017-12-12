@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <math.h>
+#include <setjmp.h>
 
 /* Include only the enabled headers since some compilers (namely, Sun
    Studio) will not omit unused inline functions and create undefined
@@ -64,6 +65,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+extern jmp_buf jmp_exit;
 
 static int init_report(const char *env);
 
@@ -135,9 +138,24 @@ void register_exit(void (*cb)(int ret))
 void exit_program(int ret)
 {
     if (program_exit)
+    {
+        av_log(NULL, AV_LOG_INFO, "run program_exit.\n");
         program_exit(ret);
+    }
+    else
+    {
+        av_log(NULL, AV_LOG_INFO, "program_exit is null\n");
+    }
 
-    exit(ret);
+    // 转换错误码11，因为ffmpeg命令执行成功返回是1，命令参数错误返回的错误码也是1
+    if (ret == 1)
+    {
+        ret = 11;
+    }
+
+    av_log(NULL, AV_LOG_INFO, "exit_program code: %d\n", ret);
+    longjmp(jmp_exit, ret);
+    // exit(ret);
 }
 
 double parse_number_or_die(const char *context, const char *numstr, int type,
