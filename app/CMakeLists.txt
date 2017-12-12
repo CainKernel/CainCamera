@@ -20,6 +20,9 @@ add_library( native-lib
 
              SHARED
 
+             src/main/cpp/ffmpeg/cmdutils.c
+             src/main/cpp/ffmpeg/ffmpeg.c
+             src/main/cpp/ffmpeg/ffmpeg_filter.c
              src/main/cpp/native-lib.cpp )
 
 # 查找Android存在的库
