@@ -23,7 +23,7 @@ import android.widget.LinearLayout;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.EffectFilterAdapter;
-import com.cgfay.caincamera.core.AspectRatioType;
+import com.cgfay.caincamera.type.AspectRatioType;
 import com.cgfay.caincamera.core.ColorFilterManager;
 import com.cgfay.caincamera.core.DrawerManager;
 import com.cgfay.caincamera.core.ParamsManager;
