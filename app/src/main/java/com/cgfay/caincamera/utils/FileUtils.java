@@ -272,4 +272,22 @@ public class FileUtils {
         }
         return success;
     }
+
+    /**
+     * 是否以追加的形式写入内容
+     * @param path      路径
+     * @param content   内容
+     * @param append    是否写入到末尾
+     */
+    public static void writeFile(String path, String content, boolean append) {
+        FileWriter fileWriter;
+        try {
+            fileWriter = new FileWriter(path, append);
+            fileWriter.write(content);
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
