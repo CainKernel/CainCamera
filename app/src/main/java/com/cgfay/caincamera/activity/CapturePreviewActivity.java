@@ -19,6 +19,7 @@ import android.widget.ImageView;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.ParamsManager;
+import com.cgfay.caincamera.jni.FFmpegCmd;
 import com.cgfay.caincamera.multimedia.MediaPlayerManager;
 import com.cgfay.caincamera.type.GalleryType;
 import com.cgfay.caincamera.utils.FileUtils;
@@ -195,9 +196,23 @@ public class CapturePreviewActivity extends AppCompatActivity
                 FileUtils.copyFile(mPath.get(i), newPath);
             }
         } else if (ParamsManager.mGalleryType == GalleryType.VIDEO) { // TODO 如果是视频，则合成视频
-
+            String path = ParamsManager.VideoPath
+                    + "CainCamera_" + System.currentTimeMillis() + ".mp4";
+            FFmpegCmd.combineVideo(mPath, path);
         } else if (ParamsManager.mGalleryType == GalleryType.GIF) { // TODO 如果是GIF，则合成GIF
-
+            String path = ParamsManager.VideoPath
+                    + "CainCamera_" + System.currentTimeMillis() + ".mp4";
+            FFmpegCmd.convertVideoToGif(mPath.get(0), path,
+                    new FFmpegCmd.OnCompletionListener() {
+                @Override
+                public void onCompletion(boolean result) {
+                    if (result) {
+                        Log.d(TAG, "成功!");
+                    } else {
+                        Log.d(TAG, "失败");
+                    }
+                }
+            });
         }
         // 删除旧文件
         executeDeleteFile();
