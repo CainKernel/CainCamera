@@ -601,11 +601,23 @@ static void ffmpeg_cleanup(int ret)
                    av_err2str(AVERROR(errno)));
     }
     av_freep(&vstats_filename);
+    vstats_filename = NULL;
 
     av_freep(&input_streams);
+    input_streams = NULL;
+    nb_input_streams = 0;
+
     av_freep(&input_files);
+    input_files = NULL;
+    nb_input_files = 0;
+
     av_freep(&output_streams);
+    output_streams = NULL;
+    nb_output_streams = 0;
+
     av_freep(&output_files);
+    output_files = NULL;
+    nb_input_files = 0;
 
     uninit_opts();
 
