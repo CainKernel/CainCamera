@@ -129,7 +129,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 Manifest.permission.WRITE_EXTERNAL_STORAGE);
         mRecordSoundEnable = PermissionUtils.permissionChecking(this,
                 Manifest.permission.RECORD_AUDIO);
-        ParamsManager.canRecordingAudio = mRecordSoundEnable;
         if (mCameraEnable && mStorageWriteEnable) {
             initView();
         } else {
@@ -277,7 +276,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mRecordSoundEnable = true;
-                    ParamsManager.canRecordingAudio = true;
                 }
                 break;
 
@@ -546,7 +544,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 + "CainCamera_" + System.currentTimeMillis() + ".mp4";
         RecordManager.getInstance().setOutputPath(path);
         // 是否允许录音
-        RecordManager.getInstance().setEnableAudioRecording(mRecordSoundEnable);
+        RecordManager.getInstance().setEnableAudioRecording(
+                mRecordSoundEnable && ParamsManager.canRecordingAudio);
         // 是否允许高清录制
         RecordManager.getInstance().enableHighDefinition(true);
         // 初始化录制器
@@ -578,25 +577,39 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         @Override
         public void onPrepared(MediaEncoder encoder) {
-            if (encoder instanceof MediaVideoEncoder) {
+            mPreparedCount++;
+            // 没有录音权限、不允许音频录制、允许录制音频并且准备好两个MediaEncoder，就可以开始录制了
+            if (!mRecordSoundEnable || !ParamsManager.canRecordingAudio
+                    || (ParamsManager.canRecordingAudio && mPreparedCount == 2)) {
                 // 准备完成，开始录制
                 DrawerManager.getInstance().startRecording();
+
+                // 重置
+                mPreparedCount = 0;
             }
         }
 
         @Override
         public void onStarted(MediaEncoder encoder) {
-            // MediaCodec已经处于开始录制阶段，此时允许改变状态
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // 显示视频预览按钮
-                    mBtnRecordDone.setVisibility(View.VISIBLE);
-                    // 允许改变状态
-                    mEnableToChangeState = true;
-                    mOnRecording = true;
-                }
-            });
+            mStartedCount++;
+            // 没有录音权限、不允许音频录制、允许录制音频并且开始了两个MediaEncoder，就处于录制状态了
+            if (!mRecordSoundEnable || !ParamsManager.canRecordingAudio
+                    || (ParamsManager.canRecordingAudio && mStartedCount == 2)) {
+                // MediaCodec已经处于开始录制阶段，此时允许改变状态
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // 显示视频预览按钮
+                        mBtnRecordDone.setVisibility(View.VISIBLE);
+                        // 允许改变状态
+                        mEnableToChangeState = true;
+                        mOnRecording = true;
+                    }
+                });
+
+                // 重置状态
+                mStartedCount = 0;
+            }
         }
 
         @Override
@@ -606,7 +619,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         @Override
         public void onReleased(MediaEncoder encoder) { // 复用器释放完成
-            if (encoder instanceof MediaVideoEncoder) {
+            mReleaseCount++;
+            // 没有录音权限、不允许音频录制、允许录制音频并且释放了两个MediaEncoder，就完全释放掉了
+            if (!mRecordSoundEnable || !ParamsManager.canRecordingAudio
+                    || (ParamsManager.canRecordingAudio && mReleaseCount == 2)) {
                 // 录制完成跳转预览页面
                 String outputPath = RecordManager.getInstance().getOutputPath();
                 mListPath.add(outputPath);
@@ -639,11 +655,21 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                         }
                     });
                 }
+                // 重置释放状态
+                mReleaseCount = 0;
             }
-
 
         }
     };
+
+    // MediaEncoder准备好的数量
+    private int mPreparedCount = 0;
+
+    // 开始MediaEncoder的数量
+    private int mStartedCount = 0;
+
+    // 释放MediaEncoder的数量
+    private int mReleaseCount = 0;
 
     private ArrayList<String> mListPath = new ArrayList<String>();
     /**

@@ -40,8 +40,8 @@ public class ParamsManager {
     // 存放预览类型，GIF表情包、PICTURE拍照、VIDEO视频等
     public static GalleryType mGalleryType = GalleryType.PICTURE;
 
-    // 是否允许录音
-    public static boolean canRecordingAudio = false;
+    // 是否允许录音(用户自行设置，默认开启)
+    public static boolean canRecordingAudio = true;
 
     // 是否允许位置
     public static boolean canRecordingLocation = false;

@@ -196,9 +196,10 @@ public class CapturePreviewActivity extends AppCompatActivity
                 FileUtils.copyFile(mPath.get(i), newPath);
             }
         } else if (ParamsManager.mGalleryType == GalleryType.VIDEO) { // TODO 如果是视频，则合成视频
-            String path = ParamsManager.VideoPath
-                    + "CainCamera_" + System.currentTimeMillis() + ".mp4";
-            FFmpegCmd.combineVideo(mPath, path);
+            // TODO：Bug：视频帧数过少时会崩溃
+//            String path = ParamsManager.VideoPath
+//                    + "CainCamera_" + System.currentTimeMillis() + ".mp4";
+//            FFmpegCmd.combineVideo(mPath, path);
         } else if (ParamsManager.mGalleryType == GalleryType.GIF) { // TODO 如果是GIF，则合成GIF
             String path = ParamsManager.VideoPath
                     + "CainCamera_" + System.currentTimeMillis() + ".mp4";
