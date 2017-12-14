@@ -48,6 +48,10 @@ public final class RecordManager {
     static final int MSG_ENABLE_AUDIO = 9;
     // 退出
     static final int MSG_QUIT = 10;
+    // 设置渲染Texture的宽高
+    static final int MSG_SET_TEXTURE_SIZE = 11;
+    // 设置预览大小
+    static final int MSG_SET_DISPLAY_SIZE = 12;
 
     // 录制线程
     private RecordThread mRecordThread;
@@ -96,6 +100,29 @@ public final class RecordManager {
         }
     }
 
+    /**
+     * 设置渲染Texture的宽高
+     * @param width
+     * @param height
+     */
+    public void setTextureSize(int width, int height) {
+        Handler handler = mRecordThread.getHandler();
+        if (handler != null) {
+            handler.sendMessage(handler.obtainMessage(MSG_SET_TEXTURE_SIZE, width, height));
+        }
+    }
+
+    /**
+     * 设置预览大小
+     * @param width
+     * @param height
+     */
+    public void setDisplaySize(int width, int height) {
+        Handler handler = mRecordThread.getHandler();
+        if (handler != null) {
+            handler.sendMessage(handler.obtainMessage(MSG_SET_DISPLAY_SIZE, width, height));
+        }
+    }
 
     /**
      * 开始录制
@@ -121,12 +148,14 @@ public final class RecordManager {
 
     /**
      * 发送渲染指令
+     * @param texture 当前Texture
      * @param timeStamp 时间戳
      */
-    public void drawRecorderFrame(long timeStamp) {
+    public void drawRecorderFrame(int texture, long timeStamp) {
         Handler handler = mRecordThread.getHandler();
         if (handler != null) {
-            handler.sendMessage(handler.obtainMessage(MSG_DRAW_FRAME, timeStamp));
+            handler.sendMessage(handler
+                    .obtainMessage(MSG_DRAW_FRAME, texture, 0 /* unused */, timeStamp));
         }
     }
 
@@ -281,6 +310,34 @@ public final class RecordManager {
         }
 
         /**
+         * 设置渲染Texture的宽高
+         * @param width
+         * @param height
+         */
+        void setTextureSize(int width, int height) {
+            if (VERBOSE) {
+                Log.d(TAG, "setTextureSize");
+            }
+            synchronized (mReadyFence) {
+                EncoderManager.getInstance().setTextureSize(width, height);
+            }
+        }
+
+        /**
+         * 设置预览大小
+         * @param width
+         * @param height
+         */
+        void setDisplaySize(int width, int height) {
+            if (VERBOSE) {
+                Log.d(TAG, "setDisplaySize");
+            }
+            synchronized (mReadyFence) {
+                EncoderManager.getInstance().setDisplaySize(width, height);
+            }
+        }
+
+        /**
          * 开始录制
          * @param eglContext EGLContext上下文包装类
          */
@@ -308,14 +365,15 @@ public final class RecordManager {
 
         /**
          * 发送渲染指令
+         * @param currentTexture 当前Texture
          * @param timeStamp 时间戳
          */
-        void drawRecordingFrame(long timeStamp) {
+        void drawRecordingFrame(int currentTexture, long timeStamp) {
             if (VERBOSE) {
                 Log.d(TAG, "draw recording frame");
             }
             synchronized (mReadyFence) {
-                EncoderManager.getInstance().drawRecorderFrame(timeStamp);
+                EncoderManager.getInstance().drawRecorderFrame(currentTexture, timeStamp);
             }
         }
 
@@ -445,7 +503,7 @@ public final class RecordManager {
 
                 // 渲染帧
                 case MSG_DRAW_FRAME:
-                    thread.drawRecordingFrame((Long) msg.obj);
+                    thread.drawRecordingFrame(msg.arg1, (Long) msg.obj);
                     break;
 
                 // 停止录制
@@ -481,6 +539,16 @@ public final class RecordManager {
                 // 退出线程
                 case MSG_QUIT:
                     Looper.myLooper().quit();
+                    break;
+
+                // 设置渲染Texture的宽高
+                case MSG_SET_TEXTURE_SIZE:
+                    thread.setTextureSize(msg.arg1, msg.arg2);
+                    break;
+
+                // 设置预览的大小
+                case MSG_SET_DISPLAY_SIZE:
+                    thread.setDisplaySize(msg.arg1, msg.arg2);
                     break;
 
                 default:

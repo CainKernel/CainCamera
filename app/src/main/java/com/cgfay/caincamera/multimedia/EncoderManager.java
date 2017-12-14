@@ -1,12 +1,17 @@
 package com.cgfay.caincamera.multimedia;
 
 import android.opengl.EGLContext;
+import android.opengl.GLES30;
+import android.opengl.Matrix;
 import android.util.Log;
 
 import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.core.RenderManager;
+import com.cgfay.caincamera.filter.base.DisplayFilter;
 import com.cgfay.caincamera.gles.EglCore;
 import com.cgfay.caincamera.gles.WindowSurface;
+import com.cgfay.caincamera.type.ScaleType;
+import com.cgfay.caincamera.utils.GlUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,14 +39,26 @@ public class EncoderManager {
     // 码率乘高清值
     private int HDValue = 16;
 
+    // 渲染Texture的宽度
+    private int mTextureWidth;
+    // 渲染Texture的高度
+    private int mTextureHeight;
     // 视频宽度
     private int mVideoWidth;
     // 视频高度
     private int mVideoHeight;
+    // 显示宽度
+    private int mDisplayWidth;
+    // 显示高度
+    private int mDisplayHeight;
+    // 缩放方式
+    private ScaleType mScaleType = ScaleType.CENTER_CROP;
 
     private EglCore mEglCore;
     // 录制视频用的EGLSurface
     private WindowSurface mRecordWindowSurface;
+    // 录制的Filter
+    private DisplayFilter mRecordFilter;
 
     // 复用器管理器
     private MediaMuxerWrapper mMuxerManager;
@@ -87,7 +104,6 @@ public class EncoderManager {
                                           MediaEncoder.MediaEncoderListener listener) {
         mVideoWidth = width;
         mVideoHeight = height;
-        RenderManager.getInstance().setVideoSize(mVideoWidth, mVideoHeight);
         // 如果路径为空，则生成默认的路径
         if (mRecorderOutputPath == null || mRecorderOutputPath.isEmpty()) {
             mRecorderOutputPath = ParamsManager.VideoPath
@@ -118,6 +134,48 @@ public class EncoderManager {
     }
 
     /**
+     * 设置渲染Texture的宽高
+     * @param width
+     * @param height
+     */
+    public void setTextureSize(int width, int height) {
+        mTextureWidth = width;
+        mTextureHeight = height;
+    }
+
+    /**
+     * 设置预览大小
+     * @param width
+     * @param height
+     */
+    public void setDisplaySize(int width, int height) {
+        mDisplayWidth = width;
+        mDisplayHeight = height;
+    }
+
+    /**
+     * 调整视口大小
+     */
+    private void updateViewport() {
+        float[] mvpMatrix = GlUtil.IDENTITY_MATRIX;
+        if (mVideoWidth == 0 || mVideoHeight == 0) {
+            mVideoWidth = mTextureWidth;
+            mVideoHeight = mTextureHeight;
+        }
+        final double scale_x = mDisplayWidth / mVideoWidth;
+        final double scale_y = mDisplayHeight / mVideoHeight;
+        final double scale = (mScaleType == ScaleType.CENTER_CROP)
+                ? Math.max(scale_x,  scale_y) : Math.min(scale_x, scale_y);
+        final double width = scale * mVideoWidth;
+        final double height = scale * mVideoHeight;
+        Matrix.scaleM(mvpMatrix, 0, (float)(width / mDisplayWidth),
+                (float)(height / mDisplayHeight), 1.0f);
+        if (mRecordFilter != null) {
+            mRecordFilter.setMVPMatrix(mvpMatrix);
+        }
+    }
+
+    /**
      * 开始录制，共享EglContext实现多线程录制
      */
     public synchronized void startRecording(EGLContext eglContext) {
@@ -141,7 +199,8 @@ public class EncoderManager {
                     true);
         }
         mRecordWindowSurface.makeCurrent();
-        RenderManager.getInstance().initRecordingFilter();
+        initRecordingFilter();
+        updateViewport();
         if (mMuxerManager != null) {
             mMuxerManager.startRecording();
         }
@@ -159,12 +218,13 @@ public class EncoderManager {
 
     /**
      * 发送渲染指令
+     * @param currentTexture 当前Texture
      * @param timeStamp 时间戳
      */
-    public void drawRecorderFrame(long timeStamp) {
+    public void drawRecorderFrame(int currentTexture, long timeStamp) {
         if (mRecordWindowSurface != null) {
             mRecordWindowSurface.makeCurrent();
-            RenderManager.getInstance().drawRecordingFrame();
+            drawRecordingFrame(currentTexture);
             mRecordWindowSurface.setPresentationTime(timeStamp);
             mRecordWindowSurface.swapBuffers();
         }
@@ -183,7 +243,8 @@ public class EncoderManager {
             mRecordWindowSurface.release();
             mRecordWindowSurface = null;
         }
-        RenderManager.getInstance().releaseRecordingFilter();
+        // 释放资源
+        releaseRecordingFilter();
     }
 
     /**
@@ -201,6 +262,53 @@ public class EncoderManager {
     public synchronized void continueRecording() {
         if (mMuxerManager != null && isRecording) {
             mMuxerManager.continueRecording();
+        }
+    }
+
+    /**
+     * 初始化录制的Filter
+     * TODO 录制视频大小跟渲染大小、显示大小拆分成不同的大小
+     */
+    private void initRecordingFilter() {
+        if (mRecordFilter == null) {
+            mRecordFilter = new DisplayFilter();
+        }
+        mRecordFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
+        mRecordFilter.onDisplayChanged(mVideoWidth, mVideoHeight);
+    }
+
+    /**
+     * 渲染录制的帧
+     */
+    public void drawRecordingFrame(int textureId) {
+        if (mRecordFilter != null) {
+            GLES30.glViewport(0, 0, mVideoWidth, mVideoHeight);
+            mRecordFilter.drawFrame(textureId);
+        }
+    }
+
+    /**
+     * 释放录制的Filter资源
+     */
+    public void releaseRecordingFilter() {
+        if (mRecordFilter != null) {
+            mRecordFilter.release();
+            mRecordFilter = null;
+        }
+    }
+
+    /**
+     * 销毁资源
+     */
+    public void release() {
+        releaseRecordingFilter();
+        if (mEglCore != null) {
+            mEglCore.release();
+            mEglCore = null;
+        }
+        if (mRecordWindowSurface != null) {
+            mRecordWindowSurface.release();
+            mRecordWindowSurface = null;
         }
     }
 

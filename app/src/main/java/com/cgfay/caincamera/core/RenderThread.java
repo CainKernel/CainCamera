@@ -142,8 +142,6 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         RenderManager.getInstance().onDisplaySizeChanged(mViewWidth, mViewHeight);
         // 开始预览
         CameraUtils.startPreview();
-        // 渲染视图变化
-        RenderManager.getInstance().onDisplaySizeChanged(mViewWidth, mViewHeight);
         isPreviewing = true;
         // 配置检测点的宽高
         if (ParamsManager.enableDrawingPoints) {
@@ -330,7 +328,9 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         // 是否处于录制状态
         if (isRecording && !isRecordingPause) {
             RecordManager.getInstance().frameAvailable();
-            RecordManager.getInstance().drawRecorderFrame(mCameraTexture.getTimestamp());
+            int currentTexture = RenderManager.getInstance().getCurrentTexture();
+            RecordManager.getInstance()
+                    .drawRecorderFrame(currentTexture, mCameraTexture.getTimestamp());
         }
         if (isDebug) {
             Log.d(TAG, "drawFrame time = " + (System.currentTimeMillis() - temp));
@@ -363,6 +363,10 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      */
     void startRecording() {
         if (mEglCore != null && isPreviewing) {
+            // 设置渲染Texture 的宽高
+            RecordManager.getInstance().setTextureSize(mImageWidth, mImageHeight);
+            // 设置预览大小
+            RecordManager.getInstance().setDisplaySize(mViewWidth, mViewHeight);
             // 这里将EGLContext传递到录制线程共享。
             // 由于EGLContext是当前线程手动创建，也就是OpenGLES的mainThread
             // 这里需要传自己手动创建的EglContext

@@ -40,7 +40,6 @@ public final class RenderManager {
 
     // 当前的TextureId
     private int mCurrentTextureId;
-    private DisplayFilter mRecordFilter;
 
     // 输入流大小
     private int mTextureWidth;
@@ -48,9 +47,6 @@ public final class RenderManager {
     // 显示大小
     private int mDisplayWidth;
     private int mDisplayHeight;
-    // 录制渲染的视频大小
-    private int mVideoWidth;
-    private int mVideoHeight;
 
     private ScaleType mScaleType = ScaleType.CENTER_CROP;
     private FloatBuffer mVertexBuffer;
@@ -327,67 +323,10 @@ public final class RenderManager {
     }
 
     /**
-     * 初始化录制的Filter
-     * TODO 录制视频大小跟渲染大小、显示大小拆分成不同的大小
+     * 获取当前渲染的Texture
+     * @return
      */
-    public void initRecordingFilter() {
-        if (mRecordFilter == null) {
-            mRecordFilter = new DisplayFilter();
-        }
-        mRecordFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-        mRecordFilter.onDisplayChanged(mVideoWidth, mVideoHeight);
-    }
-
-    /**
-     * 释放录制的Filter资源
-     */
-    public void releaseRecordingFilter() {
-        if (mRecordFilter != null) {
-            mRecordFilter.release();
-            mRecordFilter = null;
-        }
-    }
-
-    /**
-     * 设置视频大小
-     * @param width
-     * @param height
-     */
-    public void setVideoSize(int width, int height) {
-        mVideoWidth = width;
-        mVideoHeight = height;
-        updateViewport();
-    }
-
-    /**
-     * 调整视口大小
-     */
-    private void updateViewport() {
-        float[] mvpMatrix = GlUtil.IDENTITY_MATRIX;
-        if (mVideoWidth == 0 || mVideoHeight == 0) {
-            mVideoWidth = mTextureWidth;
-            mVideoHeight = mTextureHeight;
-        }
-        final double scale_x = mDisplayWidth / mVideoWidth;
-        final double scale_y = mDisplayHeight / mVideoHeight;
-        final double scale = (mScaleType == ScaleType.CENTER_CROP)
-                ? Math.max(scale_x,  scale_y) : Math.min(scale_x, scale_y);
-        final double width = scale * mVideoWidth;
-        final double height = scale * mVideoHeight;
-        Matrix.scaleM(mvpMatrix, 0, (float)(width / mDisplayWidth),
-                (float)(height / mDisplayHeight), 1.0f);
-        if (mRecordFilter != null) {
-            mRecordFilter.setMVPMatrix(mvpMatrix);
-        }
-    }
-
-    /**
-     * 渲染录制的帧
-     */
-    public void drawRecordingFrame() {
-        if (mRecordFilter != null) {
-            GLES30.glViewport(0, 0, mVideoWidth, mVideoHeight);
-            mRecordFilter.drawFrame(mCurrentTextureId);
-        }
+    public int getCurrentTexture() {
+        return mCurrentTextureId;
     }
 }
