@@ -52,6 +52,10 @@ public abstract class MediaEncoder implements Runnable {
     }
 
     protected final Object mSync = new Object();
+
+    // 停止录制
+    protected final Object mOperation = new Object();
+
     /**
      * Flag that indicate this encoder is capturing now.
      */
@@ -154,13 +158,17 @@ public abstract class MediaEncoder implements Runnable {
             }
             // 停止
             if (localRequestStop) {
-                drain();
-                // request stop recording
-                signalEndOfInputStream();
-                // process output data again for EOS signale
-                drain();
-                // release all related objects
-                release();
+                synchronized (mOperation) {
+                    drain();
+                    // request stop recording
+                    signalEndOfInputStream();
+                    // process output data again for EOS signale
+                    drain();
+                    // 通知最后一帧写入完成，进入释放阶段
+                    mOperation.notifyAll();
+                    // release all related objects
+                    release();
+                }
                 break;
             }
             // 如果处于暂停状态，则继续下一次循环
@@ -243,6 +251,15 @@ public abstract class MediaEncoder implements Runnable {
             // We can not know when the encoding and writing finish.
             // so we return immediately after request to avoid delay of caller thread
         }
+
+        // 等待录制最后一帧完成
+        synchronized (mOperation) {
+            try {
+                mOperation.wait();
+            } catch (InterruptedException e) {
+
+            }
+        }
     }
 
 //********************************************************************************
@@ -252,13 +269,11 @@ public abstract class MediaEncoder implements Runnable {
      * Release all releated objects
      */
     protected void release() {
-        if (DEBUG) Log.d(TAG, "release:");
-        try {
-            if(mListener!=null){
-                mListener.onStopped(this);
-            }
-        } catch (final Exception e) {
-            Log.e(TAG, "failed onStopped", e);
+        if (DEBUG) {
+            Log.d(TAG, "release:");
+        }
+        if (mListener!= null) {
+            mListener.onStopped(this);
         }
         mIsCapturing = false;
         if (mMediaCodec != null) {
@@ -281,6 +296,7 @@ public abstract class MediaEncoder implements Runnable {
             }
         }
         mBufferInfo = null;
+        // 完全释放之后再回调
         if (mListener != null) {
             mListener.onReleased(this);
         }

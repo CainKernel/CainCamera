@@ -601,8 +601,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         @Override
         public void onStopped(MediaEncoder encoder) {
-            mEnableToChangeState = false;
-            mOnRecording = false;
+
         }
 
         @Override
@@ -614,15 +613,14 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 // 清空原来的路径
                 RecordManager.getInstance().setOutputPath(null);
 
+                // 处于非录制状态
+                mOnRecording = false;
+
                 // 显示删除按钮
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (mOnRecording) {
-                            mBtnRecordDelete.setVisibility(View.GONE);
-                        } else {
-                            mBtnRecordDelete.setVisibility(View.VISIBLE);
-                        }
+                        mBtnRecordDelete.setVisibility(View.VISIBLE);
                     }
                 });
 
