@@ -201,19 +201,19 @@ public class CapturePreviewActivity extends AppCompatActivity
 //                    + "CainCamera_" + System.currentTimeMillis() + ".mp4";
 //            FFmpegCmd.combineVideo(mPath, path);
         } else if (ParamsManager.mGalleryType == GalleryType.GIF) { // TODO 如果是GIF，则合成GIF
-            String path = ParamsManager.VideoPath
-                    + "CainCamera_" + System.currentTimeMillis() + ".mp4";
-            FFmpegCmd.convertVideoToGif(mPath.get(0), path,
-                    new FFmpegCmd.OnCompletionListener() {
-                @Override
-                public void onCompletion(boolean result) {
-                    if (result) {
-                        Log.d(TAG, "成功!");
-                    } else {
-                        Log.d(TAG, "失败");
-                    }
-                }
-            });
+//            String path = ParamsManager.AlbumPath
+//                    + "CainCamera_" + System.currentTimeMillis() + ".gif";
+//            FFmpegCmd.convertVideoToGif(mPath.get(0), path,
+//                    new FFmpegCmd.OnCompletionListener() {
+//                @Override
+//                public void onCompletion(boolean result) {
+//                    if (result) {
+//                        Log.d(TAG, "成功!");
+//                    } else {
+//                        Log.d(TAG, "失败");
+//                    }
+//                }
+//            });
         }
         // 删除旧文件
         executeDeleteFile();

@@ -543,9 +543,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         String path = ParamsManager.VideoPath
                 + "CainCamera_" + System.currentTimeMillis() + ".mp4";
         RecordManager.getInstance().setOutputPath(path);
-        // 是否允许录音
+        // 是否允许录音，只有录制视频才有音频
         RecordManager.getInstance().setEnableAudioRecording(
-                mRecordSoundEnable && ParamsManager.canRecordingAudio);
+                mRecordSoundEnable && ParamsManager.canRecordingAudio
+                        && ParamsManager.mGalleryType == GalleryType.VIDEO);
         // 是否允许高清录制
         RecordManager.getInstance().enableHighDefinition(true);
         // 初始化录制器
@@ -553,7 +554,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 RecordManager.RECORD_HEIGHT, mEncoderListener);
 
         // 隐藏删除按钮
-        mBtnRecordDelete.setVisibility(View.GONE);
+        if (ParamsManager.mGalleryType == GalleryType.VIDEO) {
+            mBtnRecordDelete.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -580,7 +583,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             mPreparedCount++;
             // 没有录音权限、不允许音频录制、允许录制音频并且准备好两个MediaEncoder，就可以开始录制了
             if (!mRecordSoundEnable || !ParamsManager.canRecordingAudio
-                    || (ParamsManager.canRecordingAudio && mPreparedCount == 2)) {
+                    || (ParamsManager.canRecordingAudio && mPreparedCount == 2)
+                    || ParamsManager.mGalleryType == GalleryType.GIF) { // 录制GIF，没有音频
                 // 准备完成，开始录制
                 DrawerManager.getInstance().startRecording();
 
@@ -594,18 +598,21 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             mStartedCount++;
             // 没有录音权限、不允许音频录制、允许录制音频并且开始了两个MediaEncoder，就处于录制状态了
             if (!mRecordSoundEnable || !ParamsManager.canRecordingAudio
-                    || (ParamsManager.canRecordingAudio && mStartedCount == 2)) {
+                    || (ParamsManager.canRecordingAudio && mStartedCount == 2)
+                    || ParamsManager.mGalleryType == GalleryType.GIF) { // 录制GIF，没有音频
                 // MediaCodec已经处于开始录制阶段，此时允许改变状态
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // 显示视频预览按钮
-                        mBtnRecordDone.setVisibility(View.VISIBLE);
-                        // 允许改变状态
-                        mEnableToChangeState = true;
-                        mOnRecording = true;
-                    }
-                });
+                if (ParamsManager.mGalleryType == GalleryType.VIDEO) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // 显示视频预览按钮
+                            mBtnRecordDone.setVisibility(View.VISIBLE);
+                        }
+                    });
+                }
+                // 允许改变状态
+                mEnableToChangeState = true;
+                mOnRecording = true;
 
                 // 重置状态
                 mStartedCount = 0;
@@ -622,7 +629,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             mReleaseCount++;
             // 没有录音权限、不允许音频录制、允许录制音频并且释放了两个MediaEncoder，就完全释放掉了
             if (!mRecordSoundEnable || !ParamsManager.canRecordingAudio
-                    || (ParamsManager.canRecordingAudio && mReleaseCount == 2)) {
+                    || (ParamsManager.canRecordingAudio && mReleaseCount == 2)
+                    || ParamsManager.mGalleryType == GalleryType.GIF) { // 录制GIF，没有音频
                 // 录制完成跳转预览页面
                 String outputPath = RecordManager.getInstance().getOutputPath();
                 mListPath.add(outputPath);
@@ -633,18 +641,20 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 mOnRecording = false;
 
                 // 显示删除按钮
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mBtnRecordDelete.setVisibility(View.VISIBLE);
-                    }
-                });
+                if (ParamsManager.mGalleryType == GalleryType.VIDEO) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mBtnRecordDelete.setVisibility(View.VISIBLE);
+                        }
+                    });
+                }
 
                 // 允许改变状态
                 mEnableToChangeState = true;
 
-                // 处于录制状态点击了预览按钮，则需要等待完成再跳转
-                if (mNeedToWaitStop) {
+                // 处于录制状态点击了预览按钮，则需要等待完成再跳转， 或者是处于录制GIF状态
+                if (mNeedToWaitStop || ParamsManager.mGalleryType == GalleryType.GIF) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -765,7 +775,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         if (currentIndex == 0) {
             ParamsManager.mGalleryType = GalleryType.GIF;
             // TODO GIF录制后面再做处理
-            mBtnTakeOrRecording.setIsRecorder(false);
+            mBtnTakeOrRecording.setIsRecorder(true);
         } else if (currentIndex == 1) {
             ParamsManager.mGalleryType = GalleryType.PICTURE;
             // 拍照状态

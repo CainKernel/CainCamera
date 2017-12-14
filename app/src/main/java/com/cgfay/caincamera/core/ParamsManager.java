@@ -28,9 +28,6 @@ public class ParamsManager {
     // 视频存放地址
     public static final String VideoPath = StoragePath + "/CainCamera/Video/";
 
-    // Gif存放地址
-    public static final String GifPath = StoragePath + "/CainCamera/Gif/";
-
     // 是否绘制人脸关键点
     public static boolean enableDrawingPoints = false;
 
