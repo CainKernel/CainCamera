@@ -269,7 +269,9 @@ public class VideoCombiner {
             // 当前文件最后一帧的PTS，用作下一个视频的pts
             ptsOffset += videoPts > audioPts ? videoPts : audioPts;
             // 当前文件最后一帧和下一帧的间隔差40ms，默认录制25fps的视频，帧间隔时间就是40ms
-            ptsOffset += 40000L;
+            // 但由于使用MediaCodec录制完之后，后面又写入了一个OES的帧，导致前面解析的时候会有时间差
+            // 这里设置10ms效果比40ms的要好些。
+            ptsOffset += 10000L;
 
             if (VERBOSE) {
                 Log.d(TAG, "finish one file, ptsOffset " + ptsOffset);
