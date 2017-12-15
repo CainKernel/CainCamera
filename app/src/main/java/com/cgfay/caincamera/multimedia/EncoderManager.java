@@ -301,7 +301,8 @@ public class EncoderManager {
      * 销毁资源
      */
     public void release() {
-        releaseRecordingFilter();
+        // 停止录制
+        stopRecording();
         if (mEglCore != null) {
             mEglCore.release();
             mEglCore = null;

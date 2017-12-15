@@ -251,12 +251,13 @@ public class CapturePreviewActivity extends AppCompatActivity
             @Override
             public void onCombineFinished(final boolean success) {
                 if (success) {
-                    executeDeleteFile();
-                    mPath.clear();
-                    finish();
+                    Log.d(TAG, "合并成功");
                 } else {
                     Log.d(TAG, "合并失败");
                 }
+                executeDeleteFile();
+                mPath.clear();
+                finish();
             }
         });
     }

@@ -718,6 +718,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             // 停止录制
             DrawerManager.getInstance().stopRecording();
         } else {
+            // 销毁录制线程
+            RecordManager.getInstance().destoryThread();
             mNeedToWaitStop = false;
             Intent intent = new Intent(CameraActivity.this, CapturePreviewActivity.class);
             intent.putStringArrayListExtra(CapturePreviewActivity.PATH, mListPath);

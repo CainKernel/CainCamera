@@ -70,10 +70,25 @@ public final class RecordManager {
     /**
      * 初始化录制线程
      */
-    public void initThread() {
-        mRecordThread = new RecordThread();
-        mRecordThread.start();
-        mRecordThread.waitUntilReady();
+    synchronized public void initThread() {
+        if (mRecordThread == null) {
+            mRecordThread = new RecordThread();
+            mRecordThread.start();
+            mRecordThread.waitUntilReady();
+        }
+    }
+
+    /**
+     * 销毁线程
+     */
+    synchronized public void destoryThread() {
+        if (mRecordThread != null) {
+            Handler handler = mRecordThread.getHandler();
+            if (handler != null) {
+                handler.sendMessage(handler.obtainMessage(MSG_QUIT));
+            }
+            mRecordThread = null;
+        }
     }
 
     /**
@@ -151,7 +166,7 @@ public final class RecordManager {
      * @param texture 当前Texture
      * @param timeStamp 时间戳
      */
-    public void drawRecorderFrame(int texture, long timeStamp) {
+    synchronized public void drawRecorderFrame(int texture, long timeStamp) {
         Handler handler = mRecordThread.getHandler();
         if (handler != null) {
             handler.sendMessage(handler
@@ -162,16 +177,14 @@ public final class RecordManager {
     /**
      * 停止录制
      */
-    public void stopRecording() {
+    synchronized public void stopRecording() {
         if (mRecordThread == null) {
             return;
         }
         Handler handler = mRecordThread.getHandler();
         if (handler != null) {
             handler.sendMessage(handler.obtainMessage(MSG_STOP_RECORDING));
-            handler.sendMessage(handler.obtainMessage(MSG_QUIT));
         }
-        mRecordThread = null;
     }
 
 
@@ -273,6 +286,8 @@ public final class RecordManager {
             }
 
             synchronized (mReadyFence) {
+                // 释放资源
+                EncoderManager.getInstance().release();
                 mReady = false;
                 mHandler = null;
             }
@@ -538,6 +553,7 @@ public final class RecordManager {
 
                 // 退出线程
                 case MSG_QUIT:
+                    removeCallbacksAndMessages(null);
                     Looper.myLooper().quit();
                     break;
 
