@@ -9,7 +9,7 @@
         android:id="@+id/layout_aspect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|center_horizontal">
+        android:layout_gravity="center">
         <!--<com.cgfay.caincamera.view.CameraSurfaceView-->
             <!--android:id="@+id/view_camera"-->
             <!--android:layout_width="match_parent"-->

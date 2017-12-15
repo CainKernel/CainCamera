@@ -8,6 +8,21 @@
     <string name="btn_back">返回</string>
     <string name="btn_more">更多</string>
 
+    <!--顶部设置文字-->
+    <string name="tv_flash">闪光灯</string>
+    <string-array name="tv_face_mode">
+        <item>单脸模式</item>
+        <item>多脸模式</item>
+    </string-array>
+    <string-array name="tv_beautify">
+        <item>美颜开启</item>
+        <item>美颜关闭</item>
+    </string-array>
+    <string name="tv_time_lapse">延时拍摄</string>
+    <string name="tv_auto_save">自动保存</string>
+    <string name="tv_touch_take">触屏拍照</string>
+
+
     <!--底部文字-->
     <string name="tv_gif">表情包</string>
     <string name="tv_picture">拍照</string>

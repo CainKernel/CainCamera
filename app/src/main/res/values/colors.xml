@@ -16,4 +16,8 @@
     <color name="red">#FF4300</color>
     <color name="video_window_background">#1A1A1A</color>
 
+    <!-- 设置PopupWindow的字体颜色 -->
+    <color name="popTextColor">#FFBBBBBB</color>
+    <color name="popBackground">#559e9e9e</color>
+
 </resources>

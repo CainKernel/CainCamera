@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -30,8 +31,8 @@ import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.core.RecordManager;
 import com.cgfay.caincamera.facetracker.FaceTrackManager;
 import com.cgfay.caincamera.multimedia.MediaEncoder;
-import com.cgfay.caincamera.multimedia.MediaVideoEncoder;
 import com.cgfay.caincamera.type.GalleryType;
+import com.cgfay.caincamera.type.TimeLapseType;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.FileUtils;
 import com.cgfay.caincamera.utils.PermissionUtils;
@@ -41,21 +42,25 @@ import com.cgfay.caincamera.view.AsyncRecyclerview;
 import com.cgfay.caincamera.view.CameraSurfaceView;
 import com.cgfay.caincamera.view.HorizontalIndicatorView;
 import com.cgfay.caincamera.view.PictureVideoActionButton;
+import com.cgfay.caincamera.view.SettingPopView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CameraActivity extends AppCompatActivity implements View.OnClickListener,
         CameraSurfaceView.OnClickListener, CameraSurfaceView.OnTouchScroller,
-        HorizontalIndicatorView.IndicatorListener, PictureVideoActionButton.ActionListener {
+        HorizontalIndicatorView.IndicatorListener, PictureVideoActionButton.ActionListener,
+        SettingPopView.StateChangedListener {
 
     private static final String TAG = "CameraActivity";
-    private static final int REQUEST_CAMERA = 0x01;
-    private static final int REQUEST_STORAGE_READ = 0x02;
-    private static final int REQUEST_STORAGE_WRITE = 0x03;
-    private static final int REQUEST_RECORD = 0x04;
-    private static final int REQUEST_LOCATION = 0x05;
+    private static final boolean VERBOSE = true;
 
+    private static final int REQUEST_CAMERA = 0x01;
+    private static final int REQUEST_STORAGE = 0x02;
+    private static final int REQUEST_RECORD = 0x03;
+    private static final int REQUEST_LOCATION = 0x04;
+
+    // 对焦大小
     private static final int FocusSize = 100;
     // 权限使能标志
     private boolean mCameraEnable = false;
@@ -73,6 +78,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private Button mBtnSetting;
     private Button mBtnViewPhoto;
     private Button mBtnSwitch;
+
+    // 设置的PopupView
+    private SettingPopView mSettingView;
+
     // 底部layout 和 Button
     private LinearLayout mBottomLayout;
     private Button mBtnStickers;
@@ -96,13 +105,11 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private List<String> mIndicatorText = new ArrayList<String>();
     private HorizontalIndicatorView mBottomIndicator;
 
-    private AspectRatioType[] mAspectRatio = {
-            AspectRatioType.RATIO_4_3,
-            AspectRatioType.RATIO_1_1,
-            AspectRatioType.Ratio_16_9
-    };
-    private int mRatioIndex = 0;
-    private AspectRatioType mCurrentRatio = mAspectRatio[0];
+    // 当前长宽比类型，默认16:9
+    private AspectRatioType mCurrentRatioType = AspectRatioType.Ratio_16_9;
+
+    // 当前长宽比值
+    private float mCurrentRatio = CameraUtils.Ratio_16_9;
 
     private int mColorIndex = 0;
 
@@ -231,7 +238,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     private void requestStorageWritePermission() {
         ActivityCompat.requestPermissions(this,
-                new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_STORAGE_WRITE);
+                new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_STORAGE);
     }
 
     private void requestRecordPermission() {
@@ -264,7 +271,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 break;
 
             // 存储权限
-            case REQUEST_STORAGE_WRITE:
+            case REQUEST_STORAGE:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mStorageWriteEnable = true;
@@ -378,6 +385,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onClick(View v) {
+        // 首先关闭设置页面
+        if (mSettingView != null) {
+            mSettingView.dismiss();
+        }
         switch (v.getId()) {
             // 查看图库
             case R.id.btn_view_photo:
@@ -749,7 +760,51 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      * 显示设置更多视图
      */
     private void showSettingPopView() {
+        mSettingView = new SettingPopView(this);
+        mSettingView.addStateChangedListener(this);
+        mSettingView.showAsDropDown(mBtnSetting, Gravity.BOTTOM, 0, 0);
+    }
 
+    @Override
+    public void flashStateChanged(boolean flashOn) {
+        if (VERBOSE) {
+            Log.d(TAG, "flashStateChanged: " + flashOn);
+        }
+    }
+
+    @Override
+    public void faceModeStateChanged(boolean multiFace) {
+        if (VERBOSE) {
+            Log.d(TAG, "faceModeStateChanged: " + multiFace);
+        }
+    }
+
+    @Override
+    public void beautifyStateChanged(boolean enable) {
+        if (VERBOSE) {
+            Log.d(TAG, "beautifyStateChanged: " + enable);
+        }
+    }
+
+    @Override
+    public void timeLapseStateChanged(TimeLapseType type) {
+        if (VERBOSE) {
+            Log.d(TAG, "timeLapseStateChanged: " + type);
+        }
+    }
+
+    @Override
+    public void autoSaveStateChanged(boolean autoSave) {
+        if (VERBOSE) {
+            Log.d(TAG, "autoSaveStateChanged: " + autoSave);
+        }
+    }
+
+    @Override
+    public void touchTakeStateChanged(boolean touchTake) {
+        if (VERBOSE) {
+            Log.d(TAG, "touchTakeStateChanged: " + touchTake);
+        }
     }
 
     /**
