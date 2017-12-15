@@ -16,11 +16,14 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.jni.FFmpegCmd;
 import com.cgfay.caincamera.multimedia.MediaPlayerManager;
+import com.cgfay.caincamera.multimedia.VideoCombineManager;
+import com.cgfay.caincamera.multimedia.VideoCombiner;
 import com.cgfay.caincamera.type.GalleryType;
 import com.cgfay.caincamera.utils.FileUtils;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -190,17 +193,80 @@ public class CapturePreviewActivity extends AppCompatActivity
 
         // 如果是图片，则直接保存
         if (ParamsManager.mGalleryType == GalleryType.PICTURE) {
-            for (int i = 0; i < mPath.size(); i++) {
-                File file = new File(mPath.get(i));
-                String newPath = ParamsManager.AlbumPath + file.getName();
-                FileUtils.copyFile(mPath.get(i), newPath);
+            savePicture();
+        } else if (ParamsManager.mGalleryType == GalleryType.VIDEO) {
+            combineVideo();
+        } else if (ParamsManager.mGalleryType == GalleryType.GIF) {
+            convertVideoToGif();
+        }
+    }
+
+
+    /**
+     * 执行分享操作
+     */
+    private void executeShare() {
+
+    }
+
+    /**
+     * 保存视频
+     */
+    private void savePicture() {
+        for (int i = 0; i < mPath.size(); i++) {
+            File file = new File(mPath.get(i));
+            String newPath = ParamsManager.AlbumPath + file.getName();
+            FileUtils.copyFile(mPath.get(i), newPath);
+        }
+        // 保存成功
+        Toast.makeText(this, "保存成功!", Toast.LENGTH_LONG);
+        executeDeleteFile();
+        mPath.clear();
+        finish();
+    }
+
+    /**
+     * 合并视频
+     */
+    private void combineVideo() {
+        String path = ParamsManager.AlbumPath
+                + "CainCamera_" + System.currentTimeMillis() + ".mp4";
+        VideoCombineManager.getInstance().startVideoCombiner(mPath, path,
+                new VideoCombiner.VideoCombineListener() {
+
+            @Override
+            public void onCombineStart() {
+                if (VERBOSE) {
+                    Log.d(TAG, "开始合并");
+                }
             }
-        } else if (ParamsManager.mGalleryType == GalleryType.VIDEO) { // TODO 如果是视频，则合成视频
-            // TODO：Bug：视频帧数过少时会崩溃
-//            String path = ParamsManager.VideoPath
-//                    + "CainCamera_" + System.currentTimeMillis() + ".mp4";
-//            FFmpegCmd.combineVideo(mPath, path);
-        } else if (ParamsManager.mGalleryType == GalleryType.GIF) { // TODO 如果是GIF，则合成GIF
+
+            @Override
+            public void onCombineProcessing(int current, int sum) {
+                if (VERBOSE) {
+                    Log.d(TAG, "当前视频： " + current + ", 合并视频总数： " + sum);
+                }
+            }
+
+            @Override
+            public void onCombineFinished(final boolean success) {
+                if (success) {
+                    executeDeleteFile();
+                    mPath.clear();
+                    finish();
+                } else {
+                    Log.d(TAG, "合并失败");
+                }
+            }
+        });
+    }
+
+
+    /**
+     * 将视频转成GIF
+     */
+    private void convertVideoToGif() {
+        // TODO 合成GIF的FFmpeg命令存在问题
 //            String path = ParamsManager.AlbumPath
 //                    + "CainCamera_" + System.currentTimeMillis() + ".gif";
 //            FFmpegCmd.convertVideoToGif(mPath.get(0), path,
@@ -214,20 +280,7 @@ public class CapturePreviewActivity extends AppCompatActivity
 //                    }
 //                }
 //            });
-        }
-        // 删除旧文件
-        executeDeleteFile();
-        finish();
     }
-
-
-    /**
-     * 执行分享操作
-     */
-    private void executeShare() {
-
-    }
-
 
 
     @Override
