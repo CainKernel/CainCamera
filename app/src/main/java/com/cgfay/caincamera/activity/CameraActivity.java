@@ -634,8 +634,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 // 录制完成跳转预览页面
                 String outputPath = RecordManager.getInstance().getOutputPath();
                 mListPath.add(outputPath);
-                // 清空原来的路径
-                RecordManager.getInstance().setOutputPath(null);
 
                 // 处于非录制状态
                 mOnRecording = false;
