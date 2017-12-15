@@ -24,6 +24,7 @@ import java.io.IOException;
 public class EncoderManager {
 
     private static final String TAG = "EncoderManager";
+    private static final boolean VERBOSE = false;
 
     private static EncoderManager mInstance;
 
@@ -72,6 +73,11 @@ public class EncoderManager {
     // 是否处于录制状态
     private boolean isRecording = false;
 
+    // MediaCodec 初始化和释放所需要的时间总和
+    // 根据试验的结果，大部分手机在初始化和释放阶段的时间总和都要300ms ~ 800ms左右
+    // 第一次初始化普遍时间比较长，新出的红米5(2G内存)在第一次初始化1624ms，后面则是600ms左右
+    private long mProcessTime = 0;
+
     public static EncoderManager getInstance() {
         if (mInstance == null) {
             mInstance = new EncoderManager();
@@ -102,6 +108,7 @@ public class EncoderManager {
      */
     synchronized public void initRecorder(int width, int height,
                                           MediaEncoder.MediaEncoderListener listener) {
+        long time = System.currentTimeMillis();
         mVideoWidth = width;
         mVideoHeight = height;
         // 如果路径为空，则生成默认的路径
@@ -131,6 +138,7 @@ public class EncoderManager {
         } catch (IOException e) {
             Log.e(TAG, "startRecording:", e);
         }
+        mProcessTime += (System.currentTimeMillis() - time);
     }
 
     /**
@@ -234,6 +242,7 @@ public class EncoderManager {
      * 停止录制
      */
     public synchronized void stopRecording() {
+        long time = System.currentTimeMillis();
         isRecording = false;
         if (mMuxerManager != null) {
             mMuxerManager.stopRecording();
@@ -245,6 +254,12 @@ public class EncoderManager {
         }
         // 释放资源
         releaseRecordingFilter();
+
+        if (VERBOSE) {
+            mProcessTime += (System.currentTimeMillis() - time);
+            Log.d(TAG, "sum of init and release time: " + mProcessTime + "ms");
+            mProcessTime = 0;
+        }
     }
 
     /**
@@ -301,7 +316,8 @@ public class EncoderManager {
      * 销毁资源
      */
     public void release() {
-        releaseRecordingFilter();
+        // 停止录制
+        stopRecording();
         if (mEglCore != null) {
             mEglCore.release();
             mEglCore = null;

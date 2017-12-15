@@ -645,8 +645,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 // 录制完成跳转预览页面
                 String outputPath = RecordManager.getInstance().getOutputPath();
                 mListPath.add(outputPath);
-                // 清空原来的路径
-                RecordManager.getInstance().setOutputPath(null);
 
                 // 处于非录制状态
                 mOnRecording = false;
@@ -731,6 +729,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             // 停止录制
             DrawerManager.getInstance().stopRecording();
         } else {
+            // 销毁录制线程
+            RecordManager.getInstance().destoryThread();
             mNeedToWaitStop = false;
             Intent intent = new Intent(CameraActivity.this, CapturePreviewActivity.class);
             intent.putStringArrayListExtra(CapturePreviewActivity.PATH, mListPath);
