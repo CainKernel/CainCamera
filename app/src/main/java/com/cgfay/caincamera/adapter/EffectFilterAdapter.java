@@ -47,6 +47,10 @@ public class EffectFilterAdapter extends RecyclerView.Adapter<EffectFilterAdapte
         mContext = context;
         mFilterTypes = filterTypes;
         mFilterNames = filterNames;
+        // 初始化持有的数量，解决onBindViewHolder可能会出现数组越界的情况
+        for (int i = 0; i < mFilterTypes.size(); i++) {
+            mWeakBitmaps.add(i, null);
+        }
     }
 
     @Override

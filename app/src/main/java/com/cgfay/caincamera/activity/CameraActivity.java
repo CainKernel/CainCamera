@@ -821,7 +821,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         isShowingEffect = true;
         if (mEffectListView != null) {
             mEffectListView.setVisibility(View.VISIBLE);
-            // TODO 如果是先滑动滤镜再显示，调用scrollToCurrentEffect会数据越界，后续再解决
+            scrollToCurrentEffect();
         }
     }
 
