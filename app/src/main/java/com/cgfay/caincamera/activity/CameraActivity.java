@@ -6,9 +6,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.hardware.Camera;
+import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -17,9 +21,12 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.cgfay.caincamera.R;
@@ -98,8 +105,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private boolean isShowingEffect = false;
     private AsyncRecyclerview mEffectListView;
     private LinearLayoutManager mEffectManager;
-    // 是否需要滚动
-    private boolean mEffectNeedToMove = false;
 
     // 显示贴纸
     private boolean isShowingStickers = false;
@@ -142,8 +147,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         if (mCameraEnable && mStorageWriteEnable) {
             initView();
         } else {
-            ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_CAMERA);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{
+                            Manifest.permission.CAMERA,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    },
+                    REQUEST_CAMERA);
         }
         // Face++请求联网认证
         FaceTrackManager.getInstance().requestFaceNetwork(this);
@@ -166,6 +175,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mBtnSwitch.setOnClickListener(this);
         mRatioView = (RatioImageView) findViewById(R.id.iv_ratio);
         mRatioView.addRatioChangedListener(this);
+        mRatioView.setRatioType(mCurrentRatioType);
 
         mBtnStickers = (Button) findViewById(R.id.btn_stickers);
         mBtnStickers.setOnClickListener(this);
@@ -189,6 +199,16 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mBtnRecordDone.setOnClickListener(this);
 
         mBottomLayout = (LinearLayout) findViewById(R.id.layout_bottom);
+        updatePreviewBottomView();
+
+        initEffectListView();
+
+    }
+
+    /**
+     * 更新底部视图
+     */
+    private void updatePreviewBottomView() {
         if (CameraUtils.getCurrentRatio() < CameraUtils.Ratio_4_3) {
             mBottomLayout.setBackgroundResource(R.drawable.bottom_background_glow);
             mBtnStickers.setBackgroundResource(R.drawable.gallery_sticker_glow);
@@ -202,9 +222,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             mBtnRecordDelete.setBackgroundResource(R.drawable.preview_video_delete_black);
             mBtnRecordDone.setBackgroundResource(R.drawable.preview_video_done_black);
         }
-
-        initEffectListView();
-
     }
 
     /**
@@ -242,7 +259,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 new String[]{ Manifest.permission.CAMERA }, REQUEST_CAMERA);
     }
 
-    private void requestStorageWritePermission() {
+    private void requestStoragePermission() {
         ActivityCompat.requestPermissions(this,
                 new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_STORAGE);
     }
@@ -440,6 +457,17 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void ratioChanged(AspectRatioType type) {
+        boolean needToReopenCamera = false;
+
+        // 当前长宽比或者切换的长宽比有且只有一个是16:9的时候，需要重新打开相机
+        if (mCurrentRatioType == AspectRatioType.Ratio_16_9
+                && type != AspectRatioType.Ratio_16_9) {
+            needToReopenCamera = true;
+        } else if (mCurrentRatioType != AspectRatioType.Ratio_16_9
+                && type == AspectRatioType.Ratio_16_9) {
+            needToReopenCamera = true;
+        }
+
         mCurrentRatioType = type;
         if (mCurrentRatioType != AspectRatioType.Ratio_16_9) {
             mCurrentRatio = CameraUtils.Ratio_4_3;
@@ -448,7 +476,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
         CameraUtils.setCurrentRatio(mCurrentRatio);
         mAspectLayout.setAspectRatio(mCurrentRatio);
-        DrawerManager.getInstance().reopenCamera();
+        if (needToReopenCamera) {
+            DrawerManager.getInstance().reopenCamera();
+        }
+
+        // 更新底部视图
+        updatePreviewBottomView();
     }
 
     @Override
@@ -499,7 +532,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 mEffectListView.scrollBy(0, top);
             } else {
                 mEffectListView.scrollToPosition(mColorIndex);
-                mEffectNeedToMove = true;
             }
         }
     }
@@ -557,7 +589,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 DrawerManager.getInstance().takePicture();
             }
         } else {
-            requestStorageWritePermission();
+            requestStoragePermission();
         }
     }
 
@@ -781,6 +813,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private void showSettingPopView() {
         mSettingView = new SettingPopView(this);
         mSettingView.addStateChangedListener(this);
+        mSettingView.setEnableChangeFlash(
+                CameraUtils.getCameraID() != Camera.CameraInfo.CAMERA_FACING_FRONT);
         mSettingView.showAsDropDown(mBtnSetting, Gravity.BOTTOM, 0, 0);
     }
 
@@ -863,8 +897,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             mListPath.clear();
             // 请求录音权限
             if (!mRecordSoundEnable) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{ Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD);
+                requestRecordPermission();
             }
         }
     }

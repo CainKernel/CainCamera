@@ -40,6 +40,8 @@ public class SettingPopView extends BasePopupWindow
     // 触摸拍照
     private Switch mTouchTake;
 
+    // 是否允许切换闪光灯状态，没有闪关灯时不允许切换，默认不允许
+    private boolean mEnableChangeFlash = false;
     // 是否允许闪光灯，默认关闭
     private boolean mEnableFlash = false;
     // 是否允许多人脸检测，默认多脸模式
@@ -129,6 +131,9 @@ public class SettingPopView extends BasePopupWindow
      * 处理闪光灯
      */
     private void processFlash() {
+        if (!mEnableChangeFlash) {
+            return;
+        }
         mEnableFlash = !mEnableFlash;
         updateFlashUI();
 
@@ -263,6 +268,14 @@ public class SettingPopView extends BasePopupWindow
 
     private void updateTouchTakeUI() {
         mTouchTake.setChecked(canTouchTake);
+    }
+
+    /**
+     * 设置是否允许闪光灯状态变更
+     * @param enable
+     */
+    public void setEnableChangeFlash(boolean enable) {
+        mEnableChangeFlash = enable;
     }
 
     /**
