@@ -10,6 +10,7 @@ import android.view.SurfaceHolder;
 import com.cgfay.caincamera.bean.CameraInfo;
 import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.core.ParamsManager;
+import com.cgfay.caincamera.type.AspectRatioType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,9 +24,14 @@ import java.util.List;
 
 public class CameraUtils {
 
-    // 相机默认宽高，相机的宽度和高度跟屏幕坐标不一样，手机屏幕的宽度和高度是反过来的。
-    public static final int DEFAULT_WIDTH = 1280;
-    public static final int DEFAULT_HEIGHT = 720;
+    // 默认宽高不存在则重新计算比这个值稍微大一点的宽高
+    // 16:9的默认宽高（理想值），相机的宽度和高度跟屏幕坐标不一样，手机屏幕的宽度和高度是反过来的。
+    public static final int DEFAULT_16_9_WIDTH = 1280;
+    public static final int DEFAULT_16_9_HEIGHT = 720;
+    // 4:3的默认宽高(理想值)
+    public static final int DEFAULT_4_3_WIDTH = 1024;
+    public static final int DEFAULT_4_3_HEIGHT = 768;
+
     // 期望fps
     public static final int DESIRED_PREVIEW_FPS = 30;
 
@@ -34,12 +40,13 @@ public class CameraUtils {
 
     // 这里反过来是因为相机的分辨率跟屏幕的分辨率宽高刚好反过来
     public static final float Ratio_4_3 = 0.75f;
-    public static final float Ratio_1_1 = 1.0f;
     public static final float Ratio_16_9 = 0.5625f;
 
     private static int mCameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
     private static Camera mCamera;
+    // 相机帧率
     private static int mCameraPreviewFps;
+    // 相机预览角度
     private static int mOrientation = 0;
 
     // 当前的宽高比
@@ -68,11 +75,17 @@ public class CameraUtils {
         }
         mCameraID = cameraID;
         Camera.Parameters parameters = mCamera.getParameters();
-        mCameraPreviewFps = CameraUtils.chooseFixedPreviewFps(parameters, expectFps * 1000);
+        mCameraPreviewFps = chooseFixedPreviewFps(parameters, expectFps * 1000);
         parameters.setRecordingHint(true);
         mCamera.setParameters(parameters);
-        setPreviewSize(mCamera, CameraUtils.DEFAULT_WIDTH, CameraUtils.DEFAULT_HEIGHT);
-        setPictureSize(mCamera, CameraUtils.DEFAULT_WIDTH, CameraUtils.DEFAULT_HEIGHT);
+        int width = DEFAULT_16_9_WIDTH;
+        int height = DEFAULT_16_9_HEIGHT;
+        if (mCurrentRatio == Ratio_4_3) {
+            width = DEFAULT_4_3_WIDTH;
+            height = DEFAULT_4_3_HEIGHT;
+        }
+        setPreviewSize(mCamera, width, height);
+        setPictureSize(mCamera, width, height);
         calculateCameraPreviewOrientation((Activity) ParamsManager.context);
         mCamera.setDisplayOrientation(mOrientation);
     }
@@ -94,7 +107,7 @@ public class CameraUtils {
         }
         mCameraID = cameraID;
         Camera.Parameters parameters = mCamera.getParameters();
-        mCameraPreviewFps = CameraUtils.chooseFixedPreviewFps(parameters, expectFps * 1000);
+        mCameraPreviewFps = chooseFixedPreviewFps(parameters, expectFps * 1000);
         parameters.setRecordingHint(true);
         mCamera.setParameters(parameters);
         setPreviewSize(mCamera, expectWidth, expectHeight);
@@ -192,7 +205,7 @@ public class CameraUtils {
         // 释放原来的相机
         releaseCamera();
         // 打开相机
-        openCamera(cameraID, CameraUtils.DESIRED_PREVIEW_FPS);
+        openCamera(cameraID, DESIRED_PREVIEW_FPS);
         // 打开预览
         startPreview(holder);
     }
@@ -523,6 +536,14 @@ public class CameraUtils {
      */
     public static int getCameraPreviewThousandFps() {
         return mCameraPreviewFps;
+    }
+
+    /**
+     * 设置预览尺寸类型
+     * @param ratio
+     */
+    public static void setCurrentRatio(float ratio) {
+        mCurrentRatio = ratio;
     }
 
     /**

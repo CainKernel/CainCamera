@@ -35,6 +35,9 @@ public class RenderHandler extends Handler {
     // 触摸区域
     static final int MSG_FOCUS_RECT = 0x106;
 
+    // 重新打开相机
+    static final int MSG_REOPEN_CAMERA = 0x107;
+
     // 录制状态
     static final int MSG_START_RECORDING = 0x200;
     static final int MSG_STOP_RECORDING = 0x201;
@@ -139,6 +142,13 @@ public class RenderHandler extends Handler {
             case MSG_FOCUS_RECT:
                 if (mWeakRender != null && mWeakRender.get() != null) {
                     mWeakRender.get().setFocusAres((Rect) msg.obj);
+                }
+                break;
+
+            // 重新打开相机
+            case MSG_REOPEN_CAMERA:
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().reopenCamera();
                 }
                 break;
 

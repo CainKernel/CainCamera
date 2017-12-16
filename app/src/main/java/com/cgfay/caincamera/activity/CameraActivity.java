@@ -42,6 +42,7 @@ import com.cgfay.caincamera.view.AsyncRecyclerview;
 import com.cgfay.caincamera.view.CameraSurfaceView;
 import com.cgfay.caincamera.view.HorizontalIndicatorView;
 import com.cgfay.caincamera.view.PictureVideoActionButton;
+import com.cgfay.caincamera.view.RatioImageView;
 import com.cgfay.caincamera.view.SettingPopView;
 
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ import java.util.List;
 public class CameraActivity extends AppCompatActivity implements View.OnClickListener,
         CameraSurfaceView.OnClickListener, CameraSurfaceView.OnTouchScroller,
         HorizontalIndicatorView.IndicatorListener, PictureVideoActionButton.ActionListener,
-        SettingPopView.StateChangedListener {
+        SettingPopView.StateChangedListener, RatioImageView.RatioChangedListener {
 
     private static final String TAG = "CameraActivity";
     private static final boolean VERBOSE = true;
@@ -78,6 +79,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private Button mBtnSetting;
     private Button mBtnViewPhoto;
     private Button mBtnSwitch;
+    // 预览尺寸切换
+    private RatioImageView mRatioView;
 
     // 设置的PopupView
     private SettingPopView mSettingView;
@@ -109,7 +112,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private AspectRatioType mCurrentRatioType = AspectRatioType.Ratio_16_9;
 
     // 当前长宽比值
-    private float mCurrentRatio = CameraUtils.Ratio_16_9;
+    private float mCurrentRatio;
 
     private int mColorIndex = 0;
 
@@ -147,8 +150,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void initView() {
+        mCurrentRatio = CameraUtils.getCurrentRatio();
         mAspectLayout = (AspectFrameLayout) findViewById(R.id.layout_aspect);
-        mAspectLayout.setAspectRatio(CameraUtils.getCurrentRatio());
+        mAspectLayout.setAspectRatio(mCurrentRatio);
         mCameraSurfaceView = new CameraSurfaceView(this);
         mCameraSurfaceView.addScroller(this);
         mCameraSurfaceView.addClickListener(this);
@@ -160,6 +164,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mBtnViewPhoto.setOnClickListener(this);
         mBtnSwitch = (Button) findViewById(R.id.btn_switch);
         mBtnSwitch.setOnClickListener(this);
+        mRatioView = (RatioImageView) findViewById(R.id.iv_ratio);
+        mRatioView.addRatioChangedListener(this);
 
         mBtnStickers = (Button) findViewById(R.id.btn_stickers);
         mBtnStickers.setOnClickListener(this);
@@ -183,7 +189,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mBtnRecordDone.setOnClickListener(this);
 
         mBottomLayout = (LinearLayout) findViewById(R.id.layout_bottom);
-        if (CameraUtils.getCurrentRatio() < 0.75f) {
+        if (CameraUtils.getCurrentRatio() < CameraUtils.Ratio_4_3) {
             mBottomLayout.setBackgroundResource(R.drawable.bottom_background_glow);
             mBtnStickers.setBackgroundResource(R.drawable.gallery_sticker_glow);
             mBtnFilters.setBackgroundResource(R.drawable.gallery_filter_glow);
@@ -430,6 +436,19 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 previewRedcordedvideo();
                 break;
         }
+    }
+
+    @Override
+    public void ratioChanged(AspectRatioType type) {
+        mCurrentRatioType = type;
+        if (mCurrentRatioType != AspectRatioType.Ratio_16_9) {
+            mCurrentRatio = CameraUtils.Ratio_4_3;
+        } else {
+            mCurrentRatio = CameraUtils.Ratio_16_9;
+        }
+        CameraUtils.setCurrentRatio(mCurrentRatio);
+        mAspectLayout.setAspectRatio(mCurrentRatio);
+        DrawerManager.getInstance().reopenCamera();
     }
 
     @Override

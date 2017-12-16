@@ -184,6 +184,20 @@ public class DrawerManager {
     }
 
     /**
+     * 重新打开相机
+     */
+    public void reopenCamera() {
+        if (mRenderHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(RenderHandler.MSG_REOPEN_CAMERA));
+        }
+    }
+
+
+    /**
      * 开始录制
      */
     public void startRecording() {

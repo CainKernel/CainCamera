@@ -3,7 +3,6 @@ package com.cgfay.caincamera.view;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -93,6 +92,14 @@ public class SettingPopView extends BasePopupWindow
 
         mAutoSave.setOnCheckedChangeListener(this);
         mTouchTake.setOnCheckedChangeListener(this);
+
+        updateFlashUI();
+        updateFaceModeUI();
+        updateBeautifyUI();
+        updateTimeLapseUI();
+        updateAutoSaveUI();
+        updateTouchTakeUI();
+
     }
 
     @Override
@@ -123,14 +130,18 @@ public class SettingPopView extends BasePopupWindow
      */
     private void processFlash() {
         mEnableFlash = !mEnableFlash;
-        if (mEnableFlash) {
-
-        } else {
-
-        }
+        updateFlashUI();
 
         if (mListener != null) {
             mListener.flashStateChanged(mEnableFlash);
+        }
+    }
+
+    private void updateFlashUI() {
+        if (mEnableFlash) {
+            mImageFlash.setBackgroundResource(R.drawable.setting_more);
+        } else {
+            mImageFlash.setBackgroundResource(R.drawable.setting_more_glow);
         }
     }
 
@@ -139,14 +150,21 @@ public class SettingPopView extends BasePopupWindow
      */
     private void processFaceMode() {
         mEnableMultiFace = !mEnableMultiFace;
-        if (mEnableMultiFace) {
-
-        } else {
-
-        }
+        updateFaceModeUI();
 
         if (mListener != null) {
             mListener.faceModeStateChanged(mEnableMultiFace);
+        }
+    }
+
+    private void updateFaceModeUI() {
+        String[] array = mContext.getResources().getStringArray(R.array.tv_face_mode);
+        if (mEnableMultiFace) {
+            mImageFaceMode.setBackgroundResource(R.drawable.setting_more);
+            mTextFaceMode.setText(array[1]);
+        } else {
+            mImageFaceMode.setBackgroundResource(R.drawable.setting_more_glow);
+            mTextFaceMode.setText(array[0]);
         }
     }
 
@@ -155,14 +173,21 @@ public class SettingPopView extends BasePopupWindow
      */
     private void processBeautify() {
         mEnableBeautify = !mEnableBeautify;
-        if (mEnableBeautify) {
-
-        } else {
-
-        }
+        updateBeautifyUI();
 
         if (mListener != null) {
             mListener.beautifyStateChanged(mEnableBeautify);
+        }
+    }
+
+    private void updateBeautifyUI() {
+        String[] array = mContext.getResources().getStringArray(R.array.tv_beautify);
+        if (mEnableBeautify) {
+            mImageBeautify.setBackgroundResource(R.drawable.setting_more);
+            mTextBeautify.setText(array[0]);
+        } else {
+            mImageBeautify.setBackgroundResource(R.drawable.setting_more_glow);
+            mTextBeautify.setText(array[1]);
         }
     }
 
@@ -172,17 +197,26 @@ public class SettingPopView extends BasePopupWindow
     private void processTimeLapse() {
         if (mTimeLapseType == TimeLapseType.TimeLapse_off) {
             mTimeLapseType = TimeLapseType.TimeLapse_3;
-//            mImageTimeLapse.setBackgroundResource();
         } else if (mTimeLapseType == TimeLapseType.TimeLapse_3) {
             mTimeLapseType = TimeLapseType.TimeLapse_6;
-//            mImageTimeLapse.setBackgroundResource();
         } else if (mTimeLapseType == TimeLapseType.TimeLapse_6) {
             mTimeLapseType = TimeLapseType.TimeLapse_off;
-//            mImageTimeLapse.setBackgroundResource();
         }
+
+        updateTimeLapseUI();
 
         if (mListener != null) {
             mListener.timeLapseStateChanged(mTimeLapseType);
+        }
+    }
+
+    private void updateTimeLapseUI() {
+        if (mTimeLapseType == TimeLapseType.TimeLapse_off) {
+//            mImageTimeLapse.setBackgroundResource();
+        } else if (mTimeLapseType == TimeLapseType.TimeLapse_3) {
+//            mImageTimeLapse.setBackgroundResource();
+        } else if (mTimeLapseType == TimeLapseType.TimeLapse_6) {
+//            mImageTimeLapse.setBackgroundResource();
         }
     }
 
@@ -212,6 +246,10 @@ public class SettingPopView extends BasePopupWindow
         }
     }
 
+    private void updateAutoSaveUI() {
+        mAutoSave.setChecked(canAutoSave);
+    }
+
     /**
      * 处理触摸拍照
      * @param enable
@@ -221,6 +259,10 @@ public class SettingPopView extends BasePopupWindow
         if (mListener != null) {
             mListener.touchTakeStateChanged(canTouchTake);
         }
+    }
+
+    private void updateTouchTakeUI() {
+        mTouchTake.setChecked(canTouchTake);
     }
 
     /**

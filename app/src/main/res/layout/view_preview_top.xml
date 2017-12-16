@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/top_button_layout_height"
+    android:orientation="horizontal"
+    android:layout_gravity="top"
+    android:gravity="center">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center">
+        <Button
+            android:id="@+id/btn_view_photo"
+            android:layout_width="@dimen/top_button_width_height"
+            android:layout_height="@dimen/top_button_width_height"
+            android:background="@drawable/take_gallery_glow" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="horizontal">
+        <com.cgfay.caincamera.view.RatioImageView
+            android:id="@+id/iv_ratio"
+            android:layout_width="@dimen/top_button_width_height"
+            android:layout_height="@dimen/top_button_width_height"
+            android:background="@drawable/preview_radio_16_9"/>
+        <Button
+            android:id="@+id/btn_setting"
+            android:layout_width="@dimen/top_button_width_height"
+            android:layout_height="@dimen/top_button_width_height"
+            android:layout_marginStart="@dimen/top_button_margin"
+            android:background="@drawable/setting_more_glow" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center">
+        <Button
+            android:id="@+id/btn_switch"
+            android:layout_width="@dimen/top_button_width_height"
+            android:layout_height="@dimen/top_button_width_height"
+            android:background="@drawable/switch_camera_glow" />
+    </LinearLayout>
+</LinearLayout>

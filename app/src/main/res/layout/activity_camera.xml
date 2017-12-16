@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,136 +8,23 @@
         android:id="@+id/layout_aspect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center">
-        <!--<com.cgfay.caincamera.view.CameraSurfaceView-->
-            <!--android:id="@+id/view_camera"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent" />-->
+        android:layout_gravity="top">
     </com.cgfay.caincamera.view.AspectFrameLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/top_button_layout_height"
-        android:orientation="horizontal"
-        android:layout_gravity="top"
-        android:gravity="center">
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center">
-            <Button
-                android:id="@+id/btn_view_photo"
-                android:layout_width="@dimen/top_button_width_height"
-                android:layout_height="@dimen/top_button_width_height"
-                android:background="@drawable/take_gallery_glow" />
-        </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center">
-            <Button
-                android:id="@+id/btn_setting"
-                android:layout_width="@dimen/top_button_width_height"
-                android:layout_height="@dimen/top_button_width_height"
-                android:background="@drawable/setting_more_glow" />
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center">
-            <Button
-                android:id="@+id/btn_switch"
-                android:layout_width="@dimen/top_button_width_height"
-                android:layout_height="@dimen/top_button_width_height"
-                android:background="@drawable/switch_camera_glow" />
-        </LinearLayout>
-    </LinearLayout>
+    <!-- 顶部视图 -->
+    <include
+        layout="@layout/view_preview_top"/>
 
-    <LinearLayout
-        android:id="@+id/layout_bottom"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@android:color/transparent"
-        android:gravity="center"
-        android:orientation="vertical">
+    <!-- 底部视图 -->
+    <include
+        layout="@layout/view_preview_bottom"/>
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_gallery_layout_height"
-            android:layout_marginTop="@dimen/bottom_layout_margin">
+    <!-- 特效视图 -->
+    <include
+        layout="@layout/view_preview_effect"/>
 
-            <Button
-                android:id="@+id/btn_stickers"
-                android:layout_width="@dimen/stickers_width_height"
-                android:layout_height="@dimen/stickers_width_height"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/button_margin_horizontal"
-                android:background="@drawable/gallery_sticker" />
+    <!-- 贴纸视图 -->
+    <include
+        layout="@layout/view_preview_sticker"/>
 
-            <com.cgfay.caincamera.view.PictureVideoActionButton
-                android:id="@+id/btn_take"
-                android:layout_width="@dimen/record_width_height"
-                android:layout_height="@dimen/record_width_height"
-                android:layout_centerInParent="true"
-                android:layout_gravity="center" />
-
-            <Button
-                android:id="@+id/btn_record_delete"
-                android:layout_width="@dimen/button_preview_width_height"
-                android:layout_height="@dimen/button_preview_width_height"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/button_preview_margin"
-                android:layout_toStartOf="@+id/btn_take"
-                android:background="@drawable/preview_video_delete_black"
-                android:visibility="gone"/>
-
-            <Button
-                android:id="@+id/btn_record_done"
-                android:layout_width="@dimen/button_preview_width_height"
-                android:layout_height="@dimen/button_preview_width_height"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/button_preview_margin"
-                android:layout_toEndOf="@+id/btn_take"
-                android:background="@drawable/preview_video_done_black"
-                android:visibility="gone"/>
-
-            <Button
-                android:id="@+id/btn_filters"
-                android:layout_width="@dimen/filters_width_height"
-                android:layout_height="@dimen/filters_width_height"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/button_margin_horizontal"
-                android:background="@drawable/gallery_filter" />
-        </RelativeLayout>
-        <com.cgfay.caincamera.view.HorizontalIndicatorView
-            android:id="@+id/bottom_indicator"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_indicator_height"
-            app:SeeSize="5"
-            app:TextSize="30"
-            app:TextColor="@android:color/darker_gray"
-            app:SelectedTextColor="@color/colorHorizontalIndicator"
-            app:SelectedTextSize="40"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:layout_gravity="bottom"
-        android:gravity="bottom"
-        android:orientation="vertical">
-        <com.cgfay.caincamera.view.AsyncRecyclerview
-            android:id="@+id/effect_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:visibility="gone">
-        </com.cgfay.caincamera.view.AsyncRecyclerview>
-    </LinearLayout>
 </FrameLayout>

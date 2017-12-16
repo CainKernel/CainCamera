@@ -108,7 +108,6 @@ public final class RenderManager {
     public void adjustViewSize() {
         float[] textureCoords = null;
         float[] vertexCoords = null;
-        // TODO 这里可以做成镜像翻转的
         float[] textureVertices = TextureRotationUtils.getTextureVertices();
         float[] vertexVertices = TextureRotationUtils.CubeVertices;
         float ratioMax = Math.max((float) mDisplayWidth / mTextureWidth,

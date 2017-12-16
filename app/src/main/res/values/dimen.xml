@@ -26,6 +26,7 @@
     <!--顶部按钮的宽高-->
     <dimen name="top_button_layout_height">50dp</dimen>
     <dimen name="top_button_width_height">35dp</dimen>
+    <dimen name="top_button_margin">10dp</dimen>
 
     <!-- 显示图片的size -->
     <dimen name="effect_item_size">140dp</dimen>

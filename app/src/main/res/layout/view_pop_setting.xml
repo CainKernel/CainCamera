@@ -22,17 +22,23 @@
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:gravity="start|center_vertical">
-                <ImageView
-                    android:id="@+id/iv_flash"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/setting_more_glow"/>
-                <TextView
-                    android:id="@+id/tv_flash"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/popTextColor"
-                    android:text="@string/tv_flash"/>
+                    android:orientation="vertical"
+                    android:gravity="center">
+                    <ImageView
+                        android:id="@+id/iv_flash"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/setting_more_glow"/>
+                    <TextView
+                        android:id="@+id/tv_flash"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/popTextColor"
+                        android:text="@string/tv_flash"/>
+                </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
@@ -82,17 +88,23 @@
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:gravity="end|center_vertical">
-                <ImageView
-                    android:id="@+id/iv_time_lapse"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/setting_more_glow"/>
-                <TextView
-                    android:id="@+id/tv_time_lapse"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/popTextColor"
-                    android:text="@string/tv_time_lapse"/>
+                    android:orientation="vertical"
+                    android:gravity="center">
+                    <ImageView
+                        android:id="@+id/iv_time_lapse"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/setting_more_glow"/>
+                    <TextView
+                        android:id="@+id/tv_time_lapse"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/popTextColor"
+                        android:text="@string/tv_time_lapse"/>
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
 
