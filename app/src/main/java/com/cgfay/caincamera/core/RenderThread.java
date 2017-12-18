@@ -155,6 +155,9 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         CameraUtils.setPreviewCallbackWithBuffer(null, null);
         // 释放相机
         CameraUtils.releaseCamera();
+        // 释放Filter(需要在EGLContext释放之前处理，否则会报以下错误：
+        // E/libEGL: call to OpenGL ES API with no current context (logged once per thread)
+        RenderManager.getInstance().release();
         if (mCameraTexture != null) {
             mCameraTexture.release();
             mCameraTexture = null;
@@ -167,7 +170,6 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
             mEglCore.release();
             mEglCore = null;
         }
-        RenderManager.getInstance().release();
     }
 
     /**
