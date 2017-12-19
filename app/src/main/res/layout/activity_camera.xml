@@ -4,12 +4,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.cgfay.caincamera.activity.CameraActivity">
+
+    <!-- 预览视图 -->
     <com.cgfay.caincamera.view.AspectFrameLayout
         android:id="@+id/layout_aspect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top">
     </com.cgfay.caincamera.view.AspectFrameLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tv_fps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/fps_margin_top"
+            android:layout_marginEnd="@dimen/fps_margin_end"
+            android:textColor="@color/green"
+            android:layout_alignParentEnd="true" />
+    </RelativeLayout>
 
     <!-- 顶部视图 -->
     <include

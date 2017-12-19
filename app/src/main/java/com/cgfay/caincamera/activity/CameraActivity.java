@@ -9,6 +9,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -21,9 +23,11 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.EffectFilterAdapter;
+import com.cgfay.caincamera.core.FrameRateMeter;
 import com.cgfay.caincamera.type.AspectRatioType;
 import com.cgfay.caincamera.core.ColorFilterManager;
 import com.cgfay.caincamera.core.DrawerManager;
@@ -56,6 +60,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private static final String TAG = "CameraActivity";
     private static final boolean VERBOSE = true;
 
+    private static final int MSG_SEND_FPS_HANDLE = 0x010;
+
     private static final int REQUEST_CAMERA = 0x01;
     private static final int REQUEST_STORAGE = 0x02;
     private static final int REQUEST_RECORD = 0x03;
@@ -73,8 +79,15 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private boolean mOnPreviewing = false;
     private boolean mOnRecording = false;
 
+    // 是否显示Fps
+    private boolean mShowFps = true;
+    private Handler mFpsHandler;
+
+    // 预览部分
     private AspectFrameLayout mAspectLayout;
     private CameraSurfaceView mCameraSurfaceView;
+    // fps显示
+    private TextView mFpsView;
     // 顶部Button
     private Button mBtnSetting;
     private Button mBtnViewPhoto;
@@ -158,6 +171,34 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mCameraSurfaceView.addClickListener(this);
         mAspectLayout.addView(mCameraSurfaceView);
         mAspectLayout.requestLayout();
+
+        // 显示fps
+        if (mShowFps) {
+            mFpsView = (TextView) findViewById(R.id.tv_fps);
+            mFpsHandler = new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    switch (msg.what) {
+                        case FrameRateMeter.MSG_GAIN_FPS:
+                            Log.d(TAG, "fps = " + (float) msg.obj);
+                            mFpsView.setText("fps = " + (float)msg.obj);
+                            break;
+
+                        case MSG_SEND_FPS_HANDLE:
+                            if (!DrawerManager.getInstance().hasSetFpsHandle()) {
+                                DrawerManager.getInstance().setFpsHandler((Handler)msg.obj);
+                                sendMessageDelayed(mFpsHandler.obtainMessage(MSG_SEND_FPS_HANDLE, msg.obj),
+                                        1000);
+                            } else {
+                                removeMessages(MSG_SEND_FPS_HANDLE);
+                            }
+                            break;
+                    }
+                }
+            };
+            mFpsHandler.sendMessageDelayed(mFpsHandler
+                            .obtainMessage(MSG_SEND_FPS_HANDLE, mFpsHandler), 1000);
+        }
         mBtnSetting = (Button)findViewById(R.id.btn_setting);
         mBtnSetting.setOnClickListener(this);
         mBtnViewPhoto = (Button) findViewById(R.id.btn_view_photo);
@@ -354,6 +395,10 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         super.onDestroy();
         // 在停止时需要释放上下文，防止内存泄漏
         ParamsManager.context = null;
+        if (mFpsHandler != null) {
+            mFpsHandler.removeCallbacksAndMessages(null);
+            mFpsHandler = null;
+        }
     }
 
     private void registerHomeReceiver() {

@@ -5,6 +5,7 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.opengl.EGL14;
 import android.opengl.GLES30;
+import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -22,6 +23,7 @@ import com.cgfay.caincamera.utils.GlUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 /**
  * 渲染线程
@@ -72,6 +74,10 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     private byte[] mPreviewBuffer;
 
     private RenderHandler mRenderHandler;
+
+    // 计算帧率
+    private FrameRateMeter mFrameRateMeter;
+    private WeakReference<Handler> mWeakFpsHandler;
 
     public RenderThread(String name) {
         super(name);
@@ -150,6 +156,10 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
 
     void surfaceDestoryed() {
         isPreviewing = false;
+        if (mWeakFpsHandler != null) {
+            mWeakFpsHandler.clear();
+            mWeakFpsHandler = null;
+        }
         FaceTrackManager.getInstance().release();
         // 释放回调，否则会提示 camera handler回调到一个dead thread的出错信息
         CameraUtils.setPreviewCallbackWithBuffer(null, null);
@@ -336,6 +346,15 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         if (isDebug) {
             Log.d(TAG, "drawFrame time = " + (System.currentTimeMillis() - temp));
         }
+
+        // 计算绘制帧
+        if (mFrameRateMeter != null) {
+            mFrameRateMeter.drawFrameCount();
+            if (mWeakFpsHandler != null && mWeakFpsHandler.get() != null) {
+                mWeakFpsHandler.get().sendMessage(mWeakFpsHandler.get()
+                        .obtainMessage(FrameRateMeter.MSG_GAIN_FPS, mFrameRateMeter.getFPS()));
+            }
+        }
     }
 
     /**
@@ -461,5 +480,14 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
                 }
             }
         }
+    }
+
+    /**
+     * 设置Fps的handler回调
+     * @param handler
+     */
+    void setFpsHandler(Handler handler) {
+        mWeakFpsHandler = new WeakReference<Handler>(handler);
+        mFrameRateMeter = new FrameRateMeter();
     }
 }
