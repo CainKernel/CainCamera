@@ -241,6 +241,15 @@ public final class RenderManager {
         }
     }
 
+    /**
+     * 设置美颜等级（百分比）
+     * @param percent 0 ~ 100
+     */
+    public void setBeautifyLevel(int percent) {
+        if (mRealTimeFilter != null) {
+            mRealTimeFilter.setBeautifyLevel(percent / 100.0f);
+        }
+    }
 
     /**
      * 更新filter

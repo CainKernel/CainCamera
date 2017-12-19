@@ -53,6 +53,8 @@ public class RenderHandler extends Handler {
 
     // 切换滤镜组
     static final int MSG_FILTER_GROUP = 0x500;
+    // 设置美颜等级
+    static final int MSG_SET_BEAUTIFY_LEVEL = 0x501;
 
     private WeakReference<RenderThread> mWeakRender;
 
@@ -96,6 +98,13 @@ public class RenderHandler extends Handler {
             case MSG_FRAME:
                 if (mWeakRender != null && mWeakRender.get() != null) {
                     mWeakRender.get().drawFrame();
+                }
+                break;
+
+            // 设置美颜等级
+            case MSG_SET_BEAUTIFY_LEVEL:
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().setBeautifyLevel((Integer) msg.obj);
                 }
                 break;
 

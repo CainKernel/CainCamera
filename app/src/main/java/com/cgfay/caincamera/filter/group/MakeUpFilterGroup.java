@@ -3,6 +3,7 @@ package com.cgfay.caincamera.filter.group;
 import com.cgfay.caincamera.core.FilterManager;
 import com.cgfay.caincamera.filter.base.BaseImageFilter;
 import com.cgfay.caincamera.filter.base.BaseImageFilterGroup;
+import com.cgfay.caincamera.filter.beauty.RealtimeBeautify;
 import com.cgfay.caincamera.type.FilterIndex;
 import com.cgfay.caincamera.type.FilterType;
 
@@ -41,6 +42,11 @@ public class MakeUpFilterGroup extends BaseImageFilterGroup {
         filters.add(FaceStretchIndex, FilterManager.getFilter(FilterType.FACESTRETCH));
         filters.add(MakeupIndex, FilterManager.getFilter(FilterType.MAKEUP));
         return filters;
+    }
+
+    @Override
+    public void setBeautifyLevel(float percent) {
+        ((RealtimeBeautify)mFilters.get(BeautyfyIndex)).setSmoothOpacity(percent);
     }
 
     @Override

@@ -65,7 +65,7 @@
         android:layout_height="@dimen/bottom_indicator_height"
         app:SeeSize="5"
         app:TextSize="30"
-        app:TextColor="@android:color/darker_gray"
+        app:TextColor="@android:color/white"
         app:SelectedTextColor="@color/colorHorizontalIndicator"
         app:SelectedTextSize="40"/>
 </LinearLayout>

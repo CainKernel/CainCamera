@@ -250,7 +250,7 @@ public class RealtimeBeautify extends BaseImageFilter {
 
     /**
      * 设置磨皮程度
-     * @param percent 百分比
+     * @param percent 0.0 ~ 1.0
      */
     public void setSmoothOpacity(float percent) {
         float opacity;
@@ -264,15 +264,15 @@ public class RealtimeBeautify extends BaseImageFilter {
 
     /**
      * 根据百分比计算出实际的磨皮程度
-     * @param percent
+     * @param percent 0% ~ 100%
      * @return
      */
     private float calculateOpacity(float percent) {
+        if (percent > 1.0f) {
+            percent = 1.0f;
+        }
         float result = 0.0f;
-
-        // TODO 可以加入分段函数，对不同等级的磨皮进行不一样的处理
         result = (float) (1.0f - (1.0f - percent + 0.02) / 2.0f);
-
 
         return result;
     }

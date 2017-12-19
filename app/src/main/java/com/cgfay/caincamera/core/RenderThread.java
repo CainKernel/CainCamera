@@ -277,6 +277,14 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     }
 
     /**
+     * 设置美颜等级(百分比)
+     * @param percent 0 ~ 100
+     */
+    void setBeautifyLevel(int percent) {
+        RenderManager.getInstance().setBeautifyLevel(percent);
+    }
+
+    /**
      * 更新filter
      * @param type Filter类型
      */

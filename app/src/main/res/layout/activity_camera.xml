@@ -31,6 +31,10 @@
     <include
         layout="@layout/view_preview_top"/>
 
+    <!-- 改变数值视图 -->
+    <include
+        layout="@layout/view_preview_value" />
+
     <!-- 底部视图 -->
     <include
         layout="@layout/view_preview_bottom"/>

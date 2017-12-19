@@ -228,6 +228,16 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
         addFrambuffers();
     }
 
+    /**
+     * 设置美颜等级
+     * @param percent
+     */
+    public abstract void setBeautifyLevel(float percent);
+
+    /**
+     * 切换滤镜
+     * @param type
+     */
     public abstract void changeFilter(FilterType type);
 
     /**

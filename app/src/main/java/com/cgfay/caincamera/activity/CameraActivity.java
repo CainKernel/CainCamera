@@ -22,7 +22,9 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
@@ -55,7 +57,8 @@ import java.util.List;
 public class CameraActivity extends AppCompatActivity implements View.OnClickListener,
         CameraSurfaceView.OnClickListener, CameraSurfaceView.OnTouchScroller,
         HorizontalIndicatorView.IndicatorListener, PictureVideoActionButton.ActionListener,
-        SettingPopView.StateChangedListener, RatioImageView.RatioChangedListener {
+        SettingPopView.StateChangedListener, RatioImageView.RatioChangedListener,
+        SeekBar.OnSeekBarChangeListener {
 
     private static final String TAG = "CameraActivity";
     private static final boolean VERBOSE = true;
@@ -97,6 +100,15 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     // 设置的PopupView
     private SettingPopView mSettingView;
+
+    // Seekbar的最大值
+    private static final int SeekBarMax = 100;
+    // 调整数值的SeekBar
+    private SeekBar mValueBar;
+    private ImageView mValueArrow;
+    private TextView mValueName;
+    // 是否显示调整数值View
+    private boolean mShowValueView = false;
 
     // 底部layout 和 Button
     private LinearLayout mBottomLayout;
@@ -226,6 +238,15 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mBtnRecordDelete.setOnClickListener(this);
         mBtnRecordDone = (Button) findViewById(R.id.btn_record_done);
         mBtnRecordDone.setOnClickListener(this);
+
+        mValueBar = (SeekBar) findViewById(R.id.sb_value);
+        mValueBar.setMax(SeekBarMax);
+        mValueBar.setOnSeekBarChangeListener(this);
+        // 默认最大
+        mValueBar.setProgress(SeekBarMax);
+        mValueArrow = (ImageView) findViewById(R.id.iv_value);
+        mValueArrow.setOnClickListener(this);
+        mValueName = (TextView) findViewById(R.id.tv_value);
 
         mBottomLayout = (LinearLayout) findViewById(R.id.layout_bottom);
         if (CameraUtils.getCurrentRatio() < CameraUtils.Ratio_4_3) {
@@ -438,6 +459,21 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     };
 
     @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        DrawerManager.getInstance().setBeautifyLevel(progress);
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
     public void onClick(View v) {
         // 首先关闭设置页面
         if (mSettingView != null) {
@@ -457,6 +493,11 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             // 设置
             case R.id.btn_setting:
                 showSettingPopView();
+                break;
+
+            // 数值改变的箭头
+            case R.id.iv_value:
+                showOrDismissValueChangeView();
                 break;
 
             // 显示贴纸
@@ -831,6 +872,23 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mSettingView.addStateChangedListener(this);
         mSettingView.showAsDropDown(mBtnSetting, Gravity.BOTTOM, 0, 0);
     }
+
+    /**
+     * 显示或者隐藏改变数值视图
+     */
+    private void showOrDismissValueChangeView() {
+        mShowValueView = !mShowValueView;
+        if (mShowValueView) {
+            mValueArrow.setBackgroundResource(android.R.drawable.arrow_down_float);
+            mValueBar.setVisibility(View.VISIBLE);
+            mValueName.setVisibility(View.VISIBLE);
+        } else {
+            mValueArrow.setBackgroundResource(android.R.drawable.arrow_up_float);
+            mValueBar.setVisibility(View.GONE);
+            mValueName.setVisibility(View.GONE);
+        }
+    }
+
 
     @Override
     public void flashStateChanged(boolean flashOn) {
