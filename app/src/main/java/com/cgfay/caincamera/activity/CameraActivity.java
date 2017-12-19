@@ -871,6 +871,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mSettingView = new SettingPopView(this);
         mSettingView.addStateChangedListener(this);
         mSettingView.showAsDropDown(mBtnSetting, Gravity.BOTTOM, 0, 0);
+        mSettingView.setEnableChangeFlash(CameraUtils.getSupportFlashLight());
     }
 
     /**
@@ -895,6 +896,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         if (VERBOSE) {
             Log.d(TAG, "flashStateChanged: " + flashOn);
         }
+        DrawerManager.getInstance().setFlashLight(flashOn);
     }
 
     @Override

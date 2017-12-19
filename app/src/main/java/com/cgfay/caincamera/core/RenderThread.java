@@ -270,6 +270,14 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     }
 
     /**
+     * 设置打开闪光灯
+     * @param on
+     */
+    void setFlashLight(boolean on) {
+        CameraUtils.setFlashLight(on);
+    }
+
+    /**
      * 滤镜或视图发生变化时调用
      */
     private void onFilterChanged() {

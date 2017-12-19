@@ -34,9 +34,10 @@ public class RenderHandler extends Handler {
     static final int MSG_PREVIEW_CALLBACK = 0x105;
     // 触摸区域
     static final int MSG_FOCUS_RECT = 0x106;
-
     // 重新打开相机
     static final int MSG_REOPEN_CAMERA = 0x107;
+    // 闪光灯
+    static final int MSG_SET_FLASHLIGHT = 0x108;
 
     // 录制状态
     static final int MSG_START_RECORDING = 0x200;
@@ -154,6 +155,13 @@ public class RenderHandler extends Handler {
             case MSG_FOCUS_RECT:
                 if (mWeakRender != null && mWeakRender.get() != null) {
                     mWeakRender.get().setFocusAres((Rect) msg.obj);
+                }
+                break;
+
+            // 设置是否打开闪光灯
+            case MSG_SET_FLASHLIGHT:
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().setFlashLight((Boolean) msg.obj);
                 }
                 break;
 

@@ -1,6 +1,9 @@
 package com.cgfay.caincamera.utils;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.pm.FeatureInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -52,6 +55,9 @@ public class CameraUtils {
     // 当前的宽高比
     private static float mCurrentRatio = Ratio_16_9;
 
+    // 当前摄像头是否支持闪光灯
+    private static boolean mCurrentCameraSupportFlash = false;
+
     /**
      * 打开相机，默认打开前置相机
      * @param expectFps
@@ -75,6 +81,7 @@ public class CameraUtils {
         }
         mCameraID = cameraID;
         Camera.Parameters parameters = mCamera.getParameters();
+        mCurrentCameraSupportFlash = checkSupportFlashLight(parameters);
         mCameraPreviewFps = chooseFixedPreviewFps(parameters, expectFps * 1000);
         parameters.setRecordingHint(true);
         mCamera.setParameters(parameters);
@@ -107,6 +114,7 @@ public class CameraUtils {
         }
         mCameraID = cameraID;
         Camera.Parameters parameters = mCamera.getParameters();
+        mCurrentCameraSupportFlash = checkSupportFlashLight(parameters);
         mCameraPreviewFps = chooseFixedPreviewFps(parameters, expectFps * 1000);
         parameters.setRecordingHint(true);
         mCamera.setParameters(parameters);
@@ -339,6 +347,7 @@ public class CameraUtils {
             mCamera.release();
             mCamera = null;
         }
+        mCurrentCameraSupportFlash = false;
     }
 
     /**
@@ -464,6 +473,58 @@ public class CameraUtils {
         }
     }
 
+    /**
+     * 设置打开闪光灯
+     * @param on
+     */
+    public static void setFlashLight(boolean on) {
+        if (mCamera != null) {
+            Camera.Parameters parameters = mCamera.getParameters();
+            if (on) {
+                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+            } else {
+                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+            }
+            mCamera.setParameters(parameters);
+        }
+    }
+
+    /**
+     * 检查摄像头(前置/后置)是否支持闪光灯
+     * @param camera   摄像头
+     * @return
+     */
+    public static boolean checkSupportFlashLight(Camera camera) {
+        if (camera == null) {
+            return false;
+        }
+
+        Camera.Parameters parameters = camera.getParameters();
+
+        return checkSupportFlashLight(parameters);
+    }
+
+    /**
+     * 检查摄像头(前置/后置)是否支持闪光灯
+     * @param parameters 摄像头参数
+     * @return
+     */
+    public static boolean checkSupportFlashLight(Camera.Parameters parameters) {
+        if (parameters.getFlashMode() == null) {
+            return false;
+        }
+
+        List<String> supportedFlashModes = parameters.getSupportedFlashModes();
+        if (supportedFlashModes == null
+                || supportedFlashModes.isEmpty()
+                || (supportedFlashModes.size() == 1
+                && supportedFlashModes.get(0).equals(Camera.Parameters.FLASH_MODE_OFF))) {
+            return false;
+        }
+
+        return true;
+    }
+
     //-------------------------------- setter and getter start -------------------------------------
 
     /**
@@ -554,6 +615,13 @@ public class CameraUtils {
         return mCurrentRatio;
     }
 
+    /**
+     * 是否支持闪光灯
+     * @return
+     */
+    public static boolean getSupportFlashLight() {
+        return mCurrentCameraSupportFlash;
+    }
 
     //---------------------------------- setter and getter end -------------------------------------
 

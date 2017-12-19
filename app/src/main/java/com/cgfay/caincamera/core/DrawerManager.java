@@ -146,6 +146,20 @@ public class DrawerManager {
     }
 
     /**
+     * 设置是否打开闪光灯
+     * @param on
+     */
+    public void setFlashLight(boolean on) {
+        if (mRenderHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(RenderHandler.MSG_SET_FLASHLIGHT, on));
+        }
+    }
+
+    /**
      * 设置美颜等级 0 ~ 100
      * @param percent
      */
