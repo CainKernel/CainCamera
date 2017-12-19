@@ -196,8 +196,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                     }
                 }
             };
-            mFpsHandler.sendMessageDelayed(mFpsHandler
-                            .obtainMessage(MSG_SEND_FPS_HANDLE, mFpsHandler), 1000);
         }
         mBtnSetting = (Button)findViewById(R.id.btn_setting);
         mBtnSetting.setOnClickListener(this);
@@ -359,6 +357,11 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
         if (isShowingEffect) {
             scrollToCurrentEffect();
+        }
+        // 是否需要显示Fps
+        if (mShowFps) {
+            mFpsHandler.sendMessageDelayed(mFpsHandler
+                    .obtainMessage(MSG_SEND_FPS_HANDLE, mFpsHandler), 1000);
         }
     }
 
