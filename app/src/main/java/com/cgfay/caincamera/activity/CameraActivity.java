@@ -522,7 +522,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
             // 完成录制，进入预览
             case R.id.btn_record_done:
-                previewRedcordedvideo();
+                previewRecordVideo();
                 break;
         }
     }
@@ -778,7 +778,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                             // 重置按钮状态
                             mBtnTakeOrRecording.resetStatus();
                             // 开始预览
-                            previewRedcordedvideo();
+                            previewRecordVideo();
                         }
                     });
                 }
@@ -829,9 +829,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private boolean mNeedToWaitStop = false;
 
     /**
-     * 预览视频
+     * 录制视频
      */
-    private void previewRedcordedvideo() {
+    private void previewRecordVideo() {
         if (mOnRecording) {
             mNeedToWaitStop = true;
             // 停止录制
