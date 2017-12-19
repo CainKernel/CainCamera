@@ -1,6 +1,7 @@
 package com.cgfay.caincamera.core;
 
 import android.graphics.Rect;
+import android.os.Handler;
 import android.view.SurfaceHolder;
 
 import com.cgfay.caincamera.type.FilterGroupType;
@@ -23,6 +24,8 @@ public class DrawerManager {
 
     // 操作锁
     private final Object mSynOperation = new Object();
+
+    private boolean mSetFpsHandler = false;
 
     public static DrawerManager getInstance() {
         if (mInstance == null) {
@@ -76,6 +79,8 @@ public class DrawerManager {
      * 销毁当前持有的Looper 和 Handler
      */
     synchronized private void destory() {
+
+        mSetFpsHandler = false;
         // Handler不存在时，需要销毁当前线程，否则可能会出现重新打开不了的情况
         if (mRenderHandler == null) {
             if (mRenderThread != null) {
@@ -260,5 +265,30 @@ public class DrawerManager {
             mRenderHandler.sendMessage(mRenderHandler
                     .obtainMessage(RenderHandler.MSG_TAKE_PICTURE));
         }
+    }
+
+    /**
+     * 设置Fps Handler回调
+     * @param handler
+     */
+    public void setFpsHandler(Handler handler) {
+        if (mRenderHandler == null) {
+            mSetFpsHandler = false;
+            return;
+        }
+        synchronized (mSynOperation) {
+            // 发送拍照命令
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(RenderHandler.MSG_SET_FPSHANDLER, handler));
+        }
+        mSetFpsHandler = true;
+    }
+
+    /**
+     * 是否设置了Fps Handler
+     * @return
+     */
+    public boolean hasSetFpsHandle() {
+        return mSetFpsHandler;
     }
 }

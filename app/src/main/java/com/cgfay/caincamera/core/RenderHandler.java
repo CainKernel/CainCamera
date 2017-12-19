@@ -46,6 +46,9 @@ public class RenderHandler extends Handler {
 
     static final int MSG_RESET_BITRATE = 0x300;
 
+    // 设置FpsHandler回调
+    static final int MSG_SET_FPSHANDLER = 0x301;
+
     static final int MSG_TAKE_PICTURE = 0x400;
 
     // 切换滤镜组
@@ -196,6 +199,13 @@ public class RenderHandler extends Handler {
 
             // 重置bitrate(录制视频时使用)
             case MSG_RESET_BITRATE:
+                break;
+
+            // 设置Fps的handler回调
+            case MSG_SET_FPSHANDLER:
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().setFpsHandler((Handler) msg.obj);
+                }
                 break;
 
             // 拍照

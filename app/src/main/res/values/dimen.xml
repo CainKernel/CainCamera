@@ -28,6 +28,10 @@
     <dimen name="top_button_width_height">35dp</dimen>
     <dimen name="top_button_margin">10dp</dimen>
 
+    <!-- 右上角fps显示margin位置 -->
+    <dimen name="fps_margin_top">70dp</dimen>
+    <dimen name="fps_margin_end">20dp</dimen>
+
     <!-- 显示图片的size -->
     <dimen name="effect_item_size">140dp</dimen>
 
