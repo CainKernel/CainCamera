@@ -91,6 +91,8 @@ blog: [cain_huang](http://www.jianshu.com/u/fd6f2b25d0f4)
 
 [OpenGLES + MediaCodec 短视频分段录制实现与无丢帧录制优化](http://www.jianshu.com/p/9dc03b01bae3)
 
+[使用 MediaExtractor + MediaMuxer 多个视频合成MP4](http://www.jianshu.com/p/97b79842b47a)
+
 ## FFmpeg相关
 [windows环境下编译ffmpeg打包成单个so并使用Cmake集成到Android工程中](http://www.jianshu.com/p/ed2266abe28b)
 
