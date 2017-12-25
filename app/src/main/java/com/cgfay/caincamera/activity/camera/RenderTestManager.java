@@ -16,11 +16,11 @@ import java.nio.FloatBuffer;
  * 渲染管理器
  * Created by cain.huang on 2017/11/1.
  */
-public final class RenderManager {
+public final class RenderTestManager {
 
-    private static final String TAG = "RenderManager";
+    private static final String TAG = "RenderTestManager";
 
-    private static RenderManager mInstance;
+    private static RenderTestManager mInstance;
 
     private static Object mSyncObject = new Object();
 
@@ -49,14 +49,14 @@ public final class RenderManager {
 
 
 
-    public static RenderManager getInstance() {
+    public static RenderTestManager getInstance() {
         if (mInstance == null) {
-            mInstance = new RenderManager();
+            mInstance = new RenderTestManager();
         }
         return mInstance;
     }
 
-    private RenderManager() {
+    private RenderTestManager() {
     }
 
     /**

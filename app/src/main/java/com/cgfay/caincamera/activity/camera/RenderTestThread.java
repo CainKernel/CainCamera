@@ -161,11 +161,11 @@ public class RenderTestThread extends HandlerThread implements SurfaceTexture.On
         mDisplaySurface.makeCurrent();
         mCameraTexture = GlUtil.createTextureOES();
         mSurfaceTexture = new SurfaceTexture(mCameraTexture);
-        RenderManager.getInstance().init();
+        RenderTestManager.getInstance().init();
     }
 
     private void internalSurfaceChanged(int width, int height) {
-        RenderManager.getInstance().onDisplaySizeChanged(width, height);
+        RenderTestManager.getInstance().onDisplaySizeChanged(width, height);
     }
 
     private void internalSurfaceDestory() {
@@ -185,7 +185,7 @@ public class RenderTestThread extends HandlerThread implements SurfaceTexture.On
         if (mSurfaceTexture != null) {
             mSurfaceTexture.release();
         }
-        RenderManager.getInstance().release();
+        RenderTestManager.getInstance().release();
     }
 
     /**
@@ -193,7 +193,7 @@ public class RenderTestThread extends HandlerThread implements SurfaceTexture.On
      */
     private void internalupdateImageSize() {
         calculateImageSize();
-        RenderManager.getInstance().onInputSizeChanged(mImageWidth, mImageHeight);
+        RenderTestManager.getInstance().onInputSizeChanged(mImageWidth, mImageHeight);
     }
 
     /**
@@ -224,8 +224,8 @@ public class RenderTestThread extends HandlerThread implements SurfaceTexture.On
      */
     private void renderFrame() {
         mSurfaceTexture.getTransformMatrix(mMatrix);
-        RenderManager.getInstance().setTransformMatrix(mMatrix);
-        RenderManager.getInstance().drawFrame(mCameraTexture);
+        RenderTestManager.getInstance().setTransformMatrix(mMatrix);
+        RenderTestManager.getInstance().drawFrame(mCameraTexture);
     }
 
     // ------------------------------- setter and getter ---------------------------

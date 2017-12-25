@@ -1,43 +1,27 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.cgfay.caincamera.activity.camera.MainActivity">
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="@string/test_description"/>
-
+    tools:context="com.cgfay.caincamera.activity.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center"
-        android:layout_centerInParent="true">
+        android:layout_gravity="center"
+        android:gravity="center">
         <Button
-            android:id="@+id/btn_single"
+            android:id="@+id/btn_camera"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:text="单线程"/>
+            android:text="@string/btn_camera"/>
 
         <Button
-            android:id="@+id/btn_multi"
+            android:id="@+id/btn_video_record"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:text="双线程"/>
-
+            android:text="@string/btn_video_record"/>
     </LinearLayout>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:layout_alignParentBottom="true"
-        android:text="@string/test_allright"/>
-
-</RelativeLayout>
+</LinearLayout>

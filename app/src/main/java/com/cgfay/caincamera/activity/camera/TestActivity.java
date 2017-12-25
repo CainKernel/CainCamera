@@ -12,10 +12,9 @@ import android.widget.Button;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.activity.CameraActivity;
-import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.utils.PermissionUtils;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class TestActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int REQUEST_CAMERA = 0x01;
     private static final int REQUEST_STORAGE_READ = 0x02;
@@ -32,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_test);
 
         mCameraEnable = PermissionUtils.permissionChecking(this,
                 Manifest.permission.CAMERA);
@@ -59,11 +58,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_single:
-                startActivity(new Intent(MainActivity.this, CameraActivity.class));
+                startActivity(new Intent(TestActivity.this, CameraActivity.class));
                 break;
 
             case R.id.btn_multi:
-                startActivity(new Intent(MainActivity.this, CameraTestActivity.class));
+                startActivity(new Intent(TestActivity.this, CameraTestActivity.class));
                 break;
         }
     }

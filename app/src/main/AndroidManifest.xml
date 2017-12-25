@@ -36,57 +36,71 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name=".activity.CameraActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/CameraTheme">
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activity.CameraActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/CameraTheme">
+
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+
+
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
+        </activity>
         <activity android:name=".activity.PhotoViewActivity">
 
-             <!--<intent-filter>-->
-             <!--<action android:name="android.intent.action.MAIN" />-->
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
 
 
-             <!--<category android:name="android.intent.category.LAUNCHER" />-->
-             <!--</intent-filter>-->
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
         </activity>
         <activity android:name=".activity.CapturePreviewActivity" />
 
         <!-- 人脸关键点检测Test Activity start -->
         <activity android:name=".activity.facetrack.FaceTrackActivity">
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+
+
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
         </activity>
         <activity android:name=".activity.facetrack.FaceTrack2Activity">
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+
+
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
         </activity>
         <!-- 人脸关键点检测Test Activity end -->
 
 
         <!-- Camera 单双线程测试 start -->
-        <activity android:name=".activity.camera.CameraTestActivity">
+        <activity android:name=".activity.camera.CameraTestActivity"></activity>
+        <activity android:name=".activity.camera.TestActivity">
 
-        </activity>
-        <activity android:name=".activity.camera.MainActivity">
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
 
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
+
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
         </activity>
         <!-- Camera 单双线程测试 end -->
+        <activity android:name=".activity.VideoRecordActivity"></activity>
     </application>
 
 </manifest>
