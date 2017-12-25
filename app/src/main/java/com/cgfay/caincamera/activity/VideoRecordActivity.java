@@ -1,6 +1,7 @@
 package com.cgfay.caincamera.activity;
 
 import android.app.Activity;
+import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
@@ -97,6 +98,42 @@ public class VideoRecordActivity extends AppCompatActivity
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format,
                                final int width, final int height) {
+        switch (format) {
+            case PixelFormat.A_8:
+                Log.v("surfaceChanged", "pixel format A_8");
+                break;
+            case PixelFormat.LA_88:
+                Log.v("surfaceChanged", "pixel format LA_88");
+                break;
+            case PixelFormat.L_8:
+                Log.v("surfaceChanged", "pixel format L_8");
+                break;
+            case PixelFormat.RGBA_4444:
+                Log.v("surfaceChanged", "pixel format RGBA_4444");
+                break;
+            case PixelFormat.RGBA_5551:
+                Log.v("surfaceChanged", "pixel format RGBA_5551");
+                break;
+            case PixelFormat.RGBA_8888:
+                Log.v("surfaceChanged", "pixel format RGBA_8888");
+                break;
+            case PixelFormat.RGBX_8888:
+                Log.v("surfaceChanged", "pixel format RGBX_8888");
+                break;
+            case PixelFormat.RGB_332:
+                Log.v("surfaceChanged", "pixel format RGB_332");
+                break;
+            case PixelFormat.RGB_565:
+                Log.v("surfaceChanged", "pixel format RGB_565");
+                break;
+            case PixelFormat.RGB_888:
+                Log.v("surfaceChanged", "pixel format RGB_888");
+                break;
+            default:
+                Log.v("surfaceChanged", "pixel format unknown " + format);
+                break;
+        }
+        
         if (mRenderHandler != null) {
             mRenderHandler.post(new Runnable() {
                 @Override
