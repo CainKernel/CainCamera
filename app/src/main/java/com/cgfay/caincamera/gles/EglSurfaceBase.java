@@ -157,65 +157,10 @@ public class EglSurfaceBase {
     }
 
     /**
-     * Saves the EGL surface to a file.
-     * <p>
-     * Expects that this object's EGL surface is current.
-     */
-    public void saveFrame(File file) throws IOException {
-        if (!mEglCore.isCurrent(mEGLSurface)) {
-            throw new RuntimeException("Expected EGL context/surface is not current");
-        }
-
-        // glReadPixels fills in a "direct" ByteBuffer with what is essentially big-endian RGBA
-        // data (i.e. a byte of red, followed by a byte of green...).  While the Bitmap
-        // constructor that takes an int[] wants little-endian ARGB (blue/red swapped), the
-        // Bitmap "copy pixels" method wants the same format GL provides.
-        //
-        // Ideally we'd have some way to re-use the ByteBuffer, especially if we're calling
-        // here often.
-        //
-        // Making this even more interesting is the upside-down nature of GL, which means
-        // our output will look upside down relative to what appears on screen if the
-        // typical GL conventions are used.
-
-        String filename = file.toString();
-
-        int width = getWidth();
-        int height = getHeight();
-        ByteBuffer buf = ByteBuffer.allocateDirect(width * height * 4);
-        buf.order(ByteOrder.LITTLE_ENDIAN);
-        GLES30.glReadPixels(0, 0, width, height,
-                GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buf);
-        GlUtil.checkGlError("glReadPixels");
-        buf.rewind();
-
-        BufferedOutputStream bos = null;
-        try {
-            bos = new BufferedOutputStream(new FileOutputStream(filename));
-            Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            bmp.copyPixelsFromBuffer(buf);
-            bmp = BitmapUtils.getRotatedBitmap(bmp, 180);
-            bmp = BitmapUtils.getFlipBitmap(bmp);
-            bmp.compress(Bitmap.CompressFormat.JPEG, 90, bos);
-            bmp.recycle();
-        } finally {
-            if (bos != null) bos.close();
-        }
-
-        ArrayList<String> path = new ArrayList<String>();
-        path.add(filename);
-        Intent intent = new Intent(ParamsManager.context, CapturePreviewActivity.class);
-        intent.putExtra(CapturePreviewActivity.PATH, path);
-        if (ParamsManager.context != null) {
-            ParamsManager.context.startActivity(intent);
-        }
-    }
-
-    /**
-     * 获取帧
+     * 获取当前帧的缓冲
      * @return
      */
-    public Bitmap getFrameBitmap() {
+    public ByteBuffer getCurrentFrame() {
         int width = getWidth();
         int height = getHeight();
         ByteBuffer buf = ByteBuffer.allocateDirect(width * height * 4);
@@ -224,10 +169,7 @@ public class EglSurfaceBase {
                 GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buf);
         GlUtil.checkGlError("glReadPixels");
         buf.rewind();
-
-        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        bmp.copyPixelsFromBuffer(buf);
-        return BitmapUtils.getRotatedBitmap(bmp, 180);
+        return buf;
     }
 
 }

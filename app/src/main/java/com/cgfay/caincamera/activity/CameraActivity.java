@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.EffectFilterAdapter;
+import com.cgfay.caincamera.core.CaptureFrameCallback;
 import com.cgfay.caincamera.core.FrameRateMeter;
 import com.cgfay.caincamera.type.AspectRatioType;
 import com.cgfay.caincamera.core.ColorFilterManager;
@@ -39,6 +41,7 @@ import com.cgfay.caincamera.facetracker.FaceTrackManager;
 import com.cgfay.caincamera.multimedia.MediaEncoder;
 import com.cgfay.caincamera.type.GalleryType;
 import com.cgfay.caincamera.type.TimeLapseType;
+import com.cgfay.caincamera.utils.BitmapUtils;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.FileUtils;
 import com.cgfay.caincamera.utils.PermissionUtils;
@@ -51,6 +54,12 @@ import com.cgfay.caincamera.view.PictureVideoActionButton;
 import com.cgfay.caincamera.view.RatioImageView;
 import com.cgfay.caincamera.view.SettingPopView;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +67,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         CameraSurfaceView.OnClickListener, CameraSurfaceView.OnTouchScroller,
         HorizontalIndicatorView.IndicatorListener, PictureVideoActionButton.ActionListener,
         SettingPopView.StateChangedListener, RatioImageView.RatioChangedListener,
-        SeekBar.OnSeekBarChangeListener {
+        SeekBar.OnSeekBarChangeListener, CaptureFrameCallback {
 
     private static final String TAG = "CameraActivity";
     private static final boolean VERBOSE = true;
@@ -142,6 +151,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private int mColorIndex = 0;
 
     private boolean isDebug = true;
+    // 主线程Handler
+    private Handler mMainHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,6 +169,15 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_camera);
+
+        // Face++请求联网认证
+        FaceTrackManager.getInstance().requestFaceNetwork(this);
+        // 创建渲染线程
+        DrawerManager.getInstance().createRenderThread();
+        // 设置拍照回调
+        DrawerManager.getInstance().setCaptureFrameCallback(this);
+        mMainHandler = new Handler(getMainLooper());
+
         mCameraEnable = PermissionUtils.permissionChecking(this,
                 Manifest.permission.CAMERA);
         mStorageWriteEnable = PermissionUtils.permissionChecking(this,
@@ -170,8 +190,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_CAMERA);
         }
-        // Face++请求联网认证
-        FaceTrackManager.getInstance().requestFaceNetwork(this);
     }
 
     private void initView() {
@@ -192,7 +210,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 public void handleMessage(Message msg) {
                     switch (msg.what) {
                         case FrameRateMeter.MSG_GAIN_FPS:
-                            Log.d(TAG, "fps = " + (float) msg.obj);
                             mFpsView.setText("fps = " + (float)msg.obj);
                             break;
 
@@ -416,13 +433,14 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        DrawerManager.getInstance().destoryTrhead();
         // 在停止时需要释放上下文，防止内存泄漏
         ParamsManager.context = null;
         if (mFpsHandler != null) {
             mFpsHandler.removeCallbacksAndMessages(null);
             mFpsHandler = null;
         }
+        super.onDestroy();
     }
 
     private void registerHomeReceiver() {
@@ -648,6 +666,45 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         } else {
             requestStorageWritePermission();
         }
+    }
+
+    @Override
+    public void onFrameCallback(final ByteBuffer buffer, final int width, final int height) {
+        mMainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                String filePath = ParamsManager.ImagePath + "CainCamera_"
+                        + System.currentTimeMillis() + ".jpeg";
+                File file = new File(filePath);
+                if (!file.getParentFile().exists()) {
+                    file.getParentFile().mkdirs();
+                }
+                BufferedOutputStream bos = null;
+                try {
+                    bos = new BufferedOutputStream(new FileOutputStream(file));
+                    Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                    bmp.copyPixelsFromBuffer(buffer);
+                    bmp = BitmapUtils.getRotatedBitmap(bmp, 180);
+                    bmp = BitmapUtils.getFlipBitmap(bmp);
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+                    bmp.recycle();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (bos != null) try {
+                        bos.close();
+                    } catch (IOException e) {
+                        // do nothing
+                    }
+                }
+                ArrayList<String> path = new ArrayList<String>();
+                path.add(filePath);
+                Intent intent = new Intent(CameraActivity.this,
+                        CapturePreviewActivity.class);
+                intent.putExtra(CapturePreviewActivity.PATH, path);
+                startActivity(intent);
+            }
+        });
     }
 
     /**

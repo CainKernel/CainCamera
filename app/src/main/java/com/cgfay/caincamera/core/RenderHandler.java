@@ -50,7 +50,10 @@ public class RenderHandler extends Handler {
     // 设置FpsHandler回调
     static final int MSG_SET_FPSHANDLER = 0x301;
 
+    // 拍照
     static final int MSG_TAKE_PICTURE = 0x400;
+    // 拍照回调
+    static final int MSG_SET_CAPTURE_FRAME_CALLBACK = 0x401;
 
     // 切换滤镜组
     static final int MSG_FILTER_GROUP = 0x500;
@@ -229,6 +232,13 @@ public class RenderHandler extends Handler {
             case MSG_TAKE_PICTURE:
                 if (mWeakRender != null && mWeakRender.get() != null) {
                     mWeakRender.get().takePicture();
+                }
+                break;
+
+            // 设置拍照回调
+            case MSG_SET_CAPTURE_FRAME_CALLBACK:
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get().setCaptureFrameCallback((CaptureFrameCallback) msg.obj);
                 }
                 break;
 

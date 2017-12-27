@@ -39,7 +39,6 @@ public class DrawerManager {
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
-        create();
         if (mRenderHandler != null) {
             mRenderHandler.sendMessage(mRenderHandler
                     .obtainMessage(RenderHandler.MSG_SURFACE_CREATED, holder));
@@ -60,13 +59,12 @@ public class DrawerManager {
             mRenderHandler.sendMessage(mRenderHandler
                     .obtainMessage(RenderHandler.MSG_SURFACE_DESTROYED));
         }
-        destory();
     }
 
     /**
      * 创建HandlerThread和Handler
      */
-    synchronized private void create() {
+    synchronized public void createRenderThread() {
         mRenderThread = new RenderThread("RenderThread");
         mRenderThread.start();
         mRenderHandler = new RenderHandler(mRenderThread.getLooper(), mRenderThread);
@@ -78,7 +76,7 @@ public class DrawerManager {
     /**
      * 销毁当前持有的Looper 和 Handler
      */
-    synchronized private void destory() {
+    synchronized public void destoryTrhead() {
 
         mSetFpsHandler = false;
         // Handler不存在时，需要销毁当前线程，否则可能会出现重新打开不了的情况
@@ -292,6 +290,21 @@ public class DrawerManager {
             // 发送拍照命令
             mRenderHandler.sendMessage(mRenderHandler
                     .obtainMessage(RenderHandler.MSG_TAKE_PICTURE));
+        }
+    }
+
+    /**
+     * 设置拍照回调
+     * @param callback
+     */
+    public void setCaptureFrameCallback(CaptureFrameCallback callback) {
+        if (mRenderHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            // 发送拍照命令
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(RenderHandler.MSG_SET_CAPTURE_FRAME_CALLBACK, callback));
         }
     }
 

@@ -15,6 +15,7 @@ import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.facetracker.FaceTrackManager;
 import com.cgfay.caincamera.facetracker.FaceTrackerCallback;
 import com.cgfay.caincamera.gles.EglCore;
+import com.cgfay.caincamera.gles.OffscreenSurface;
 import com.cgfay.caincamera.gles.WindowSurface;
 import com.cgfay.caincamera.type.FilterGroupType;
 import com.cgfay.caincamera.type.FilterType;
@@ -24,6 +25,7 @@ import com.cgfay.caincamera.utils.GlUtil;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
 
 /**
  * 渲染线程
@@ -47,8 +49,10 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
 
     // EGL共享上下文
     private EglCore mEglCore;
-    // EGLSurface
+    // 预览用的EGLSurface
     private WindowSurface mDisplaySurface;
+    // 拍照用的离屏EGLSurface
+    private OffscreenSurface mTakePictureSurface;
 
     // CameraTexture对应的Id
     private int mCameraTextureId;
@@ -69,6 +73,8 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     private int mFrameNum = 0;
     // 拍照
     private boolean isTakePicture = false;
+    // 拍照回调
+    private CaptureFrameCallback mCaptureFrameCallback;
 
     // 预览回调缓存，解决previewCallback回调内存抖动问题
     private byte[] mPreviewBuffer;
@@ -142,6 +148,8 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     void surfaceChanged(int width, int height) {
         mViewWidth = width;
         mViewHeight = height;
+        // 创建拍照用的EGLSurface
+        mTakePictureSurface = new OffscreenSurface(mEglCore, mViewWidth, mViewHeight);
         onFilterChanged();
         RenderManager.getInstance().updateTextureBuffer();
         RenderManager.getInstance().onDisplaySizeChanged(mViewWidth, mViewHeight);
@@ -175,6 +183,10 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         if (mDisplaySurface != null) {
             mDisplaySurface.release();
             mDisplaySurface = null;
+        }
+        if (mTakePictureSurface != null) {
+            mTakePictureSurface.release();
+            mTakePictureSurface = null;
         }
         if (mEglCore != null) {
             mEglCore.release();
@@ -339,16 +351,14 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         // 拍照状态
         if (isTakePicture) {
             isTakePicture = false;
-            File file = new File(ParamsManager.ImagePath + "CainCamera_"
-                    + System.currentTimeMillis() + ".jpeg");
-            if (!file.getParentFile().exists()) {
-                file.getParentFile().mkdirs();
+            if (mTakePictureSurface == null) {
+                mTakePictureSurface = new OffscreenSurface(mEglCore, mViewWidth, mViewHeight);
             }
-            try {
-                mDisplaySurface.saveFrame(file);
-            } catch (IOException e) {
-                Log.w(TAG, "saceFrame error: " + e.toString());
-            }
+            mTakePictureSurface.makeCurrentReadFrom(mDisplaySurface);
+            ByteBuffer buffer = mTakePictureSurface.getCurrentFrame();
+            mCaptureFrameCallback.onFrameCallback(buffer,
+                    mTakePictureSurface.getWidth(), mTakePictureSurface.getHeight());
+            mTakePictureSurface.swapBuffers();
         }
         mDisplaySurface.swapBuffers();
 
@@ -359,6 +369,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
             RecordManager.getInstance()
                     .drawRecorderFrame(currentTexture, mCameraTexture.getTimestamp());
         }
+        // 调试信息
         if (isDebug) {
             Log.d(TAG, "drawFrame time = " + (System.currentTimeMillis() - temp));
         }
@@ -393,6 +404,16 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     void takePicture() {
         isTakePicture = true;
     }
+
+    /**
+     * 设置拍照回调
+     * @param callback
+     */
+    void setCaptureFrameCallback(CaptureFrameCallback callback) {
+        mCaptureFrameCallback = callback;
+    }
+
+
 
     /**
      * 开始录制
