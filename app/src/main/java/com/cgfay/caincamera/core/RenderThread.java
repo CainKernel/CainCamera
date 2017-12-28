@@ -51,8 +51,6 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     private EglCore mEglCore;
     // 预览用的EGLSurface
     private WindowSurface mDisplaySurface;
-    // 拍照用的离屏EGLSurface
-    private OffscreenSurface mTakePictureSurface;
 
     // CameraTexture对应的Id
     private int mCameraTextureId;
@@ -148,8 +146,6 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     void surfaceChanged(int width, int height) {
         mViewWidth = width;
         mViewHeight = height;
-        // 创建拍照用的EGLSurface
-        mTakePictureSurface = new OffscreenSurface(mEglCore, mViewWidth, mViewHeight);
         onFilterChanged();
         RenderManager.getInstance().updateTextureBuffer();
         RenderManager.getInstance().onDisplaySizeChanged(mViewWidth, mViewHeight);
@@ -183,10 +179,6 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         if (mDisplaySurface != null) {
             mDisplaySurface.release();
             mDisplaySurface = null;
-        }
-        if (mTakePictureSurface != null) {
-            mTakePictureSurface.release();
-            mTakePictureSurface = null;
         }
         if (mEglCore != null) {
             mEglCore.release();
@@ -351,14 +343,9 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         // 拍照状态
         if (isTakePicture) {
             isTakePicture = false;
-            if (mTakePictureSurface == null) {
-                mTakePictureSurface = new OffscreenSurface(mEglCore, mViewWidth, mViewHeight);
-            }
-            mTakePictureSurface.makeCurrentReadFrom(mDisplaySurface);
-            ByteBuffer buffer = mTakePictureSurface.getCurrentFrame();
+            ByteBuffer buffer = mDisplaySurface.getCurrentFrame();
             mCaptureFrameCallback.onFrameCallback(buffer,
-                    mTakePictureSurface.getWidth(), mTakePictureSurface.getHeight());
-            mTakePictureSurface.swapBuffers();
+                    mDisplaySurface.getWidth(), mDisplaySurface.getHeight());
         }
         mDisplaySurface.swapBuffers();
 
