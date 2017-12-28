@@ -143,6 +143,7 @@ public class CapturePreviewActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        executeDeleteFile();
     }
 
     @Override
@@ -230,6 +231,10 @@ public class CapturePreviewActivity extends AppCompatActivity
     private void combineVideo() {
         String path = ParamsManager.AlbumPath
                 + "CainCamera_" + System.currentTimeMillis() + ".mp4";
+        File file = new File(path);
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
         VideoCombineManager.getInstance().startVideoCombiner(mPath, path,
                 new VideoCombiner.VideoCombineListener() {
 
