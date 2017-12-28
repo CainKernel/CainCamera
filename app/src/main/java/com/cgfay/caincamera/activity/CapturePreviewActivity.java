@@ -143,7 +143,6 @@ public class CapturePreviewActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        executeDeleteFile();
     }
 
     @Override

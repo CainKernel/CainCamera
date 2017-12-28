@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:layout_gravity="bottom"
     android:gravity="bottom"
-    android:layout_marginBottom="130dp"
+    android:layout_marginBottom="180dp"
     android:padding="@dimen/bottom_layout_margin">
 
     <RelativeLayout

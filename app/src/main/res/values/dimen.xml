@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!--DP尺寸-->
+    <dimen name="dp5">5dp</dimen>
+    <dimen name="dp3">3dp</dimen>
+    <dimen name="dp1">1dp</dimen>
+    <dimen name="dp10">10dp</dimen>
+    <dimen name="dp20">20dp</dimen>
+    <dimen name="dp25">25dp</dimen>
+    <dimen name="dp30">30dp</dimen>
+    <dimen name="dp50">50dp</dimen>
+    <dimen name="dp80">80dp</dimen>
+    <dimen name="dp100">100dp</dimen>
+    <dimen name="dp6">6dp</dimen>
+
     <!-- photo view -->
     <dimen name="selected_indicator_padding">7.5dp</dimen>
     <dimen name="selected_indicator_width">25dp</dimen>
@@ -11,7 +25,7 @@
     <dimen name="show_value_size">20sp</dimen>
 
     <!--拍照录制按钮宽高-->
-    <dimen name="bottom_gallery_layout_height">80dp</dimen>
+    <dimen name="bottom_gallery_layout_height">120dp</dimen>
     <dimen name="record_width_height">70dp</dimen>
     <dimen name="stickers_width_height">40dp</dimen>
     <dimen name="filters_width_height">40dp</dimen>

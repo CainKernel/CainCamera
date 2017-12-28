@@ -15,7 +15,9 @@
     <color name="yellow">#eFcD54</color>
     <color name="red">#FF4300</color>
     <color name="white">@android:color/white</color>
+    <color name="blue">#3394EC</color>
     <color name="video_window_background">#1A1A1A</color>
+    <color name="video_gray">#aadddddd</color>
 
     <!-- 设置PopupWindow的字体颜色 -->
     <color name="popTextColor">#FFFFFFFF</color>

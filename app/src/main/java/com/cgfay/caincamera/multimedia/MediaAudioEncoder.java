@@ -53,7 +53,7 @@ public class MediaAudioEncoder extends MediaEncoder {
 
 	@Override
 	protected void prepare() throws IOException {
-		if (DEBUG) Log.v(TAG, "prepare:");
+		if (DEBUG) Log.d(TAG, "prepare:");
         mTrackIndex = -1;
         mMuxerStarted = mIsEOS = false;
         // prepare MediaCodec for AAC encoding of audio data from inernal mic.
@@ -214,7 +214,7 @@ public class MediaAudioEncoder extends MediaEncoder {
     		} catch (final Exception e) {
     			Log.e(TAG, "AudioThread#run", e);
     		}
-			if (DEBUG) Log.v(TAG, "AudioThread:finished");
+			if (DEBUG) Log.d(TAG, "AudioThread:finished");
     	}
 
 		/**
@@ -255,7 +255,7 @@ public class MediaAudioEncoder extends MediaEncoder {
      * @return
      */
     private static final MediaCodecInfo selectAudioCodec(final String mimeType) {
-    	if (DEBUG) Log.v(TAG, "selectAudioCodec:");
+    	if (DEBUG) Log.d(TAG, "selectAudioCodec:");
 
     	MediaCodecInfo result = null;
     	// get the list of available codecs

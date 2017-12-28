@@ -172,7 +172,7 @@ public class MediaVideoEncoder extends MediaEncoder {
      * @return null if no codec matched
      */
     protected static final MediaCodecInfo selectVideoCodec(final String mimeType) {
-        if (DEBUG) Log.v(TAG, "selectVideoCodec:");
+        if (DEBUG) Log.d(TAG, "selectVideoCodec:");
 
         // get the list of available codecs
         final int numCodecs = MediaCodecList.getCodecCount();

@@ -212,7 +212,7 @@ public abstract class MediaEncoder implements Runnable {
      */
     /*package*/ void startRecording() {
         if (DEBUG) {
-            Log.v(TAG, "startRecording");
+            Log.d(TAG, "startRecording");
         }
         synchronized (mSync) {
             mIsCapturing = true;
@@ -240,7 +240,7 @@ public abstract class MediaEncoder implements Runnable {
      */
     /*package*/ void stopRecording() {
         if (DEBUG) {
-            Log.v(TAG, "stopRecording");
+            Log.d(TAG, "stopRecording");
         }
         synchronized (mSync) {
             if (!mIsCapturing || mRequestStop) {
@@ -375,13 +375,13 @@ public abstract class MediaEncoder implements Runnable {
                 }
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
                 if (DEBUG) {
-                    Log.v(TAG, "INFO_OUTPUT_BUFFERS_CHANGED");
+                    Log.d(TAG, "INFO_OUTPUT_BUFFERS_CHANGED");
                 }
                 // this shoud not come when encoding
                 encoderOutputBuffers = mMediaCodec.getOutputBuffers();
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 if (DEBUG) {
-                    Log.v(TAG, "INFO_OUTPUT_FORMAT_CHANGED");
+                    Log.d(TAG, "INFO_OUTPUT_FORMAT_CHANGED");
                 }
                 // this status indicate the output format of codec is changed
                 // this should come only once before actual encoded data

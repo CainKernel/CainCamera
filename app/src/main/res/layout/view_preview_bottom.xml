@@ -9,6 +9,16 @@
     android:background="@android:color/transparent"
     android:gravity="center"
     android:orientation="vertical">
+
+    <!-- 显示倒计时 -->
+    <TextView
+        android:id="@+id/tv_countdown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:textColor="@color/yellow"
+        android:visibility="gone" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_gallery_layout_height"
@@ -23,7 +33,7 @@
             android:layout_marginStart="@dimen/button_margin_horizontal"
             android:background="@drawable/gallery_sticker" />
 
-        <com.cgfay.caincamera.view.PictureVideoActionButton
+        <com.cgfay.caincamera.view.ShutterButton
             android:id="@+id/btn_take"
             android:layout_width="@dimen/record_width_height"
             android:layout_height="@dimen/record_width_height"
