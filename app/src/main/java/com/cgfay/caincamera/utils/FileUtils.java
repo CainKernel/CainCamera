@@ -91,6 +91,31 @@ public class FileUtils {
     }
 
     /**
+     * 删除目录
+     * @param path
+     */
+    public static void deleteDir(File path) {
+        if (path != null && path.exists() && path.isDirectory()) {
+            for (File file : path.listFiles()) {
+                if (file.isDirectory())
+                    deleteDir(file);
+                file.delete();
+            }
+            path.delete();
+        }
+    }
+
+    /**
+     * 删除目录
+     * @param path
+     */
+    public static void deleteDir(String path) {
+        if (path != null && path.length() > 0) {
+            deleteDir(new File(path));
+        }
+    }
+
+    /**
      * 复制文件夹
      * @param oldPath
      * @param newPath

@@ -10,6 +10,7 @@ import android.os.Message;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DimenRes;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -57,7 +58,7 @@ public class ShutterButton extends View {
     private int mSplitColor;
 
     // 是否处于删除模式
-    private boolean mDeleteMode;
+    private boolean mDeleteMode = false;
     // 绘制删除模式的Paint
     private Paint mPaintDelete;
     // 删除模式下的颜色
@@ -281,7 +282,8 @@ public class ShutterButton extends View {
     /**
      * 设置段点
      */
-    public void addSplit() {
+    public void addSplitView() {
+        Log.d("addSplitView", "mGrithPro = " + mGirthPro);
         mSplitList.add(mGirthPro);
         invalidate();
     }
@@ -289,7 +291,7 @@ public class ShutterButton extends View {
     /**
      * 删除最后一个段点
      */
-    public void deleteSplit() {
+    public void deleteSplitView() {
         if (mDeleteMode && mSplitList.size() > 0) {
             mSplitList.remove(mSplitList.size()-1);
             mDeleteMode = false;
@@ -355,9 +357,11 @@ public class ShutterButton extends View {
         canvas.drawArc(mOval, mStartDegree, mGirthPro, false, mPaintProgress);
 
         // 绘制断点
-        for (int x = 0; x < mSplitList.size(); x++) {
-            if(x != 0) canvas.drawArc(mOval, mStartDegree + mSplitList.get(x),
-                    1, false, mPaintSplit);
+        for (int i = 0; i < mSplitList.size(); i++) {
+            if(i != 0) {
+                canvas.drawArc(mOval, mStartDegree + mSplitList.get(i),
+                        1, false, mPaintSplit);
+            }
         }
 
         // 绘制删除模式的段落

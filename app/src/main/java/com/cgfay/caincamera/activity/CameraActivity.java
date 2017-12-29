@@ -32,10 +32,12 @@ import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.EffectFilterAdapter;
 import com.cgfay.caincamera.core.CaptureFrameCallback;
 import com.cgfay.caincamera.core.ColorFilterManager;
+import com.cgfay.caincamera.core.CountDownManager;
 import com.cgfay.caincamera.core.DrawerManager;
 import com.cgfay.caincamera.core.FrameRateMeter;
 import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.core.RecordManager;
+import com.cgfay.caincamera.core.VideoListManager;
 import com.cgfay.caincamera.facetracker.FaceTrackManager;
 import com.cgfay.caincamera.multimedia.MediaEncoder;
 import com.cgfay.caincamera.type.AspectRatioType;
@@ -45,12 +47,12 @@ import com.cgfay.caincamera.utils.BitmapUtils;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.FileUtils;
 import com.cgfay.caincamera.utils.PermissionUtils;
+import com.cgfay.caincamera.utils.StringUtils;
 import com.cgfay.caincamera.utils.TextureRotationUtils;
 import com.cgfay.caincamera.view.AspectFrameLayout;
 import com.cgfay.caincamera.view.AsyncRecyclerview;
 import com.cgfay.caincamera.view.CameraSurfaceView;
 import com.cgfay.caincamera.view.HorizontalIndicatorView;
-import com.cgfay.caincamera.view.PictureVideoActionButton;
 import com.cgfay.caincamera.view.RatioImageView;
 import com.cgfay.caincamera.view.SettingPopView;
 import com.cgfay.caincamera.view.ShutterButton;
@@ -61,7 +63,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -162,16 +163,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private boolean isDebug = true;
     // 主线程Handler
     private Handler mMainHandler;
-
-    // 倒计时
-    private CustomCountDownTimer mCountDownTimer;
-    private SimpleDateFormat mCountDownFormater;
-    private Handler mRefreshHandler;
-
-    // 倒计时数值
-    private long mMilliSeconds = RECORD_TEN_SECOND;
-    // 50毫秒读取一次
-    private long mCountDownInterval = 50;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -751,25 +742,38 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             mBtnRecordDelete.setVisibility(View.GONE);
         }
         // 初始化倒计时
-        if (mCountDownTimer == null) {
-            initCountDownTimer();
-        }
-        // 刷新时间
-        refreshTimer();
+        CountDownManager.getInstance().initCountDownTimer();
+        CountDownManager.getInstance().setCountDownListener(mCountDownListener);
+        mBtnShutter.setProgressMax((int) CountDownManager.getInstance().getMaxMilliSeconds());
+        // 添加分割线
+        mBtnShutter.addSplitView();
     }
 
     @Override
     public void onStopRecord() {
         Log.d("ShutterButton", "onStopRecord");
         DrawerManager.getInstance().stopRecording();
-
+        // 停止倒计时
+        CountDownManager.getInstance().stopTimer();
     }
 
     @Override
     public void onProgressOver() {
         Log.d("ShutterButton", "onProgressOver");
-        previewRecordVideo();
+        // previewRecordVideo();
     }
+
+    private CountDownManager.CountDownListener
+            mCountDownListener = new CountDownManager.CountDownListener() {
+        @Override
+        public void onProgressChanged(long duration) {
+            Log.d("ShutterButton", "onProgressChanged: " + duration);
+            // 设置进度
+            mBtnShutter.setProgress(duration);
+            // 设置时间
+            mCountDownView.setText(StringUtils.generateMillisTime((int) duration));
+        }
+    };
 
     /**
      * 录制监听器
@@ -818,21 +822,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 mBtnShutter.setEnableEncoder(true);
 
                 // 开始倒计时
-                startCountDownTimer();
+                CountDownManager.getInstance().startTimer();
             }
         }
 
         @Override
         public void onStopped(MediaEncoder encoder) {
-            // 停止倒计时
-            startCountdownTimer();
-            // 分割进度条
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mBtnShutter.addSplit();
-                }
-            });
         }
 
         @Override
@@ -845,6 +840,11 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 // 录制完成跳转预览页面
                 String outputPath = RecordManager.getInstance().getOutputPath();
                 mListPath.add(outputPath);
+                // 添加分段视频
+                VideoListManager.getInstance().addSubVideo(outputPath,
+                        (int) CountDownManager.getInstance().getCurrentDuration());
+                // 重置当前走过的时长
+                CountDownManager.getInstance().resetDuration();
 
                 // 处于非录制状态
                 mOnRecording = false;
@@ -914,7 +914,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 }
             }
             // 删除进度
-            mBtnShutter.deleteSplit();
+            mBtnShutter.deleteSplitView();
+            // 删除视频
+            VideoListManager.getInstance().removeLastSubVideo();
+            // 更新进度
+            mBtnShutter.setProgress(CountDownManager.getInstance().getVisibleDuration());
+
         } else { // 没有进入删除模式则进入删除模式
             mBtnShutter.setDeleteMode(true);
         }
@@ -947,65 +952,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             mBtnShutter.closeButton();
         }
     }
-
-    /**
-     * 初始化倒计时
-     */
-    private void initCountDownTimer() {
-        mCountDownTimer = new CustomCountDownTimer(mMilliSeconds, mCountDownInterval);
-        if (mMilliSeconds == RECORD_TEN_SECOND) {
-            mCountDownFormater = new SimpleDateFormat("ss''SS"); // 秒:毫秒
-        } else {
-            mCountDownFormater = new SimpleDateFormat("mm''ss"); // 秒:毫秒
-        }
-        mBtnShutter.setProgressMax((int) mMilliSeconds);
-    }
-
-    /**
-     * 开始倒计时
-     */
-    private void startCountDownTimer() {
-        if (mCountDownTimer != null) {
-            mCountDownTimer.startCountDown();
-        }
-    }
-
-    /**
-     * 停止倒计时
-     */
-    private void startCountdownTimer() {
-        if (mCountDownTimer != null) {
-            mCountDownTimer.stopCountDown();
-        }
-    }
-
-    /**
-     * 刷新倒计时
-     */
-    public void refreshTimer() {
-        mRefreshHandler = new Handler();
-        final Runnable counter = new Runnable() {
-            public void run() {
-
-                // 获取当前时间
-                long time = mMilliSeconds - mCountDownTimer.getCurrentTime();
-                // 填充时间
-                String ms = mCountDownFormater.format(time);
-                mCountDownView.setText(ms);
-                mBtnShutter.setProgress(time);
-                // 如果倒计时没有时间则移除所有消息队列
-                if (mCountDownTimer.getCurrentTime() <= 0) {
-                    mRefreshHandler.removeCallbacksAndMessages(null);
-                } else {
-                    mRefreshHandler.postDelayed(this, mCountDownInterval);
-                }
-            }
-        };
-
-        mRefreshHandler.postDelayed(counter, mCountDownInterval);
-    }
-
-
 
     /**
      * 切换相机
