@@ -3,7 +3,9 @@ package com.cgfay.caincamera.core;
 import com.cgfay.caincamera.bean.SubVideo;
 import com.cgfay.caincamera.utils.StringUtils;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 视频文件管理器
@@ -154,7 +156,7 @@ public class VideoListManager {
     /**
      * 删除所有分段视频
      */
-    public void deleteAllSubVideo() {
+    public void removeAllSubVideo() {
         if (mVideoList != null) {
             for (SubVideo part : mVideoList) {
                 part.delete();
@@ -167,8 +169,24 @@ public class VideoListManager {
      * 获取分段视频列表
      * @return
      */
-    public LinkedList<SubVideo> getSubVideoLists() {
+    public LinkedList<SubVideo> getSubVideoList() {
         return mVideoList;
+    }
+
+
+    /**
+     * 获取分段视频路径
+     * @return
+     */
+    public List<String> getSubVideoPathList() {
+        if (mVideoList == null || mVideoList.isEmpty()) {
+            return new ArrayList<String>();
+        }
+        List<String> mediaPaths = new ArrayList<String>();
+        for (int i = 0; i < mVideoList.size(); i++) {
+            mediaPaths.add(i, mVideoList.get(i).getMediaPath());
+        }
+        return mediaPaths;
     }
 
     @Override

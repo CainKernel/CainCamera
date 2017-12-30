@@ -35,7 +35,7 @@ public final class CountDownManager {
     private long mCurrentDuration = 0;
 
     // 是否需要处理最后一秒的情况
-    private boolean mProcessLasSecond = true;
+    private boolean mProcessLasSecond = false;
 
     // 需要等待计时器停止表示，用于最后一秒内点击停止录制的情况
     private boolean mNeedWaitFinish = false;

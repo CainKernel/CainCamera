@@ -302,7 +302,7 @@ public class ShutterButton extends View {
     /**
      * 清除断点
      */
-    public void cleanSplit() {
+    public void cleanSplitView() {
         if(mSplitList.size() > 0) {
             mSplitList.clear();
             invalidate();

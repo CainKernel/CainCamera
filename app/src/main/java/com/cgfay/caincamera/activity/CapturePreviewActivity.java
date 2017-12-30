@@ -3,7 +3,10 @@ package com.cgfay.caincamera.activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.session.PlaybackState;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -16,15 +19,16 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.core.ParamsManager;
-import com.cgfay.caincamera.jni.FFmpegCmd;
+import com.cgfay.caincamera.core.VideoListManager;
 import com.cgfay.caincamera.multimedia.MediaPlayerManager;
 import com.cgfay.caincamera.multimedia.VideoCombineManager;
 import com.cgfay.caincamera.multimedia.VideoCombiner;
-import com.cgfay.caincamera.type.GalleryType;
 import com.cgfay.caincamera.utils.FileUtils;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -35,17 +39,23 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 
 import java.io.File;
-import java.util.ArrayList;
 
 public class CapturePreviewActivity extends AppCompatActivity
         implements View.OnClickListener, ExoPlayer.EventListener {
     private static final String TAG = "CapturePreviewActivity";
     private static final boolean VERBOSE = true;
 
+    // 类型
+    public static final String TYPE_VIDEO = "video";
+    public static final String TYPE_PICTURE = "image";
+    public static final String TYPE_GIF = "gif";
+    public static final String MIMETYPE = "mimeType";
+
     public static final String PATH = "path";
 
-    // 路径
-    private ArrayList<String> mPath;
+    private String mMimeType;
+    // 图片路径
+    private String mPath;
 
     // layout
     private FrameLayout mPreviewLayout;
@@ -60,6 +70,10 @@ public class CapturePreviewActivity extends AppCompatActivity
     // 分享
     private Button mBtnShare;
 
+    // 合并提示
+    private AlertDialog mCombiningDialog;
+    private TextView mCombiningView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,7 +81,10 @@ public class CapturePreviewActivity extends AppCompatActivity
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_capture_preview);
-        mPath = getIntent().getStringArrayListExtra(PATH);
+        mMimeType = getIntent().getStringExtra(MIMETYPE);
+        if (mMimeType.equals(TYPE_PICTURE)) {
+            mPath = getIntent().getStringExtra(PATH);
+        }
         initView();
     }
 
@@ -77,7 +94,7 @@ public class CapturePreviewActivity extends AppCompatActivity
     private void initView() {
         mPreviewLayout = (FrameLayout) findViewById(R.id.layout_preview);
 
-        if (ParamsManager.mGalleryType == GalleryType.PICTURE) {
+        if (mMimeType.equals(TYPE_PICTURE)) {
             mImageView = new ImageView(this);
             mImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
             mPreviewLayout.addView(mImageView);
@@ -85,14 +102,12 @@ public class CapturePreviewActivity extends AppCompatActivity
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             params.gravity = Gravity.CENTER;
             mImageView.setLayoutParams(params);
-
-            if (mPath != null && mPath.size() > 0) {
-                Bitmap bitmap = BitmapFactory.decodeFile(mPath.get(0));
+            if (!TextUtils.isEmpty(mPath)) {
+                Bitmap bitmap = BitmapFactory.decodeFile(mPath);
                 mImageView.setImageBitmap(bitmap);
             }
 
-        } else if (ParamsManager.mGalleryType == GalleryType.VIDEO
-                || ParamsManager.mGalleryType == GalleryType.GIF) {
+        } else if (mMimeType.equals(TYPE_VIDEO) || mMimeType.equals(TYPE_GIF)) {
             mSurfaceView = new SurfaceView(this);
             mPreviewLayout.addView(mSurfaceView);
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
@@ -118,7 +133,8 @@ public class CapturePreviewActivity extends AppCompatActivity
         MediaPlayerManager.getInstance().createMediaPlayer(this);
         MediaPlayerManager.getInstance().setPlayerSurface(mSurfaceView);
         MediaPlayerManager.getInstance().setPlayerListener(this);
-        MediaPlayerManager.getInstance().preparePlayer(this, mPath);
+        MediaPlayerManager.getInstance().preparePlayer(this,
+                VideoListManager.getInstance().getSubVideoList());
         MediaPlayerManager.getInstance().setRepeatMode(Player.REPEAT_MODE_ALL);
         MediaPlayerManager.getInstance().start();
     }
@@ -170,12 +186,13 @@ public class CapturePreviewActivity extends AppCompatActivity
      */
     private void executeDeleteFile() {
         // 删除文件
-        if (mPath != null) {
-            for (int i = 0; i < mPath.size(); i++) {
-                if (!TextUtils.isEmpty(mPath.get(i))) {
-                    FileUtils.deleteFile(mPath.get(i));
-                }
+        if (mMimeType.equals(TYPE_PICTURE)) {
+            if (!TextUtils.isEmpty(mPath)) {
+                FileUtils.deleteFile(mPath);
             }
+
+        } else if (mMimeType.equals(TYPE_VIDEO) || mMimeType.equals(TYPE_GIF)) {
+            VideoListManager.getInstance().removeAllSubVideo();
         }
         // 关掉页面
         finish();
@@ -186,17 +203,12 @@ public class CapturePreviewActivity extends AppCompatActivity
      * 执行保存操作
      */
     private void executeSave() {
-        if (mPath == null || mPath.size() <= 0) {
-            finish();
-            return;
-        }
-
         // 如果是图片，则直接保存
-        if (ParamsManager.mGalleryType == GalleryType.PICTURE) {
+        if (mMimeType.equals(TYPE_PICTURE)) {
             savePicture();
-        } else if (ParamsManager.mGalleryType == GalleryType.VIDEO) {
+        } else if (mMimeType.equals(TYPE_VIDEO)) {
             combineVideo();
-        } else if (ParamsManager.mGalleryType == GalleryType.GIF) {
+        } else if (mMimeType.equals(TYPE_GIF)) {
             convertVideoToGif();
         }
     }
@@ -213,15 +225,13 @@ public class CapturePreviewActivity extends AppCompatActivity
      * 保存视频
      */
     private void savePicture() {
-        for (int i = 0; i < mPath.size(); i++) {
-            File file = new File(mPath.get(i));
-            String newPath = ParamsManager.AlbumPath + file.getName();
-            FileUtils.copyFile(mPath.get(i), newPath);
-        }
+        File file = new File(mPath);
+        String newPath = ParamsManager.AlbumPath + file.getName();
+        FileUtils.copyFile(mPath, newPath);
         // 保存成功
         Toast.makeText(this, "保存成功!", Toast.LENGTH_LONG);
         executeDeleteFile();
-        mPath.clear();
+        mPath = null;
         finish();
     }
 
@@ -235,37 +245,92 @@ public class CapturePreviewActivity extends AppCompatActivity
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }
-        VideoCombineManager.getInstance().startVideoCombiner(mPath, path,
-                new VideoCombiner.VideoCombineListener() {
+        VideoCombineManager.getInstance()
+                .startVideoCombiner(VideoListManager.getInstance().getSubVideoPathList(),
+                        path, new VideoCombiner.VideoCombineListener() {
+                            @Override
+                            public void onCombineStart() {
+                                if (VERBOSE) {
+                                    Log.d(TAG, "开始合并");
+                                }
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mCombiningView = showProgressDialog();
+                                    }
+                                });
+                            }
 
-            @Override
-            public void onCombineStart() {
-                if (VERBOSE) {
-                    Log.d(TAG, "开始合并");
-                }
-            }
+                            @Override
+                            public void onCombineProcessing(final int current, final int sum) {
+                                if (VERBOSE) {
+                                    Log.d(TAG, "当前视频： " + current + ", 合并视频总数： " + sum);
+                                }
+                                if (mCombiningView != null) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            mCombiningView.setText("正在合并视频: "
+                                                    + ((float)current / sum) * 100 + "%");
+                                        }
+                                    });
+                                }
+                            }
 
-            @Override
-            public void onCombineProcessing(int current, int sum) {
-                if (VERBOSE) {
-                    Log.d(TAG, "当前视频： " + current + ", 合并视频总数： " + sum);
-                }
-            }
-
-            @Override
-            public void onCombineFinished(final boolean success) {
-                if (success) {
-                    Log.d(TAG, "合并成功");
-                } else {
-                    Log.d(TAG, "合并失败");
-                }
-                executeDeleteFile();
-                mPath.clear();
-                finish();
-            }
+                            @Override
+                            public void onCombineFinished(final boolean success) {
+                                if (success) {
+                                    Log.d(TAG, "合并成功");
+                                } else {
+                                    Log.d(TAG, "合并失败");
+                                }
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        closeProgressDialog();
+                                    }
+                                });
+                                executeDeleteFile();
+                                finish();
+                            }
         });
     }
 
+    /**
+     * 打开合并视频提示
+     * @return
+     */
+    public TextView showProgressDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(false);
+        View view = View.inflate(this, R.layout.view_dialog_loading, null);
+        builder.setView(view);
+        ProgressBar pb_loading = (ProgressBar) view.findViewById(R.id.pb_loading);
+        TextView tv_hint = (TextView) view.findViewById(R.id.tv_hint);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            pb_loading.setIndeterminateTintList(
+                    ContextCompat.getColorStateList(this, R.color.dialog_pro_color));
+        }
+        tv_hint.setText(R.string.combining);
+        mCombiningDialog = builder.create();
+        mCombiningDialog.show();
+
+        return tv_hint;
+    }
+
+    /**
+     * 关闭进度
+     */
+    public void closeProgressDialog() {
+        try {
+            if (mCombiningDialog != null) {
+                mCombiningDialog.dismiss();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * 将视频转成GIF
@@ -298,7 +363,8 @@ public class CapturePreviewActivity extends AppCompatActivity
     @Override
     public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
         if (VERBOSE) {
-            Log.d(TAG,"TrackGroupArray - trackGroups: " + trackGroups + ", trackSelections: " + trackSelections);
+            Log.d(TAG,"TrackGroupArray - trackGroups: "
+                    + trackGroups + ", trackSelections: " + trackSelections);
         }
     }
 

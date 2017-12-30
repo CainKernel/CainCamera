@@ -22,6 +22,8 @@ public class SubVideo implements Serializable {
     // 删除视频
     public void delete() {
         FileUtils.deleteFile(mediaPath);
+        duration = 0;
+        mediaPath = null;
     }
 
     /**
@@ -30,5 +32,13 @@ public class SubVideo implements Serializable {
      */
     public int getDuration() {
         return duration;
+    }
+
+    /**
+     * 获取媒体路径
+     * @return
+     */
+    public String getMediaPath() {
+        return mediaPath;
     }
 }

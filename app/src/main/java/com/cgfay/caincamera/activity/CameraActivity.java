@@ -45,7 +45,6 @@ import com.cgfay.caincamera.type.GalleryType;
 import com.cgfay.caincamera.type.TimeLapseType;
 import com.cgfay.caincamera.utils.BitmapUtils;
 import com.cgfay.caincamera.utils.CameraUtils;
-import com.cgfay.caincamera.utils.FileUtils;
 import com.cgfay.caincamera.utils.PermissionUtils;
 import com.cgfay.caincamera.utils.StringUtils;
 import com.cgfay.caincamera.utils.TextureRotationUtils;
@@ -74,6 +73,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     private static final String TAG = "CameraActivity";
     private static final boolean VERBOSE = true;
+    private static final int REQUEST_PREVIEW = 0x200;
 
     // 十秒还是三分钟
     private static final int RECORD_TEN_SECOND = 10000;
@@ -136,7 +136,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private Button mBtnFilters;
 
     private Button mBtnRecordDelete;
-    private Button mBtnRecordDone;
+    private Button mBtnRecordPreview;
 
     // 显示滤镜
     private boolean isShowingEffect = false;
@@ -264,8 +264,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         mBtnRecordDelete = (Button) findViewById(R.id.btn_record_delete);
         mBtnRecordDelete.setOnClickListener(this);
-        mBtnRecordDone = (Button) findViewById(R.id.btn_record_done);
-        mBtnRecordDone.setOnClickListener(this);
+        mBtnRecordPreview = (Button) findViewById(R.id.btn_record_done);
+        mBtnRecordPreview.setOnClickListener(this);
 
         mValueBar = (SeekBar) findViewById(R.id.sb_value);
         mValueBar.setMax(SeekBarMax);
@@ -282,13 +282,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             mBtnStickers.setBackgroundResource(R.drawable.gallery_sticker_glow);
             mBtnFilters.setBackgroundResource(R.drawable.gallery_filter_glow);
             mBtnRecordDelete.setBackgroundResource(R.drawable.preview_video_delete_white);
-            mBtnRecordDone.setBackgroundResource(R.drawable.preview_video_done_white);
+            mBtnRecordPreview.setBackgroundResource(R.drawable.preview_video_done_white);
         } else {
             mBottomLayout.setBackgroundResource(R.drawable.bottom_background);
             mBtnStickers.setBackgroundResource(R.drawable.gallery_sticker);
             mBtnFilters.setBackgroundResource(R.drawable.gallery_filter);
             mBtnRecordDelete.setBackgroundResource(R.drawable.preview_video_delete_black);
-            mBtnRecordDone.setBackgroundResource(R.drawable.preview_video_done_black);
+            mBtnRecordPreview.setBackgroundResource(R.drawable.preview_video_done_black);
         }
 
         initEffectListView();
@@ -708,11 +708,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                         // do nothing
                     }
                 }
-                ArrayList<String> path = new ArrayList<String>();
-                path.add(filePath);
                 Intent intent = new Intent(CameraActivity.this,
                         CapturePreviewActivity.class);
-                intent.putExtra(CapturePreviewActivity.PATH, path);
+                // 图片类型
+                intent.putExtra(CapturePreviewActivity.MIMETYPE,
+                        CapturePreviewActivity.TYPE_PICTURE);
+                intent.putExtra(CapturePreviewActivity.PATH, filePath);
                 startActivity(intent);
             }
         });
@@ -739,6 +740,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
         // 隐藏删除按钮
         if (ParamsManager.mGalleryType == GalleryType.VIDEO) {
+            mBtnRecordPreview.setVisibility(View.GONE);
             mBtnRecordDelete.setVisibility(View.GONE);
         }
         // 初始化倒计时
@@ -760,7 +762,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onProgressOver() {
         Log.d("ShutterButton", "onProgressOver");
-        // previewRecordVideo();
+        previewRecordVideo();
     }
 
     private CountDownManager.CountDownListener
@@ -803,16 +805,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             if (!mRecordSoundEnable || !ParamsManager.canRecordingAudio
                     || (ParamsManager.canRecordingAudio && mStartedCount == 2)
                     || ParamsManager.mGalleryType == GalleryType.GIF) { // 录制GIF，没有音频
-                // MediaCodec已经处于开始录制阶段，此时允许改变状态
-                if (ParamsManager.mGalleryType == GalleryType.VIDEO) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            // 显示视频预览按钮
-                            mBtnRecordDone.setVisibility(View.VISIBLE);
-                        }
-                    });
-                }
                 mOnRecording = true;
 
                 // 重置状态
@@ -839,7 +831,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                     || ParamsManager.mGalleryType == GalleryType.GIF) { // 录制GIF，没有音频
                 // 录制完成跳转预览页面
                 String outputPath = RecordManager.getInstance().getOutputPath();
-                mListPath.add(outputPath);
                 // 添加分段视频
                 VideoListManager.getInstance().addSubVideo(outputPath,
                         (int) CountDownManager.getInstance().getCurrentDuration());
@@ -854,6 +845,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            mBtnRecordPreview.setVisibility(View.VISIBLE);
                             mBtnRecordDelete.setVisibility(View.VISIBLE);
                         }
                     });
@@ -890,35 +882,30 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     // 释放MediaEncoder的数量
     private int mReleaseCount = 0;
 
-    private ArrayList<String> mListPath = new ArrayList<String>();
     /**
      * 删除录制的视频
      */
     synchronized private void deleteRecordedVideo() {
         // 处于删除模式，则删除文件
         if (mBtnShutter.isDeleteMode()) {
-            if (mListPath.size() > 0) {
-                // 删除文件
-                String path = mListPath.get(mListPath.size() - 1);
-                if (!TextUtils.isEmpty(path)) {
-                    FileUtils.deleteFile(path);
-                }
-                mListPath.remove(mListPath.size() - 1);
-                // 如果此时没有录制好的视频路径，则隐藏删除和预览按钮
-                if (mListPath.size() == 0) {
-                    mBtnRecordDelete.setVisibility(View.GONE);
-                    mBtnRecordDone.setVisibility(View.GONE);
-                    // 复位状态
-                    mNeedToWaitStop = false;
-                    mOnRecording = false;
-                }
-            }
             // 删除进度
             mBtnShutter.deleteSplitView();
             // 删除视频
             VideoListManager.getInstance().removeLastSubVideo();
+            // 重置最后一秒记录的时长
+            CountDownManager.getInstance().resetLastSecondLeft();
             // 更新进度
             mBtnShutter.setProgress(CountDownManager.getInstance().getVisibleDuration());
+            // 更新时间
+            mCountDownView.setText(CountDownManager.getInstance().getVisibleDurationString());
+            // 如果此时没有了视频，则隐藏删除按钮
+            if (VideoListManager.getInstance().getSubVideoList().size() <= 0) {
+                mBtnRecordDelete.setVisibility(View.GONE);
+                mBtnRecordPreview.setVisibility(View.GONE);
+                // 复位状态
+                mNeedToWaitStop = false;
+                mOnRecording = false;
+            }
 
         } else { // 没有进入删除模式则进入删除模式
             mBtnShutter.setDeleteMode(true);
@@ -941,13 +928,25 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             RecordManager.getInstance().destoryThread();
             mNeedToWaitStop = false;
             Intent intent = new Intent(CameraActivity.this, CapturePreviewActivity.class);
-            intent.putStringArrayListExtra(CapturePreviewActivity.PATH, mListPath);
-            startActivity(intent);
-            // 清空路径，预览页面返回时会清空所有缓存的数据
-            mListPath.clear();
-            // 隐藏视频预览和删除按钮
-            mBtnRecordDone.setVisibility(View.VISIBLE);
-            mBtnRecordDelete.setVisibility(View.VISIBLE);
+            intent.putExtra(CapturePreviewActivity.MIMETYPE,
+                    CapturePreviewActivity.TYPE_VIDEO);
+            startActivityForResult(intent, REQUEST_PREVIEW);
+            // 隐藏删除和预览按钮
+            mBtnRecordPreview.setVisibility(View.GONE);
+            mBtnRecordDelete.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_PREVIEW) {
+            // 时间清0
+            mCountDownView.setText(StringUtils.generateMillisTime(0));
+            // 复位进度条
+            mBtnShutter.setProgress(0);
+            // 清除录制按钮分割线
+            mBtnShutter.cleanSplitView();
             // 关闭录制按钮
             mBtnShutter.closeButton();
         }
@@ -1068,9 +1067,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             ParamsManager.mGalleryType = GalleryType.VIDEO;
             // 录制视频状态
             mBtnShutter.setIsRecorder(true);
-
-            // 清空当前的视频路径
-            mListPath.clear();
             // 请求录音权限
             if (!mRecordSoundEnable) {
                 ActivityCompat.requestPermissions(this,

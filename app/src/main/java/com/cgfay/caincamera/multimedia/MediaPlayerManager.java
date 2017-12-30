@@ -9,6 +9,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
 
+import com.cgfay.caincamera.bean.SubVideo;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -31,6 +32,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -160,10 +162,10 @@ public final class MediaPlayerManager {
     /**
      * 准备数据源
      * @param context
-     * @param mediaPath
+     * @param videoList
      */
-    public void preparePlayer(Context context, List<String> mediaPath) {
-        if (mPlayer != null && !mediaPath.isEmpty()) {
+    public void preparePlayer(Context context, List<SubVideo> videoList) {
+        if (mPlayer != null && !videoList.isEmpty()) {
             // 测量播放带宽， 如果不需要可以传null
             DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
 
@@ -176,11 +178,12 @@ public final class MediaPlayerManager {
 
             // MediaSource数据源列表
             List<MediaSource> sourceList = new ArrayList<MediaSource>();
-            for (int i = 0; i < mediaPath.size(); i++) {
-                if (!TextUtils.isEmpty(mediaPath.get(i))) {
-                   MediaSource source = new ExtractorMediaSource(Uri.parse(mediaPath.get(i)), factory,
+            for (int i = 0; i < videoList.size(); i++) {
+                String mediaPath = videoList.get(i).getMediaPath();
+                if (!TextUtils.isEmpty(videoList.get(i).getMediaPath())) {
+                    MediaSource source = new ExtractorMediaSource(Uri.parse(mediaPath), factory,
                             extractorsFactory, null, null);
-                   sourceList.add(source);
+                    sourceList.add(source);
                 }
             }
             // 添加多个数据源
