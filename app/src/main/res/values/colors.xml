@@ -23,4 +23,13 @@
     <color name="popTextColor">#FFFFFFFF</color>
     <color name="popBackground">#559e9e9e</color>
 
+    <!-- 视频编辑页面 -->
+    <color name="thumbnailColor">#99313133</color>
+    <!-- 涂鸦颜色 -->
+    <color name="graffitiWhite">#FFF</color>
+    <color name="graffitiRed">#F00</color>
+    <color name="graffitiYellow">#FECD52</color>
+    <color name="graffitiBlue">#145CB9</color>
+    <color name="graffitiGreen">#21AE58</color>
+
 </resources>

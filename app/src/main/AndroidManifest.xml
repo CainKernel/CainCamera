@@ -89,7 +89,7 @@
 
 
         <!-- Camera 单双线程测试 start -->
-        <activity android:name=".activity.camera.CameraTestActivity"></activity>
+        <activity android:name=".activity.camera.CameraTestActivity" />
         <activity android:name=".activity.camera.TestActivity">
 
             <!-- <intent-filter> -->
@@ -100,7 +100,8 @@
             <!-- </intent-filter> -->
         </activity>
         <!-- Camera 单双线程测试 end -->
-        <activity android:name=".activity.VideoRecordActivity"></activity>
+        <activity android:name=".activity.VideoRecordActivity" />
+        <activity android:name=".activity.VideoEditActivity"></activity>
     </application>
 
 </manifest>
