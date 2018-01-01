@@ -222,7 +222,7 @@ public class FFmpegCmd {
     public static boolean mergeImageToVideo(String imagePath,
                                             String srcVideo, String desVideo) {
         // ffmpeg命令：
-        //ffmpeg -i videoPath -i imagePath -filter_complex overlay=0:0 -vcodec libx264 -profile:v baseline -preset ultrafast -b:v 3000k -g 30 -f mp4 outPath
+        //ffmpeg -i mediaPath -i imagePath -filter_complex overlay=0:0 -vcodec libx264 -profile:v baseline -preset ultrafast -b:v 3000k -g 30 -f mp4 outPath
         ArrayList<String> cmds = new ArrayList<>();
         cmds.add("ffmpeg");
         cmds.add("-i");
