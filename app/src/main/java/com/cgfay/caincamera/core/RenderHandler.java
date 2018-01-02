@@ -49,6 +49,8 @@ public class RenderHandler extends Handler {
 
     // 设置FpsHandler回调
     static final int MSG_SET_FPSHANDLER = 0x301;
+    // 设置渲染状态变更监听器
+    static final int MSG_SET_RENDER_STATE_CHANGED_LISTENER = 0x302;
 
     // 拍照
     static final int MSG_TAKE_PICTURE = 0x400;
@@ -225,6 +227,13 @@ public class RenderHandler extends Handler {
             case MSG_SET_FPSHANDLER:
                 if (mWeakRender != null && mWeakRender.get() != null) {
                     mWeakRender.get().setFpsHandler((Handler) msg.obj);
+                }
+                break;
+            // 设置渲染状态变更回调
+            case MSG_SET_RENDER_STATE_CHANGED_LISTENER:
+                if (mWeakRender != null && mWeakRender.get() != null) {
+                    mWeakRender.get()
+                            .setRenderStateChangedListener((RenderStateChangedListener) msg.obj);
                 }
                 break;
 

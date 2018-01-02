@@ -3,9 +3,11 @@ package com.cgfay.caincamera.core;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.cgfay.caincamera.type.CountDownType;
+import com.cgfay.caincamera.utils.AccurateCountDownTimer;
 import com.cgfay.caincamera.utils.StringUtils;
 
 /**
@@ -24,23 +26,27 @@ public final class CountDownManager {
         return mInstance;
     }
 
-    // 计时器
-    private CountDownTimer mCountDownTimer;
+    // 精确倒计时
+    private AccurateCountDownTimer mCountDownTimer;
     // 倒计时数值
     private long mMaxMillisSeconds = VideoListManager.DURATION_TEN_SECOND;
     // 50毫秒读取一次
     private long mCountDownInterval = 50;
 
-    // 当前计算的时长
+    // 当前走过的时长，有可能跟视频的长度不一致
+    // 在最后一秒内点击录制，倒计时走完，但录制的视频立即停止
+    // 这样的话，最后一段显示的视频长度跟当前走过的时长并不相等
     private long mCurrentDuration = 0;
+    // 记录最后一秒点击时剩余的时长
+    private long mLastSecondLeftTime = 0;
+    // 记录是否最后点击停止
+    private boolean mLastSecondStop = false;
 
     // 是否需要处理最后一秒的情况
-    private boolean mProcessLasSecond = false;
+    private boolean mProcessLasSecond = true;
 
-    // 需要等待计时器停止表示，用于最后一秒内点击停止录制的情况
-    private boolean mNeedWaitFinish = false;
-    // 最后一秒剩余时间(ms)
-    private long mLastSecondLeft = 0;
+    // 是否停止
+    private boolean mFinish = false;
 
     // 倒计时监听
     private CountDownListener mListener;
@@ -49,12 +55,7 @@ public final class CountDownManager {
     private Handler mTimerHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            // TODO Auto-generated method stub
-            super.handleMessage(msg);
-            if (mCountDownTimer != null) {
-                mCountDownTimer.cancel();
-                mCountDownTimer = null;
-            }
+            cancelCountDown();
         }
     };
 
@@ -63,38 +64,37 @@ public final class CountDownManager {
      */
     public void initCountDownTimer() {
 
-        if (mCountDownTimer != null) {
-            mCountDownTimer.cancel();
-            mCountDownTimer = null;
-        }
+        cancelCountDown();
 
-        mCountDownTimer = new CountDownTimer(mMaxMillisSeconds, mCountDownInterval) {
+        mCountDownTimer = new AccurateCountDownTimer(mMaxMillisSeconds, mCountDownInterval) {
             @Override
             public void onTick(long millisUntilFinished) {
-                int previousDuration = VideoListManager.getInstance().getDuration();
-                // 获取当前分段视频走过的时间
-                mCurrentDuration = mMaxMillisSeconds - millisUntilFinished;
-                // 如果总时长够设定的最大时长，则需要停止计时
-                boolean needToFinish = false;
-                if (previousDuration + mCurrentDuration >= mMaxMillisSeconds) {
-                    mCurrentDuration = mMaxMillisSeconds - previousDuration;
-                    needToFinish = true;
-                }
-                // 计时回调
-                if (mListener != null) {
-                    mListener.onProgressChanged(getVisibleDuration());
-                }
-                // 是否需要结束计时器
-                if (needToFinish) {
-                    mTimerHandler.sendEmptyMessage(0);
+                if (!mFinish) {
+                    // 获取视频总时长
+                    int previousDuration = VideoListManager.getInstance().getDuration();
+                    // 获取当前分段视频走过的时间
+                    mCurrentDuration = mMaxMillisSeconds - millisUntilFinished;
+                    // 如果总时长够设定的最大时长，则需要停止计时
+                    if (previousDuration + mCurrentDuration >= mMaxMillisSeconds) {
+                        mCurrentDuration = mMaxMillisSeconds - previousDuration;
+                        mFinish = true;
+                    }
+                    // 计时回调
+                    if (mListener != null) {
+                        mListener.onProgressChanged(getVisibleDuration());
+                    }
+                    // 是否需要结束计时器
+                    if (mFinish) {
+                        mTimerHandler.sendEmptyMessage(0);
+                    }
                 }
             }
 
             @Override
             public void onFinish() {
+                mFinish = true;
                 if (mListener != null) {
-                    Log.d("ShutterButton", "countdown timer finish");
-                    mListener.onProgressChanged(getVisibleDuration());
+                    mListener.onProgressChanged(getVisibleDuration(true));
                 }
             }
         };
@@ -113,23 +113,42 @@ public final class CountDownManager {
      * 停止倒计时
      */
     public void stopTimer() {
+        // 重置最后一秒停止标志
+        mLastSecondStop = false;
         // 判断是否需要处理最后一秒的情况
         if (mProcessLasSecond) {
-            // 判断是否是最后一秒点击停止的
-            long leftTime = getAvailableTime();
-            // 如果在下一次计时器回调之前剩余时间小于1秒
-            if (leftTime + mCountDownInterval < 1000) {
-                mNeedWaitFinish = true;
-                mLastSecondLeft = leftTime;
-                return;
+            // 如果在下一次计时器回调之前剩余时间小于1秒，则表示是最后一秒内点击了停止
+            if (getAvailableTime() + mCountDownInterval < 1000) {
+                mLastSecondStop = true;
+                mLastSecondLeftTime = getAvailableTime();
             }
-        } else {
-            mLastSecondLeft = 0;
         }
+        // 如果不是最后一秒，则立即停止
+        if (!mLastSecondStop) {
+            cancelCountDown();
+        }
+    }
+
+    /**
+     * 取消倒计时，不保存走过的时长、停止标志、剩余时间等
+     */
+    public void cancelTimerWithoutSaving() {
+        cancelCountDown();
+        resetDuration();
+        resetLastSecondStop();
+        mLastSecondLeftTime = 0;
+    }
+
+    /**
+     * 取消倒计时
+     */
+    private void cancelCountDown() {
         if (mCountDownTimer != null) {
             mCountDownTimer.cancel();
             mCountDownTimer = null;
         }
+        // 复位结束标志
+        mFinish = false;
     }
 
     /**
@@ -150,17 +169,17 @@ public final class CountDownManager {
 
 
     /**
-     * 重置时长
+     * 重置当前走过的时长
      */
     public void resetDuration() {
         mCurrentDuration = 0;
     }
 
     /**
-     * 重置最后一秒记录的时长
+     * 重置最后一秒停止标志
      */
-    public void resetLastSecondLeft() {
-        mLastSecondLeft = 0;
+    public void resetLastSecondStop() {
+        mLastSecondStop = false;
     }
 
     // ----------------------------- setter and getter ---------------------------------------------
@@ -213,7 +232,13 @@ public final class CountDownManager {
      * 获取当前实际时长 (跟显示的时长不一定不一样)
      * @return
      */
-    public long getCurrentDuration() {
+    public long getRealDuration() {
+        // 如果是最后一秒内点击，则计时器走过的时长要比视频录制的时长短一些，需要减去多余的时长
+        if (mLastSecondLeftTime > 0) {
+            long realTime = mCurrentDuration - mLastSecondLeftTime;
+            mLastSecondLeftTime = 0;
+            return realTime;
+        }
         return mCurrentDuration;
     }
 
@@ -221,12 +246,25 @@ public final class CountDownManager {
      * 获取显示的时长
      */
     public long getVisibleDuration() {
-        long time = VideoListManager.getInstance().getDuration()
-                + mCurrentDuration + mLastSecondLeft;
-        if (time > mMaxMillisSeconds) {
-            time = mMaxMillisSeconds;
+        return getVisibleDuration( false);
+    }
+
+    /**
+     * 获取显示的时长
+     * @param finish    是否完成
+     * @return
+     */
+    private long getVisibleDuration(boolean finish) {
+        if (finish) {
+            return mMaxMillisSeconds;
+        } else {
+            long time = VideoListManager.getInstance().getDuration()
+                    + mCurrentDuration;
+            if (time > mMaxMillisSeconds) {
+                time = mMaxMillisSeconds;
+            }
+            return time;
         }
-        return time;
     }
 
     /**
@@ -235,5 +273,21 @@ public final class CountDownManager {
      */
     public String getVisibleDurationString() {
         return StringUtils.generateMillisTime((int) getVisibleDuration());
+    }
+
+    /**
+     * 是否最后一秒内停止了
+     * @return
+     */
+    public boolean isLastSecondStop() {
+        return mLastSecondStop;
+    }
+
+    /**
+     * 是否处理最后一秒的情况(不再停止，但记录时长)
+     * @param enable
+     */
+    public void setProcessLasSecond(boolean enable) {
+        mProcessLasSecond = enable;
     }
 }

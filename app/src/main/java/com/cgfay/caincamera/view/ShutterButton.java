@@ -71,10 +71,10 @@ public class ShutterButton extends View {
     private float mGirthPro;
     // 绘制的大小
     private RectF mOval;
-    // 进度最大值
-    private int mMax;
-    // 当前进度
-    private float mProgress;
+    // 进度最大值(默认值为10秒)
+    private int mMax = 10 * 1000;
+    // 当前进度(默认值为0)
+    private float mProgress = 0;
 
     // 手势监听器
     private GestureListener mGestureListener;
@@ -95,6 +95,9 @@ public class ShutterButton extends View {
 
     // 判断录制视频还是拍照
     private boolean mIsRecord = false;
+
+    // 判断是否处于预览状态，主要用于页面刚打开状态的状态限定
+    private boolean mPreviewing = false;
 
     public ShutterButton(Context context) {
         super(context);
@@ -210,8 +213,8 @@ public class ShutterButton extends View {
                         }
                         closeButton();
                     }
-                } else { // 如果处于关闭状态，并且编码器处于可用状态，则打开按钮
-                    if (mEnableEncoder) {
+                } else { // 如果处于关闭状态，并且编码器处于可用状态，则打开按钮，排除满进度状态
+                    if (mEnableEncoder && mPreviewing && !(mProgress >= mMax)) {
                         mEnableEncoder = false;
                         if (Math.abs(upX - firstX) < mStrokeWidth
                                 && Math.abs(upY - firstY) < mStrokeWidth) {
@@ -492,7 +495,7 @@ public class ShutterButton extends View {
     public void setProgress(float progress) {
         mProgress = progress;
         float ratio = progress / mMax;
-        mGirthPro = 365 * ratio;
+        mGirthPro = 360 * ratio;
         invalidate();
         // 满进度回调
         if (ratio >= 1) {
@@ -533,5 +536,13 @@ public class ShutterButton extends View {
      */
     public void setIsRecorder(boolean enable) {
         mIsRecord = enable;
+    }
+
+    /**
+     * 是否允许打开
+     * @param previewing
+     */
+    public void setEnableOpenned(boolean previewing) {
+        mPreviewing = previewing;
     }
 }

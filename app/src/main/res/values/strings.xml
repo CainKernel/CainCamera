@@ -51,6 +51,7 @@
 
     <!-- 首页按钮 -->
     <string name="btn_camera">滤镜相机</string>
+    <string name="btn_video_record">使用FFmpeg录制视频</string>
 
     <!--合并视频提示-->
     <string name="combining">正在合并视频...</string>

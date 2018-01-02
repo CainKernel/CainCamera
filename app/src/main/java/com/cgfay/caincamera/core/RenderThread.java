@@ -3,7 +3,6 @@ package com.cgfay.caincamera.core;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.opengl.EGL14;
 import android.opengl.GLES30;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -15,15 +14,12 @@ import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.facetracker.FaceTrackManager;
 import com.cgfay.caincamera.facetracker.FaceTrackerCallback;
 import com.cgfay.caincamera.gles.EglCore;
-import com.cgfay.caincamera.gles.OffscreenSurface;
 import com.cgfay.caincamera.gles.WindowSurface;
 import com.cgfay.caincamera.type.FilterGroupType;
 import com.cgfay.caincamera.type.FilterType;
 import com.cgfay.caincamera.utils.CameraUtils;
 import com.cgfay.caincamera.utils.GlUtil;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
@@ -77,6 +73,8 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     // 预览回调缓存，解决previewCallback回调内存抖动问题
     private byte[] mPreviewBuffer;
 
+    // 渲染状态回调
+    private RenderStateChangedListener mRenderStateListener;
     private RenderHandler mRenderHandler;
 
     // 计算帧率
@@ -152,6 +150,10 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         // 开始预览
         CameraUtils.startPreview();
         isPreviewing = true;
+        // 渲染状态回调
+        if (mRenderStateListener != null) {
+            mRenderStateListener.onPreviewing(isPreviewing);
+        }
         // 配置检测点的宽高
         if (ParamsManager.enableDrawingPoints) {
             FaceTrackManager.getInstance().onDisplayChanged(mViewWidth, mViewHeight);
@@ -160,6 +162,10 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
 
     void surfaceDestoryed() {
         isPreviewing = false;
+        // 渲染状态回调
+        if (mRenderStateListener != null) {
+            mRenderStateListener.onPreviewing(isPreviewing);
+        }
         if (mWeakFpsHandler != null) {
             mWeakFpsHandler.clear();
             mWeakFpsHandler = null;
@@ -229,14 +235,16 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 开始预览
      */
     void startPreview() {
-        isPreviewing = true;
         if (mCameraTexture != null) {
             RenderManager.getInstance().updateTextureBuffer();
             CameraUtils.setPreviewSurface(mCameraTexture);
             initPreviewCallback();
             CameraUtils.startPreview();
+            isPreviewing = true;
+            if (mRenderStateListener != null) {
+                mRenderStateListener.onPreviewing(isPreviewing);
+            }
         }
-
     }
 
     /**
@@ -245,6 +253,9 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     void stopPreview() {
         isPreviewing = false;
         CameraUtils.stopPreview();
+        if (mRenderStateListener != null) {
+            mRenderStateListener.onPreviewing(isPreviewing);
+        }
     }
 
     /**
@@ -513,5 +524,13 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     void setFpsHandler(Handler handler) {
         mWeakFpsHandler = new WeakReference<Handler>(handler);
         mFrameRateMeter = new FrameRateMeter();
+    }
+
+    /**
+     * 设置渲染状态回调
+     * @param listener
+     */
+    void setRenderStateChangedListener(RenderStateChangedListener listener) {
+        mRenderStateListener = listener;
     }
 }

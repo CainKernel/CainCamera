@@ -17,6 +17,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final int REQUEST_CODE = 0;
     private Button mBtnCamera;
+    private Button mBtnVideoRecord;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,8 +46,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void initView() {
         mBtnCamera = (Button) findViewById(R.id.btn_camera);
-
         mBtnCamera.setOnClickListener(this);
+        mBtnVideoRecord = (Button) findViewById(R.id.btn_video_record);
+        mBtnVideoRecord.setOnClickListener(this);
     }
 
     @Override
@@ -56,6 +58,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(new Intent(MainActivity.this, CameraActivity.class));
                 break;
 
+            case R.id.btn_video_record:
+                startActivity(new Intent(MainActivity.this, VideoRecordActivity.class));
+                break;
         }
     }
 }

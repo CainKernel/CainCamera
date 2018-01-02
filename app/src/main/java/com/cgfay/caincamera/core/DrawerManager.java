@@ -318,7 +318,7 @@ public class DrawerManager {
             return;
         }
         synchronized (mSynOperation) {
-            // 发送拍照命令
+            // 发送Fps回调handler
             mRenderHandler.sendMessage(mRenderHandler
                     .obtainMessage(RenderHandler.MSG_SET_FPSHANDLER, handler));
         }
@@ -331,5 +331,17 @@ public class DrawerManager {
      */
     public boolean hasSetFpsHandle() {
         return mSetFpsHandler;
+    }
+
+    public void addRenderStateChangedListener(RenderStateChangedListener listener) {
+        if (mRenderHandler == null) {
+            mSetFpsHandler = false;
+            return;
+        }
+        synchronized (mSynOperation) {
+            // 发送渲染状态监听
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(RenderHandler.MSG_SET_RENDER_STATE_CHANGED_LISTENER, listener));
+        }
     }
 }

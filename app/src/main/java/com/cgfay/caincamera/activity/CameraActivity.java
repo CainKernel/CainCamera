@@ -37,6 +37,7 @@ import com.cgfay.caincamera.core.DrawerManager;
 import com.cgfay.caincamera.core.FrameRateMeter;
 import com.cgfay.caincamera.core.ParamsManager;
 import com.cgfay.caincamera.core.RecordManager;
+import com.cgfay.caincamera.core.RenderStateChangedListener;
 import com.cgfay.caincamera.core.VideoListManager;
 import com.cgfay.caincamera.facetracker.FaceTrackManager;
 import com.cgfay.caincamera.multimedia.MediaEncoder;
@@ -45,6 +46,7 @@ import com.cgfay.caincamera.type.GalleryType;
 import com.cgfay.caincamera.type.TimeLapseType;
 import com.cgfay.caincamera.utils.BitmapUtils;
 import com.cgfay.caincamera.utils.CameraUtils;
+import com.cgfay.caincamera.utils.FileUtils;
 import com.cgfay.caincamera.utils.PermissionUtils;
 import com.cgfay.caincamera.utils.StringUtils;
 import com.cgfay.caincamera.utils.TextureRotationUtils;
@@ -68,7 +70,7 @@ import java.util.List;
 public class CameraActivity extends AppCompatActivity implements View.OnClickListener,
         CameraSurfaceView.OnClickListener, CameraSurfaceView.OnTouchScroller,
         HorizontalIndicatorView.IndicatorListener, SettingPopView.StateChangedListener,
-        RatioImageView.RatioChangedListener,
+        RatioImageView.RatioChangedListener, RenderStateChangedListener,
         SeekBar.OnSeekBarChangeListener, CaptureFrameCallback, ShutterButton.GestureListener {
 
     private static final String TAG = "CameraActivity";
@@ -184,6 +186,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         FaceTrackManager.getInstance().requestFaceNetwork(this);
         // 创建渲染线程
         DrawerManager.getInstance().createRenderThread();
+        // 添加渲染状态回调监听
+        DrawerManager.getInstance().addRenderStateChangedListener(this);
         // 设置拍照回调
         DrawerManager.getInstance().setCaptureFrameCallback(this);
         mMainHandler = new Handler(getMainLooper());
@@ -396,7 +400,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         registerHomeReceiver();
         if (mCameraEnable) {
             DrawerManager.getInstance().startPreview();
-            mOnPreviewing = true;
         } else {
             requestCameraPermission();
         }
@@ -438,7 +441,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         unRegisterHomeReceiver();
         if (mCameraEnable) {
             DrawerManager.getInstance().stopPreview();
-            mOnPreviewing = false;
         }
     }
 
@@ -479,6 +481,21 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 }
                 // 当点击了home键时需要停止预览，防止后台一直持有相机
                 if (reason.equals(SYSTEM_DIALOG_REASON_HOME_KEY)) {
+                    // 停止录制
+                    if (mOnRecording) {
+                        // 停止录制
+                        RecordManager.getInstance().stopRecording();
+                        // 取消倒计时
+                        CountDownManager.getInstance().cancelTimerWithoutSaving();
+                        // 重置进入条
+                        mBtnShutter.setProgress((int) CountDownManager.getInstance().getVisibleDuration());
+                        // 删除分割线
+                        mBtnShutter.deleteSplitView();
+                        // 关闭按钮
+                        mBtnShutter.closeButton();
+                        // 更新时间
+                        mCountDownView.setText(CountDownManager.getInstance().getVisibleDurationString());
+                    }
                     if (mOnPreviewing) {
                         DrawerManager.getInstance().stopPreview();
                     }
@@ -486,6 +503,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             }
         }
     };
+
+    @Override
+    public void onPreviewing(boolean previewing) {
+        mOnPreviewing = previewing;
+        mBtnShutter.setEnableOpenned(mOnPreviewing);
+    }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -546,7 +569,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
             // 删除
             case R.id.btn_record_delete:
-                deleteRecordedVideo();
+                deleteRecordedVideo(false);
                 break;
 
             // 完成录制，进入预览
@@ -721,7 +744,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onStartRecord() {
-        Log.d("ShutterButton", "onStartRecord");
         // 初始化录制线程
         RecordManager.getInstance().initThread();
         // 设置输出路径
@@ -753,7 +775,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onStopRecord() {
-        Log.d("ShutterButton", "onStopRecord");
+        // 停止录制
         DrawerManager.getInstance().stopRecording();
         // 停止倒计时
         CountDownManager.getInstance().stopTimer();
@@ -761,15 +783,20 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onProgressOver() {
-        Log.d("ShutterButton", "onProgressOver");
-        previewRecordVideo();
+        // 如果最后一秒内点击停止录制，则仅仅关闭录制按钮，因为前面已经停止过了，不做跳转
+        // 如果最后一秒内没有停止录制，否则停止录制并跳转至预览页面
+        if (CountDownManager.getInstance().isLastSecondStop()) {
+            // 关闭录制按钮
+            mBtnShutter.closeButton();
+        } else {
+            previewRecordVideo();
+        }
     }
 
     private CountDownManager.CountDownListener
             mCountDownListener = new CountDownManager.CountDownListener() {
         @Override
         public void onProgressChanged(long duration) {
-            Log.d("ShutterButton", "onProgressChanged: " + duration);
             // 设置进度
             mBtnShutter.setProgress(duration);
             // 设置时间
@@ -831,9 +858,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                     || ParamsManager.mGalleryType == GalleryType.GIF) { // 录制GIF，没有音频
                 // 录制完成跳转预览页面
                 String outputPath = RecordManager.getInstance().getOutputPath();
-                // 添加分段视频
-                VideoListManager.getInstance().addSubVideo(outputPath,
-                        (int) CountDownManager.getInstance().getCurrentDuration());
+                // 添加分段视频，存在时长为0的情况，也就是取消倒计时但不保存时长的情况
+                if (CountDownManager.getInstance().getRealDuration() > 0) {
+                    VideoListManager.getInstance().addSubVideo(outputPath,
+                            (int) CountDownManager.getInstance().getRealDuration());
+                } else {    // 移除多余的视频
+                    FileUtils.deleteFile(outputPath);
+                }
                 // 重置当前走过的时长
                 CountDownManager.getInstance().resetDuration();
 
@@ -885,15 +916,23 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     /**
      * 删除录制的视频
      */
-    synchronized private void deleteRecordedVideo() {
+    synchronized private void deleteRecordedVideo(boolean clearAll) {
         // 处于删除模式，则删除文件
         if (mBtnShutter.isDeleteMode()) {
-            // 删除进度
-            mBtnShutter.deleteSplitView();
-            // 删除视频
-            VideoListManager.getInstance().removeLastSubVideo();
-            // 重置最后一秒记录的时长
-            CountDownManager.getInstance().resetLastSecondLeft();
+            // 删除视频，判断是否清除所有
+            if (clearAll) {
+                // 清除所有分割线
+                mBtnShutter.cleanSplitView();
+                VideoListManager.getInstance().removeAllSubVideo();
+            } else {
+                // 删除分割线
+                mBtnShutter.deleteSplitView();
+                VideoListManager.getInstance().removeLastSubVideo();
+            }
+            // 重置计时器记录走过的时长
+            CountDownManager.getInstance().resetDuration();
+            // 重置最后一秒点击标志
+            CountDownManager.getInstance().resetLastSecondStop();
             // 更新进度
             mBtnShutter.setProgress(CountDownManager.getInstance().getVisibleDuration());
             // 更新时间
