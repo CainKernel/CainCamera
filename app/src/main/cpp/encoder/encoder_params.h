@@ -18,10 +18,6 @@ typedef struct EncoderParams {
     long long mBitRate;     // 码率
     int mAudioBitRate;      // 音频码率
     int mAudioSampleRate;   // 采样率
-    JNIEnv *env;            // 全局指针
-    JavaVM *javaVM;         // JVM指针
-    jclass javaClass;       // Java接口类的class对象
-
 };
 
 #endif //CAINCAMERA_ENCODER_PARAMS_H
