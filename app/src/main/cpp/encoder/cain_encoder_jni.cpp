@@ -108,7 +108,9 @@ AVCodec *mAudioCodec;
 AVCodecContext *mAudioCodecContext;
 AVStream *mAudioStream;
 AVFrame *mAudioFrame;
-uint8_t  *mAudioOutBuffer;
+AVPacket *mAudioPacket;
+uint8_t  *mAudioBuffer;
+int mSampleSize; // 采样缓冲大小
 // 音频转换上下文
 SwrContext *samples_convert_ctx;
 
@@ -259,8 +261,17 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_initMediaRecorder
         LOGE("av_frame_alloc() error: Could not allocate audio frame.");
         return -1;
     }
+    mAudioFrame->pts++;
 
-    // TODO 音频重采样
+
+    // 创建缓冲
+    mSampleSize = av_samples_get_buffer_size(NULL, mAudioCodecContext->channels,
+                                               mAudioCodecContext->frame_size,
+                                               mAudioCodecContext->sample_fmt, 1);
+    mAudioBuffer = (uint8_t *) av_malloc(mSampleSize);
+    avcodec_fill_audio_frame(mAudioFrame, mAudioCodecContext->channels,
+                             mAudioCodecContext->sample_fmt,
+                             (const uint8_t *)mAudioBuffer, mSampleSize, 1);
 
 
     // ------------------------------------- 复用器写入文件初始化 ------------------------------------
@@ -336,20 +347,20 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_encoderYUVFrame
         LOGE("Error encoding video frame: %s", av_err2str(ret))
         return -1;
     }
-    // 写入pts
-    if (mVideoPacket->pts != AV_NOPTS_VALUE) {
-        mVideoPacket->pts = av_rescale_q(mVideoPacket->pts,
-                                         mVideoCodecContext->time_base, mVideoStream->time_base);
-    }
-    // 写入dts
-    if (mVideoPacket->dts != AV_NOPTS_VALUE) {
-        mVideoPacket->dts = av_rescale_q(mVideoPacket->dts,
-                                         mVideoCodecContext->time_base, mVideoStream->time_base);
-    }
-    mVideoPacket->stream_index = mVideoStream->index;
-
     // 将编码后的数据写入文件中
     if (got_packet) {
+        // 写入pts
+        if (mVideoPacket->pts != AV_NOPTS_VALUE) {
+            mVideoPacket->pts = av_rescale_q(mVideoPacket->pts,
+                                             mVideoCodecContext->time_base, mVideoStream->time_base);
+        }
+        // 写入dts
+        if (mVideoPacket->dts != AV_NOPTS_VALUE) {
+            mVideoPacket->dts = av_rescale_q(mVideoPacket->dts,
+                                             mVideoCodecContext->time_base, mVideoStream->time_base);
+        }
+        mVideoPacket->stream_index = mVideoStream->index;
+        // 写入文件中
         ret = av_interleaved_write_frame(mFormatCtx, mVideoPacket);
     } else {
         ret = 0;
@@ -373,8 +384,47 @@ JNIEXPORT jint
 JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendPCMFrame
         (JNIEnv *env, jclass obj, jbyteArray pcmData) {
     jbyte *pcm = env->GetByteArrayElements(pcmData, 0);
-    // TODO 音频编码
-
+    // 将pcm数据复制到audio buffer中
+    memcpy(mAudioBuffer, pcm, mSampleSize);
+    // 设置audio frame
+    mAudioFrame->data[0] = mAudioBuffer;
+    mAudioFrame->pts++;
+    mAudioFrame->quality = mAudioCodecContext->global_quality;
+    // 创建一个AVPacket
+    av_init_packet(mAudioPacket);
+    // PCM音频编码为AAC
+    int got_packet;
+    int ret = avcodec_encode_audio2(mAudioCodecContext, mAudioPacket, mAudioFrame, &got_packet);
+    if (ret < 0) {
+        LOGE("avcodec_encode_audio2() error %d: Could not encode audio packet.", ret);
+        return -1;
+    }
+    mAudioFrame->pts = mAudioFrame->pts + mAudioFrame->nb_samples;
+    if (got_packet) {
+        // 设置音频的pts
+        if (mAudioPacket->pts != AV_NOPTS_VALUE) {
+            mAudioPacket->pts = av_rescale_q(mAudioPacket->pts,
+                                             mAudioCodecContext->time_base,
+                                             mAudioStream->time_base);
+        }
+        // 设置音频的dts
+        if (mAudioPacket->dts != AV_NOPTS_VALUE) {
+            mAudioPacket->dts = av_rescale_q(mAudioPacket->dts,
+                                             mAudioCodecContext->time_base,
+                                             mAudioStream->time_base);
+        }
+        mAudioPacket->stream_index = mAudioStream->index;
+        mAudioPacket->flags = mAudioPacket->flags | AV_PKT_FLAG_KEY;
+        // 写入编码数据
+        ret = av_interleaved_write_frame(mFormatCtx, mAudioPacket);
+        if (ret < 0) {
+            LOGE("av_interleaved_write_frame() error %d while writing audio frame.", ret);
+            return -1;
+        }
+    }
+    // 释放资源
+    av_packet_free(&mAudioPacket);
+    // 释放资源
     env->ReleaseByteArrayElements(pcmData, pcm, 0);
     return 0;
 }
@@ -395,6 +445,9 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_stopRecorder(JNIEnv *env, jc
 
         // 写入文件尾部信息
         av_write_trailer(mFormatCtx);
+
+        // TODO 释放资源
+        
     }
 }
 
