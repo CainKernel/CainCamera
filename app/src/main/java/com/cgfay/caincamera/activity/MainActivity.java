@@ -56,10 +56,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.btn_camera:
                 startActivity(new Intent(MainActivity.this, CameraActivity.class));
+                finish();
                 break;
 
             case R.id.btn_video_record:
                 startActivity(new Intent(MainActivity.this, VideoRecordActivity.class));
+                finish();
                 break;
         }
     }

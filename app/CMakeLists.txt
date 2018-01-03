@@ -61,12 +61,9 @@ include_directories(src/main/cpp/ffmpeg
 add_library( encoder
 
              SHARED
-
-             src/main/cpp/encoder/aac_encoder.cpp
-             src/main/cpp/encoder/encoder.cpp
-             src/main/cpp/encoder/h264_encoder.cpp
-             src/main/cpp/encoder/media_muxer.cpp
-             src/main/cpp/encoder/safety_queue.cpp )
+             # encoder source
+             src/main/cpp/encoder/safety_queue.cpp
+             src/main/cpp/encoder/cain_encoder_jni.cpp )
 
 # 查找Android存在的库
 find_library( log-lib
@@ -83,31 +80,3 @@ target_link_libraries(
                        ${log-lib} )
 
 #---------------------------------- libencoder.so 编译 end -----------------------------------------
-
-# 添加头文件
-include_directories(src/main/cpp/ffmpeg
-                    src/main/cpp/ffmpeg/include )
-
-# 添加自身的jni库
-add_library( native-lib
-
-             SHARED
-             src/main/cpp/encoder/aac_encoder.cpp
-             src/main/cpp/encoder/encoder.cpp
-             src/main/cpp/encoder/h264_encoder.cpp
-             src/main/cpp/encoder/safety_queue.cpp
-             src/main/cpp/native-lib.cpp )
-
-# 查找Android存在的库
-find_library( log-lib
-
-              log )
-
-# 链接库文件
-target_link_libraries(
-                       native-lib
-
-                       # ffmpeg库
-                       ffmpeg
-
-                       ${log-lib} )

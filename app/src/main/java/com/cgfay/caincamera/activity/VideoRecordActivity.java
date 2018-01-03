@@ -3,6 +3,8 @@ package com.cgfay.caincamera.activity;
 import android.app.Activity;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -26,8 +28,22 @@ import java.util.List;
 /**
  * 使用FFmpeg录制视频页面（未完成）
  */
-public class VideoRecordActivity extends AppCompatActivity
-        implements View.OnClickListener, SurfaceHolder.Callback, Camera.PreviewCallback {
+public class VideoRecordActivity extends AppCompatActivity implements View.OnClickListener,
+        SurfaceHolder.Callback, Camera.PreviewCallback, IMediaRecorder {
+
+    public static final int AUDIO_RECORD_ERROR_UNKNOWN = 0;
+    /**
+     * 采样率设置不支持
+     */
+    public static final int AUDIO_RECORD_ERROR_SAMPLERATE_NOT_SUPPORT = 1;
+    /**
+     * 最小缓存获取失败
+     */
+    public static final int AUDIO_RECORD_ERROR_GET_MIN_BUFFER_SIZE_NOT_SUPPORT = 2;
+    /**
+     * 创建AudioRecord失败
+     */
+    public static final int AUDIO_RECORD_ERROR_CREATE_FAILED = 3;
 
     private Button mBtnRecord;
 
@@ -36,6 +52,8 @@ public class VideoRecordActivity extends AppCompatActivity
 
     private HandlerThread mRenderThread;
     private Handler mRenderHandler;
+    // 音频录制
+    private AudioRecorder mAudioRecorder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -173,6 +191,16 @@ public class VideoRecordActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void onAudioError(int what, String message) {
+
+    }
+
+    @Override
+    public void receiveAudioData(byte[] sampleBuffer, int len) {
+        // 音频编码
+
+    }
 
     // ------------------------------------ 内部方法 -----------------------------------
     private static final float Ratio_16_9 = 0.5625f;
@@ -460,4 +488,85 @@ public class VideoRecordActivity extends AppCompatActivity
         }
         return result;
     }
+
+
+    // ------------------------------------------ 音频录制线程 --------------------------------------
+    public class AudioRecorder extends Thread {
+        // 是否停止线程
+        private boolean mStop = false;
+
+        private AudioRecord mAudioRecord = null;
+        /** 采样率 */
+        private int mSampleRate = 44100;
+        private IMediaRecorder mMediaRecorder;
+
+        public AudioRecorder(IMediaRecorder mediaRecorder) {
+            this.mMediaRecorder = mediaRecorder;
+        }
+
+        /** 设置采样率 */
+        public void setSampleRate(int sampleRate) {
+            this.mSampleRate = sampleRate;
+        }
+
+        @Override
+        public void run() {
+            if (mSampleRate != 8000 && mSampleRate != 16000 && mSampleRate != 22050
+                    && mSampleRate != 44100) {
+                mMediaRecorder.onAudioError(AUDIO_RECORD_ERROR_SAMPLERATE_NOT_SUPPORT,
+                        "sampleRate not support.");
+                return;
+            }
+
+            final int mMinBufferSize = AudioRecord.getMinBufferSize(mSampleRate,
+                    AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
+
+            if (AudioRecord.ERROR_BAD_VALUE == mMinBufferSize) {
+                mMediaRecorder.onAudioError(AUDIO_RECORD_ERROR_GET_MIN_BUFFER_SIZE_NOT_SUPPORT,
+                        "parameters are not supported by the hardware.");
+                return;
+            }
+
+            mAudioRecord = new AudioRecord(android.media.MediaRecorder.AudioSource.MIC, mSampleRate,
+                    AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, mMinBufferSize);
+            if (null == mAudioRecord) {
+                mMediaRecorder.onAudioError(AUDIO_RECORD_ERROR_CREATE_FAILED, "new AudioRecord failed.");
+                return;
+            }
+            try {
+                mAudioRecord.startRecording();
+            } catch (IllegalStateException e) {
+                mMediaRecorder.onAudioError(AUDIO_RECORD_ERROR_UNKNOWN, "startRecording failed.");
+                return;
+            }
+
+            byte[] sampleBuffer = new byte[2048];
+
+            try {
+                while (!mStop) {
+                    int result = mAudioRecord.read(sampleBuffer, 0, 2048);
+                    if (result > 0) {
+                        mMediaRecorder.receiveAudioData(sampleBuffer, result);
+                    }
+                }
+            } catch (Exception e) {
+                String message = "";
+                if (e != null)
+                    message = e.getMessage();
+                mMediaRecorder.onAudioError(AUDIO_RECORD_ERROR_UNKNOWN, message);
+            }
+
+            mAudioRecord.release();
+            mAudioRecord = null;
+        }
+
+        /**
+         * 停止音频录制
+         */
+        public void stopAudioRecording() {
+            mStop = true;
+        }
+    }
+
+
 }
