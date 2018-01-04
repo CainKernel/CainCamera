@@ -6,6 +6,7 @@ import android.hardware.Camera;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.cgfay.caincamera.R;
+import com.cgfay.caincamera.jni.FFmpegHandler;
 import com.cgfay.caincamera.view.AspectFrameLayout;
 
 import java.io.IOException;
@@ -187,7 +189,14 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
      */
     private void recordVideo() {
         if (mPreviewing) {
-            mRecording = !mRecording;
+            if (!mRecording) {
+                Log.d("recordVideo", "started");
+                FFmpegHandler.startRecord();
+                mRecording = true;
+            } else {
+                mRecording = false;
+                FFmpegHandler.stopRecord();
+            }
         }
     }
 
@@ -199,7 +208,9 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
     @Override
     public void receiveAudioData(byte[] sampleBuffer, int len) {
         // 音频编码
-
+        if (mRecording) {
+            FFmpegHandler.sendPCMFrame(sampleBuffer, len);
+        }
     }
 
     // ------------------------------------ 内部方法 -----------------------------------
@@ -275,7 +286,11 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
             mPreviewing = false;
         }
         mRecording = false;
-
+        // 初始化录制器
+        String path = Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera/video.mp4";
+        FFmpegHandler.initMediaRecorder(path, width, height, width, height, 25,
+                5760000, false, 40000, 44100);
+        Log.d("initMediaRecorder", "inited");
     }
 
     private void internalSurfaceChanged(int width, int height) {
@@ -300,7 +315,9 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
         // 录制视频数据
-
+        if (mRecording) {
+            FFmpegHandler.sendYUVFrame(data);
+        }
 
         // 添加回调
         camera.addCallbackBuffer(mPreviewBuffer);

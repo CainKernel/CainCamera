@@ -32,18 +32,20 @@ public final class FFmpegHandler {
      * @param videoHeight
      * @param frameRate
      * @param bitRate
+     * @param enableAudio
      * @param audioBitRate
      * @param audioSampleRate
      * @return
      */
     public static native int initMediaRecorder(String videoPath, int previewWidth, int previewHeight,
                                                int videoWidth, int videoHeight, int frameRate,
-                                               int bitRate, int audioBitRate, int audioSampleRate);
+                                               int bitRate, boolean enableAudio,
+                                               int audioBitRate, int audioSampleRate);
 
     /**
      * 开始录制
      */
-    public static native void startRecorder();
+    public static native void startRecord();
 
     /**
      * 发送需要编码的yuv数据
@@ -57,12 +59,12 @@ public final class FFmpegHandler {
      * @param data
      * @return
      */
-    public static native int sendPCMFrame(byte[] data);
+    public static native int sendPCMFrame(byte[] data, int len);
 
     /**
      * 发送停止命令
      */
-    public static native void stopRecorder();
+    public static native void stopRecord();
 
 
     /**
