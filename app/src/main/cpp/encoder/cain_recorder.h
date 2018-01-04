@@ -29,10 +29,9 @@ public:
     AVStream *videoStream;
     AVFrame *videoFrame;
     AVPacket videoPacket;
-    uint8_t  *videoBuffer;
     int mVideoSize;
     // 图像转换上下文
-    SwsContext *img_convert_ctx;
+    SwsContext *pConvertCtx;
 
     // 音频编码器部分
     AVCodec *audioCodec;

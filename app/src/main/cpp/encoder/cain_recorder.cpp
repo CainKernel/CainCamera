@@ -37,13 +37,25 @@ int CainRecorder::initRecorder() {
     // 初始化
     av_register_all();
 
-    // 创建复用上下文
-    avformat_alloc_output_context2(&pFormatCtx, NULL, NULL, params->mediaPath);
-    pOutputFormat = pFormatCtx->oformat;
+    // 输出格式
+    pOutputFormat = av_guess_format(NULL, params->mediaPath, NULL);
+    if (pOutputFormat == NULL) {
+        LOGE("av_guess_format() error: Could not guess output format for %s", params->mediaPath);
+        return -1;
+    }
+    // 创建输出上下文
+    pFormatCtx = avformat_alloc_context();
+    if (pFormatCtx == NULL) {
+        LOGE("avformat_alloc_context() error: Could not allocate format context");
+        return -1;
+    }
+    // 绑定数据格式对象
+    pFormatCtx->oformat = pOutputFormat;
+    memcpy(pFormatCtx->filename, pOutputFormat->name, sizeof(pOutputFormat->name));
 
     // ----------------------------- 视频编码器初始化部分 -------------------------------------------
-    // 设置视频编码器的ID
-    pOutputFormat->video_codec = AV_CODEC_ID_H264;
+    // 设置视频编码器的ID TODO 根据不同文件名判断用哪种类型，目前只支持mp4
+    pOutputFormat->video_codec = AV_CODEC_ID_MPEG4;
 
     // 打开输出文件
     int ret = avio_open(&pFormatCtx->pb, params->mediaPath, AVIO_FLAG_READ_WRITE);
@@ -52,8 +64,16 @@ int CainRecorder::initRecorder() {
         return -1;
     }
 
+    // 创建视频编码器
+    videoCodec = avcodec_find_encoder(pOutputFormat->video_codec);
+    if (videoCodec == NULL) {
+        LOGE("avcodec_find_encoder() error: Video codec not found.");
+        return -1;
+    }
+    pOutputFormat->video_codec = videoCodec->id;
+
     // 创建视频码流
-    videoStream = avformat_new_stream(pFormatCtx, 0);
+    videoStream = avformat_new_stream(pFormatCtx, videoCodec);
     if (videoStream == NULL) {
         LOGE("avformat_new_stream() error: Could not allocate video stream!\n");
         return -1;
@@ -61,7 +81,7 @@ int CainRecorder::initRecorder() {
 
     // 获取编码上下文，并设置相关参数
     videoCodecContext = videoStream->codec;
-    videoCodecContext->codec_id = AV_CODEC_ID_H264;
+    videoCodecContext->codec_id = pOutputFormat->video_codec;
     videoCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
     videoCodecContext->pix_fmt = AV_PIX_FMT_YUV420P;
     videoCodecContext->width = params->previewWidth;
@@ -87,84 +107,81 @@ int CainRecorder::initRecorder() {
         av_dict_set(&param, "profile", "baseline", 0);
     }
 
-    // 查找编码器
-    videoCodec = avcodec_find_encoder(videoCodecContext->codec_id);
-    if (!videoCodec) {
-        LOGE("can not find encoder !\n");
-        return -1;
-    }
-
-    // 判断视频码流是否存在，打开编码器
+    // 打开视频编码器
     ret = avcodec_open2(videoCodecContext, videoCodec, NULL);
     if (ret < 0) {
         LOGE("avcodec_open2() error %d: Could not open video codec.", ret);
         return -1;
     }
 
+    // 创建需要编码的帧对象
     videoFrame = av_frame_alloc();
-    int picture_size = avpicture_get_size(videoCodecContext->pix_fmt,
-                                          videoCodecContext->width, videoCodecContext->height);
-    LOGI("picture_size: %d", picture_size);
-    uint8_t *buf = (uint8_t *) av_malloc(picture_size);
-    avpicture_fill((AVPicture *) videoFrame, buf, videoCodecContext->pix_fmt, videoCodecContext->width,
-                   videoCodecContext->height);
-
-    // ------------------------------ 音频编码初始化部分 --------------------------------------------
-    // 设置音频编码格式
-    pOutputFormat->audio_codec = AV_CODEC_ID_AAC;
-
-    // 创建音频编码器
-    audioCodec = avcodec_find_encoder(pOutputFormat->audio_codec);
-    if (!audioCodec) {
-        LOGE("avcodec_find_encoder() error: Audio codec not found.");
+    if (videoFrame == NULL) {
+        LOGE("av_frame_alloc() error: Could not allocate picture.");
         return -1;
     }
 
-    // 创建音频码流
-    audioStream = avformat_new_stream(pFormatCtx, audioCodec);
-    if (!audioStream) {
-        LOGE("avformat_new_stream() error: Could not allocate audio stream.");
-        return -1;
-    }
+//    // ------------------------------ 音频编码初始化部分 --------------------------------------------
+//    // 设置音频编码格式
+//    pOutputFormat->audio_codec = AV_CODEC_ID_AAC;
+//
+//    // 创建音频编码器
+//    audioCodec = avcodec_find_encoder(pOutputFormat->audio_codec);
+//    if (!audioCodec) {
+//        LOGE("avcodec_find_encoder() error: Audio codec not found.");
+//        return -1;
+//    }
+//
+//    // 创建音频码流
+//    audioStream = avformat_new_stream(pFormatCtx, audioCodec);
+//    if (!audioStream) {
+//        LOGE("avformat_new_stream() error: Could not allocate audio stream.");
+//        return -1;
+//    }
+//
+//    // 获取音频编码上下文
+//    audioCodecContext = audioStream->codec;
+//    audioCodecContext->codec_id = pOutputFormat->audio_codec;
+//    audioCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
+//    audioCodecContext->bit_rate = params->audioBitRate;
+//    audioCodecContext->sample_rate = params->audioSampleRate;
+//    audioCodecContext->channel_layout = AV_CH_LAYOUT_MONO;
+//    audioCodecContext->channels =
+//            av_get_channel_layout_nb_channels(audioCodecContext->channel_layout);
+//    audioCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
+//    audioCodecContext->bits_per_raw_sample = 16;
+//    // 设置码率
+//    audioCodecContext->time_base.num = 1;
+//    audioCodecContext->time_base.den = params->audioSampleRate;
+//
+//    audioStream->time_base.num = 1;
+//    audioStream->time_base.den = params->audioSampleRate;
+//
+//    // 打开音频编码器
+//    ret = avcodec_open2(audioCodecContext, audioCodec, NULL);
+//    if (ret < 0) {
+//        LOGE("avcodec_open2() error %d : Could not open audio codec.", ret);
+//        return -1;
+//    }
+//    // 创建音频帧
+//    audioFrame = av_frame_alloc();
+//    if (!audioFrame) {
+//        LOGE("av_frame_alloc() error: Could not allocate audio frame.");
+//        return -1;
+//    }
+//    audioFrame->pts = 0;
+//
+//    // 创建缓冲
+//    sampleSize = av_samples_get_buffer_size(NULL, audioCodecContext->channels,
+//                                             audioCodecContext->frame_size,
+//                                             audioCodecContext->sample_fmt, 1);
+//    audioBuffer = (uint8_t *) av_malloc(sampleSize);
+//    avcodec_fill_audio_frame(audioFrame, audioCodecContext->channels,
+//                             audioCodecContext->sample_fmt,
+//                             (const uint8_t *)audioBuffer, sampleSize, 1);
 
-    // 获取音频编码上下文
-    audioCodecContext = audioStream->codec;
-    audioCodecContext->codec_id = pOutputFormat->audio_codec;
-    audioCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
-    audioCodecContext->bit_rate = params->audioBitRate;
-    audioCodecContext->sample_rate = params->audioSampleRate;
-    audioCodecContext->channel_layout = AV_CH_LAYOUT_MONO;
-    audioCodecContext->channels =
-            av_get_channel_layout_nb_channels(audioCodecContext->channel_layout);
-    audioCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
-    audioCodecContext->bits_per_raw_sample = 16;
-    // 设置码率
-    audioCodecContext->time_base.num = 1;
-    audioCodecContext->time_base.den = params->audioSampleRate;
-
-    // 设置码流的码率
-    audioStream->time_base.num = 1;
-    audioStream->time_base.den = params->audioSampleRate;
-
-    // 创建音频帧
-    audioFrame = av_frame_alloc();
-    if (!audioFrame) {
-        LOGE("av_frame_alloc() error: Could not allocate audio frame.");
-        return -1;
-    }
-    audioFrame->pts = 0;
-
-    // 创建缓冲
-    sampleSize = av_samples_get_buffer_size(NULL, audioCodecContext->channels,
-                                             audioCodecContext->frame_size,
-                                             audioCodecContext->sample_fmt, 1);
-    audioBuffer = (uint8_t *) av_malloc(sampleSize);
-    avcodec_fill_audio_frame(audioFrame, audioCodecContext->channels,
-                             audioCodecContext->sample_fmt,
-                             (const uint8_t *)audioBuffer, sampleSize, 1);
     // 写入文件头
     avformat_write_header(pFormatCtx, NULL);
-    av_new_packet(&videoPacket, picture_size);
 
     return 0;
 
@@ -319,41 +336,88 @@ int CainRecorder::flushFrame(AVFormatContext *fmt_ctx, int streamIndex) {
  * @return
  */
 int CainRecorder::avcEncode(CainRecorder *recorder) {
+    // 输出流
+    if (recorder->videoStream == NULL) {
+        LOGE("No video output stream (Is imageWidth > 0 && imageHeight > 0 and has start() been called?)");
+        return -1;
+    }
+    // ------------------------- 安卓摄像头数据是NV21的，需要转换成YUV420P ----------------------------
+    // 获取转换格式上下文
+    recorder->pConvertCtx = sws_getCachedContext(recorder->pConvertCtx,
+                                                     recorder->params->videoWidth,
+                                                     recorder->params->videoHeight,
+                                                     AV_PIX_FMT_NV21,
+                                                     recorder->videoCodecContext->width,
+                                                     recorder->videoCodecContext->height,
+                                                     recorder->videoCodecContext->pix_fmt,
+                                                     SWS_BILINEAR, NULL, NULL, NULL);
+    if (recorder->pConvertCtx == NULL) {
+        LOGE("sws_getCachedContext() error: Cannot initialize the conversion context.");
+        return -1;
+    }
 
-    // 填充数据，摄像头数据是NV21格式的，这里转换为YUV420P格式
-    uint8_t *frameData = *recorder->frameQueue.wait_and_pop().get();
-    int y_size = recorder->params->previewWidth * recorder->params->previewHeight;
-    int uv_length = y_size / 4;
-    memcpy(recorder->videoFrame->data[0], frameData, y_size); // 复制Y帧
-    int i;
-    for ( i = 0; i < uv_length; i++) {
-        *(recorder->videoFrame->data[2] + i) = *(frameData + y_size + i * 2);
-        *(recorder->videoFrame->data[1] + i) = *(frameData + y_size + i * 2 + 1);
+    // 获取数据
+    uint8_t *in = *recorder->frameQueue.wait_and_pop().get();
+    // 创建输出帧需要的缓冲
+    int size = avpicture_get_size(AV_PIX_FMT_YUV420P,
+                                  recorder->videoCodecContext->width,
+                                  recorder->videoCodecContext->height);
+    uint8_t *picture_buf = (uint8_t *)av_malloc(size);
+
+    avpicture_fill((AVPicture *) recorder->videoFrame, picture_buf, AV_PIX_FMT_YUV420P,
+                   recorder->videoCodecContext->width, recorder->videoCodecContext->height);
+
+    int y_length = recorder->videoCodecContext->width * recorder->videoCodecContext->height;
+    int uv_length = y_length / 4;
+    memcpy(recorder->videoFrame->data[0], in, y_length);
+    for (int i = 0; i < uv_length; i++) {
+        *(recorder->videoFrame->data[2] + i) = *(in + y_length + i * 2);
+        *(recorder->videoFrame->data[1] + i) = *(in + y_length + i * 2 + 1);
     }
 
     // 设置宽高
     recorder->videoFrame->format = AV_PIX_FMT_YUV420P;
-    recorder->videoFrame->width = recorder->params->previewHeight;
-    recorder->videoFrame->height = recorder->params->previewWidth;
-    recorder->videoFrame->quality = recorder->videoCodecContext->global_quality;
+    recorder->videoFrame->width = recorder->videoCodecContext->width;
+    recorder->videoFrame->height = recorder->videoCodecContext->height;
 
-    // 将YUV数据编码为H264
+    // -------------------------------------- 开始编码 ---------------------------------------------
+    // 创建一个AVPacket对象，用于保存编码后的h264数据
+    int dataSize = 8 * recorder->videoCodecContext->width * recorder->videoCodecContext->height;
     av_init_packet(&recorder->videoPacket);
+    recorder->videoPacket.stream_index = recorder->videoStream->index;
+    recorder->videoPacket.data = (uint8_t *) av_malloc(dataSize);
+    recorder->videoPacket.size = dataSize;
+    // YUV编码为H264
     int got_packet;
+    // TODO 这里会编码失败，目前还在找原因
     int ret = avcodec_encode_video2(recorder->videoCodecContext, &recorder->videoPacket,
                                     recorder->videoFrame, &got_packet);
     if (ret < 0) {
-        LOGE("Error encoding video frame: %s", av_err2str(ret))
+        LOGE("Error encoding video frame: %s %d", av_err2str(ret), ret);
         return -1;
     }
-    // 将编码后的数据写入文件中
-    if (got_packet) {
-        recorder->frameCount++;
+    recorder->videoFrame->pts = recorder->videoFrame->pts + 1;
+    // 如果成功编码，则设置编码后的数据
+    if (got_packet == 1) {
+        if (recorder->videoPacket.pts != AV_NOPTS_VALUE) {
+            recorder->videoPacket.pts = av_rescale_q(recorder->videoPacket.pts,
+                                                     recorder->videoCodecContext->time_base,
+                                                     recorder->videoStream->time_base);
+        }
+        if (recorder->videoPacket.dts != AV_NOPTS_VALUE) {
+            recorder->videoPacket.dts = av_rescale_q(recorder->videoPacket.dts,
+                                                     recorder->videoCodecContext->time_base,
+                                                     recorder->videoStream->time_base);
+        }
         recorder->videoPacket.stream_index = recorder->videoStream->index;
         // 写入文件中
         ret = av_interleaved_write_frame(recorder->pFormatCtx, &recorder->videoPacket);
+        if (ret < 0) {
+            LOGE("av_interleaved_write_frame() error %d while writing interleaved video frame.", ret);
+            return -1;
+        }
+        // 释放AVPacket
         av_free_packet(&recorder->videoPacket);
-        LOGI("av_interleaved_write_frame success ? %d", ret);
     }
 
     return 0;
@@ -364,8 +428,12 @@ int CainRecorder::avcEncode(CainRecorder *recorder) {
  */
 int CainRecorder::aacEncode(CainRecorder *recorder) {
     // 是否允许编码
-    if (!params->enableAudio) {
+    if (!recorder->params->enableAudio) {
         return 0;
+    }
+    if (recorder->audioStream == NULL) {
+        LOGE("No audio output stream (Is audioChannels > 0 and has start() been called?)");
+        return -1;
     }
     // 将pcm数据复制到audio buffer中
     uint8_t *frameData = *frameQueue.wait_and_pop().get();
