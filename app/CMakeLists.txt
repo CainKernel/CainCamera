@@ -61,9 +61,9 @@ include_directories(src/main/cpp/ffmpeg
 add_library( encoder
 
              SHARED
-             # encoder source
-             src/main/cpp/encoder/safety_queue.cpp
-             src/main/cpp/encoder/cain_encoder_jni.cpp )
+
+             src/main/cpp/encoder/cain_encoder_jni.cpp
+             src/main/cpp/encoder/safety_queue.cpp )
 
 # 查找Android存在的库
 find_library( log-lib

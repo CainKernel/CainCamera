@@ -52,8 +52,8 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_startRecorder(JNIEnv *env, j
  * @return
  */
 JNIEXPORT jint
-JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendYUVFrame
-        (JNIEnv *env, jclass obj, jobjectArray yuvArray);
+JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_encoderYUVFrame
+        (JNIEnv *env, jclass obj, jbyteArray yuvArray);
 
 /**
  * 发送PCM数据进行编码
@@ -64,7 +64,7 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendYUVFrame
  */
 JNIEXPORT jint
 JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendPCMFrame
-        (JNIEnv *env, jclass obj, jobjectArray pcmArray);
+        (JNIEnv *env, jclass obj, jbyteArray pcmArray);
 
 /**
  * 发送停止命令
@@ -108,7 +108,9 @@ AVCodec *mAudioCodec;
 AVCodecContext *mAudioCodecContext;
 AVStream *mAudioStream;
 AVFrame *mAudioFrame;
-uint8_t  *mAudioOutBuffer;
+AVPacket *mAudioPacket;
+uint8_t  *mAudioBuffer;
+int mSampleSize; // 采样缓冲大小
 // 音频转换上下文
 SwrContext *samples_convert_ctx;
 
@@ -216,20 +218,6 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_initMediaRecorder
         return -1;
     }
 
-    // 创建视频帧
-    mVideoFrame = av_frame_alloc();
-    if (!mVideoFrame) {
-        LOGE("av_frame_alloc() error: Could not allocate video frame.");
-        return -1;
-    }
-
-    // 创建缓冲
-    mVideoOutBuffer = (uint8_t *) av_malloc(avpicture_get_size(
-            AV_PIX_FMT_YUV420P, mVideoCodecContext->width, mVideoCodecContext->height));
-    avpicture_fill((AVPicture *) mVideoFrame, mVideoOutBuffer, AV_PIX_FMT_YUV420P,
-                   mVideoCodecContext->width, mVideoCodecContext->height);
-
-
     // ------------------------------ 音频编码初始化部分 --------------------------------------------
     // 设置音频编码格式
     mOutputFormat->audio_codec = AV_CODEC_ID_AAC;
@@ -258,6 +246,7 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_initMediaRecorder
     mAudioCodecContext->channels =
             av_get_channel_layout_nb_channels(mAudioCodecContext->channel_layout);
     mAudioCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
+    mAudioCodecContext->bits_per_raw_sample = 16;
     // 设置码率
     mAudioCodecContext->time_base.num = 1;
     mAudioCodecContext->time_base.den = params->mAudioSampleRate;
@@ -272,8 +261,17 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_initMediaRecorder
         LOGE("av_frame_alloc() error: Could not allocate audio frame.");
         return -1;
     }
+    mAudioFrame->pts++;
 
-    // TODO 音频重采样
+
+    // 创建缓冲
+    mSampleSize = av_samples_get_buffer_size(NULL, mAudioCodecContext->channels,
+                                               mAudioCodecContext->frame_size,
+                                               mAudioCodecContext->sample_fmt, 1);
+    mAudioBuffer = (uint8_t *) av_malloc(mSampleSize);
+    avcodec_fill_audio_frame(mAudioFrame, mAudioCodecContext->channels,
+                             mAudioCodecContext->sample_fmt,
+                             (const uint8_t *)mAudioBuffer, mSampleSize, 1);
 
 
     // ------------------------------------- 复用器写入文件初始化 ------------------------------------
@@ -309,12 +307,68 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_startRecorder(JNIEnv *env, j
  * @return
  */
 JNIEXPORT jint
-JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendYUVFrame
+JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_encoderYUVFrame
         (JNIEnv *env, jclass obj, jbyteArray yuvData) {
     jbyte *yuv = env->GetByteArrayElements(yuvData, 0);
 
-    // 发送到编码队列
+    // 创建视频帧
+    mVideoFrame = av_frame_alloc();
+    if (!mVideoFrame) {
+        LOGE("av_frame_alloc() error: Could not allocate video frame.");
+        return -1;
+    }
 
+    // 创建缓冲
+    mVideoOutBuffer = (uint8_t *) av_malloc(avpicture_get_size(
+            AV_PIX_FMT_YUV420P, params->mPreviewWidth, params->mPreviewHeight));
+    avpicture_fill((AVPicture *) mVideoFrame, mVideoOutBuffer, AV_PIX_FMT_YUV420P,
+                   mVideoCodecContext->width, mVideoCodecContext->height);
+
+    // 填充数据，摄像头数据是NV21格式的，这里转换为YUV420P格式
+    int y_size = params->mPreviewWidth * params->mPreviewHeight;
+    int uv_length = y_size / 4;
+    memcpy(mVideoFrame->data[0], yuv, y_size); // 复用Y帧
+    for (int i = 0; i < uv_length; ++i) {
+        *(mVideoFrame->data[2] + i) = *(yuv + y_size + i * 2);
+        *(mVideoFrame->data[1] + i) = *(yuv + y_size + i * 2 + 1);
+    }
+    mVideoFrame->format = AV_PIX_FMT_YUV420P;
+    // TODO 缩放为 videoWidth，videoHeight
+    mVideoFrame->width = params->mPreviewWidth;
+    mVideoFrame->height = params->mPreviewHeight;
+    mVideoFrame->quality = mVideoCodecContext->global_quality;
+    mVideoFrame->pts = mVideoFrame->pts + 1;
+
+    // 将YUV数据编码为H264
+    av_init_packet(mVideoPacket);
+    int got_packet;
+    int ret = avcodec_encode_video2(mVideoCodecContext, mVideoPacket, mVideoFrame, &got_packet);
+    if (ret < 0) {
+        LOGE("Error encoding video frame: %s", av_err2str(ret))
+        return -1;
+    }
+    // 将编码后的数据写入文件中
+    if (got_packet) {
+        // 写入pts
+        if (mVideoPacket->pts != AV_NOPTS_VALUE) {
+            mVideoPacket->pts = av_rescale_q(mVideoPacket->pts,
+                                             mVideoCodecContext->time_base, mVideoStream->time_base);
+        }
+        // 写入dts
+        if (mVideoPacket->dts != AV_NOPTS_VALUE) {
+            mVideoPacket->dts = av_rescale_q(mVideoPacket->dts,
+                                             mVideoCodecContext->time_base, mVideoStream->time_base);
+        }
+        mVideoPacket->stream_index = mVideoStream->index;
+        // 写入文件中
+        ret = av_interleaved_write_frame(mFormatCtx, mVideoPacket);
+    } else {
+        ret = 0;
+    }
+    // 释放帧
+    av_packet_free(&mVideoPacket);
+
+    // 释放数据
     env->ReleaseByteArrayElements(yuvData, yuv, 0);
     return 0;
 }
@@ -330,8 +384,47 @@ JNIEXPORT jint
 JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendPCMFrame
         (JNIEnv *env, jclass obj, jbyteArray pcmData) {
     jbyte *pcm = env->GetByteArrayElements(pcmData, 0);
-    // 发送到编码队列
-
+    // 将pcm数据复制到audio buffer中
+    memcpy(mAudioBuffer, pcm, mSampleSize);
+    // 设置audio frame
+    mAudioFrame->data[0] = mAudioBuffer;
+    mAudioFrame->pts++;
+    mAudioFrame->quality = mAudioCodecContext->global_quality;
+    // 创建一个AVPacket
+    av_init_packet(mAudioPacket);
+    // PCM音频编码为AAC
+    int got_packet;
+    int ret = avcodec_encode_audio2(mAudioCodecContext, mAudioPacket, mAudioFrame, &got_packet);
+    if (ret < 0) {
+        LOGE("avcodec_encode_audio2() error %d: Could not encode audio packet.", ret);
+        return -1;
+    }
+    mAudioFrame->pts = mAudioFrame->pts + mAudioFrame->nb_samples;
+    if (got_packet) {
+        // 设置音频的pts
+        if (mAudioPacket->pts != AV_NOPTS_VALUE) {
+            mAudioPacket->pts = av_rescale_q(mAudioPacket->pts,
+                                             mAudioCodecContext->time_base,
+                                             mAudioStream->time_base);
+        }
+        // 设置音频的dts
+        if (mAudioPacket->dts != AV_NOPTS_VALUE) {
+            mAudioPacket->dts = av_rescale_q(mAudioPacket->dts,
+                                             mAudioCodecContext->time_base,
+                                             mAudioStream->time_base);
+        }
+        mAudioPacket->stream_index = mAudioStream->index;
+        mAudioPacket->flags = mAudioPacket->flags | AV_PKT_FLAG_KEY;
+        // 写入编码数据
+        ret = av_interleaved_write_frame(mFormatCtx, mAudioPacket);
+        if (ret < 0) {
+            LOGE("av_interleaved_write_frame() error %d while writing audio frame.", ret);
+            return -1;
+        }
+    }
+    // 释放资源
+    av_packet_free(&mAudioPacket);
+    // 释放资源
     env->ReleaseByteArrayElements(pcmData, pcm, 0);
     return 0;
 }
@@ -344,7 +437,18 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendPCMFrame
  */
 JNIEXPORT void
 JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_stopRecorder(JNIEnv *env, jclass obj) {
+    if (mFormatCtx != NULL) {
+        // TODO 刷出所有剩余的缓冲数据
 
+        // 写入结尾帧
+        av_interleaved_write_frame(mFormatCtx, NULL);
+
+        // 写入文件尾部信息
+        av_write_trailer(mFormatCtx);
+
+        // TODO 释放资源
+        
+    }
 }
 
 /**
@@ -354,6 +458,6 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_stopRecorder(JNIEnv *env, jc
  * @return
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_nativeRelease(JNIEnv *env, jclass obj) {
+JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_release(JNIEnv *env, jclass obj) {
 
 }
