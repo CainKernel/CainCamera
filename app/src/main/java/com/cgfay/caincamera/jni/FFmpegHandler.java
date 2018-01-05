@@ -52,14 +52,14 @@ public final class FFmpegHandler {
      * @param data
      * @return
      */
-    public static native int sendYUVFrame(byte[] data);
+    public static native int encodeYUVFrame(byte[] data);
 
     /**
      * 发送需要编码的PCM数据
      * @param data
      * @return
      */
-    public static native int sendPCMFrame(byte[] data, int len);
+    public static native int encodePCMFrame(byte[] data, int len);
 
     /**
      * 发送停止命令

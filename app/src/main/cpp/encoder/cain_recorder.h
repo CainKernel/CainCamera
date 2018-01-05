@@ -18,31 +18,27 @@ public:
     int64_t startTime = 0;
     // 计算帧数
     int frameCount = 0;
-    // 编码队列
-    safety_queue<uint8_t *> frameQueue;
     // muxer部分
-    AVFormatContext *pFormatCtx;
-    AVOutputFormat *pOutputFormat;
+    AVFormatContext *mFormatCtx;
     // 视频编码器部分
-    AVCodec *videoCodec;
-    AVCodecContext *videoCodecContext;
-    AVStream *videoStream;
-    AVFrame *videoFrame;
-    AVPacket videoPacket;
-    int mVideoSize;
-    // 图像转换上下文
-    SwsContext *pConvertCtx;
+    AVCodec *mVideoCodec;
+    AVCodecContext *mVideoCodecContext;
+    AVStream *mVideoStream;
+    AVFrame *mVideoFrame;
+    AVPacket mVideoPacket;
+    int y_length = 0;
+    int uv_length = 0;
 
     // 音频编码器部分
-    AVCodec *audioCodec;
-    AVCodecContext *audioCodecContext;
-    AVStream *audioStream;
-    AVFrame *audioFrame;
-    AVPacket *audioPacket;
-    uint8_t  *audioBuffer;
-    int sampleSize; // 采样缓冲大小
+    AVCodec *mAudioCodec;
+    AVCodecContext *mAudioCodecContext;
+    AVStream *mAudioStream;
+    AVFrame *mAudioFrame;
+    AVPacket *mAudioPacket;
+    uint8_t  *mAudioBuffer;
+    int mSampleSize; // 采样缓冲大小
     // 音频转换上下文
-    SwrContext *samples_convert_ctx;
+    SwrContext *mSamplesSonvertCtx;
 
 public:
     // 参数保存
@@ -57,22 +53,14 @@ public:
     int initRecorder();
     // 开始录制
     void startRecord();
-    // 停止录制
-    void stopRecord();
     // 录制结尾
     void recordEndian();
-    // 关闭录制
-    void closeRecorder();
-    // 发送编码帧
-    void sendFrame(uint8_t *data, int type, int len);
-    // 编码线程
-    static void *encodeThread(void *obj);
     // 刷出剩余编码帧
     int flushFrame(AVFormatContext *fmt_ctx, int streamIndex);
     // h264编码
-    int avcEncode(CainRecorder *recorder);
+    int avcEncode(jbyte *yuvData);
     // aac编码
-    int aacEncode(CainRecorder * recorder);
+    int aacEncode(jbyte *pcmData, int len);
     // 释放资源
     void release();
 };

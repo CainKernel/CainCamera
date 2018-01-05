@@ -5,6 +5,7 @@ import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -190,12 +191,25 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
     private void recordVideo() {
         if (mPreviewing) {
             if (!mRecording) {
-                Log.d("recordVideo", "started");
-                FFmpegHandler.startRecord();
+                mRenderHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        String filename = "/DCIM/Camera/" + System.currentTimeMillis() + ".mp4";
+                        String path = Environment.getExternalStorageDirectory().getPath() + filename;
+                        FFmpegHandler.initMediaRecorder(path, mImageWidth, mImageHeight, mImageWidth, mImageHeight,
+                                25, 5760000, false, 40000, 44100);
+                        FFmpegHandler.startRecord();
+                    }
+                });
                 mRecording = true;
             } else {
+                mRenderHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        FFmpegHandler.stopRecord();
+                    }
+                });
                 mRecording = false;
-                FFmpegHandler.stopRecord();
             }
         }
     }
@@ -206,10 +220,10 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
     }
 
     @Override
-    public void receiveAudioData(byte[] sampleBuffer, int len) {
+    public void receiveAudioData(final byte[] sampleBuffer, final int len) {
         // 音频编码
         if (mRecording) {
-            FFmpegHandler.sendPCMFrame(sampleBuffer, len);
+            FFmpegHandler.encodePCMFrame(sampleBuffer, len);
         }
     }
 
@@ -245,16 +259,12 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
         }
         Camera.Parameters parameters = mCamera.getParameters();
         int fps = chooseFixedPreviewFps(parameters, 30 * 1000);
-        Log.d("internalSurfaceCreated", "相机实际合适的fps：" + (fps / 1000));
         parameters.setRecordingHint(true);
         mCamera.setParameters(parameters);
-        // 期望宽高
-        int width = DEFAULT_WIDTH;
-        int height = DEFAULT_HEIGHT;
         // 设置预览宽高
-        setPreviewSize(mCamera, width, height);
+        setPreviewSize(mCamera, DEFAULT_WIDTH, DEFAULT_HEIGHT);
         // 设置拍照宽高
-        setPictureSize(mCamera, width, height);
+        setPictureSize(mCamera, DEFAULT_WIDTH, DEFAULT_HEIGHT);
         // 设置后置摄像头旋转角度
         int orientation = calculateCameraPreviewOrientation(VideoRecordActivity.this,
                 Camera.CameraInfo.CAMERA_FACING_BACK);
@@ -286,17 +296,11 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
             mPreviewing = false;
         }
         mRecording = false;
-        // 初始化录制器
-        String path = Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera/video.mp4";
-        FFmpegHandler.initMediaRecorder(path, width, height, width, height, 25,
-                5760000, false, 40000, 44100);
-        Log.d("initMediaRecorder", "inited");
     }
 
     private void internalSurfaceChanged(int width, int height) {
         mViewWidth = width;
         mViewHeight = height;
-        Log.d("internalSurfaceChanged", "displayWidth = " + width + ", displayHeight = " + height);
     }
 
     private void internalSurfacDestory() {
@@ -313,10 +317,27 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
     }
 
     @Override
-    public void onPreviewFrame(byte[] data, Camera camera) {
+    public void onPreviewFrame(final byte[] data, Camera camera) {
         // 录制视频数据
         if (mRecording) {
-            FFmpegHandler.sendYUVFrame(data);
+            mRenderHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (null != mStreamTask) {
+                        switch(mStreamTask.getStatus()){
+                            case RUNNING:
+                                return;
+
+                            case PENDING:
+                                mStreamTask.cancel(false);
+                                break;
+                        }
+                    }
+                    Log.d("hahaha", "onPreviewFrame");
+                    mStreamTask = new StreamTask(data);
+                    mStreamTask.execute((Void)null);
+                }
+            });
         }
 
         // 添加回调
@@ -506,6 +527,25 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
         return result;
     }
 
+    // --------------------------------- 视频编码线程 ---------------------------------------
+    private class StreamTask extends AsyncTask<Void, Void, Void> {
+
+        private byte[] mData;
+
+        //构造函数
+        StreamTask(byte[] data){
+            this.mData = data;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            if (mData != null) {
+                FFmpegHandler.encodeYUVFrame(mData);
+            }
+            return null;
+        }
+    }
+    private StreamTask mStreamTask;
 
     // ------------------------------------------ 音频录制线程 --------------------------------------
     public class AudioRecorder extends Thread {

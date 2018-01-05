@@ -63,8 +63,7 @@ add_library( encoder
              SHARED
 
              src/main/cpp/encoder/cain_recorder.cpp
-             src/main/cpp/encoder/cain_encoder_jni.cpp
-             src/main/cpp/encoder/safety_queue.cpp )
+             src/main/cpp/encoder/cain_encoder_jni.cpp )
 
 # 查找Android存在的库
 find_library( log-lib

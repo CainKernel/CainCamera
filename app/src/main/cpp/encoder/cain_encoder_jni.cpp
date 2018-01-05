@@ -49,7 +49,7 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_startRecord(JNIEnv *env, jcl
  * @return
  */
 JNIEXPORT jint
-JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendYUVFrame
+JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_encodeYUVFrame
         (JNIEnv *env, jclass obj, jbyteArray yuvArray);
 
 /**
@@ -60,7 +60,7 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendYUVFrame
  * @return
  */
 JNIEXPORT jint
-JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendPCMFrame
+JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_encodePCMFrame
         (JNIEnv *env, jclass obj, jbyteArray pcmArray, jint len);
 
 /**
@@ -152,7 +152,7 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_startRecord(JNIEnv *env, jcl
  * @return
  */
 JNIEXPORT jint
-JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendYUVFrame
+JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_encodeYUVFrame
         (JNIEnv *env, jclass obj, jbyteArray yuvData) {
     if (!recorder) {
         return 0;
@@ -160,7 +160,7 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendYUVFrame
     // 获取数据
     jbyte *elements = env->GetByteArrayElements(yuvData, 0);
     // 发送大编码队列
-    recorder->sendFrame((uint8_t *)elements, FRAME_YUV, /*unused*/-1);
+    recorder->avcEncode(elements);
     // 释放资源
     env->ReleaseByteArrayElements(yuvData, elements, 0);
     return 0;
@@ -174,13 +174,14 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendYUVFrame
  * @return
  */
 JNIEXPORT jint
-JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_sendPCMFrame
+JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_encodePCMFrame
         (JNIEnv *env, jclass obj, jbyteArray pcmData, jint len) {
     if (!recorder) {
         return 0;
     }
     jbyte *pcm = env->GetByteArrayElements(pcmData, 0);
-    recorder->sendFrame((uint8_t *)pcm, FRAME_PCM, len);
+    // 音频编码
+    recorder->aacEncode(pcm, len);
     // 释放资源
     env->ReleaseByteArrayElements(pcmData, pcm, 0);
     return 0;
@@ -197,7 +198,7 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_stopRecord(JNIEnv *env, jcla
     if (!recorder) {
         return;
     }
-    recorder->stopRecord();
+    recorder->recordEndian();
 }
 
 /**
@@ -211,6 +212,6 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_nativeRelease(JNIEnv *env, j
     if(!recorder) {
         return;
     }
-    recorder->closeRecorder();
+    recorder->release();
     delete(recorder);
 }

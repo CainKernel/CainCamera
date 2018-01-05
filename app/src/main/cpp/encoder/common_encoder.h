@@ -18,7 +18,6 @@ extern "C"
 #include "libswresample/swresample.h"
 }
 
-#include "safety_queue.cpp"
 #include <jni.h>
 #include <string>
 
