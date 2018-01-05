@@ -55,6 +55,10 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
 
     private HandlerThread mRenderThread;
     private Handler mRenderHandler;
+    // 视频编码任务
+    private VideoStreamTask mVideoStreamTask;
+    // 音频编码任务
+    private AudioStreamTask mAudioStreamTask;
     // 音频录制
     private AudioRecorder mAudioRecorder;
 
@@ -191,40 +195,57 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
     private void recordVideo() {
         if (mPreviewing) {
             if (!mRecording) {
-                mRenderHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        String filename = "/DCIM/Camera/" + System.currentTimeMillis() + ".mp4";
-                        String path = Environment.getExternalStorageDirectory().getPath() + filename;
-                        FFmpegHandler.initMediaRecorder(path, mImageWidth, mImageHeight, mImageWidth, mImageHeight,
-                                25, 5760000, false, 40000, 44100);
-                        FFmpegHandler.startRecord();
-                    }
-                });
-                mRecording = true;
+                startVideoRecord();
             } else {
-                mRenderHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        FFmpegHandler.stopRecord();
-                    }
-                });
-                mRecording = false;
+                stopVideoRecord();
             }
         }
     }
 
-    @Override
-    public void onAudioError(int what, String message) {
+    /**
+     * 开始视频录制
+     */
+    private void startVideoRecord() {
+        mRenderHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                String filename = "/DCIM/Camera/" + System.currentTimeMillis() + ".mp4";
+                String path = Environment.getExternalStorageDirectory().getPath() + filename;
+                FFmpegHandler.initMediaRecorder(path, mImageWidth, mImageHeight, mImageWidth, mImageHeight,
+                        25, 5760000, false, 40000, 44100);
+                FFmpegHandler.startRecord();
+                mRecording = true;
+            }
+        });
+    }
+
+    /**
+     * 停止视频录制
+     */
+    private void stopVideoRecord() {
+        mRecording = false;
+        mRenderHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                FFmpegHandler.stopRecord();
+            }
+        });
 
     }
 
-    @Override
-    public void receiveAudioData(final byte[] sampleBuffer, final int len) {
-        // 音频编码
-        if (mRecording) {
-            FFmpegHandler.encodePCMFrame(sampleBuffer, len);
-        }
+    /**
+     * 开始音频录制
+     */
+    private void startAudioRecord() {
+        mAudioRecorder = new AudioRecorder(this);
+        mAudioRecorder.start();
+    }
+
+    /**
+     * 停止音频录制
+     */
+    private void stopAudioRecord() {
+        mAudioRecorder.stopRecord();
     }
 
     // ------------------------------------ 内部方法 -----------------------------------
@@ -260,6 +281,8 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
         Camera.Parameters parameters = mCamera.getParameters();
         int fps = chooseFixedPreviewFps(parameters, 30 * 1000);
         parameters.setRecordingHint(true);
+        // 设置自动对焦
+        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
         mCamera.setParameters(parameters);
         // 设置预览宽高
         setPreviewSize(mCamera, DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -290,6 +313,7 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
         try {
             mCamera.setPreviewDisplay(mSurfaceHolder);
             mCamera.startPreview();
+            mCamera.cancelAutoFocus();
             mPreviewing = true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -323,19 +347,18 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
             mRenderHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (null != mStreamTask) {
-                        switch(mStreamTask.getStatus()){
+                    if (null != mVideoStreamTask) {
+                        switch(mVideoStreamTask.getStatus()){
                             case RUNNING:
                                 return;
 
                             case PENDING:
-                                mStreamTask.cancel(false);
+                                mVideoStreamTask.cancel(false);
                                 break;
                         }
                     }
-                    Log.d("hahaha", "onPreviewFrame");
-                    mStreamTask = new StreamTask(data);
-                    mStreamTask.execute((Void)null);
+                    mVideoStreamTask = new VideoStreamTask(data);
+                    mVideoStreamTask.execute((Void)null);
                 }
             });
         }
@@ -344,6 +367,41 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
         camera.addCallbackBuffer(mPreviewBuffer);
     }
 
+
+    @Override
+    public void onAudioError(int what, String message) {
+        Log.d("onAudioError", "what = " + what + ", message = " + message);
+    }
+
+    @Override
+    public void receiveAudioData(final byte[] sampleBuffer, final int len) {
+        // 音频编码
+        if (mRecording) {
+            mRenderHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mRenderHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (null != mAudioStreamTask) {
+                                switch(mAudioStreamTask.getStatus()){
+                                    case RUNNING:
+                                        return;
+
+                                    case PENDING:
+                                        mAudioStreamTask.cancel(false);
+                                        break;
+                                }
+                            }
+                            mAudioStreamTask = new AudioStreamTask(sampleBuffer);
+                            mAudioStreamTask.execute((Void)null);
+                        }
+                    });
+                }
+            });
+
+        }
+    }
 
     /**
      * 选择合适的预览fps
@@ -527,13 +585,13 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
         return result;
     }
 
-    // --------------------------------- 视频编码线程 ---------------------------------------
-    private class StreamTask extends AsyncTask<Void, Void, Void> {
+    // ------------------------------------- 视频编码线程 -------------------------------------------
+    private class VideoStreamTask extends AsyncTask<Void, Void, Void> {
 
         private byte[] mData;
 
         //构造函数
-        StreamTask(byte[] data){
+        VideoStreamTask(byte[] data){
             this.mData = data;
         }
 
@@ -545,9 +603,27 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
             return null;
         }
     }
-    private StreamTask mStreamTask;
 
-    // ------------------------------------------ 音频录制线程 --------------------------------------
+    // ----------------------------------- 音频编码线程 ---------------------------------------------
+    private class AudioStreamTask extends AsyncTask<Void, Void, Void> {
+
+        private byte[] mData; // 音频数据
+
+        //构造函数
+        AudioStreamTask(byte[] data) {
+            mData = data;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            if (mData != null) {
+                FFmpegHandler.encodePCMFrame(mData);
+            }
+            return null;
+        }
+    }
+
+    // ------------------------------------------ 音频录音线程 --------------------------------------
     public class AudioRecorder extends Thread {
         // 是否停止线程
         private boolean mStop = false;
@@ -620,7 +696,7 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
         /**
          * 停止音频录制
          */
-        public void stopAudioRecording() {
+        public void stopRecord() {
             mStop = true;
         }
     }

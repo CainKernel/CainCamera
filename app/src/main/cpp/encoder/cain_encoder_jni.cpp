@@ -61,7 +61,7 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_encodeYUVFrame
  */
 JNIEXPORT jint
 JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_encodePCMFrame
-        (JNIEnv *env, jclass obj, jbyteArray pcmArray, jint len);
+        (JNIEnv *env, jclass obj, jbyteArray pcmArray);
 
 /**
  * 发送停止命令
@@ -175,13 +175,13 @@ JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_encodeYUVFrame
  */
 JNIEXPORT jint
 JNICALL Java_com_cgfay_caincamera_jni_FFmpegHandler_encodePCMFrame
-        (JNIEnv *env, jclass obj, jbyteArray pcmData, jint len) {
+        (JNIEnv *env, jclass obj, jbyteArray pcmData) {
     if (!recorder) {
         return 0;
     }
     jbyte *pcm = env->GetByteArrayElements(pcmData, 0);
     // 音频编码
-    recorder->aacEncode(pcm, len);
+    recorder->aacEncode(pcm);
     // 释放资源
     env->ReleaseByteArrayElements(pcmData, pcm, 0);
     return 0;

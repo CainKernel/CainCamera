@@ -22,7 +22,7 @@ public:
     AVFormatContext *mFormatCtx;
     // 视频编码器部分
     AVCodec *mVideoCodec;
-    AVCodecContext *mVideoCodecContext;
+    AVCodecContext *mVCodecCtx;
     AVStream *mVideoStream;
     AVFrame *mVideoFrame;
     AVPacket mVideoPacket;
@@ -31,14 +31,11 @@ public:
 
     // 音频编码器部分
     AVCodec *mAudioCodec;
-    AVCodecContext *mAudioCodecContext;
+    AVCodecContext *mACodecCtx;
     AVStream *mAudioStream;
     AVFrame *mAudioFrame;
-    AVPacket *mAudioPacket;
-    uint8_t  *mAudioBuffer;
-    int mSampleSize; // 采样缓冲大小
-    // 音频转换上下文
-    SwrContext *mSamplesSonvertCtx;
+    AVPacket mAudioPacket;
+    int mSampleSize = 0; // 采样大小
 
 public:
     // 参数保存
@@ -60,9 +57,15 @@ public:
     // h264编码
     int avcEncode(jbyte *yuvData);
     // aac编码
-    int aacEncode(jbyte *pcmData, int len);
+    int aacEncode(jbyte *pcmData);
     // 释放资源
     void release();
+
+private:
+    // 初始化视频编码器
+    int initVideoEncoder();
+    // 初始化音频编码器
+    int initAudioEncoder();
 };
 
 #endif //CAINCAMERA_CAIN_RECORDER_H
