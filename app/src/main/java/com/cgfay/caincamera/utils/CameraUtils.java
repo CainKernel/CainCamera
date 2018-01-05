@@ -1,9 +1,6 @@
 package com.cgfay.caincamera.utils;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.pm.FeatureInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -13,7 +10,6 @@ import android.view.SurfaceHolder;
 import com.cgfay.caincamera.bean.CameraInfo;
 import com.cgfay.caincamera.bean.Size;
 import com.cgfay.caincamera.core.ParamsManager;
-import com.cgfay.caincamera.type.AspectRatioType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -641,17 +637,18 @@ public class CameraUtils {
         List<Camera.Size> noBigEnough = new ArrayList<>();
         for (Camera.Size size : sizes) {
             if (size.height * expectWidth / expectHeight == size.width) {
-                if (size.width >= expectWidth && size.height >= expectHeight) {
+                if (size.width > expectWidth && size.height >= expectHeight) {
                     bigEnough.add(size);
                 } else {
                     noBigEnough.add(size);
                 }
             }
         }
-        if (bigEnough.size() > 0) {
-            return Collections.min(bigEnough, new CompareAreaSize());
-        } else if (noBigEnough.size() > 0) {
+        // 优先使用不大于期望值的预览尺寸，否则4:3的尺寸下，有些机器设置的尺寸是1440 x 1080，会比较卡
+        if (noBigEnough.size() > 0) {
             return Collections.max(noBigEnough, new CompareAreaSize());
+        } else if (bigEnough.size() > 0) {
+            return Collections.min(bigEnough, new CompareAreaSize());
         } else { // 如果不存在满足要求的数值，则辗转计算宽高最接近的值
             Camera.Size result = sizes.get(0);
             boolean widthOrHeight = false; // 判断存在宽或高相等的Size
