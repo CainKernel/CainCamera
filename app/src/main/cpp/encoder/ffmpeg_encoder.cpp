@@ -649,6 +649,9 @@ status_t CainEncoder::audioEncode(uint8_t *data, int len) {
     ALOGI("nb_samples = %d", frame->nb_samples);
     // 如果音频编码帧存在，则进入音频编码阶段
     if (frame) {
+        // TODO 计算输出的dst_nb_samples，否则没法输出声音
+        // 这是因为新版本的FFmpeg音频编码格式已经变成了AV_SAMPLE_FMT_FLTP
+        // 但输入的PCM数据依旧是AV_SAMPLE_FMT_S16
         // 转换为目标格式
         ret = swr_convert(ost->swr_ctx, ost->frame->data, dst_nb_samples,
                           (const uint8_t **) frame->data, frame->nb_samples);
