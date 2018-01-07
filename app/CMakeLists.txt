@@ -55,7 +55,8 @@ set_target_properties( ffmpeg
 
 # 添加头文件
 include_directories(src/main/cpp/ffmpeg
-                    src/main/cpp/ffmpeg/include )
+                    src/main/cpp/ffmpeg/include
+                    src/main/cpp/encoder/include )
 
 # 添加自身的jni库
 add_library( encoder
@@ -63,6 +64,7 @@ add_library( encoder
              SHARED
 
              src/main/cpp/encoder/cain_recorder.cpp
+             src/main/cpp/encoder/ffmpeg_encoder.cpp
              src/main/cpp/encoder/cain_encoder_jni.cpp )
 
 # 查找Android存在的库

@@ -196,8 +196,10 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
         if (mPreviewing) {
             if (!mRecording) {
                 startVideoRecord();
+                startAudioRecord();
             } else {
                 stopVideoRecord();
+                stopAudioRecord();
             }
         }
     }
@@ -212,7 +214,7 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
                 String filename = "/DCIM/Camera/" + System.currentTimeMillis() + ".mp4";
                 String path = Environment.getExternalStorageDirectory().getPath() + filename;
                 FFmpegHandler.initMediaRecorder(path, mImageWidth, mImageHeight, mImageWidth, mImageHeight,
-                        25, 5760000, false, 40000, 44100);
+                        25, 5760000, true, 40000, 44100);
                 FFmpegHandler.startRecord();
                 mRecording = true;
             }
@@ -380,23 +382,18 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
             mRenderHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    mRenderHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (null != mAudioStreamTask) {
-                                switch(mAudioStreamTask.getStatus()){
-                                    case RUNNING:
-                                        return;
+                    if (null != mAudioStreamTask) {
+                        switch(mAudioStreamTask.getStatus()) {
+                            case RUNNING:
+                                return;
 
-                                    case PENDING:
-                                        mAudioStreamTask.cancel(false);
-                                        break;
-                                }
-                            }
-                            mAudioStreamTask = new AudioStreamTask(sampleBuffer);
-                            mAudioStreamTask.execute((Void)null);
+                            case PENDING:
+                                mAudioStreamTask.cancel(false);
+                                break;
                         }
-                    });
+                    }
+                    mAudioStreamTask = new AudioStreamTask(sampleBuffer, len);
+                    mAudioStreamTask.execute((Void)null);
                 }
             });
 
@@ -608,16 +605,18 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
     private class AudioStreamTask extends AsyncTask<Void, Void, Void> {
 
         private byte[] mData; // 音频数据
+        private int mSize;
 
         //构造函数
-        AudioStreamTask(byte[] data) {
+        AudioStreamTask(byte[] data, int size) {
             mData = data;
+            mSize = size;
         }
 
         @Override
         protected Void doInBackground(Void... params) {
             if (mData != null) {
-                FFmpegHandler.encodePCMFrame(mData);
+                FFmpegHandler.encodePCMFrame(mData, mSize);
             }
             return null;
         }

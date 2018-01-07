@@ -7,7 +7,8 @@
 #include <android/log.h>
 
 #define JNI_DEBUG 1
+#define JNI_TAG "CainJni_ffmpeg"
 
-#define LOGE(format, ...) if (JNI_DEBUG) { __android_log_print(ANDROID_LOG_ERROR, "CainJni_ffmpeg", format, ##__VA_ARGS__); }
-#define LOGI(format, ...) if(JNI_DEBUG){ __android_log_print(ANDROID_LOG_INFO, "CainJni_ffmpeg", format, ##__VA_ARGS__); }
+#define ALOGE(format, ...) if (JNI_DEBUG) { __android_log_print(ANDROID_LOG_ERROR, JNI_TAG, format, ##__VA_ARGS__); }
+#define ALOGI(format, ...) if(JNI_DEBUG){ __android_log_print(ANDROID_LOG_INFO, JNI_TAG, format, ##__VA_ARGS__); }
 #endif //CAINCAMERA_NATIVE_LOG_H

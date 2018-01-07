@@ -59,7 +59,7 @@ public final class FFmpegHandler {
      * @param data
      * @return
      */
-    public static native int encodePCMFrame(byte[] data);
+    public static native int encodePCMFrame(byte[] data, int len);
 
     /**
      * 发送停止命令

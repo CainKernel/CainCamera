@@ -35,9 +35,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Manifest.permission.CAMERA);
         boolean storageWriteEnable = PermissionUtils.permissionChecking(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (!cameraEnable || !storageWriteEnable) {
-            ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_CODE);
+        boolean recordAudio = PermissionUtils.permissionChecking(this,
+                Manifest.permission.RECORD_AUDIO);
+        if (!cameraEnable || !storageWriteEnable || !recordAudio) {
+            ActivityCompat.requestPermissions(this,
+                    new String[] {
+                            Manifest.permission.CAMERA,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.RECORD_AUDIO
+                    }, REQUEST_CODE);
         }
     }
 
