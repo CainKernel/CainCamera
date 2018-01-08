@@ -1,7 +1,13 @@
 package com.cgfay.caincamera.activity;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.ColorInt;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -22,12 +28,15 @@ import com.cgfay.caincamera.type.StateType;
 import com.cgfay.caincamera.view.FrameThumbnailView;
 import com.cgfay.caincamera.view.VideoTextureView;
 
-public class VideoEditActivity extends AppCompatActivity implements View.OnClickListener {
+public class VideoEditActivity extends AppCompatActivity implements View.OnClickListener,
+        FrameThumbnailView.BorderScrollListener {
 
     private static final String TAG = "VideoEditActivity";
     private static final boolean VERBOSE = true;
 
     public static final String PATH = "path";
+
+    private static final int MSG_SET_IMAGE = 0x01;
 
     // 背景颜色
     private int[] mGraffitiBackgrounds = new int[] {
@@ -91,6 +100,13 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
     @ColorInt
     private int mCurrentColor; // 当前颜色值
 
+    private int mVideoDuration; // 视频时长
+    private int mStartTime; // 开始位置
+    private int mEndTime; // 结束位置
+    private int mFrameSize; // 显示的帧数目
+    private int mSingleFrameTime; // 每帧图片表示的时长
+    private ThumbnailTask mThumbnailTask;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -132,6 +148,7 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
         mLayoutThumb = (RelativeLayout) findViewById(R.id.layout_thumb);
         mLayoutThumbnail = (LinearLayout) findViewById(R.id.layout_thumbnail);
         mThumbnailView = (FrameThumbnailView) findViewById(R.id.thumbnailView);
+        mThumbnailView.setOnBorderScrollListener(this);
 
         mEditText = (EditText) findViewById(R.id.et_text);
 
@@ -205,6 +222,11 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
         mTextureView.setPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                // 设定时长
+                mVideoDuration = mTextureView.getDuration();
+                mStartTime = 0;
+                mEndTime = mVideoDuration;
+                // 开始播放
                 mTextureView.setLooping(true);
                 mTextureView.start();
             }
@@ -291,6 +313,16 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
         mTextureView.start();
     }
 
+    @Override
+    public void OnBorderScroll(float start, float end) {
+        calculatePlayTime();
+    }
+
+    @Override
+    public void onScrollStateChange() {
+        seekToNewPosition();
+    }
+
     /**
      * 操作取消
      */
@@ -342,6 +374,7 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
                 (FrameLayout.LayoutParams) mLayoutOperation.getLayoutParams();
         layoutParams.gravity = Gravity.BOTTOM;
         mLayoutOperation.setLayoutParams(layoutParams);
+        showThumbnailView();
         // TODO TextureView缩小
     }
 
@@ -361,4 +394,90 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
         mLayoutOperation.setLayoutParams(layoutParams);
         // TODO TextureView恢复
     }
+
+
+    /**
+     * 显示缩略图
+     */
+    private void showThumbnailView() {
+        // 计算视图
+        int pixWidth = (int) 500.0f / mVideoDuration * mWindowWidth;
+        mThumbnailView.setMinInterval(pixWidth);
+        mFrameSize = 10; // 显示10帧
+        mSingleFrameTime = mVideoDuration / mFrameSize * 1000;
+        // 缩略图宽度 TODO 此时的mThumbnailView并不能获取到width，以后再做优化
+        int width = mWindowWidth / mFrameSize;
+        for (int i = 0; i < mFrameSize; i++) {
+            ImageView imageView = new ImageView(this);
+            imageView.setLayoutParams(
+                    new ViewGroup.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT));
+            imageView.setBackgroundColor(Color.parseColor("#000000"));
+            imageView.setScaleType(ImageView.ScaleType.CENTER);
+            mLayoutThumbnail.addView(imageView);
+        }
+        if (mThumbnailTask == null) {
+            mThumbnailTask = new ThumbnailTask();
+            mThumbnailTask.execute();
+        }
+    }
+
+
+    /**
+     * 计算播放的时间区域
+     */
+    private void calculatePlayTime() {
+        float left = mThumbnailView.getLeftInterval();
+        float percent = left / mThumbnailView.getWidth();
+        mStartTime = (int) (mVideoDuration * percent);
+
+        float right = mThumbnailView.getRightInterval();
+        percent = right / mThumbnailView.getWidth();
+        mEndTime = (int) (mVideoDuration * percent);
+    }
+
+    /**
+     * 切换到新的位置
+     */
+    private void seekToNewPosition() {
+        mTextureView.loopRegion(mStartTime, mEndTime);
+    }
+
+    /**
+     * 处理回调
+     */
+    private Handler mProcessHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_SET_IMAGE:
+                    ImageView imageView = (ImageView) mLayoutThumbnail.getChildAt(msg.arg1);
+                    Bitmap bitmap = (Bitmap) msg.obj;
+                    if (imageView != null && bitmap != null) {
+                        imageView.setImageBitmap(bitmap);
+                    }
+                    break;
+            }
+        }
+    };
+
+
+    /**
+     * 获取缩略图线程
+     */
+    private class ThumbnailTask extends AsyncTask<Void, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
+            metadataRetriever.setDataSource(mVideoPath);
+            for (int i = 0; i < mFrameSize; i++) {
+                Bitmap bitmap = metadataRetriever.getFrameAtTime(mSingleFrameTime * i,
+                        MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+                mProcessHandler.sendMessage(
+                        mProcessHandler.obtainMessage(MSG_SET_IMAGE, i, -1, bitmap));
+            }
+            metadataRetriever.release();
+            return true;
+        }
+    }
+
 }

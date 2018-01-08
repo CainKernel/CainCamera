@@ -491,6 +491,9 @@ public class PhotoViewActivity extends AppCompatActivity
                 if (cursor != null) {
                     cursor.close();
                 }
+                if (mRetriever != null) {
+                    mRetriever.release();
+                }
             }
 
 

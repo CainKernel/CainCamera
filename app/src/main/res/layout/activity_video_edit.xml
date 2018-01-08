@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/transparent"
     tools:context="com.cgfay.caincamera.activity.VideoEditActivity">
     <!-- 视频预览TextureView -->
     <com.cgfay.caincamera.view.VideoTextureView
@@ -135,7 +136,7 @@
         android:id="@+id/layout_thumb"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp50"
-        android:layout_marginBottom="@dimen/dp80"
+        android:layout_marginBottom="@dimen/dp60"
         android:layout_gravity="bottom"
         android:visibility="gone">
         <!-- 用于存放缩略图 -->
