@@ -9,9 +9,12 @@
     <dimen name="dp20">20dp</dimen>
     <dimen name="dp25">25dp</dimen>
     <dimen name="dp30">30dp</dimen>
+    <dimen name="dp40">40dp</dimen>
     <dimen name="dp50">50dp</dimen>
+    <dimen name="dp60">60dp</dimen>
     <dimen name="dp80">80dp</dimen>
     <dimen name="dp100">100dp</dimen>
+    <dimen name="dp180">180dp</dimen>
     <dimen name="dp6">6dp</dimen>
 
     <!-- photo view -->

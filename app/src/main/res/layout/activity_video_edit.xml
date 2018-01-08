@@ -1,9 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.cgfay.caincamera.activity.VideoEditActivity">
+    <!-- 视频预览TextureView -->
+    <com.cgfay.caincamera.view.VideoTextureView
+        android:id="@+id/video_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"/>
+    <!-- 导航栏（动态设置上下移动） -->
+    <RelativeLayout
+        android:id="@+id/layout_operation"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp40"
+        android:layout_margin="@dimen/dp10"
+        android:layout_gravity="top">
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:background="@android:color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/cancel"/>
+        <Button
+            android:id="@+id/btn_done"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:background="@android:color/transparent"
+            android:textColor="@color/green"
+            android:text="@string/finish"/>
+    </RelativeLayout>
 
-</android.support.constraint.ConstraintLayout>
+    <!-- 底部功能按钮 -->
+    <LinearLayout
+        android:id="@+id/layout_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp50"
+        android:layout_gravity="bottom">
+        <!--画笔-->
+        <RelativeLayout
+            android:id="@+id/layout_pen"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="@dimen/dp50">
+            <ImageView
+                android:id="@+id/iv_pen"
+                android:layout_width="@dimen/dp20"
+                android:layout_height="@dimen/dp20"
+                android:layout_centerInParent="true"
+                android:src="@drawable/pen" />
+        </RelativeLayout>
+
+        <!--贴纸-->
+        <RelativeLayout
+            android:id="@+id/layout_icon"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="@dimen/dp50">
+            <ImageView
+                android:id="@+id/iv_icon"
+                android:layout_width="@dimen/dp20"
+                android:layout_height="@dimen/dp20"
+                android:layout_centerInParent="true"
+                android:src="@drawable/icon" />
+        </RelativeLayout>
+
+        <!--文字-->
+        <RelativeLayout
+            android:id="@+id/layout_text"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="@dimen/dp50">
+            <ImageView
+                android:layout_width="@dimen/dp20"
+                android:layout_height="@dimen/dp20"
+                android:layout_centerInParent="true"
+                android:src="@drawable/text_click" />
+        </RelativeLayout>
+
+        <!--视频剪辑-->
+        <RelativeLayout
+            android:id="@+id/layout_cut_time"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="@dimen/dp50">
+            <ImageView
+                android:layout_width="@dimen/dp20"
+                android:layout_height="@dimen/dp20"
+                android:layout_centerInParent="true"
+                android:src="@drawable/cut_time" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <!-- 字体颜色选择区域 -->
+    <LinearLayout
+        android:id="@+id/layout_color"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/dp60"
+        android:visibility="gone"
+        android:background="@android:color/transparent"
+        android:orientation="horizontal">
+    </LinearLayout>
+
+    <!-- 贴纸选择区域 -->
+    <RelativeLayout
+        android:id="@+id/layout_sticker"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp180"
+        android:layout_gravity="bottom"
+        android:background="@color/white"
+        android:visibility="gone"/>
+
+    <!-- 底部缩略图 -->
+    <RelativeLayout
+        android:id="@+id/layout_thumb"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp50"
+        android:layout_marginBottom="@dimen/dp80"
+        android:layout_gravity="bottom"
+        android:visibility="gone">
+        <!-- 用于存放缩略图 -->
+        <LinearLayout
+            android:id="@+id/layout_thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"/>
+        <!--区域选择视图-->
+        <com.cgfay.caincamera.view.FrameThumbnailView
+            android:id="@+id/thumbnailView"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+    </RelativeLayout>
+</FrameLayout>

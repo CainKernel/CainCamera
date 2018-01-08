@@ -36,6 +36,9 @@
     <string name="hue">色调</string>
     <string name="saturation">饱和度</string>
     <string name="sharpness">锐度</string>
+    <!--编辑视频-->
+    <string name="cancel">取消</string>
+    <string name="finish">完成</string>
 
     <string-array name="trackig_mode_array">
         <item>Normal</item>

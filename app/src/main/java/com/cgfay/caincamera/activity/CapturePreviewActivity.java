@@ -1,5 +1,6 @@
 package com.cgfay.caincamera.activity;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.session.PlaybackState;
@@ -239,7 +240,7 @@ public class CapturePreviewActivity extends AppCompatActivity
      * 合并视频
      */
     private void combineVideo() {
-        String path = ParamsManager.AlbumPath
+        final String path = ParamsManager.AlbumPath
                 + "CainCamera_" + System.currentTimeMillis() + ".mp4";
         File file = new File(path);
         if (!file.getParentFile().exists()) {
@@ -291,6 +292,10 @@ public class CapturePreviewActivity extends AppCompatActivity
                                     }
                                 });
                                 executeDeleteFile();
+                                // 跳转至视频编辑页面
+                                Intent intent = new Intent();
+                                intent.putExtra(VideoEditActivity.PATH, path);
+                                startActivity(intent);
                                 finish();
                             }
         });
