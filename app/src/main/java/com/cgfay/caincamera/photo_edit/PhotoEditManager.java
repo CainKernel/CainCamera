@@ -8,7 +8,7 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
-import com.cgfay.caincamera.bean.ImageMeta;
+import com.cgfay.caincamera.bean.MediaMeta;
 
 import java.lang.ref.WeakReference;
 
@@ -24,7 +24,7 @@ public final class PhotoEditManager {
     private static PhotoEditManager mInstance;
 
     // 图像元数据
-    private ImageMeta mImageMeta;
+    private MediaMeta mMediaMeta;
 
     private WeakReference<Context> mWeakContext;
     private WeakReference<ImageView> mWeakImageView;
@@ -67,18 +67,18 @@ public final class PhotoEditManager {
 
     /**
      * 设置图片元数据
-     * @param imageMeta
+     * @param mediaMeta
      */
-    public void setImageMeta(ImageMeta imageMeta) {
-        mImageMeta = imageMeta;
+    public void setImageMeta(MediaMeta mediaMeta) {
+        mMediaMeta = mediaMeta;
     }
 
     /**
      * 释放持有的资源
      */
     public void release() {
-        if (mImageMeta != null) {
-            mImageMeta = null;
+        if (mMediaMeta != null) {
+            mMediaMeta = null;
         }
         if (mWeakImageView != null) {
             mWeakImageView.clear();
@@ -95,10 +95,10 @@ public final class PhotoEditManager {
      * 显示图片
      */
     public void showImage() {
-        if (mImageMeta == null) {
+        if (mMediaMeta == null) {
             return;
         }
-        Glide.with(mWeakContext.get()).asBitmap().load(mImageMeta.getPath()).into(new SimpleTarget<Bitmap>() {
+        Glide.with(mWeakContext.get()).asBitmap().load(mMediaMeta.getPath()).into(new SimpleTarget<Bitmap>() {
             @Override
             public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
                 mSource = resource;

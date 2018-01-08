@@ -2,8 +2,10 @@ package com.cgfay.caincamera.activity;
 
 import android.Manifest;
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -23,7 +25,7 @@ import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.PhotoViewAdapter;
-import com.cgfay.caincamera.bean.ImageMeta;
+import com.cgfay.caincamera.bean.MediaMeta;
 import com.cgfay.caincamera.facetracker.FaceTrackManager;
 import com.cgfay.caincamera.facetracker.FaceTrackerCallback;
 import com.cgfay.caincamera.photo_edit.PhotoEditManager;
@@ -63,7 +65,7 @@ public class PhotoViewActivity extends AppCompatActivity
     private GridLayoutManager mLayoutManager;
     private PhotoViewAdapter mPhotoAdapter;
     // 媒体库中的图片数据
-    List<ImageMeta> mImageLists;
+    List<MediaMeta> mImageLists;
 
     // 编辑图片
     private RelativeLayout mPhotoEditLayout;
@@ -104,8 +106,7 @@ public class PhotoViewActivity extends AppCompatActivity
         mPhototView = (AsyncRecyclerview) findViewById(R.id.photo_view);
         mLayoutManager = new GridLayoutManager(PhotoViewActivity.this, COLUMNSIZE);
         mPhototView.setLayoutManager(mLayoutManager);
-        mImageLists = new ArrayList<ImageMeta>();
-        // 编辑图片
+        mImageLists = new ArrayList<MediaMeta>();
         // 编辑图片
         mPhotoEditLayout = (RelativeLayout) findViewById(R.id.layout_photo_edit);
         mEditImageView = (ImageView) findViewById(R.id.photo_edit);
@@ -192,8 +193,14 @@ public class PhotoViewActivity extends AppCompatActivity
         }
         // 更新当前选中的模式
         mCurrentSelecetedIndex = position;
-        // 预览编辑选中的照片
-        showPhotoEditView();
+        if (mImageLists.get(position).getMimeType().startsWith("video/")) {
+            Intent intent = new Intent(PhotoViewActivity.this, VideoEditActivity.class);
+            intent.putExtra(VideoEditActivity.PATH, mImageLists.get(position).getPath());
+            startActivity(intent);
+        } else {
+            // 预览编辑选中的照片
+            showPhotoEditView();
+        }
     }
 
     @Override
@@ -224,17 +231,17 @@ public class PhotoViewActivity extends AppCompatActivity
      */
     private void deleteSelectedImage() {
         // 获取所有需要被删除的元素
-        List<ImageMeta> removedImages = new ArrayList<ImageMeta>();
+        List<MediaMeta> removedImages = new ArrayList<MediaMeta>();
         if (!multiSelectEnable) { // 单选
             if (mCurrentSelecetedIndex != -1) {
-                ImageMeta image = mImageLists.remove(mCurrentSelecetedIndex);
+                MediaMeta image = mImageLists.remove(mCurrentSelecetedIndex);
                 removedImages.add(image);
 
             }
         } else { // 多选
-            Iterator<ImageMeta> it = mImageLists.iterator();
+            Iterator<MediaMeta> it = mImageLists.iterator();
             while (it.hasNext()) {
-                ImageMeta image = it.next();
+                MediaMeta image = it.next();
                 if (image.isSelected()) {
                     it.remove();
                 }
@@ -255,8 +262,8 @@ public class PhotoViewActivity extends AppCompatActivity
         mPhototView.setVisibility(View.GONE);
         mPhotoEditLayout.setVisibility(View.VISIBLE);
         // 在开始预览之前先设置图像元数据
-        ImageMeta imageMeta = mImageLists.get(mCurrentSelecetedIndex);
-        PhotoEditManager.getInstance().setImageMeta(imageMeta);
+        MediaMeta mediaMeta = mImageLists.get(mCurrentSelecetedIndex);
+        PhotoEditManager.getInstance().setImageMeta(mediaMeta);
         // 显示图片
         PhotoEditManager.getInstance().showImage();
     }
@@ -388,6 +395,8 @@ public class PhotoViewActivity extends AppCompatActivity
         PhotoEditManager.getInstance().setSharpness(OriginalValues[SharpnessIndex]);
     }
 
+    MediaMetadataRetriever mRetriever;
+
     // 扫描媒体库
     private class ScanMediaStoreTask extends AsyncTask<Void, Void, Void> {
 
@@ -397,7 +406,8 @@ public class PhotoViewActivity extends AppCompatActivity
             Cursor cursor = null;
             try {
                 // 查询数据库，参数分别为（路径，要查询的列名，条件语句，条件参数，排序）
-                cursor = resolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null, null ,null, null);
+                cursor = resolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        null, null ,null, null);
                 if (cursor != null) {
                     while (cursor.moveToNext()) {
                         String path = cursor.getString(cursor
@@ -407,7 +417,7 @@ public class PhotoViewActivity extends AppCompatActivity
                         if (!file.exists()) {
                             continue;
                         }
-                        ImageMeta image = new ImageMeta();
+                        MediaMeta image = new MediaMeta();
                         image.setId(cursor.getInt(cursor
                                 .getColumnIndex(MediaStore.Images.Media._ID))); //获取唯一id
                         image.setName(cursor.getString(cursor
@@ -435,6 +445,55 @@ public class PhotoViewActivity extends AppCompatActivity
                     cursor.close();
                 }
             }
+
+            try {
+                // 查询数据库，参数分别为（路径，要查询的列名，条件语句，条件参数，排序）
+                cursor = resolver.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                        null, null ,null, null);
+                if (cursor != null) {
+                    while (cursor.moveToNext()) {
+                        String path = cursor.getString(cursor
+                                .getColumnIndex(MediaStore.Video.Media.DATA));
+                        // 跳过不存在图片的路径，比如第三方应用删除了图片不更新媒体库，此时会出现不存在的图片
+                        File file = new File(path);
+                        if (!file.exists()) {
+                            continue;
+                        }
+                        MediaMeta video = new MediaMeta();
+                        video.setId(cursor.getInt(cursor
+                                .getColumnIndex(MediaStore.Video.Media._ID))); //获取唯一id
+                        video.setName(cursor.getString(cursor
+                                .getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME))); //文件名
+                        video.setPath(path); //文件路径
+                        video.setWidth(cursor.getInt(cursor
+                                .getColumnIndex(MediaStore.Video.Media.WIDTH))); // 宽度
+                        video.setHeight(cursor.getInt(cursor
+                                .getColumnIndex(MediaStore.Video.Media.HEIGHT))); // 高度
+                        if (mRetriever == null) {
+                            mRetriever = new MediaMetadataRetriever();
+                        }
+                        mRetriever.setDataSource(path);
+                        String rotation = mRetriever.extractMetadata(
+                                MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
+                        video.setOrientation(Integer.parseInt(rotation)); // 旋转角度
+                        video.setMimeType(mRetriever.extractMetadata(
+                                MediaMetadataRetriever.METADATA_KEY_MIMETYPE)); // mimeType类型
+                        video.setTime(cursor.getLong(cursor
+                                .getColumnIndex(MediaStore.Video.Media.DATE_TAKEN))); // 拍摄的时间
+                        video.setSize(cursor.getLong(cursor
+                                .getColumnIndex(MediaStore.Video.Media.SIZE))); // 设置大小
+                        mImageLists.add(video);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+
+
             return null;
         }
 

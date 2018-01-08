@@ -18,6 +18,12 @@
             android:text="@string/btn_camera"/>
 
         <Button
+            android:id="@+id/btn_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_edit"/>
+
+        <Button
             android:id="@+id/btn_video_record"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

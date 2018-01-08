@@ -12,7 +12,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.request.RequestOptions;
 import com.cgfay.caincamera.R;
-import com.cgfay.caincamera.bean.ImageMeta;
+import com.cgfay.caincamera.bean.MediaMeta;
 import com.cgfay.caincamera.view.SquareImageView;
 
 import java.util.List;
@@ -27,14 +27,14 @@ public class PhotoViewAdapter extends RecyclerView.Adapter<PhotoViewAdapter.Phot
     private boolean multiSelectEnable = false;
 
     private Context mContext;
-    private List<ImageMeta> mPhotoList;
+    private List<MediaMeta> mPhotoList;
     // 监听器
     private OnItemClickLitener mLitener;
     // 是否使能长按功能
     private boolean canLongClick = false;
 
 
-    public PhotoViewAdapter(Context context, List<ImageMeta> photoList) {
+    public PhotoViewAdapter(Context context, List<MediaMeta> photoList) {
         mContext = context;
         mPhotoList = photoList;
     }
@@ -58,6 +58,12 @@ public class PhotoViewAdapter extends RecyclerView.Adapter<PhotoViewAdapter.Phot
                     .apply(options)
                     .into(holder.mImageView);
         }
+        if (mPhotoList.get(position).getMimeType().startsWith("video/")) {
+            holder.mVideoPlayView.setVisibility(View.VISIBLE);
+        } else {
+            holder.mVideoPlayView.setVisibility(View.GONE);
+        }
+
         if (!multiSelectEnable) {
             holder.mSelectIndicator.setVisibility(View.GONE);
         } else {
@@ -111,12 +117,15 @@ public class PhotoViewAdapter extends RecyclerView.Adapter<PhotoViewAdapter.Phot
             implements View.OnClickListener, View.OnLongClickListener {
         // 预览缩略图
         public SquareImageView mImageView;
+        // 视频显示图标
+        public ImageView mVideoPlayView;
         // 选中图标
         public ImageView mSelectIndicator;
 
         public PhotoHolder(View itemView) {
             super(itemView);
             mImageView = (SquareImageView) itemView.findViewById(R.id.iv_photo);
+            mVideoPlayView = (ImageView) itemView.findViewById(R.id.video_play);
             mSelectIndicator = (ImageView) itemView.findViewById(R.id.selected_indicator);
             mImageView.setOnClickListener(this);
             mImageView.setOnLongClickListener(this);

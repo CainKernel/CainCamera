@@ -36,6 +36,17 @@
             android:textColor="@color/green"
             android:text="@string/finish"/>
     </RelativeLayout>
+    <!--输入文字-->
+    <EditText
+        android:id="@+id/et_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/dp5"
+        android:textSize="24sp"
+        android:layout_below="@id/btn_done"
+        android:visibility="gone"
+        android:textColor="#fff"
+        android:background="@null"/>
 
     <!-- 底部功能按钮 -->
     <LinearLayout
@@ -103,6 +114,7 @@
         android:id="@+id/layout_color"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
         android:layout_marginBottom="@dimen/dp60"
         android:visibility="gone"
         android:background="@android:color/transparent"

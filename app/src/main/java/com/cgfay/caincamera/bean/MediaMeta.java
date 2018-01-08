@@ -4,7 +4,7 @@ package com.cgfay.caincamera.bean;
  * 图片元数据(包括视频)
  * Created by cain.huang on 2017/8/9.
  */
-public class ImageMeta {
+public class MediaMeta {
     // id
     private int id;
     // 名称

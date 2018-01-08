@@ -293,7 +293,8 @@ public class CapturePreviewActivity extends AppCompatActivity
                                 });
                                 executeDeleteFile();
                                 // 跳转至视频编辑页面
-                                Intent intent = new Intent();
+                                Intent intent = new Intent(CapturePreviewActivity.this,
+                                        VideoEditActivity.class);
                                 intent.putExtra(VideoEditActivity.PATH, path);
                                 startActivity(intent);
                                 finish();
