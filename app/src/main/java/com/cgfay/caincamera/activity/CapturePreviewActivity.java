@@ -25,12 +25,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.caincamera.core.ParamsManager;
+import com.cgfay.cainfilter.core.ParamsManager;
 import com.cgfay.caincamera.core.VideoListManager;
 import com.cgfay.caincamera.multimedia.MediaPlayerManager;
-import com.cgfay.caincamera.multimedia.VideoCombineManager;
-import com.cgfay.caincamera.multimedia.VideoCombiner;
-import com.cgfay.caincamera.utils.FileUtils;
+import com.cgfay.cainfilter.multimedia.VideoCombineManager;
+import com.cgfay.cainfilter.multimedia.VideoCombiner;
+import com.cgfay.cainfilter.utils.FileUtils;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.PlaybackParameters;

@@ -6,8 +6,10 @@ import android.os.Looper;
 import android.os.Message;
 import android.view.SurfaceHolder;
 
-import com.cgfay.caincamera.type.FilterGroupType;
-import com.cgfay.caincamera.type.FilterType;
+import com.cgfay.cainfilter.type.FilterGroupType;
+import com.cgfay.cainfilter.type.FilterType;
+import com.cgfay.cainfilter.core.CaptureFrameCallback;
+import com.cgfay.cainfilter.core.RenderStateChangedListener;
 
 import java.lang.ref.WeakReference;
 

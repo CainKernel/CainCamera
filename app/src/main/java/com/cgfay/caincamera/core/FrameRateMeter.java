@@ -1,7 +1,5 @@
 package com.cgfay.caincamera.core;
 
-import android.util.Log;
-
 /**
  * FPS计算类
  * Created by cain.huang on 2017/12/19.

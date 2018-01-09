@@ -1,5 +1,6 @@
 package com.cgfay.caincamera.core;
 
+import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -9,16 +10,21 @@ import android.os.HandlerThread;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
-import com.cgfay.caincamera.bean.CameraInfo;
-import com.cgfay.caincamera.bean.Size;
+import com.cgfay.cainfilter.bean.CameraInfo;
+import com.cgfay.cainfilter.bean.Size;
 import com.cgfay.caincamera.facetracker.FaceTrackManager;
 import com.cgfay.caincamera.facetracker.FaceTrackerCallback;
-import com.cgfay.caincamera.gles.EglCore;
-import com.cgfay.caincamera.gles.WindowSurface;
-import com.cgfay.caincamera.type.FilterGroupType;
-import com.cgfay.caincamera.type.FilterType;
-import com.cgfay.caincamera.utils.CameraUtils;
-import com.cgfay.caincamera.utils.GlUtil;
+import com.cgfay.cainfilter.gles.EglCore;
+import com.cgfay.cainfilter.gles.WindowSurface;
+import com.cgfay.cainfilter.type.FilterGroupType;
+import com.cgfay.cainfilter.type.FilterType;
+import com.cgfay.cainfilter.core.CaptureFrameCallback;
+import com.cgfay.cainfilter.core.ParamsManager;
+import com.cgfay.cainfilter.core.RecordManager;
+import com.cgfay.cainfilter.core.RenderManager;
+import com.cgfay.cainfilter.core.RenderStateChangedListener;
+import com.cgfay.cainfilter.utils.CameraUtils;
+import com.cgfay.cainfilter.utils.GlUtil;
 
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
@@ -81,8 +87,11 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     private FrameRateMeter mFrameRateMeter;
     private WeakReference<Handler> mWeakFpsHandler;
 
-    public RenderThread(String name) {
+    private Context mContext;
+
+    public RenderThread(Context context, String name) {
         super(name);
+        mContext = context;
     }
 
     public void setRenderHandler(RenderHandler handler) {
@@ -123,7 +132,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         mCameraTexture = new SurfaceTexture(mCameraTextureId);
         mCameraTexture.setOnFrameAvailableListener(this);
         // 打开相机
-        CameraUtils.openCamera(CameraUtils.DESIRED_PREVIEW_FPS);
+        CameraUtils.openCamera(mContext, CameraUtils.DESIRED_PREVIEW_FPS);
         // 设置预览Surface
         CameraUtils.setPreviewSurface(mCameraTexture);
         calculateImageSize();
@@ -207,7 +216,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 初始化人脸检测工具
      */
     private void initFaceDetection() {
-        FaceTrackManager.getInstance().initFaceTracking(ParamsManager.context);
+        FaceTrackManager.getInstance().initFaceTracking(mContext);
         FaceTrackManager.getInstance().setFaceCallback(this);
     }
 
@@ -466,7 +475,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
             isPreviewing = false;
         }
         // 重新打开相机
-        CameraUtils.reopenCamera(mCameraTexture,
+        CameraUtils.reopenCamera(mContext, mCameraTexture,
                 this, mPreviewBuffer);
         isPreviewing = true;
         // 调整图片大小
@@ -480,7 +489,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
                     .setBackCamera(cameraId == Camera.CameraInfo.CAMERA_FACING_BACK);
             // 切换之后需要重新初始化检测器
             FaceTrackManager.getInstance().release();
-            FaceTrackManager.getInstance().initFaceTracking(ParamsManager.context);
+            FaceTrackManager.getInstance().initFaceTracking(mContext);
         }
     }
 
@@ -489,7 +498,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      */
     void switchCamera() {
         int cameraId = 1 - CameraUtils.getCameraID();
-        CameraUtils.switchCamera(cameraId, mCameraTexture,
+        CameraUtils.switchCamera(mContext, cameraId, mCameraTexture,
                 this, mPreviewBuffer);
         // 允许人脸关键点检测
         if (ParamsManager.canFaceTrack) {
@@ -497,7 +506,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
                     .setBackCamera(cameraId == Camera.CameraInfo.CAMERA_FACING_BACK);
             // 切换之后需要重新初始化检测器
             FaceTrackManager.getInstance().release();
-            FaceTrackManager.getInstance().initFaceTracking(ParamsManager.context);
+            FaceTrackManager.getInstance().initFaceTracking(mContext);
         }
     }
 

@@ -3,7 +3,8 @@ package com.cgfay.caincamera.activity.camera;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
 
-import com.cgfay.caincamera.utils.GlUtil;
+
+import com.cgfay.cainfilter.utils.GlUtil;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;

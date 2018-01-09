@@ -2,7 +2,6 @@ package com.cgfay.caincamera.multimedia;
 
 import android.content.Context;
 import android.net.Uri;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -32,7 +31,6 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**

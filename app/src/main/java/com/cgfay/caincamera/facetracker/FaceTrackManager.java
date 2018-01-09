@@ -8,13 +8,13 @@ import android.os.HandlerThread;
 import android.util.Log;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.caincamera.bean.Size;
-import com.cgfay.caincamera.core.ParamsManager;
-import com.cgfay.caincamera.utils.CameraUtils;
-import com.cgfay.caincamera.utils.GlUtil;
-import com.cgfay.caincamera.utils.SensorEventUtil;
+import com.cgfay.cainfilter.bean.Size;
+import com.cgfay.cainfilter.core.ParamsManager;
 import com.cgfay.caincamera.utils.faceplus.ConUtil;
 import com.cgfay.caincamera.utils.faceplus.Util;
+import com.cgfay.cainfilter.utils.CameraUtils;
+import com.cgfay.cainfilter.utils.GlUtil;
+import com.cgfay.cainfilter.utils.SensorEventUtil;
 import com.megvii.facepp.sdk.Facepp;
 import com.megvii.licensemanager.sdk.LicenseManager;
 
@@ -187,7 +187,7 @@ public class FaceTrackManager {
             }
             facepp = new Facepp();
 
-            mSensorUtil = new SensorEventUtil(ParamsManager.context);
+            mSensorUtil = new SensorEventUtil(context);
 
             // 开启检测线程
             startFaceTrackThread();

@@ -2,7 +2,8 @@ package com.cgfay.caincamera.facetracker;
 
 import android.opengl.GLES30;
 
-import com.cgfay.caincamera.utils.GlUtil;
+
+import com.cgfay.cainfilter.utils.GlUtil;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;

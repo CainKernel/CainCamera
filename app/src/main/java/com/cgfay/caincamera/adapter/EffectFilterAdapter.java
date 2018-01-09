@@ -8,13 +8,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.caincamera.type.FilterType;
-import com.cgfay.caincamera.utils.BitmapUtils;
+import com.cgfay.cainfilter.type.FilterType;
 import com.cgfay.caincamera.view.SquareImageView;
+import com.cgfay.cainfilter.utils.BitmapUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

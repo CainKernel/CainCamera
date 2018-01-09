@@ -6,9 +6,9 @@ import android.os.HandlerThread;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
-import com.cgfay.caincamera.gles.EglCore;
-import com.cgfay.caincamera.gles.WindowSurface;
-import com.cgfay.caincamera.utils.GlUtil;
+import com.cgfay.cainfilter.gles.EglCore;
+import com.cgfay.cainfilter.gles.WindowSurface;
+import com.cgfay.cainfilter.utils.GlUtil;
 
 /**
  * 渲染线程

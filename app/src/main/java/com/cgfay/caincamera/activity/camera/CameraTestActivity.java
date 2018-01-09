@@ -12,10 +12,9 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.caincamera.bean.Size;
-import com.cgfay.caincamera.core.ParamsManager;
-import com.cgfay.caincamera.utils.PermissionUtils;
+import com.cgfay.cainfilter.bean.Size;
 import com.cgfay.caincamera.view.AspectFrameLayout;
+import com.cgfay.caincamera.utils.PermissionUtils;
 
 /**
  * 双HandlerThread 测试, MTK的CPU在双HandlerThread模型上表现非常糟糕

@@ -1,7 +1,6 @@
 package com.cgfay.caincamera.core;
 
 import com.cgfay.caincamera.bean.SubVideo;
-import com.cgfay.caincamera.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

@@ -15,15 +15,15 @@ import android.view.View;
 import android.widget.RelativeLayout;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.caincamera.bean.Size;
-import com.cgfay.caincamera.core.ParamsManager;
+import com.cgfay.cainfilter.bean.Size;
+import com.cgfay.cainfilter.core.ParamsManager;
 import com.cgfay.caincamera.facetracker.FacePointsDrawer;
-import com.cgfay.caincamera.filter.camera.CameraFilter;
-import com.cgfay.caincamera.utils.CameraUtils;
-import com.cgfay.caincamera.utils.GlUtil;
-import com.cgfay.caincamera.utils.SensorEventUtil;
+import com.cgfay.cainfilter.filter.camera.CameraFilter;
+import com.cgfay.cainfilter.utils.CameraUtils;
+import com.cgfay.cainfilter.utils.GlUtil;
 import com.cgfay.caincamera.utils.faceplus.ConUtil;
 import com.cgfay.caincamera.utils.faceplus.Util;
+import com.cgfay.cainfilter.utils.SensorEventUtil;
 import com.megvii.facepp.sdk.Facepp;
 import com.megvii.licensemanager.sdk.LicenseManager;
 
@@ -184,7 +184,7 @@ public class FaceTrackActivity extends AppCompatActivity implements Camera.Previ
         ConUtil.acquireWakeLock(this);
 
         CameraUtils.calculateCameraPreviewOrientation(this);
-        CameraUtils.openCamera(CameraUtils.DESIRED_PREVIEW_FPS);
+        CameraUtils.openCamera(this, CameraUtils.DESIRED_PREVIEW_FPS);
 
         if (CameraUtils.getCamera() != null && ParamsManager.canFaceTrack) {
             Angle = 360 - CameraUtils.getPreviewOrientation();

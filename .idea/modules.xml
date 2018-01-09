@@ -4,6 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/CainCamera.iml" filepath="$PROJECT_DIR$/CainCamera.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ffmpeglibrary/ffmpeglibrary.iml" filepath="$PROJECT_DIR$/ffmpeglibrary/ffmpeglibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/filterlibrary/utilslibrary.iml" filepath="$PROJECT_DIR$/filterlibrary/utilslibrary.iml" />
     </modules>
   </component>
 </project>

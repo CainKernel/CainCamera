@@ -8,8 +8,8 @@ import android.os.HandlerThread;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
-import com.cgfay.caincamera.bean.CameraInfo;
-import com.cgfay.caincamera.bean.Size;
+import com.cgfay.cainfilter.bean.CameraInfo;
+import com.cgfay.cainfilter.bean.Size;
 
 /**
  * 相机操作线程队列

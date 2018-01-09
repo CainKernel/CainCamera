@@ -4,7 +4,9 @@ package com.cgfay.caincamera.bean;
  * Created by cain.huang on 2017/12/29.
  */
 
-import com.cgfay.caincamera.utils.FileUtils;
+
+
+import com.cgfay.cainfilter.utils.FileUtils;
 
 import java.io.Serializable;
 

@@ -7,8 +7,8 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
-import com.cgfay.caincamera.bean.CameraInfo;
-import com.cgfay.caincamera.bean.Size;
+import com.cgfay.cainfilter.bean.CameraInfo;
+import com.cgfay.cainfilter.bean.Size;
 
 import java.io.IOException;
 import java.util.ArrayList;

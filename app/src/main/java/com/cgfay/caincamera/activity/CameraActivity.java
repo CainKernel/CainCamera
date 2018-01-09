@@ -30,26 +30,20 @@ import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.EffectFilterAdapter;
-import com.cgfay.caincamera.core.CaptureFrameCallback;
-import com.cgfay.caincamera.core.ColorFilterManager;
+import com.cgfay.cainfilter.core.CaptureFrameCallback;
+import com.cgfay.cainfilter.core.ColorFilterManager;
 import com.cgfay.caincamera.core.CountDownManager;
 import com.cgfay.caincamera.core.DrawerManager;
 import com.cgfay.caincamera.core.FrameRateMeter;
-import com.cgfay.caincamera.core.ParamsManager;
-import com.cgfay.caincamera.core.RecordManager;
-import com.cgfay.caincamera.core.RenderStateChangedListener;
+import com.cgfay.cainfilter.core.ParamsManager;
+import com.cgfay.cainfilter.core.RecordManager;
+import com.cgfay.cainfilter.core.RenderStateChangedListener;
 import com.cgfay.caincamera.core.VideoListManager;
 import com.cgfay.caincamera.facetracker.FaceTrackManager;
-import com.cgfay.caincamera.multimedia.MediaEncoder;
+import com.cgfay.cainfilter.multimedia.MediaEncoder;
 import com.cgfay.caincamera.type.AspectRatioType;
-import com.cgfay.caincamera.type.GalleryType;
+import com.cgfay.cainfilter.type.GalleryType;
 import com.cgfay.caincamera.type.TimeLapseType;
-import com.cgfay.caincamera.utils.BitmapUtils;
-import com.cgfay.caincamera.utils.CameraUtils;
-import com.cgfay.caincamera.utils.FileUtils;
-import com.cgfay.caincamera.utils.PermissionUtils;
-import com.cgfay.caincamera.utils.StringUtils;
-import com.cgfay.caincamera.utils.TextureRotationUtils;
 import com.cgfay.caincamera.view.AspectFrameLayout;
 import com.cgfay.caincamera.view.AsyncRecyclerview;
 import com.cgfay.caincamera.view.CameraSurfaceView;
@@ -57,6 +51,12 @@ import com.cgfay.caincamera.view.HorizontalIndicatorView;
 import com.cgfay.caincamera.view.RatioImageView;
 import com.cgfay.caincamera.view.SettingPopView;
 import com.cgfay.caincamera.view.ShutterButton;
+import com.cgfay.cainfilter.utils.BitmapUtils;
+import com.cgfay.cainfilter.utils.CameraUtils;
+import com.cgfay.cainfilter.utils.FileUtils;
+import com.cgfay.caincamera.utils.PermissionUtils;
+import com.cgfay.cainfilter.utils.StringUtils;
+import com.cgfay.cainfilter.utils.TextureRotationUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -185,7 +185,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         // Face++请求联网认证
         FaceTrackManager.getInstance().requestFaceNetwork(this);
         // 创建渲染线程
-        DrawerManager.getInstance().createRenderThread();
+        DrawerManager.getInstance().createRenderThread(this);
         // 添加渲染状态回调监听
         DrawerManager.getInstance().addRenderStateChangedListener(this);
         // 设置拍照回调

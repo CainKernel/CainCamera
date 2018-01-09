@@ -19,8 +19,8 @@ import android.view.View;
 import android.widget.Button;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.caincamera.jni.FFmpegHandler;
 import com.cgfay.caincamera.view.AspectFrameLayout;
+import com.cgfay.cainffmpeg.nativehelper.FFmpegHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;

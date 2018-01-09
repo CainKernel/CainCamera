@@ -1,12 +1,12 @@
 package com.cgfay.caincamera.activity.camera;
 
-import com.cgfay.caincamera.core.FilterManager;
-import com.cgfay.caincamera.filter.base.BaseImageFilterGroup;
-import com.cgfay.caincamera.filter.camera.CameraFilter;
-import com.cgfay.caincamera.type.FilterGroupType;
-import com.cgfay.caincamera.type.FilterType;
-import com.cgfay.caincamera.type.ScaleType;
-import com.cgfay.caincamera.utils.TextureRotationUtils;
+import com.cgfay.cainfilter.core.FilterManager;
+import com.cgfay.cainfilter.filter.base.BaseImageFilterGroup;
+import com.cgfay.cainfilter.filter.camera.CameraFilter;
+import com.cgfay.cainfilter.type.FilterGroupType;
+import com.cgfay.cainfilter.type.FilterType;
+import com.cgfay.cainfilter.type.ScaleType;
+import com.cgfay.cainfilter.utils.TextureRotationUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

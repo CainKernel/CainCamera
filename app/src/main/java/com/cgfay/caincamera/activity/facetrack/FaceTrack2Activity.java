@@ -16,17 +16,17 @@ import android.view.View;
 import android.widget.RelativeLayout;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.caincamera.bean.Size;
-import com.cgfay.caincamera.core.ParamsManager;
+import com.cgfay.cainfilter.bean.Size;
+import com.cgfay.cainfilter.core.ParamsManager;
 import com.cgfay.caincamera.facetracker.FacePointsDrawer;
-import com.cgfay.caincamera.filter.camera.CameraFilter;
-import com.cgfay.caincamera.gles.EglCore;
-import com.cgfay.caincamera.gles.WindowSurface;
-import com.cgfay.caincamera.utils.CameraUtils;
-import com.cgfay.caincamera.utils.GlUtil;
-import com.cgfay.caincamera.utils.SensorEventUtil;
+import com.cgfay.cainfilter.filter.camera.CameraFilter;
+import com.cgfay.cainfilter.gles.EglCore;
+import com.cgfay.cainfilter.gles.WindowSurface;
 import com.cgfay.caincamera.utils.faceplus.ConUtil;
 import com.cgfay.caincamera.utils.faceplus.Util;
+import com.cgfay.cainfilter.utils.CameraUtils;
+import com.cgfay.cainfilter.utils.GlUtil;
+import com.cgfay.cainfilter.utils.SensorEventUtil;
 import com.megvii.facepp.sdk.Facepp;
 import com.megvii.licensemanager.sdk.LicenseManager;
 
@@ -403,7 +403,7 @@ public class FaceTrack2Activity extends AppCompatActivity implements SurfaceHold
         mCameraFilter.onInputSizeChanged(size.getWidth(), size.getHeight());
 
         CameraUtils.calculateCameraPreviewOrientation(this);
-        CameraUtils.openCamera(CameraUtils.DESIRED_PREVIEW_FPS);
+        CameraUtils.openCamera(FaceTrack2Activity.this, CameraUtils.DESIRED_PREVIEW_FPS);
         // 设置预览回调
         CameraUtils.setPreviewCallback(FaceTrack2Activity.this);
         CameraUtils.setPreviewSurface(mSurface);

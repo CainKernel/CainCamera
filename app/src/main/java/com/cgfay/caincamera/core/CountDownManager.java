@@ -1,14 +1,11 @@
 package com.cgfay.caincamera.core;
 
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemClock;
-import android.util.Log;
 
 import com.cgfay.caincamera.type.CountDownType;
 import com.cgfay.caincamera.utils.AccurateCountDownTimer;
-import com.cgfay.caincamera.utils.StringUtils;
+import com.cgfay.cainfilter.utils.StringUtils;
 
 /**
  * 倒计时管理器

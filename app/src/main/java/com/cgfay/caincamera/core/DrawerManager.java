@@ -1,11 +1,14 @@
 package com.cgfay.caincamera.core;
 
+import android.content.Context;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.view.SurfaceHolder;
 
-import com.cgfay.caincamera.type.FilterGroupType;
-import com.cgfay.caincamera.type.FilterType;
+import com.cgfay.cainfilter.type.FilterGroupType;
+import com.cgfay.cainfilter.type.FilterType;
+import com.cgfay.cainfilter.core.CaptureFrameCallback;
+import com.cgfay.cainfilter.core.RenderStateChangedListener;
 
 
 /**
@@ -64,8 +67,8 @@ public class DrawerManager {
     /**
      * 创建HandlerThread和Handler
      */
-    synchronized public void createRenderThread() {
-        mRenderThread = new RenderThread("RenderThread");
+    synchronized public void createRenderThread(Context context) {
+        mRenderThread = new RenderThread(context, "RenderThread");
         mRenderThread.start();
         mRenderHandler = new RenderHandler(mRenderThread.getLooper(), mRenderThread);
         // 绑定Handler
