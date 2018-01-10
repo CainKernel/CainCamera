@@ -3,9 +3,13 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/CainCamera.iml" filepath="$PROJECT_DIR$/CainCamera.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/camera/app.iml" filepath="$PROJECT_DIR$/camera/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/ffmpeglibrary/ffmpeglibrary.iml" filepath="$PROJECT_DIR$/ffmpeglibrary/ffmpeglibrary.iml" />
-      <module fileurl="file://$PROJECT_DIR$/filterlibrary/utilslibrary.iml" filepath="$PROJECT_DIR$/filterlibrary/utilslibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/filterlibrary/filterlibrary.iml" filepath="$PROJECT_DIR$/filterlibrary/filterlibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/utilslibrary/utilslibrary.iml" filepath="$PROJECT_DIR$/utilslibrary/utilslibrary.iml" />
+      <module fileurl="file://D:\workspace\Android\CainCamera\filterlibrary\utilslibrary.iml" filepath="D:\workspace\Android\CainCamera\filterlibrary\utilslibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/videoeditor/videoeditor.iml" filepath="$PROJECT_DIR$/videoeditor/videoeditor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/videoplayer/videoplayer.iml" filepath="$PROJECT_DIR$/videoplayer/videoplayer.iml" />
     </modules>
   </component>
 </project>

@@ -3,7 +3,7 @@ package com.cgfay.cainffmpeg.nativehelper;
 import android.util.Log;
 
 
-import com.cgfay.cainfilter.utils.FileUtils;
+import com.cgfay.utilslibrary.FileUtils;
 
 import java.util.ArrayList;
 import java.util.List;

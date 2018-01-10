@@ -5,9 +5,9 @@ import android.graphics.Bitmap;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
 
-import com.cgfay.cainfilter.utils.BitmapUtils;
 import com.cgfay.cainfilter.utils.GlUtil;
 import com.cgfay.cainfilter.utils.MatrixHelper;
+import com.cgfay.utilslibrary.BitmapUtils;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;

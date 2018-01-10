@@ -26,6 +26,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
+    compile project(':utilslibrary')
     compile files('libs/zip4j_1.3.2.jar')
     compile files('libs/java-unrar-decryption-supported-20120613.jar')
     implementation 'com.android.support:appcompat-v7:25.3.1'

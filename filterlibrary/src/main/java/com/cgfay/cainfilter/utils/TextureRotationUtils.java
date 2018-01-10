@@ -2,6 +2,8 @@ package com.cgfay.cainfilter.utils;
 
 import android.hardware.Camera;
 
+import com.cgfay.utilslibrary.CameraUtils;
+
 import java.nio.FloatBuffer;
 
 /**
