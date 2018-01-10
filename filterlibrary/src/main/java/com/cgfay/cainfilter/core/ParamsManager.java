@@ -28,12 +28,6 @@ public class ParamsManager {
     // 视频存放地址
     public static final String VideoPath = StoragePath + "/CainCamera/Video/";
 
-    // 是否绘制人脸关键点
-    public static boolean enableDrawingPoints = false;
-
-    // 人脸识别是否正常
-    public static boolean canFaceTrack = false;
-
     // 存放预览类型，GIF表情包、PICTURE拍照、VIDEO视频等
     public static GalleryType mGalleryType = GalleryType.PICTURE;
 

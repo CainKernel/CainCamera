@@ -52,6 +52,7 @@ public class FaceTrack2Activity extends AppCompatActivity implements SurfaceHold
     private HandlerThread mTrackerThread = new HandlerThread("facepp");
     private Handler mTrackerHandler;
 
+    private boolean canFaceTrack = false;
     private Facepp facepp;
     private int min_face_size = 200;
     private int detection_interval = 25;
@@ -80,7 +81,7 @@ public class FaceTrack2Activity extends AppCompatActivity implements SurfaceHold
     private void requestFaceNetwork() {
         if (Facepp.getSDKAuthType(ConUtil.getFileContent(this, R.raw
                 .megviifacepp_0_4_7_model)) == 2) {// 非联网授权
-            ParamsManager.canFaceTrack = true;
+            canFaceTrack = true;
             return;
         }
         final LicenseManager licenseManager = new LicenseManager(this);
@@ -96,21 +97,21 @@ public class FaceTrack2Activity extends AppCompatActivity implements SurfaceHold
                 LicenseManager.DURATION_30DAYS, "Landmark", "1", true, new LicenseManager.TakeLicenseCallback() {
                     @Override
                     public void onSuccess() {
-                        ParamsManager.canFaceTrack = true;
+                        canFaceTrack = true;
                         init();
                     }
 
                     @Override
                     public void onFailed(int i, byte[] bytes) {
                         Log.d("LicenseManager", "Failed to register license!");
-                        ParamsManager.canFaceTrack = false;
+                        canFaceTrack = false;
                         init();
                     }
                 });
     }
 
     private void init() {
-        if (ParamsManager.canFaceTrack) {
+        if (canFaceTrack) {
             if (android.os.Build.MODEL.equals("PLK-AL10"))
                 printTime = 50;
 
@@ -188,7 +189,7 @@ public class FaceTrack2Activity extends AppCompatActivity implements SurfaceHold
     private void initFaceTracking() {
         ConUtil.acquireWakeLock(this);
 
-        if (CameraUtils.getCamera() != null && ParamsManager.canFaceTrack) {
+        if (CameraUtils.getCamera() != null && canFaceTrack) {
             Angle = 360 - CameraUtils.getPreviewOrientation();
             if (isBackCamera)
                 Angle = CameraUtils.getPreviewOrientation();
@@ -263,7 +264,7 @@ public class FaceTrack2Activity extends AppCompatActivity implements SurfaceHold
             return;
         }
         isSuccess = true;
-        if (ParamsManager.canFaceTrack && mTrackerHandler != null && isPreviewing) {
+        if (canFaceTrack && mTrackerHandler != null && isPreviewing) {
             mTrackerHandler.post(new Runnable() {
                 @Override
                 public void run() {

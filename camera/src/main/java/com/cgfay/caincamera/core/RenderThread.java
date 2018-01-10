@@ -165,9 +165,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
             mRenderStateListener.onPreviewing(isPreviewing);
         }
         // 配置检测点的宽高
-        if (ParamsManager.enableDrawingPoints) {
-            FaceTrackManager.getInstance().onDisplayChanged(mViewWidth, mViewHeight);
-        }
+        FaceTrackManager.getInstance().onDisplayChanged(mViewWidth, mViewHeight);
     }
 
     void surfaceDestoryed() {
@@ -217,6 +215,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 初始化人脸检测工具
      */
     private void initFaceDetection() {
+        FaceTrackManager.getInstance().setBackReverse(ParamsManager.mBackReverse); // 相机是否倒置
         FaceTrackManager.getInstance().initFaceTracking(mContext);
         FaceTrackManager.getInstance().setFaceCallback(this);
     }
@@ -227,11 +226,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      */
     void onPreviewCallback(byte[] data) {
         // 如果允许关键点检测，则进入关键点检测阶段，否则立即更新帧
-        if (ParamsManager.canFaceTrack) {
-            FaceTrackManager.getInstance().onFaceTracking(data);
-        } else {
-            addNewFrame();
-        }
+        FaceTrackManager.getInstance().onFaceTracking(data);
     }
 
 
@@ -400,9 +395,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         RenderManager.getInstance().drawFrame(mCameraTextureId);
 
         // 是否绘制关键点
-        if (ParamsManager.enableDrawingPoints) {
-            FaceTrackManager.getInstance().drawTrackPoints();
-        }
+        FaceTrackManager.getInstance().drawTrackPoints();
     }
 
 
@@ -483,15 +476,11 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         calculateImageSize();
         // 重新调整输入的TextureSize
         RenderManager.getInstance().onInputSizeChanged(mImageWidth, mImageHeight);
-        // 允许人脸关键点检测
-        if (ParamsManager.canFaceTrack) {
-            int cameraId = CameraUtils.getCameraID();
-            FaceTrackManager.getInstance()
-                    .setBackCamera(cameraId == Camera.CameraInfo.CAMERA_FACING_BACK);
-            // 切换之后需要重新初始化检测器
-            FaceTrackManager.getInstance().release();
-            FaceTrackManager.getInstance().initFaceTracking(mContext);
-        }
+        // 重置人脸检测管理器
+        int cameraId = CameraUtils.getCameraID();
+        FaceTrackManager.getInstance()
+                .setBackCamera(cameraId == Camera.CameraInfo.CAMERA_FACING_BACK);
+        FaceTrackManager.getInstance().reset(mContext);
     }
 
     /**
@@ -501,14 +490,10 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         int cameraId = 1 - CameraUtils.getCameraID();
         CameraUtils.switchCamera(mContext, cameraId, mCameraTexture,
                 this, mPreviewBuffer);
-        // 允许人脸关键点检测
-        if (ParamsManager.canFaceTrack) {
-            FaceTrackManager.getInstance()
-                    .setBackCamera(cameraId == Camera.CameraInfo.CAMERA_FACING_BACK);
-            // 切换之后需要重新初始化检测器
-            FaceTrackManager.getInstance().release();
-            FaceTrackManager.getInstance().initFaceTracking(mContext);
-        }
+        // 切换之后需要重置人脸检测管理器
+        FaceTrackManager.getInstance()
+                .setBackCamera(cameraId == Camera.CameraInfo.CAMERA_FACING_BACK);
+        FaceTrackManager.getInstance().reset(mContext);
     }
 
     /**

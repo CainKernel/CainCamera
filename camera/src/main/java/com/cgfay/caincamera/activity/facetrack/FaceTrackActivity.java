@@ -64,6 +64,8 @@ public class FaceTrackActivity extends AppCompatActivity implements Camera.Previ
 
     boolean isPreviewing = false;
 
+    private boolean canFaceTrack = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,7 +80,7 @@ public class FaceTrackActivity extends AppCompatActivity implements Camera.Previ
     private void requestFaceNetwork() {
         if (Facepp.getSDKAuthType(ConUtil.getFileContent(this, R.raw
                 .megviifacepp_0_4_7_model)) == 2) {// 非联网授权
-            ParamsManager.canFaceTrack = true;
+            canFaceTrack = true;
             return;
         }
         final LicenseManager licenseManager = new LicenseManager(this);
@@ -94,21 +96,21 @@ public class FaceTrackActivity extends AppCompatActivity implements Camera.Previ
                 LicenseManager.DURATION_30DAYS, "Landmark", "1", true, new LicenseManager.TakeLicenseCallback() {
                     @Override
                     public void onSuccess() {
-                        ParamsManager.canFaceTrack = true;
+                        canFaceTrack = true;
                         init();
                     }
 
                     @Override
                     public void onFailed(int i, byte[] bytes) {
                         Log.d("LicenseManager", "Failed to register license!");
-                        ParamsManager.canFaceTrack = false;
+                        canFaceTrack = false;
                         init();
                     }
                 });
     }
 
     private void init() {
-        if (ParamsManager.canFaceTrack) {
+        if (canFaceTrack) {
             if (android.os.Build.MODEL.equals("PLK-AL10"))
                 printTime = 50;
 
@@ -186,7 +188,7 @@ public class FaceTrackActivity extends AppCompatActivity implements Camera.Previ
         CameraUtils.calculateCameraPreviewOrientation(this);
         CameraUtils.openCamera(this, CameraUtils.DESIRED_PREVIEW_FPS);
 
-        if (CameraUtils.getCamera() != null && ParamsManager.canFaceTrack) {
+        if (CameraUtils.getCamera() != null && canFaceTrack) {
             Angle = 360 - CameraUtils.getPreviewOrientation();
             if (isBackCamera)
                 Angle = CameraUtils.getPreviewOrientation();
@@ -287,7 +289,7 @@ public class FaceTrackActivity extends AppCompatActivity implements Camera.Previ
             return;
         }
         isSuccess = true;
-        if (ParamsManager.canFaceTrack && mTrackerHandler != null) {
+        if (canFaceTrack && mTrackerHandler != null) {
             mTrackerHandler.post(new Runnable() {
                 @Override
                 public void run() {

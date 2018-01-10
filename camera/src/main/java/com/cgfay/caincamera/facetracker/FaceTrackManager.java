@@ -91,6 +91,12 @@ public class FaceTrackManager {
     private int mViewWidth;
     private int mViewHeight;
 
+    // 是否允许人脸检测
+    private boolean canFaceTrack = false;
+    // 是否相机倒置
+    private boolean mBackReverse = false;
+    // 是否允许绘制
+    private boolean enableDrawingPoints = false;
 
     private FaceTrackerCallback mFaceTrackerCallback;
 
@@ -107,7 +113,7 @@ public class FaceTrackManager {
     public void requestFaceNetwork(Context context) {
         if (Facepp.getSDKAuthType(ConUtil.getFileContent(context, R.raw
                 .megviifacepp_0_4_7_model)) == 2) {// 非联网授权
-            ParamsManager.canFaceTrack = true;
+            canFaceTrack = true;
             return;
         }
         final LicenseManager licenseManager = new LicenseManager(context);
@@ -124,7 +130,7 @@ public class FaceTrackManager {
                 new LicenseManager.TakeLicenseCallback() {
                     @Override
                     public void onSuccess() {
-                        ParamsManager.canFaceTrack = true;
+                        canFaceTrack = true;
                     }
 
                     @Override
@@ -132,7 +138,7 @@ public class FaceTrackManager {
                         if (isDebug) {
                             Log.d("LicenseManager", "Failed to register license!");
                         }
-                        ParamsManager.canFaceTrack = false;
+                        canFaceTrack = false;
                     }
                 });
     }
@@ -180,7 +186,7 @@ public class FaceTrackManager {
      * 备注：在相机打开之后调用
      */
     public void initFaceTracking(Context context) {
-        if (ParamsManager.canFaceTrack) {
+        if (canFaceTrack) {
 
             if (facepp != null) {
                 facepp.release();
@@ -196,9 +202,9 @@ public class FaceTrackManager {
 
             if (CameraUtils.getCamera() != null) {
                 Angle = 360 - CameraUtils.getPreviewOrientation();
-                if (isBackCamera)
+                if (isBackCamera) {
                     Angle = CameraUtils.getPreviewOrientation();
-
+                }
                 Size size = CameraUtils.getPreviewSize();
                 int width = size.getWidth();
                 int height = size.getHeight();
@@ -236,7 +242,7 @@ public class FaceTrackManager {
         }
 
         // 初始化关键点绘制器
-        if (ParamsManager.enableDrawingPoints) {
+        if (enableDrawingPoints) {
             mFacePointsDrawer = new FacePointsDrawer();
         }
     }
@@ -254,6 +260,11 @@ public class FaceTrackManager {
         int ratio = 1;
         // 投影矩阵
         Matrix.frustumM(mProjMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+    }
+
+    public void reset(Context context) {
+        release();
+        initFaceTracking(context);
     }
 
     /**
@@ -289,14 +300,14 @@ public class FaceTrackManager {
      * @param data
      */
     public void onFaceTracking(final byte[] data) {
-        if (isDetecting) {
+        if (!canFaceTrack || isDetecting) {
             if (mFaceTrackerCallback != null) {
                 mFaceTrackerCallback.onTrackingFinish(mHasFace);
             }
             return;
         }
         isDetecting = true;
-        if (ParamsManager.canFaceTrack && mTrackerHandler != null) {
+        if (mTrackerHandler != null) {
             mTrackerHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -310,15 +321,16 @@ public class FaceTrackManager {
                     // 调整检测监督
                     long faceDetectTime_action = System.currentTimeMillis();
                     int orientation = mSensorUtil.orientation;
-                    if (orientation == 0)
+                    if (orientation == 0) {
                         rotation = Angle;
-                    else if (orientation == 1)
+                    } else if (orientation == 1) {
                         rotation = 0;
-                    else if (orientation == 2)
+                    } else if (orientation == 2) {
                         rotation = 180;
-                    else if (orientation == 3)
-                        rotation = 360 - Angle;
 
+                    } else if (orientation == 3) {
+                        rotation = 360 - Angle;
+                    }
                     setConfig(rotation);
 
                     mHasFace = false;
@@ -397,7 +409,7 @@ public class FaceTrackManager {
 
                                     if (orientation == 1) {
                                         if (isBackCamera) {
-                                            if (ParamsManager.mBackReverse) {
+                                            if (mBackReverse) {
                                                 pointf = new float[] { y, x, 0.0f };
                                             } else {
                                                 pointf = new float[] { -y, -x, 0.0f };
@@ -409,7 +421,7 @@ public class FaceTrackManager {
 
                                     if (orientation == 2) {
                                         if (isBackCamera) {
-                                            if (ParamsManager.mBackReverse) {
+                                            if (mBackReverse) {
                                                 pointf = new float[]{-y, -x, 0.0f};
                                             } else {
                                                 pointf = new float[] { y, x, 0.0f };
@@ -427,19 +439,19 @@ public class FaceTrackManager {
                                     FacePointsManager.getInstance().addOnePoint(pointf);
 
                                     // 是否允许绘制关键点
-                                    if (ParamsManager.enableDrawingPoints) {
+                                    if (enableDrawingPoints) {
                                         FloatBuffer fb = GlUtil.createFloatBuffer(pointf);
                                         onePoints.add(fb);
                                     }
                                 }
-                                if (ParamsManager.enableDrawingPoints) {
+                                if (enableDrawingPoints) {
                                     facePoints.add(onePoints);
                                 }
                                 // 添加一个人脸的关键点
                                 FacePointsManager.getInstance().addOneFacePoints();
                             }
 
-                            if (ParamsManager.enableDrawingPoints) {
+                            if (enableDrawingPoints) {
                                 mFacePointsDrawer.points = facePoints;
                             }
                         } else {
@@ -467,6 +479,9 @@ public class FaceTrackManager {
      * 绘制关键点
      */
     public void drawTrackPoints() {
+        if (!enableDrawingPoints) {
+            return;
+        }
         // 回执关键点
         Matrix.setLookAtM(mVMatrix, 0,
                 0, 0, -3,
@@ -561,4 +576,11 @@ public class FaceTrackManager {
         mDetectionInterval = interval;
     }
 
+    /**
+     * 设置相机倒置
+     * @param backReverse
+     */
+    public void setBackReverse(boolean backReverse) {
+        mBackReverse = backReverse;
+    }
 }
