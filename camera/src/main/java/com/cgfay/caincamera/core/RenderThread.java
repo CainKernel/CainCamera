@@ -286,7 +286,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * @param rect
      */
     void setFocusAres(Rect rect) {
-        CameraUtils.setFocusArea(rect, null);
+        CameraUtils.setFocusArea(rect);
     }
 
     /**

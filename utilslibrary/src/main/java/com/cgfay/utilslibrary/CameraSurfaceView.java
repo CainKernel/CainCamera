@@ -1,9 +1,17 @@
 package com.cgfay.utilslibrary;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.Context;
+import android.hardware.Camera;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+
+import java.util.List;
 
 /**
  * Created by cain on 2017/7/9.
@@ -28,6 +36,11 @@ public class CameraSurfaceView extends SurfaceView {
     private final Object mOperation = new Object();
     private boolean mTouchWithoutSwipe = false;
 
+    // 对焦动画
+    private ValueAnimator mFocusAnimator;
+    // 对焦图片
+    private ImageView mFocusImageView;
+
     private OnTouchScroller mScroller;
     private OnClickListener mClickListener;
 
@@ -49,10 +62,6 @@ public class CameraSurfaceView extends SurfaceView {
     private void init() {
     }
 
-
-
-
-
     private boolean mIsWaitUpEvent = false;
     private boolean mIsWaitDoubleClick = false;
     @Override
@@ -64,6 +73,18 @@ public class CameraSurfaceView extends SurfaceView {
                 mTouchPreviewY = event.getY();
                 mIsWaitUpEvent = true;
                 postDelayed(mTimerForUpEvent, MAX_CLICK_INTERVAL);
+
+                //判断是否支持对焦模式
+                if (CameraUtils.getCamera()!=null) {
+                    List<String> focusModes = CameraUtils.getCamera()
+                            .getParameters().getSupportedFocusModes();
+
+                    if (focusModes != null
+                            && focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+                        addFocusView();
+                    }
+                }
+
                 break;
 
             case MotionEvent.ACTION_MOVE:
@@ -188,6 +209,51 @@ public class CameraSurfaceView extends SurfaceView {
             }
         }
     }
+
+    /**
+     * 添加对焦图片
+     */
+    private void addFocusView() {
+
+        if (mFocusAnimator == null) {
+            mFocusImageView = new ImageView(getContext());
+            mFocusImageView.setImageResource(R.drawable.video_focus);
+            mFocusImageView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            mFocusImageView.measure(0, 0);
+            mFocusImageView.setX(mTouchPreviewX - mFocusImageView.getMeasuredWidth() / 2);
+            mFocusImageView.setY(mTouchPreviewY - mFocusImageView.getMeasuredHeight() / 2);
+            final ViewGroup parent = (ViewGroup) getParent();
+            parent.addView(mFocusImageView);
+
+            mFocusAnimator = ValueAnimator.ofFloat(0, 1).setDuration(500);
+            mFocusAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    if(mFocusImageView != null) {
+                        float value = (float) animation.getAnimatedValue();
+                        if (value <= 0.5f) {
+                            mFocusImageView.setScaleX(1 + value);
+                            mFocusImageView.setScaleY(1 + value);
+                        } else {
+                            mFocusImageView.setScaleX(2 - value);
+                            mFocusImageView.setScaleY(2 - value);
+                        }
+                    }
+                }
+            });
+            mFocusAnimator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    if(mFocusImageView != null) {
+                        parent.removeView(mFocusImageView);
+                        mFocusAnimator = null;
+                    }
+                }
+            });
+            mFocusAnimator.start();
+        }
+    }
+
 
     /**
      * 添加滑动回调

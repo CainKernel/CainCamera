@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
@@ -87,7 +88,7 @@ public class CameraUtils {
         setPreviewSize(mCamera, width, height);
         setPictureSize(mCamera, width, height);
         calculateCameraPreviewOrientation((Activity) context);
-        mCamera.setDisplayOrientation(mOrientation);
+//        mCamera.setDisplayOrientation(mOrientation);
     }
 
     /**
@@ -113,7 +114,7 @@ public class CameraUtils {
         mCamera.setParameters(parameters);
         setPreviewSize(mCamera, expectWidth, expectHeight);
         setPictureSize(mCamera, expectWidth, expectHeight);
-        mCamera.setDisplayOrientation(mOrientation);
+//        mCamera.setDisplayOrientation(mOrientation);
     }
 
     /**
@@ -462,6 +463,34 @@ public class CameraUtils {
                 mCamera.cancelAutoFocus();
                 mCamera.setParameters(parameters);
                 mCamera.autoFocus(callback);
+            }
+        }
+    }
+
+    /**
+     * 设置对焦
+     * @param rect
+     */
+    public static void setFocusArea(Rect rect) {
+        if (mCamera != null) {
+            final String focusMode = mCamera.getParameters().getFocusMode();
+            Camera.Parameters parameters = mCamera.getParameters(); // 先获取当前相机的参数配置对象
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO); // 设置聚焦模式
+            if (parameters.getMaxNumFocusAreas() > 0) {
+                List<Camera.Area> focusAreas = new ArrayList<Camera.Area>();
+                focusAreas.add(new Camera.Area(rect, Weight));
+                parameters.setFocusAreas(focusAreas);
+                // 取消掉进程中所有的聚焦功能
+                mCamera.cancelAutoFocus();
+                mCamera.setParameters(parameters);
+                mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                    @Override
+                    public void onAutoFocus(boolean success, Camera camera) {
+                        Camera.Parameters parame = camera.getParameters();
+                        parame.setFocusMode(focusMode);
+                        camera.setParameters(parame);
+                    }
+                });
             }
         }
     }
