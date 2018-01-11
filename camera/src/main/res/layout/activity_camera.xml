@@ -31,14 +31,24 @@
     <include
         layout="@layout/view_preview_top"/>
 
-    <!-- 改变数值视图 -->
-    <include
-        layout="@layout/view_preview_value" />
-
-    <!-- 底部视图 -->
-    <include
-        layout="@layout/view_preview_bottom"/>
-
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom">
+        <!-- 底部视图 -->
+        <include
+            android:id="@+id/lv_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            layout="@layout/view_preview_bottom"/>
+        <!-- 改变数值视图 -->
+        <include
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/lv_bottom"
+            layout="@layout/view_preview_value" />
+    </RelativeLayout>
     <!-- 特效视图 -->
     <include
         layout="@layout/view_preview_effect"/>

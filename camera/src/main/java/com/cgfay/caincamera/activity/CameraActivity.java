@@ -283,22 +283,27 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mValueName = (TextView) findViewById(R.id.tv_value);
 
         mBottomLayout = (LinearLayout) findViewById(R.id.layout_bottom);
+        adjustBottomView();
+
+        initEffectListView();
+
+    }
+
+    /**
+     * 调整底部视图
+     */
+    private void adjustBottomView() {
         if (CameraUtils.getCurrentRatio() < CameraUtils.Ratio_4_3) {
-            mBottomLayout.setBackgroundResource(R.drawable.bottom_background_glow);
             mBtnStickers.setBackgroundResource(R.drawable.gallery_sticker_glow);
             mBtnFilters.setBackgroundResource(R.drawable.gallery_filter_glow);
             mBtnRecordDelete.setBackgroundResource(R.drawable.preview_video_delete_white);
             mBtnRecordPreview.setBackgroundResource(R.drawable.preview_video_done_white);
         } else {
-            mBottomLayout.setBackgroundResource(R.drawable.bottom_background);
             mBtnStickers.setBackgroundResource(R.drawable.gallery_sticker);
             mBtnFilters.setBackgroundResource(R.drawable.gallery_filter);
             mBtnRecordDelete.setBackgroundResource(R.drawable.preview_video_delete_black);
             mBtnRecordPreview.setBackgroundResource(R.drawable.preview_video_done_black);
         }
-
-        initEffectListView();
-
     }
 
     /**
@@ -607,6 +612,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         CameraUtils.setCurrentRatio(mCurrentRatio);
         mAspectLayout.setAspectRatio(mCurrentRatio);
         DrawerManager.getInstance().reopenCamera();
+        adjustBottomView();
     }
 
     @Override
@@ -691,7 +697,9 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             isShowingEffect = false;
             mEffectListView.setVisibility(View.GONE);
         }
-        DrawerManager.getInstance().setFocusAres(focusOnTouch((int)x, (int)y));
+        // 设置聚焦区域
+        DrawerManager.getInstance().setFocusAres(CameraUtils.getFocusArea((int)x, (int)y,
+                mCameraSurfaceView.getWidth(), mCameraSurfaceView.getHeight(), FocusSize));
     }
 
     /**
@@ -1136,26 +1144,5 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         } else {
             mCountDownView.setVisibility(View.GONE);
         }
-    }
-
-    /**
-     * 计算触摸区域
-     * @param x
-     * @param y
-     * @return
-     */
-    private Rect focusOnTouch(int x, int y) {
-        Rect rect = new Rect(x - FocusSize, y - FocusSize,
-                x + FocusSize, y + FocusSize);
-        int left = rect.left * 2000 / mCameraSurfaceView.getWidth() - 1000;
-        int top = rect.top * 2000 / mCameraSurfaceView.getHeight() - 1000;
-        int right = rect.right * 2000 / mCameraSurfaceView.getWidth() - 1000;
-        int bottom = rect.bottom * 2000 / mCameraSurfaceView.getHeight() - 1000;
-        // 归整到(-1000, -1000) 到 (1000, 1000)的区域内
-        left = left < -1000 ? -1000 : left;
-        top = top < -1000 ? -1000 : top;
-        right = right > 1000 ? 1000 : right;
-        bottom = bottom > 1000 ? 1000 : bottom;
-        return new Rect(left, top, right, bottom);
     }
 }

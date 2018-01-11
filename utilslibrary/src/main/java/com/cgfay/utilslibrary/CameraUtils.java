@@ -88,7 +88,7 @@ public class CameraUtils {
         setPreviewSize(mCamera, width, height);
         setPictureSize(mCamera, width, height);
         calculateCameraPreviewOrientation((Activity) context);
-//        mCamera.setDisplayOrientation(mOrientation);
+        mCamera.setDisplayOrientation(mOrientation);
     }
 
     /**
@@ -114,7 +114,7 @@ public class CameraUtils {
         mCamera.setParameters(parameters);
         setPreviewSize(mCamera, expectWidth, expectHeight);
         setPictureSize(mCamera, expectWidth, expectHeight);
-//        mCamera.setDisplayOrientation(mOrientation);
+        mCamera.setDisplayOrientation(mOrientation);
     }
 
     /**
@@ -479,7 +479,14 @@ public class CameraUtils {
             if (parameters.getMaxNumFocusAreas() > 0) {
                 List<Camera.Area> focusAreas = new ArrayList<Camera.Area>();
                 focusAreas.add(new Camera.Area(rect, Weight));
-                parameters.setFocusAreas(focusAreas);
+                // 设置聚焦区域
+                if (parameters.getMaxNumFocusAreas() > 0) {
+                    parameters.setFocusAreas(focusAreas);
+                }
+                // 设置计量区域
+                if (parameters.getMaxNumMeteringAreas() > 0) {
+                    parameters.setMeteringAreas(focusAreas);
+                }
                 // 取消掉进程中所有的聚焦功能
                 mCamera.cancelAutoFocus();
                 mCamera.setParameters(parameters);
@@ -493,6 +500,54 @@ public class CameraUtils {
                 });
             }
         }
+    }
+
+    /**
+     * 计算触摸区域
+     * @param x
+     * @param y
+     * @return
+     */
+    public static Rect getFocusArea(float x, float y, int width, int height, int focusSize) {
+        return calculateTapArea(x, y, width, height, focusSize, 1.0f);
+    }
+
+    /**
+     * 计算点击区域
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     * @param focusSize
+     * @param coefficient
+     * @return
+     */
+    private static Rect calculateTapArea(float x, float y, int width, int height,
+                                         int focusSize, float coefficient) {
+        int areaSize = Float.valueOf(focusSize * coefficient).intValue();
+        int left = clamp(Float.valueOf((y / height) * 2000 - 1000).intValue(), areaSize);
+        int top = clamp(Float.valueOf(((height - x) / width) * 2000 - 1000).intValue(), areaSize);
+        return new Rect(left, top, left + areaSize, top + areaSize);
+    }
+
+    /**
+     * 确保所选区域在在合理范围内
+     * @param touchCoordinateInCameraReper
+     * @param focusAreaSize
+     * @return
+     */
+    private static int clamp(int touchCoordinateInCameraReper, int focusAreaSize) {
+        int result;
+        if (Math.abs(touchCoordinateInCameraReper) + focusAreaSize  > 1000) {
+            if (touchCoordinateInCameraReper > 0) {
+                result = 1000 - focusAreaSize ;
+            } else {
+                result = -1000 + focusAreaSize ;
+            }
+        } else {
+            result = touchCoordinateInCameraReper - focusAreaSize / 2;
+        }
+        return result;
     }
 
     /**
