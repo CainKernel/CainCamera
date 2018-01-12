@@ -110,7 +110,6 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
         return true;
     }
 
-    @Override
     public int drawFrameBuffer(int textureId) {
         if (mFramebuffers == null || mFrameBufferTextures == null || mFilters.size() <= 0) {
             return textureId;
@@ -129,7 +128,6 @@ public abstract class BaseImageFilterGroup extends BaseImageFilter {
         return mCurrentTextureId;
     }
 
-    @Override
     public int drawFrameBuffer(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
         if (mFramebuffers == null || mFrameBufferTextures == null || mFilters.size() <= 0) {
             return textureId;

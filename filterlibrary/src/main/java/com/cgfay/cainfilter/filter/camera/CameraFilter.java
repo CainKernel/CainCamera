@@ -5,7 +5,10 @@ import android.opengl.GLES30;
 import android.opengl.Matrix;
 
 import com.cgfay.cainfilter.filter.base.BaseImageFilter;
+import com.cgfay.cainfilter.utils.GlUtil;
 import com.cgfay.cainfilter.utils.TextureRotationUtils;
+
+import java.nio.FloatBuffer;
 
 /**
  * Created by cain on 2017/7/9.
@@ -36,6 +39,14 @@ public class CameraFilter extends BaseImageFilter {
     private int muTexMatrixLoc;
     private float[] mTextureMatrix;
 
+
+    // FBO属性
+    protected int[] mFramebuffers;
+    protected int[] mFramebufferTextures;
+    protected int mFrameWidth = -1;
+    protected int mFrameHeight = -1;
+
+
     public CameraFilter() {
         this(VERTEX_SHADER, FRAGMENT_SHADER_OES);
     }
@@ -53,6 +64,12 @@ public class CameraFilter extends BaseImageFilter {
     @Override
     public void onDrawArraysBegin() {
         GLES30.glUniformMatrix4fv(muTexMatrixLoc, 1, false, mTextureMatrix, 0);
+    }
+
+    @Override
+    public void release() {
+        destroyFramebuffer();
+        super.release();
     }
 
     public void updateTextureBuffer() {
@@ -86,4 +103,84 @@ public class CameraFilter extends BaseImageFilter {
         }
         return result;
     }
+
+
+    /**
+     * 绘制到FBO
+     * @param textureId
+     * @return FBO绑定的Texture
+     */
+    public int drawFrameBuffer(int textureId) {
+        return drawFrameBuffer(textureId, mVertexArray, mTexCoordArray);
+    }
+
+    /**
+     * 绘制到FBO
+     * @param textureId
+     * @param vertexBuffer
+     * @param textureBuffer
+     * @return FBO绑定的Texture
+     */
+    public int drawFrameBuffer(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
+        if (mFramebuffers == null) {
+            return textureId;
+        }
+        runPendingOnDrawTasks();
+        GLES30.glViewport(0, 0, mFrameWidth, mFrameHeight);
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[0]);
+        GLES30.glUseProgram(mProgramHandle);
+        vertexBuffer.position(0);
+        GLES30.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
+                GLES30.GL_FLOAT, false, 0, vertexBuffer);
+        GLES30.glEnableVertexAttribArray(maPositionLoc);
+
+        textureBuffer.position(0);
+        GLES30.glVertexAttribPointer(maTextureCoordLoc, 2,
+                GLES30.GL_FLOAT, false, 0, textureBuffer);
+        GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
+
+        GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
+        GLES30.glUniformMatrix4fv(mTexMatrixLoc, 1, false, mTexMatrix, 0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glBindTexture(getTextureType(), textureId);
+        GLES30.glUniform1i(mInputTextureLoc, 0);
+        onDrawArraysBegin();
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
+        onDrawArraysAfter();
+        GLES30.glDisableVertexAttribArray(maPositionLoc);
+        GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
+        GLES30.glBindTexture(getTextureType(), 0);
+        GLES30.glUseProgram(0);
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+        GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
+        return mFramebufferTextures[0];
+    }
+
+    public void initFramebuffer(int width, int height) {
+        if (mFramebuffers != null && (mFrameWidth != width || mFrameHeight != height)) {
+            destroyFramebuffer();
+        }
+        if (mFramebuffers == null) {
+            mFrameWidth = width;
+            mFrameHeight = height;
+            mFramebuffers = new int[1];
+            mFramebufferTextures = new int[1];
+            GlUtil.createSampler2DFrameBuff(mFramebuffers, mFramebufferTextures, width, height);
+        }
+    }
+
+    public void destroyFramebuffer() {
+        if (mFramebufferTextures != null) {
+            GLES30.glDeleteTextures(1, mFramebufferTextures, 0);
+            mFramebufferTextures = null;
+        }
+
+        if (mFramebuffers != null) {
+            GLES30.glDeleteFramebuffers(1, mFramebuffers, 0);
+            mFramebuffers = null;
+        }
+        mImageWidth = -1;
+        mImageHeight = -1;
+    }
+
 }
