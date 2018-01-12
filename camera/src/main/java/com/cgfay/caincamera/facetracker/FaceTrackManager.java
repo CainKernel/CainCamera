@@ -31,7 +31,7 @@ public class FaceTrackManager {
     private static FaceTrackManager mInstance;
 
     // 是否开启调试模式
-    private boolean isDebug = true;
+    private boolean isDebug = false;
 
     // 属性值
     private boolean is3DPose = false;

@@ -43,15 +43,6 @@ public class CameraFilter extends BaseImageFilter {
     public CameraFilter(String vertexShader, String fragmentShader) {
         super(vertexShader, fragmentShader);
         muTexMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uTexMatrix");
-        // 视图矩阵
-        Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -1, 0f, 0f, 0f, 0f, 1f, 0f);
-    }
-
-    @Override
-    public void onInputSizeChanged(int width, int height) {
-        super.onInputSizeChanged(width, height);
-        float aspect = (float) width / height; // 计算宽高比
-        Matrix.perspectiveM(mProjectionMatrix, 0, 60, aspect, 2, 10);
     }
 
     @Override

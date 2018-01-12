@@ -38,19 +38,13 @@ public class BaseImageFilter {
             "    gl_FragColor = texture2D(inputTexture, textureCoordinate); \n" +
             "}                                                          \n";
 
-    protected static final int SIZEOF_FLOAT = 4;
-
-    protected static final int CoordsPerTexture = 2;
-
     private static final FloatBuffer FULL_RECTANGLE_BUF =
             GlUtil.createFloatBuffer(TextureRotationUtils.CubeVertices);
 
     protected FloatBuffer mVertexArray = FULL_RECTANGLE_BUF;
     protected FloatBuffer mTexCoordArray = GlUtil.createFloatBuffer(TextureRotationUtils.TextureVertices);
     protected int mCoordsPerVertex = TextureRotationUtils.CoordsPerVertex;
-    protected int mVertexStride = mCoordsPerVertex * SIZEOF_FLOAT;
     protected int mVertexCount = TextureRotationUtils.CubeVertices.length / mCoordsPerVertex;
-    protected int mTexCoordStride = CoordsPerTexture * SIZEOF_FLOAT;
 
     protected int mProgramHandle;
     protected int muMVPMatrixLoc;
@@ -66,22 +60,10 @@ public class BaseImageFilter {
     protected int mDisplayWidth;
     protected int mDisplayHeight;
 
-    // --- 视锥体属性 start ---
-    // 视图矩阵
-    protected float[] mViewMatrix = new float[16];
-    // 投影矩阵
-    protected float[] mProjectionMatrix = new float[16];
-    // 模型矩阵
-    protected float[] mModelMatrix = new float[16];
     // 变换矩阵
     protected float[] mMVPMatrix = new float[16];
     // 缩放矩阵
     protected float[] mTexMatrix = new float[16];
-    // 模型矩阵欧拉角的实际角度
-    protected float mYawAngle = 0.0f;
-    protected float mPitchAngle = 0.0f;
-    protected float mRollAngle = 0.0f;
-    // --- 视锥体属性 end ---
 
     private final LinkedList<Runnable> mRunOnDraw;
 
@@ -169,6 +151,7 @@ public class BaseImageFilter {
         GLES30.glDisableVertexAttribArray(maPositionLoc);
         GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
         GLES30.glBindTexture(getTextureType(), 0);
+        onBeforeProgramRelease();
         GLES30.glUseProgram(0);
         return true;
     }
@@ -191,7 +174,7 @@ public class BaseImageFilter {
      */
     public int drawFrameBuffer(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
         if (mFramebuffers == null) {
-            return GlUtil.GL_NOT_INIT;
+            return textureId;
         }
         runPendingOnDrawTasks();
         GLES30.glViewport(0, 0, mFrameWidth, mFrameHeight);
@@ -218,6 +201,7 @@ public class BaseImageFilter {
         GLES30.glDisableVertexAttribArray(maPositionLoc);
         GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
         GLES30.glBindTexture(getTextureType(), 0);
+        onBeforeProgramRelease();
         GLES30.glUseProgram(0);
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
         GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
@@ -243,6 +227,13 @@ public class BaseImageFilter {
      * drawArrays调用之后，方便销毁其他属性
      */
     public void onDrawArraysAfter() {
+
+    }
+
+    /**
+     * 释放program之前，可以做其他操作
+     */
+    protected void onBeforeProgramRelease() {
 
     }
 
@@ -282,60 +273,12 @@ public class BaseImageFilter {
         mImageHeight = -1;
     }
 
-    ///---------------------- 计算视锥体矩阵变换 ---------------------------------///
     /**
      * 初始化单位矩阵
      */
     public void initIdentityMatrix() {
-        Matrix.setIdentityM(mViewMatrix, 0);
-        Matrix.setIdentityM(mProjectionMatrix, 0);
-        Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.setIdentityM(mMVPMatrix, 0);
         Matrix.setIdentityM(mTexMatrix, 0);
-    }
-
-    /**
-     * 计算视锥体变换矩阵(MVPMatrix)
-     */
-    protected void calculateMVPMatrix() {
-        // 模型矩阵变换
-        Matrix.setIdentityM(mModelMatrix, 0); // 重置模型矩阵方便计算
-        Matrix.rotateM(mModelMatrix, 0, mYawAngle, 1.0f, 0, 0);
-        Matrix.rotateM(mModelMatrix, 0, mPitchAngle, 0, 1.0f, 0);
-        Matrix.rotateM(mModelMatrix, 0, mRollAngle, 0, 0, 1.0f);
-        // 综合矩阵变换
-        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-    }
-
-    /**
-     * 设置投影矩阵
-     * @param matrix
-     */
-    public void setViewMatrix(float[] matrix) {
-        if (Arrays.equals(mViewMatrix, matrix)) {
-            mViewMatrix = matrix;
-        }
-    }
-
-    /**
-     * 设置投影矩阵
-     * @param matrix
-     */
-    public void setProjectionMatrix(float[] matrix) {
-        if (Arrays.equals(mProjectionMatrix, matrix)) {
-            mProjectionMatrix = matrix;
-        }
-    }
-
-    /**
-     * 设置模型矩阵
-     * @param matrix
-     */
-    public void setModelMatrix(float[] matrix) {
-        if (Arrays.equals(mModelMatrix, matrix)) {
-            mModelMatrix = matrix;
-        }
     }
 
     /**
@@ -345,44 +288,6 @@ public class BaseImageFilter {
     public void setMVPMatrix(float[] matrix) {
         if (!Arrays.equals(mMVPMatrix, matrix)) {
             mMVPMatrix = matrix;
-        }
-    }
-
-    /**
-     * 设置Texture缩放矩阵
-     * @param matrix
-     */
-    public void setTexMatrix(float[] matrix) {
-
-    }
-
-    /**
-     * 模型矩阵 X轴旋转角度（0 ~ 360）
-     * @param angle
-     */
-    public void setModelYawAngle(float angle) {
-        if (mYawAngle != angle) {
-            mYawAngle = angle;
-        }
-    }
-
-    /**
-     * 模型矩阵 Y轴旋转角度(0 ~ 360)
-     * @param angle
-     */
-    public void setModelPitchAngle(float angle) {
-        if (mPitchAngle != angle) {
-            mPitchAngle = angle;
-        }
-    }
-
-    /**
-     * 模型矩阵 Z轴旋转角度(0 ~ 360)
-     * @param angle
-     */
-    public void setModelRollAngle(float angle) {
-        if (mRollAngle != angle) {
-            mRollAngle = angle;
         }
     }
 
