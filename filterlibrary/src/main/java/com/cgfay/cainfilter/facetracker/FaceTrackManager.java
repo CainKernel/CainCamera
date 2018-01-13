@@ -66,7 +66,7 @@ public class FaceTrackManager {
     private boolean isDetecting = false;
 
     // 是否存在人脸
-    private boolean mHasFace = false;
+    private volatile boolean mHasFace = false;
 
     // 置信度
     float confidence;
@@ -299,10 +299,13 @@ public class FaceTrackManager {
      * @param data
      */
     public void onFaceTracking(final byte[] data) {
-        if (!canFaceTrack || isDetecting) {
+        if (!canFaceTrack) {
             if (mFaceTrackerCallback != null) {
-                mFaceTrackerCallback.onTrackingFinish(mHasFace);
+                mFaceTrackerCallback.onTrackingFinish(false);
             }
+            return;
+        }
+        if (isDetecting) {
             return;
         }
         isDetecting = true;
@@ -344,7 +347,7 @@ public class FaceTrackManager {
                     if (faces != null) {
                         ArrayList<ArrayList> facePoints = new ArrayList<ArrayList>();
                         confidence = 0.0f;
-                        if (faces.length >= 0) {
+                        if (faces.length > 0) {
                             mHasFace = true;
                             for (int index = 0; index < faces.length; index++) {
                                 if (is106Points)
@@ -462,15 +465,19 @@ public class FaceTrackManager {
                     // 更新关键点
                     FacePointsManager.getInstance().updateFacePoints();
                     isDetecting = false;
+                    // 检测回调，用于更新下一帧
+                    if (mFaceTrackerCallback != null) {
+                        mFaceTrackerCallback.onTrackingFinish(mHasFace);
+                    }
                 }
             });
         } else {
             // 重置人脸关键点
             FacePointsManager.getInstance().resetFacePoints();
-        }
-        // 人脸关键点检测完成回调
-        if (mFaceTrackerCallback != null) {
-            mFaceTrackerCallback.onTrackingFinish(mHasFace);
+            // 检测回调，表示当前并没有检测
+            if (mFaceTrackerCallback != null) {
+                mFaceTrackerCallback.onTrackingFinish(false);
+            }
         }
     }
 
