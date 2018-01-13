@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.utils.facepp;
+package com.cgfay.cainfilter.utils.facepp;
 
 import android.content.Context;
 import android.content.SharedPreferences;

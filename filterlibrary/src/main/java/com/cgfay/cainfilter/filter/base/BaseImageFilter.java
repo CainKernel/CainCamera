@@ -21,13 +21,12 @@ public class BaseImageFilter {
 
     protected static final String VERTEX_SHADER =
             "uniform mat4 uMVPMatrix;                                   \n" +
-            "uniform mat4 uTexMatrix;                                   \n" +
             "attribute vec4 aPosition;                                  \n" +
             "attribute vec4 aTextureCoord;                              \n" +
             "varying vec2 textureCoordinate;                            \n" +
             "void main() {                                              \n" +
             "    gl_Position = uMVPMatrix * aPosition;                  \n" +
-            "    textureCoordinate =(uTexMatrix * aTextureCoord).xy;    \n" +
+            "    textureCoordinate = aTextureCoord.xy;                  \n" +
             "}                                                          \n";
 
     protected static final String FRAGMENT_SHADER_2D =
@@ -51,7 +50,6 @@ public class BaseImageFilter {
     protected int maPositionLoc;
     protected int maTextureCoordLoc;
     protected int mInputTextureLoc;
-    protected int mTexMatrixLoc;
 
     // 渲染的Image的宽高
     protected int mImageWidth;
@@ -74,12 +72,18 @@ public class BaseImageFilter {
     public BaseImageFilter(String vertexShader, String fragmentShader) {
         mRunOnDraw = new LinkedList<>();
         mProgramHandle = GlUtil.createProgram(vertexShader, fragmentShader);
+        initHandle();
+        initIdentityMatrix();
+    }
+
+    /**
+     * 初始化句柄
+     */
+    protected void initHandle() {
         maPositionLoc = GLES30.glGetAttribLocation(mProgramHandle, "aPosition");
         maTextureCoordLoc = GLES30.glGetAttribLocation(mProgramHandle, "aTextureCoord");
         muMVPMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uMVPMatrix");
         mInputTextureLoc = GLES30.glGetUniformLocation(mProgramHandle, "inputTexture");
-        mTexMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uTexMatrix");
-        initIdentityMatrix();
     }
 
     /**
@@ -123,7 +127,24 @@ public class BaseImageFilter {
         }
         GLES30.glUseProgram(mProgramHandle);
         runPendingOnDrawTasks();
+        // 绑定数据
+        bindValue(textureId, vertexBuffer, textureBuffer);
+        onDrawArraysBegin();
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
+        onDrawArraysAfter();
+        unBindValue();
+        GLES30.glUseProgram(0);
+        return true;
+    }
 
+    /**
+     * 绑定数据
+     * @param textureId
+     * @param vertexBuffer
+     * @param textureBuffer
+     */
+    protected void bindValue(int textureId, FloatBuffer vertexBuffer,
+                             FloatBuffer textureBuffer) {
         vertexBuffer.position(0);
         GLES30.glVertexAttribPointer(maPositionLoc, mCoordsPerVertex,
                 GLES30.GL_FLOAT, false, 0, vertexBuffer);
@@ -135,21 +156,19 @@ public class BaseImageFilter {
         GLES30.glEnableVertexAttribArray(maTextureCoordLoc);
 
         GLES30.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMVPMatrix, 0);
-        GLES30.glUniformMatrix4fv(mTexMatrixLoc, 1, false, mTexMatrix, 0);
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(getTextureType(), textureId);
         GLES30.glUniform1i(mInputTextureLoc, 0);
-        onDrawArraysBegin();
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
-        onDrawArraysAfter();
+    }
+
+    /**
+     * 解除绑定
+     */
+    protected void unBindValue() {
         GLES30.glDisableVertexAttribArray(maPositionLoc);
         GLES30.glDisableVertexAttribArray(maTextureCoordLoc);
         GLES30.glBindTexture(getTextureType(), 0);
-        GLES30.glUseProgram(0);
-        return true;
     }
-
-
 
     /**
      * 获取Texture类型

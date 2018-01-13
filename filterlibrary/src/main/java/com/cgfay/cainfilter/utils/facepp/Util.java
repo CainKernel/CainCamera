@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.utils.facepp;
+package com.cgfay.cainfilter.utils.facepp;
 
 /**
  * Created by cain on 17-7-31.

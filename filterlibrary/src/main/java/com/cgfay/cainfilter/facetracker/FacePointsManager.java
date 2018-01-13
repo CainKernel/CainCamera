@@ -1,8 +1,8 @@
-package com.cgfay.caincamera.facetracker;
+package com.cgfay.cainfilter.facetracker;
 
-import com.cgfay.caincamera.bean.face.Face106PointsLandmark;
-import com.cgfay.caincamera.bean.face.Face81PointsLandmark;
-import com.cgfay.caincamera.bean.face.FaceLandmark;
+import com.cgfay.cainfilter.bean.face.Face106PointsLandmark;
+import com.cgfay.cainfilter.bean.face.Face81PointsLandmark;
+import com.cgfay.cainfilter.bean.face.FaceLandmark;
 
 import java.util.ArrayList;
 

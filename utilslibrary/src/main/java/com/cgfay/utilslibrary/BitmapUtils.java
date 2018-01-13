@@ -61,4 +61,34 @@ public class BitmapUtils {
         return bitmap;
     }
 
+    /**
+     * 加载Assets文件夹下的图片
+     * @param context
+     * @param fileName
+     * @return
+     */
+    public static Bitmap getImageFromAssetsFile(Context context, String fileName, Bitmap inBitmap) {
+        Bitmap bitmap = null;
+        AssetManager manager = context.getResources().getAssets();
+        try {
+            InputStream is = manager.open(fileName);
+            if (inBitmap != null && !inBitmap.isRecycled()) {
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                // 使用inBitmap时，inSampleSize得设置为1
+                options.inSampleSize = 1;
+                // 这个属性一定要在inBitmap之前使用，否则会弹出一下异常
+                // BitmapFactory: Unable to reuse an immutable bitmap as an image decoder target.
+                options.inMutable = true;
+                options.inBitmap = inBitmap;
+                bitmap = BitmapFactory.decodeStream(is, null, options);
+            } else {
+                bitmap = BitmapFactory.decodeStream(is);
+            }
+            is.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
 }

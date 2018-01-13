@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.facetracker;
+package com.cgfay.cainfilter.facetracker;
 
 /**
  * 人脸关键点检测回调

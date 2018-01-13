@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.bean.face;
+package com.cgfay.cainfilter.bean.face;
 
 /**
  * Created by cain on 2017/11/10.

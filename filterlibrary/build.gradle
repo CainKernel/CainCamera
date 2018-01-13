@@ -12,6 +12,11 @@ android {
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
+        externalNativeBuild {
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
+        }
     }
 
     buildTypes {
@@ -29,6 +34,8 @@ dependencies {
     compile project(':utilslibrary')
     compile files('libs/zip4j_1.3.2.jar')
     compile files('libs/java-unrar-decryption-supported-20120613.jar')
+    compile(name: 'MGFaceppSDK-0.4.7', ext: 'aar')
+    compile(name: 'MGLicenseManagerSDK-0.3.0', ext: 'aar')
     implementation 'com.android.support:appcompat-v7:25.3.1'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'

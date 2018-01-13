@@ -39,6 +39,7 @@ import com.cgfay.cainfilter.filter.image.HueFilter;
 import com.cgfay.cainfilter.filter.image.MirrorFilter;
 import com.cgfay.cainfilter.filter.image.SaturationFilter;
 import com.cgfay.cainfilter.filter.image.SharpnessFilter;
+import com.cgfay.cainfilter.filter.sticker.StickerFilter;
 import com.cgfay.cainfilter.type.FilterGroupType;
 import com.cgfay.cainfilter.type.FilterIndex;
 import com.cgfay.cainfilter.type.FilterType;
@@ -144,8 +145,8 @@ public final class FilterManager {
 
             // TODO 贴纸滤镜需要人脸关键点计算得到
             case STICKER:
-                return new DisplayFilter();
-//                return new StickerFilter();
+//                return new DisplayFilter();
+                return new StickerFilter();
 
             // 白皙还是红润
             case WHITENORREDDEN:

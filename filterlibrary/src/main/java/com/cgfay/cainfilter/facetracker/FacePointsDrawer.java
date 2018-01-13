@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.facetracker;
+package com.cgfay.cainfilter.facetracker;
 
 import android.opengl.GLES30;
 

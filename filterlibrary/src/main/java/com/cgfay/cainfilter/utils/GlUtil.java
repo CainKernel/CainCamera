@@ -279,7 +279,7 @@ public class GlUtil {
      * @param bitmap
      * @return
      */
-    public static int createTexctureWithOldTexture(int texture, Bitmap bitmap) {
+    public static int createTextureWithOldTexture(int texture, Bitmap bitmap) {
         int[] result = new int[1];
         result[0] = texture;
         if (bitmap != null && !bitmap.isRecycled()) {
@@ -297,7 +297,7 @@ public class GlUtil {
      * @param height
      * @return
      */
-    public static int createTexctureWithOldTexture(int texture, ByteBuffer byteBuffer,
+    public static int createTextureWithOldTexture(int texture, ByteBuffer byteBuffer,
                                                    int width, int height) {
 
         if(byteBuffer.array().length != width * height * 4) {

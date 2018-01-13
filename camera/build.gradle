@@ -27,6 +27,13 @@ android {
     }
 }
 
+repositories {
+    flatDir {
+        // face++ 依赖库下放到filterlibrary里面
+        dirs project(':filterlibrary').file('libs')
+    }
+}
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -35,8 +42,6 @@ dependencies {
     compile project(':ffmpeglibrary')
     compile project(':filterlibrary')
     compile project(':utilslibrary')
-    compile(name: 'MGFaceppSDK-0.4.7', ext: 'aar')
-    compile(name: 'MGLicenseManagerSDK-0.3.0', ext: 'aar')
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support:recyclerview-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'

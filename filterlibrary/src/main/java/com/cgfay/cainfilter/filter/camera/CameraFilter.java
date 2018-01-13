@@ -36,10 +36,8 @@ public class CameraFilter extends BaseImageFilter {
             "}                                                      \n";
 
 
-    private int muTexMatrixLoc;
+    private int mTexMatrixLoc;
     private float[] mTextureMatrix;
-
-
     // FBO属性
     protected int[] mFramebuffers;
     protected int[] mFramebufferTextures;
@@ -53,7 +51,7 @@ public class CameraFilter extends BaseImageFilter {
 
     public CameraFilter(String vertexShader, String fragmentShader) {
         super(vertexShader, fragmentShader);
-        muTexMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uTexMatrix");
+        mTexMatrixLoc = GLES30.glGetUniformLocation(mProgramHandle, "uTexMatrix");
     }
 
     @Override
@@ -63,7 +61,7 @@ public class CameraFilter extends BaseImageFilter {
 
     @Override
     public void onDrawArraysBegin() {
-        GLES30.glUniformMatrix4fv(muTexMatrixLoc, 1, false, mTextureMatrix, 0);
+        GLES30.glUniformMatrix4fv(mTexMatrixLoc, 1, false, mTextureMatrix, 0);
     }
 
     @Override

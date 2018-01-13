@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.facetracker;
+package com.cgfay.cainfilter.facetracker;
 
 import android.content.Context;
 import android.opengl.GLES30;
@@ -7,14 +7,13 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
-import com.cgfay.caincamera.R;
+import com.cgfay.cainfilter.R;
 import com.cgfay.utilslibrary.CameraUtils;
 import com.cgfay.utilslibrary.Size;
-import com.cgfay.cainfilter.core.ParamsManager;
-import com.cgfay.caincamera.utils.facepp.ConUtil;
-import com.cgfay.caincamera.utils.facepp.Util;
+import com.cgfay.cainfilter.utils.facepp.ConUtil;
+import com.cgfay.cainfilter.utils.facepp.Util;
 import com.cgfay.cainfilter.utils.GlUtil;
-import com.cgfay.caincamera.utils.facepp.SensorEventUtil;
+import com.cgfay.cainfilter.utils.facepp.SensorEventUtil;
 import com.megvii.facepp.sdk.Facepp;
 import com.megvii.licensemanager.sdk.LicenseManager;
 

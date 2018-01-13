@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.bean.face;
+package com.cgfay.cainfilter.bean.face;
 
 /**
  * 关键点标识基类
