@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.core;
+package com.cgfay.cainfilter.core;
 
 import android.content.Context;
 import android.graphics.Rect;
@@ -19,11 +19,6 @@ import com.cgfay.cainfilter.gles.EglCore;
 import com.cgfay.cainfilter.gles.WindowSurface;
 import com.cgfay.cainfilter.type.FilterGroupType;
 import com.cgfay.cainfilter.type.FilterType;
-import com.cgfay.cainfilter.core.CaptureFrameCallback;
-import com.cgfay.cainfilter.core.ParamsManager;
-import com.cgfay.cainfilter.core.RecordManager;
-import com.cgfay.cainfilter.core.RenderManager;
-import com.cgfay.cainfilter.core.RenderStateChangedListener;
 
 import com.cgfay.cainfilter.utils.GlUtil;
 

@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.core;
+package com.cgfay.cainfilter.core;
 
 import android.graphics.Rect;
 import android.os.Handler;
@@ -8,8 +8,6 @@ import android.view.SurfaceHolder;
 
 import com.cgfay.cainfilter.type.FilterGroupType;
 import com.cgfay.cainfilter.type.FilterType;
-import com.cgfay.cainfilter.core.CaptureFrameCallback;
-import com.cgfay.cainfilter.core.RenderStateChangedListener;
 
 import java.lang.ref.WeakReference;
 
