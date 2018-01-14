@@ -455,7 +455,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
     /**
      * 重新打开相机
      */
-    void reopenCamera() {
+    synchronized void reopenCamera() {
         if (isRecording) {
             stopRecording();
         }
@@ -464,9 +464,8 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
             isPreviewing = false;
         }
         // 重新打开相机
-        CameraUtils.reopenCamera(mContext, mCameraTexture,
+        mPreviewBuffer = CameraUtils.reopenCamera(mContext, mCameraTexture,
                 this, mPreviewBuffer);
-        isPreviewing = true;
         // 调整图片大小
         calculateImageSize();
         // 重新调整输入的TextureSize
@@ -476,14 +475,15 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
         FaceTrackManager.getInstance()
                 .setBackCamera(cameraId == Camera.CameraInfo.CAMERA_FACING_BACK);
         FaceTrackManager.getInstance().reset(mContext);
+        isPreviewing = true;
     }
 
     /**
      * 切换相机
      */
-    void switchCamera() {
+    synchronized void switchCamera() {
         int cameraId = 1 - CameraUtils.getCameraID();
-        CameraUtils.switchCamera(mContext, cameraId, mCameraTexture,
+        mPreviewBuffer = CameraUtils.switchCamera(mContext, cameraId, mCameraTexture,
                 this, mPreviewBuffer);
         // 切换之后需要重置人脸检测管理器
         FaceTrackManager.getInstance()

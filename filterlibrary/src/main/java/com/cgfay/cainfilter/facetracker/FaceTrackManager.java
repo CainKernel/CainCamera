@@ -97,6 +97,9 @@ public class FaceTrackManager {
     // 是否允许绘制
     private boolean enableDrawingPoints = false;
 
+    // 预览尺寸
+    private Size mPreviewSize = null;
+    // 检测回调
     private FaceTrackerCallback mFaceTrackerCallback;
 
     public static FaceTrackManager getInstance() {
@@ -316,9 +319,9 @@ public class FaceTrackManager {
                     if (facepp == null) {
                         return;
                     }
-                    Size size = CameraUtils.getPreviewSize();
-                    int width = size.getWidth();
-                    int height = size.getHeight();
+                    mPreviewSize = CameraUtils.getPreviewSize();
+                    int width = mPreviewSize.getWidth();
+                    int height = mPreviewSize.getHeight();
 
                     // 调整检测监督
                     long faceDetectTime_action = System.currentTimeMillis();
@@ -343,6 +346,11 @@ public class FaceTrackManager {
                         Log.d("onFaceTracking", "track time = " + algorithmTime);
                     }
 
+                    // 清除先前的关键点
+                    if (enableDrawingPoints) {
+                        mFacePointsDrawer.points.clear();
+                    }
+                    // 准备人脸关键点管理器
                     FacePointsManager.getInstance().prepareToAddPoints();
                     if (faces != null) {
                         ArrayList<ArrayList> facePoints = new ArrayList<ArrayList>();
@@ -393,8 +401,8 @@ public class FaceTrackManager {
 
                                 // 调整宽高
                                 if (orientation == 1 || orientation == 2) {
-                                    width = size.getHeight();
-                                    height = size.getWidth();
+                                    width = mPreviewSize.getHeight();
+                                    height = mPreviewSize.getWidth();
                                 }
 
                                 // 一个人脸的关键点
@@ -469,6 +477,7 @@ public class FaceTrackManager {
                     if (mFaceTrackerCallback != null) {
                         mFaceTrackerCallback.onTrackingFinish(mHasFace);
                     }
+                    mPreviewSize = null;
                 }
             });
         } else {

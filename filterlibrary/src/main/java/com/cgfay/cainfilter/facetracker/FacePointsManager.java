@@ -1,5 +1,7 @@
 package com.cgfay.cainfilter.facetracker;
 
+import android.graphics.Rect;
+
 import com.cgfay.cainfilter.bean.face.Face106PointsLandmark;
 import com.cgfay.cainfilter.bean.face.Face81PointsLandmark;
 import com.cgfay.cainfilter.bean.face.FaceLandmark;
@@ -29,10 +31,13 @@ public class FacePointsManager {
     private ArrayList<float[]> mOneFacePoints = new ArrayList<float[]>();
 
     // 姿态角集合 float[0] = pitch, float[1] = yaw, float[2] = roll
+    // float[0] = confidence 置信度，如果大于0.5则表明确实是一个人脸
     private ArrayList<float[]> mEulers = new ArrayList<float[]>();
 
     // 后台录入姿态角集合
     private ArrayList<float[]> mBackgroundEulers = new ArrayList<float[]>();
+
+    private ArrayList<Rect> mFaceRect = new ArrayList<Rect>();
 
     public static FacePointsManager getInstance() {
         if (mInstance == null) {
@@ -88,10 +93,14 @@ public class FacePointsManager {
         resetFacePoints();
         if (mBackgroundPoints.size() > 0) {
             mFacePoints.addAll(mBackgroundPoints);
+            mBackgroundPoints.clear();
         }
         if (mBackgroundEulers.size() > 0) {
             mEulers.addAll(mBackgroundEulers);
+            mEulers.clear();
         }
+        // 计算人脸部位的矩形框
+        
     }
 
     /**

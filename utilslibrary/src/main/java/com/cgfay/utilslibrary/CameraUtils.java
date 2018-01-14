@@ -236,17 +236,24 @@ public class CameraUtils {
      * @param callback
      * @param buffer
      */
-    public static void switchCamera(Context context, int cameraId, SurfaceHolder holder,
+    public static byte[] switchCamera(Context context, int cameraId, SurfaceHolder holder,
                                     Camera.PreviewCallback callback, byte[] buffer) {
         if (mCameraID == cameraId) {
-            return;
+            return buffer;
         }
         stopPreview();
         mCameraID = cameraId;
         releaseCamera();
         openCamera(context, cameraId, DESIRED_PREVIEW_FPS);
+        // 计算buffer的大小是否对得上
+        Size size = getPreviewSize();
+        int previewBufferSize = size.getWidth() * size.getHeight() * 3/ 2;
+        if (previewBufferSize > buffer.length) {
+            buffer = new byte[previewBufferSize];
+        }
         setPreviewCallbackWithBuffer(callback, buffer);
         startPreview(holder);
+        return buffer;
     }
 
     /**
@@ -256,17 +263,24 @@ public class CameraUtils {
      * @param callback
      * @param buffer
      */
-    public static void switchCamera(Context context, int cameraId, SurfaceTexture texture,
+    public static byte[] switchCamera(Context context, int cameraId, SurfaceTexture texture,
                                     Camera.PreviewCallback callback, byte[] buffer) {
         if (mCameraID == cameraId) {
-            return;
+            return buffer;
         }
         stopPreview();
         mCameraID = cameraId;
         releaseCamera();
         openCamera(context, cameraId, DESIRED_PREVIEW_FPS);
+        // 计算buffer的大小是否对得上
+        Size size = getPreviewSize();
+        int previewBufferSize = size.getWidth() * size.getHeight() * 3/ 2;
+        if (previewBufferSize > buffer.length) {
+            buffer = new byte[previewBufferSize];
+        }
         setPreviewCallbackWithBuffer(callback, buffer);
         startPreview(texture);
+        return buffer;
     }
 
     /**
@@ -297,13 +311,20 @@ public class CameraUtils {
      * @param callback
      * @param buffer
      */
-    public static void reopenCamera(Context context, SurfaceHolder holder,
+    public static byte[] reopenCamera(Context context, SurfaceHolder holder,
                                     Camera.PreviewCallback callback, byte[] buffer) {
         releaseCamera();
         openCamera(context, mCameraID, DESIRED_PREVIEW_FPS);
         setPreviewSurface(holder);
+        // 计算buffer的大小是否对得上
+        Size size = getPreviewSize();
+        int previewBufferSize = size.getWidth() * size.getHeight() * 3/ 2;
+        if (previewBufferSize > buffer.length) {
+            buffer = new byte[previewBufferSize];
+        }
         setPreviewCallbackWithBuffer(callback, buffer);
         startPreview();
+        return buffer;
     }
 
     /**
@@ -312,13 +333,21 @@ public class CameraUtils {
      * @param callback
      * @param buffer
      */
-    public static void reopenCamera(Context context, SurfaceTexture texture,
+    public static byte[] reopenCamera(Context context, SurfaceTexture texture,
                                     Camera.PreviewCallback callback, byte[] buffer) {
+        stopPreview();
         releaseCamera();
         openCamera(context, mCameraID, DESIRED_PREVIEW_FPS);
         setPreviewSurface(texture);
+        // 计算buffer的大小是否对得上
+        Size size = getPreviewSize();
+        int previewBufferSize = size.getWidth() * size.getHeight() * 3/ 2;
+        if (previewBufferSize > buffer.length) {
+            buffer = new byte[previewBufferSize];
+        }
         setPreviewCallbackWithBuffer(callback, buffer);
         startPreview();
+        return buffer;
     }
 
     /**
@@ -387,7 +416,7 @@ public class CameraUtils {
     private static void setPreviewSize(Camera camera, int expectWidth, int expectHeight) {
         Camera.Parameters parameters = camera.getParameters();
         Camera.Size size = calculatePerfectSize(parameters.getSupportedPreviewSizes(),
-                expectWidth, expectHeight);
+                expectWidth, expectHeight, CalculateType.Lower);
         parameters.setPreviewSize(size.width, size.height);
         camera.setParameters(parameters);
     }
@@ -401,7 +430,7 @@ public class CameraUtils {
     private static void setPictureSize(Camera camera, int expectWidth, int expectHeight) {
         Camera.Parameters parameters = camera.getParameters();
         Camera.Size size = calculatePerfectSize(parameters.getSupportedPictureSizes(),
-                expectWidth, expectHeight);
+                expectWidth, expectHeight, CalculateType.Max);
         parameters.setPictureSize(size.width, size.height);
         camera.setParameters(parameters);
     }
@@ -710,7 +739,7 @@ public class CameraUtils {
      * @return
      */
     private static Camera.Size calculatePerfectSize(List<Camera.Size> sizes, int expectWidth,
-                                                    int expectHeight) {
+                                                    int expectHeight, CalculateType calculateType) {
         sortList(sizes); // 根据宽度进行排序
 
         // 根据当前期望的宽高判定
@@ -718,19 +747,64 @@ public class CameraUtils {
         List<Camera.Size> noBigEnough = new ArrayList<>();
         for (Camera.Size size : sizes) {
             if (size.height * expectWidth / expectHeight == size.width) {
-                if (size.width > expectWidth && size.height >= expectHeight) {
+                if (size.width > expectWidth && size.height > expectHeight) {
                     bigEnough.add(size);
                 } else {
                     noBigEnough.add(size);
                 }
             }
         }
-        // 优先使用不大于期望值的预览尺寸，否则4:3的尺寸下，有些机器设置的尺寸是1440 x 1080，会比较卡
-        if (noBigEnough.size() > 0) {
-            return Collections.max(noBigEnough, new CompareAreaSize());
-        } else if (bigEnough.size() > 0) {
-            return Collections.min(bigEnough, new CompareAreaSize());
-        } else { // 如果不存在满足要求的数值，则辗转计算宽高最接近的值
+        // 根据计算类型判断怎么如何计算尺寸
+        Camera.Size perfectSize = null;
+        switch (calculateType) {
+            // 直接使用最小值
+            case Min:
+                perfectSize = Collections.min(noBigEnough, new CompareAreaSize());
+                break;
+
+            // 直接使用最大值
+            case Max:
+                perfectSize = Collections.max(bigEnough, new CompareAreaSize());
+                break;
+
+            // 小一点
+            case Lower:
+                // 优先查找比期望尺寸小一点的，否则找大一点的，接受范围在0.8左右
+                if (noBigEnough.size() > 0) {
+                    Camera.Size size = Collections.max(noBigEnough, new CompareAreaSize());
+                    if (((float)size.width / expectWidth) >= 0.8
+                            && ((float)size.height / expectHeight) > 0.8) {
+                        perfectSize = size;
+                    }
+                } else if (bigEnough.size() > 0) {
+                    Camera.Size size = Collections.min(bigEnough, new CompareAreaSize());
+                    if (((float)expectWidth / size.width) >= 0.8
+                            && ((float)(expectHeight / size.height)) >= 0.8) {
+                        perfectSize = size;
+                    }
+                }
+                break;
+
+            // 大一点
+            case Larger:
+                // 优先查找比期望尺寸大一点的，否则找小一点的，接受范围在0.8左右
+                if (bigEnough.size() > 0) {
+                    Camera.Size size = Collections.min(bigEnough, new CompareAreaSize());
+                    if (((float)expectWidth / size.width) >= 0.8
+                            && ((float)(expectHeight / size.height)) >= 0.8) {
+                        perfectSize = size;
+                    }
+                } else if (noBigEnough.size() > 0) {
+                    Camera.Size size = Collections.max(noBigEnough, new CompareAreaSize());
+                    if (((float)size.width / expectWidth) >= 0.8
+                            && ((float)size.height / expectHeight) > 0.8) {
+                        perfectSize = size;
+                    }
+                }
+                break;
+        }
+        // 如果经过前面的步骤没找到合适的尺寸，则计算最接近expectWidth * expectHeight的值
+        if (perfectSize == null) {
             Camera.Size result = sizes.get(0);
             boolean widthOrHeight = false; // 判断存在宽或高相等的Size
             // 辗转计算宽高最接近的值
@@ -772,8 +846,9 @@ public class CameraUtils {
                     }
                 }
             }
-            return result;
+            perfectSize = result;
         }
+        return perfectSize;
     }
 
     /**

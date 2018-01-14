@@ -209,6 +209,8 @@ public final class RenderManager {
         mTextureHeight = height;
         if (mCameraFilter != null) {
             mCameraFilter.onInputSizeChanged(width, height);
+            // 在渲染大小发生变化时，需要重新创建FBO
+            mCameraFilter.initFramebuffer(mTextureWidth, mTextureHeight);
         }
         if (mRealTimeFilter != null) {
             mRealTimeFilter.onInputSizeChanged(width, height);
@@ -226,8 +228,10 @@ public final class RenderManager {
     public void onDisplaySizeChanged(int width, int height) {
         mDisplayWidth = width;
         mDisplayHeight = height;
-        cameraFilterChanged();
         adjustViewSize();
+        if (mCameraFilter != null) {
+            mCameraFilter.onDisplayChanged(width, height);
+        }
         if (mRealTimeFilter != null) {
             mRealTimeFilter.onDisplayChanged(width, height);
         }
@@ -313,16 +317,6 @@ public final class RenderManager {
             GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
             mDisplayFilter.drawFrame(mCurrentTextureId);
         }
-    }
-
-    /**
-     * 滤镜或视图发生变化时调用
-     */
-    private void cameraFilterChanged() {
-        if (mDisplayWidth != mDisplayHeight) {
-            mCameraFilter.onDisplayChanged(mDisplayWidth, mDisplayHeight);
-        }
-        mCameraFilter.initFramebuffer(mTextureWidth, mTextureHeight);
     }
 
     /**
