@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.adapter;
+package com.cgfay.videoplayer.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -11,9 +11,9 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.request.RequestOptions;
-import com.cgfay.caincamera.R;
-import com.cgfay.caincamera.bean.MediaMeta;
 import com.cgfay.utilslibrary.SquareImageView;
+import com.cgfay.videoplayer.R;
+import com.cgfay.videoplayer.bean.MediaMeta;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ import java.util.List;
  * Created by cain.huang on 2017/8/9.
  */
 
-public class PhotoViewAdapter extends RecyclerView.Adapter<PhotoViewAdapter.PhotoHolder> {
+public class MediaViewAdapter extends RecyclerView.Adapter<MediaViewAdapter.PhotoHolder> {
 
     private boolean multiSelectEnable = false;
 
@@ -34,14 +34,14 @@ public class PhotoViewAdapter extends RecyclerView.Adapter<PhotoViewAdapter.Phot
     private boolean canLongClick = false;
 
 
-    public PhotoViewAdapter(Context context, List<MediaMeta> photoList) {
+    public MediaViewAdapter(Context context, List<MediaMeta> photoList) {
         mContext = context;
         mPhotoList = photoList;
     }
 
     @Override
     public PhotoHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.item_photo_view, null);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.item_media_view, null);
         return new PhotoHolder(view);
     }
 
@@ -50,8 +50,6 @@ public class PhotoViewAdapter extends RecyclerView.Adapter<PhotoViewAdapter.Phot
         if (!TextUtils.isEmpty(mPhotoList.get(position).getPath())) {
             RequestOptions options = new RequestOptions()
                     .centerCrop()
-                    .placeholder(R.drawable.mis_default_error)
-                    .error(R.drawable.mis_default_error)
                     .priority(Priority.HIGH);
             Glide.with(mContext)
                     .load(mPhotoList.get(position).getPath())
@@ -62,15 +60,6 @@ public class PhotoViewAdapter extends RecyclerView.Adapter<PhotoViewAdapter.Phot
             holder.mVideoPlayView.setVisibility(View.VISIBLE);
         } else {
             holder.mVideoPlayView.setVisibility(View.GONE);
-        }
-
-        if (!multiSelectEnable) {
-            holder.mSelectIndicator.setVisibility(View.GONE);
-        } else {
-            holder.mSelectIndicator.setVisibility(View.VISIBLE);
-            holder.mSelectIndicator.setBackgroundResource(mPhotoList.get(position).isSelected()
-                    ? R.drawable.mis_btn_selected
-                    : R.drawable.mis_btn_unselected);
         }
     }
 
@@ -119,14 +108,11 @@ public class PhotoViewAdapter extends RecyclerView.Adapter<PhotoViewAdapter.Phot
         public SquareImageView mImageView;
         // 视频显示图标
         public ImageView mVideoPlayView;
-        // 选中图标
-        public ImageView mSelectIndicator;
 
         public PhotoHolder(View itemView) {
             super(itemView);
             mImageView = (SquareImageView) itemView.findViewById(R.id.iv_photo);
             mVideoPlayView = (ImageView) itemView.findViewById(R.id.video_play);
-            mSelectIndicator = (ImageView) itemView.findViewById(R.id.selected_indicator);
             mImageView.setOnClickListener(this);
             mImageView.setOnLongClickListener(this);
         }
@@ -187,11 +173,6 @@ public class PhotoViewAdapter extends RecyclerView.Adapter<PhotoViewAdapter.Phot
             int index = getLayoutPosition();
             // 更新选中状态
             mPhotoList.get(index).setSelected(!mPhotoList.get(index).isSelected());
-            mSelectIndicator.setVisibility(View.VISIBLE);
-            mSelectIndicator.setBackgroundResource(
-                    mPhotoList.get(index).isSelected()
-                            ? R.drawable.mis_btn_selected
-                            : R.drawable.mis_btn_unselected);
             if (mLitener != null) {
                 mLitener.onMultiSelected(index);
             }

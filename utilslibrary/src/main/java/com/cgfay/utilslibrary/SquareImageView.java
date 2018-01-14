@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.view;
+package com.cgfay.utilslibrary;
 
 import android.content.Context;
 import android.support.annotation.Nullable;

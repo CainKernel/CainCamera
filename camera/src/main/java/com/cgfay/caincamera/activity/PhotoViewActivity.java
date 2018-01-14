@@ -30,7 +30,7 @@ import com.cgfay.cainfilter.facetracker.FaceTrackManager;
 import com.cgfay.cainfilter.facetracker.FaceTrackerCallback;
 import com.cgfay.caincamera.photo_edit.PhotoEditManager;
 import com.cgfay.utilslibrary.PermissionUtils;
-import com.cgfay.caincamera.view.AsyncRecyclerview;
+import com.cgfay.utilslibrary.AsyncRecyclerview;
 
 import java.io.File;
 import java.util.ArrayList;

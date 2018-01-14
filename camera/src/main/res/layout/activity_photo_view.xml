@@ -12,11 +12,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <!-- 列表 -->
-        <com.cgfay.caincamera.view.AsyncRecyclerview
+        <com.cgfay.utilslibrary.AsyncRecyclerview
             android:id="@+id/photo_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-        </com.cgfay.caincamera.view.AsyncRecyclerview>
+        </com.cgfay.utilslibrary.AsyncRecyclerview>
 
         <!-- 图片预览编辑 -->
         <RelativeLayout

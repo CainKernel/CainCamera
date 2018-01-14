@@ -8,7 +8,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center">
-        <com.cgfay.caincamera.view.SquareImageView
+        <com.cgfay.utilslibrary.SquareImageView
             android:id="@+id/effect_image"
             android:layout_width="@dimen/effect_item_size"
             android:layout_height="@dimen/effect_item_size"

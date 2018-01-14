@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.view;
+package com.cgfay.utilslibrary;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -37,14 +37,14 @@ public class AsyncRecyclerview extends RecyclerView {
             super.onScrollStateChanged(recyclerView, newState);
             switch (newState) {
 
-                case SCROLL_STATE_IDLE: //  当屏幕停止滚动，滑动器处于空闲状态，加载图片
+                case RecyclerView.SCROLL_STATE_IDLE: //  当屏幕停止滚动，滑动器处于空闲状态，加载图片
                     if (getContext() != null) {
                         Glide.with(getContext()).resumeRequests();
                     }
                     break;
 
-                case SCROLL_STATE_DRAGGING: //  当屏幕滚动并且处于触摸状态
-                case SCROLL_STATE_SETTLING: // 松开屏幕，但屏幕产生惯性滑动
+                case RecyclerView.SCROLL_STATE_DRAGGING: //  当屏幕滚动并且处于触摸状态
+                case RecyclerView.SCROLL_STATE_SETTLING: // 松开屏幕，但屏幕产生惯性滑动
                     if (getContext() != null) {
                         Glide.with(getContext()).pauseRequests();
                     }

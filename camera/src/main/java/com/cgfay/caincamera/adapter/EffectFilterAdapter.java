@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.cainfilter.type.FilterType;
-import com.cgfay.caincamera.view.SquareImageView;
+import com.cgfay.utilslibrary.SquareImageView;
 import com.cgfay.utilslibrary.BitmapUtils;
 
 import java.lang.ref.WeakReference;

@@ -7,7 +7,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/dp1">
+        android:padding="1dp">
         <com.cgfay.utilslibrary.SquareImageView
             android:id="@+id/iv_photo"
             android:layout_width="match_parent"
@@ -16,17 +16,10 @@
             android:scaleType="centerCrop" />
         <ImageView
             android:id="@+id/video_play"
-            android:layout_width="@dimen/dp60"
-            android:layout_height="@dimen/dp60"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_gravity="center"
             android:visibility="gone"
             android:background="@drawable/video_play"/>
-        <ImageView
-            android:id="@+id/selected_indicator"
-            android:layout_width="@dimen/selected_indicator_width"
-            android:layout_height="@dimen/selected_indicator_width"
-            android:padding="@dimen/selected_indicator_padding"
-            android:layout_gravity="end|top"
-            android:background="@drawable/mis_btn_unselected"/>
     </FrameLayout>
 </LinearLayout>

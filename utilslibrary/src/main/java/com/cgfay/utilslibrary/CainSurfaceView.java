@@ -17,7 +17,7 @@ import java.util.List;
  * Created by cain on 2017/7/9.
  */
 
-public class CameraSurfaceView extends SurfaceView {
+public class CainSurfaceView extends SurfaceView {
 
     private static final String TAG = "CameraSurfaceView";
 
@@ -44,17 +44,17 @@ public class CameraSurfaceView extends SurfaceView {
     private OnTouchScroller mScroller;
     private OnClickListener mClickListener;
 
-    public CameraSurfaceView(Context context) {
+    public CainSurfaceView(Context context) {
         super(context);
         init();
     }
 
-    public CameraSurfaceView(Context context, AttributeSet attrs) {
+    public CainSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public CameraSurfaceView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public CainSurfaceView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }

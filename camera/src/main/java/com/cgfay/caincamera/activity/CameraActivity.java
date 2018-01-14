@@ -45,8 +45,8 @@ import com.cgfay.caincamera.type.AspectRatioType;
 import com.cgfay.cainfilter.type.GalleryType;
 import com.cgfay.caincamera.type.TimeLapseType;
 import com.cgfay.utilslibrary.AspectFrameLayout;
-import com.cgfay.caincamera.view.AsyncRecyclerview;
-import com.cgfay.utilslibrary.CameraSurfaceView;
+import com.cgfay.utilslibrary.AsyncRecyclerview;
+import com.cgfay.utilslibrary.CainSurfaceView;
 import com.cgfay.caincamera.view.HorizontalIndicatorView;
 import com.cgfay.caincamera.view.RatioImageView;
 import com.cgfay.caincamera.view.SettingPopView;
@@ -68,7 +68,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CameraActivity extends AppCompatActivity implements View.OnClickListener,
-        SurfaceHolder.Callback, CameraSurfaceView.OnClickListener, CameraSurfaceView.OnTouchScroller,
+        SurfaceHolder.Callback, CainSurfaceView.OnClickListener, CainSurfaceView.OnTouchScroller,
         HorizontalIndicatorView.IndicatorListener, SettingPopView.StateChangedListener,
         RatioImageView.RatioChangedListener, RenderStateChangedListener,
         SeekBar.OnSeekBarChangeListener, CaptureFrameCallback, ShutterButton.GestureListener {
@@ -106,7 +106,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     // 预览部分
     private AspectFrameLayout mAspectLayout;
-    private CameraSurfaceView mCameraSurfaceView;
+    private CainSurfaceView mCameraSurfaceView;
     // fps显示
     private TextView mFpsView;
     // 顶部Button
@@ -210,7 +210,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         mCurrentRatio = CameraUtils.getCurrentRatio();
         mAspectLayout = (AspectFrameLayout) findViewById(R.id.layout_aspect);
         mAspectLayout.setAspectRatio(mCurrentRatio);
-        mCameraSurfaceView = new CameraSurfaceView(this);
+        mCameraSurfaceView = new CainSurfaceView(this);
         mCameraSurfaceView.getHolder().addCallback(this);
         mCameraSurfaceView.addScroller(this);
         mCameraSurfaceView.addClickListener(this);
