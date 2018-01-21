@@ -1,1 +1,2 @@
-include ':camera', ':ffmpeglibrary', ':filterlibrary', ':videoeditor', ':videoplayer', ':utilslibrary'
+include ':camera', ':ffmpeglibrary', ':filterlibrary', ':pushlibrary', ':videoeditor',
+        ':videoplayer', ':utilslibrary'

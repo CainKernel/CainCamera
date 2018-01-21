@@ -101,7 +101,8 @@
         </activity>
         <!-- Camera 单双线程测试 end -->
         <!-- 视频编辑 -->
-        <activity android:name=".activity.VideoEditActivity"></activity>
+        <activity android:name=".activity.VideoEditActivity" />
+        <activity android:name=".activity.RtmpPushActivity"></activity>
     </application>
 
 </manifest>

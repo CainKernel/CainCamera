@@ -1,0 +1,301 @@
+<HTML>
+<HEAD>
+<title>LIBRTMP(3): </title></head>
+<table>
+<thead>
+<tr><td>LIBRTMP(3)<td align="center"><td align="right">LIBRTMP(3)
+</thead>
+<tfoot>
+<tr><td>RTMPDump v2.2e<td align="center">2010-05-29<td align="right">LIBRTMP(3)
+</tfoot>
+<tbody><tr><td colspan="3"><br><br><ul>
+<!-- Copyright 2010 Howard Chu.
+ Copying permitted according to the GNU General Public License V2.-->
+</ul>
+
+<h3>NAME</h3><ul>
+librtmp &minus; RTMPDump Real-Time Messaging Protocol API
+</ul>
+
+<h3>LIBRARY</h3><ul>
+RTMPDump RTMP (librtmp, -lrtmp)
+</ul>
+
+<h3>SYNOPSIS</h3><ul>
+<b>#include &lt;librtmp/rtmp.h&gt;</b>
+</ul>
+
+<h3>DESCRIPTION</h3><ul>
+The Real-Time Messaging Protocol (RTMP) is used for streaming
+multimedia content across a TCP/IP network. This API provides most client
+functions and a few server functions needed to support RTMP, RTMP tunneled
+in HTTP (RTMPT), encrypted RTMP (RTMPE), RTMP over SSL/TLS (RTMPS) and
+tunneled variants of these encrypted types (RTMPTE, RTMPTS). The basic
+RTMP specification has been published by Adobe but this API was
+reverse-engineered without use of the Adobe specification. As such, it may
+deviate from any published specifications but it usually duplicates the
+actual behavior of the original Adobe clients.
+<p>
+The RTMPDump software package includes a basic client utility program
+in
+<a href="../man1/rtmpdump.1"><b>rtmpdump</b></a>(1),
+some sample servers, and a library used to provide programmatic access
+to the RTMP protocol. This man page gives an overview of the RTMP
+library routines. These routines are found in the -lrtmp library. Many
+other routines are also available, but they are not documented yet.
+<p>
+The basic interaction is as follows. A session handle is created using
+<b>RTMP_Alloc</b>()
+and initialized using
+<b>RTMP_Init</b>().
+All session parameters are provided using
+<b>RTMP_SetupURL</b>().
+The network connection is established using
+<b>RTMP_Connect</b>(),
+and then the RTMP session is established using
+<b>RTMP_ConnectStream</b>().
+The stream is read using
+<b>RTMP_Read</b>().
+A client can publish a stream by calling
+<b>RTMP_EnableWrite</b>()
+before the
+<b>RTMP_Connect</b>()
+call, and then using
+<b>RTMP_Write</b>()
+after the session is established.
+While a stream is playing it may be paused and unpaused using
+<b>RTMP_Pause</b>().
+The stream playback position can be moved using
+<b>RTMP_Seek</b>().
+When
+<b>RTMP_Read</b>()
+returns 0 bytes, the stream is complete and may be closed using
+<b>RTMP_Close</b>().
+The session handle is freed using
+<b>RTMP_Free</b>().
+<p>
+All data is transferred using FLV format. The basic session requires
+an RTMP URL. Additional options may be specified by appending
+space-separated key=value pairs to the URL. The RTMP URL format
+is of the form
+<pre>
+  rtmp[t][e|s]://hostname[:port][/app[/playpath]]
+</pre>
+<p>
+Plain rtmp, as well as tunneled and encrypted sessions are supported.
+</ul>
+
+<h3>OPTIONS</h3><ul>
+</ul>
+
+<h4>Network Parameters</h4><ul>
+These options define how to connect to the media server.
+<p>
+<dl compact><dt>
+<b>socks=</b><i>host:port</i>
+<dd>
+Use the specified SOCKS4 proxy.
+</dl>
+</ul>
+
+<h4>Connection Parameters</h4><ul>
+These options define the content of the RTMP Connect request packet.
+If correct values are not provided, the media server will reject the
+connection attempt.
+<p>
+<dl compact><dt>
+<b>app=</b><i>name</i>
+<dd>
+Name of application to connect to on the RTMP server. Overrides
+the app in the RTMP URL. Sometimes the librtmp URL parser cannot
+determine the app name automatically, so it must be given explicitly
+using this option.
+</dl>
+<p>
+<dl compact><dt>
+<b>tcUrl=</b><i>url</i>
+<dd>
+URL of the target stream. Defaults to rtmp[t][e|s]://host[:port]/app.
+</dl>
+<p>
+<dl compact><dt>
+<b>pageUrl=</b><i>url</i>
+<dd>
+URL of the web page in which the media was embedded. By default no
+value will be sent.
+</dl>
+<p>
+<dl compact><dt>
+<b>swfUrl=</b><i>url</i>
+<dd>
+URL of the SWF player for the media. By default no value will be sent.
+</dl>
+<p>
+<dl compact><dt>
+<b>flashVer=</b><i>version</i>
+<dd>
+Version of the Flash plugin used to run the SWF player. The
+default is "LNX 10,0,32,18".
+</dl>
+<p>
+<dl compact><dt>
+<b>conn=</b><i>type:data</i>
+<dd>
+Append arbitrary AMF data to the Connect message. The type
+must be B for Boolean, N for number, S for string, O for object, or Z
+for null. For Booleans the data must be either 0 or 1 for FALSE or TRUE,
+respectively. Likewise for Objects the data must be 0 or 1 to end or
+begin an object, respectively. Data items in subobjects may be named, by
+prefixing the type with 'N' and specifying the name before the value, e.g.
+NB:myFlag:1. This option may be used multiple times to construct arbitrary
+AMF sequences. E.g.
+<pre>
+  conn=B:1 conn=S:authMe conn=O:1 conn=NN:code:1.23 conn=NS:flag:ok conn=O:0
+</pre>
+</dl>
+</ul>
+
+<h4>Session Parameters</h4><ul>
+These options take effect after the Connect request has succeeded.
+<p>
+<dl compact><dt>
+<b>playpath=</b><i>path</i>
+<dd>
+Overrides the playpath parsed from the RTMP URL. Sometimes the
+rtmpdump URL parser cannot determine the correct playpath
+automatically, so it must be given explicitly using this option.
+</dl>
+<p>
+<dl compact><dt>
+<b>playlist=</b><i>0|1</i>
+<dd>
+If the value is 1 or TRUE, issue a set_playlist command before sending the
+play command. The playlist will just contain the current playpath. If the
+value is 0 or FALSE, the set_playlist command will not be sent. The
+default is FALSE.
+</dl>
+<p>
+<dl compact><dt>
+<b>live=</b><i>0|1</i>
+<dd>
+Specify that the media is a live stream. No resuming or seeking in
+live streams is possible.
+</dl>
+<p>
+<dl compact><dt>
+<b>subscribe=</b><i>path</i>
+<dd>
+Name of live stream to subscribe to. Defaults to
+<i>playpath</i>.
+</dl>
+<p>
+<dl compact><dt>
+<b>start=</b><i>num</i>
+<dd>
+Start at
+<i>num</i>
+seconds into the stream. Not valid for live streams.
+</dl>
+<p>
+<dl compact><dt>
+<b>stop=</b><i>num</i>
+<dd>
+Stop at
+<i>num</i>
+seconds into the stream.
+</dl>
+<p>
+<dl compact><dt>
+<b>buffer=</b><i>num</i>
+<dd>
+Set buffer time to
+<i>num</i>
+milliseconds. The default is 30000.
+</dl>
+<p>
+<dl compact><dt>
+<b>timeout=</b><i>num</i>
+<dd>
+Timeout the session after
+<i>num</i>
+seconds without receiving any data from the server. The default is 120.
+</dl>
+</ul>
+
+<h4>Security Parameters</h4><ul>
+These options handle additional authentication requests from the server.
+<p>
+<dl compact><dt>
+<b>token=</b><i>key</i>
+<dd>
+Key for SecureToken response, used if the server requires SecureToken
+authentication.
+</dl>
+<p>
+<dl compact><dt>
+<b>swfVfy=</b><i>0|1</i>
+<dd>
+If the value is 1 or TRUE, the SWF player is retrieved from the
+specified
+<i>swfUrl</i>
+for performing SWF Verification.  The SWF hash and size (used in the
+verification step) are computed automatically. Also the SWF information is
+cached in a
+<i>.swfinfo</i>
+file in the user's home directory, so that it doesn't need to be retrieved
+and recalculated every time. The .swfinfo file records
+the SWF URL, the time it was fetched, the modification timestamp of the SWF
+file, its size, and its hash. By default, the cached info will be used
+for 30 days before re-checking.
+</dl>
+<p>
+<dl compact><dt>
+<b>swfAge=</b><i>days</i>
+<dd>
+Specify how many days to use the cached SWF info before re-checking. Use
+0 to always check the SWF URL. Note that if the check shows that the
+SWF file has the same modification timestamp as before, it will not be
+retrieved again.
+</dl>
+</ul>
+
+<h3>EXAMPLES</h3><ul>
+An example character string suitable for use with
+<b>RTMP_SetupURL</b>():
+<pre>
+  "rtmp://flashserver:1935/ondemand/thefile swfUrl=<a href="http://flashserver/player.swf">http://flashserver/player.swf</a> swfVfy=1"
+</pre>
+</ul>
+
+<h3>ENVIRONMENT</h3><ul>
+<p>
+<dl compact><dt>
+<b>HOME</b>
+<dd>
+The value of
+$<b>HOME</b>
+is used as the location for the
+<i>.swfinfo</i>
+file.
+</dl>
+</ul>
+
+<h3>FILES</h3><ul>
+<p>
+<dl compact><dt>
+<i>$HOME/.swfinfo</i>
+<dd>
+Cache of SWF Verification information
+</dl>
+</ul>
+
+<h3>SEE ALSO</h3><ul>
+<a href="../man1/rtmpdump.1"><b>rtmpdump</b></a>(1),
+<a href="../man8/rtmpgw.8"><b>rtmpgw</b></a>(8)
+</ul>
+
+<h3>AUTHORS</h3><ul>
+Andrej Stepanchuk, Howard Chu, The Flvstreamer Team
+<br>
+&lt;<a href="http://rtmpdump.mplayerhq.hu">http://rtmpdump.mplayerhq.hu</a>>
+</ul></tbody></table></html>

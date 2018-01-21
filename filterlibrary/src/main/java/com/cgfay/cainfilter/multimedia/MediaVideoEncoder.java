@@ -38,6 +38,7 @@ public class MediaVideoEncoder extends MediaEncoder {
     private static final String MIME_TYPE = "video/avc";
     private static final int FRAME_RATE = 24;
     private static final float BPP = 0.25f;
+    private static final int I_FRAME_INTERVAL = 1; // 多少秒一个I帧
 
     // 比特率
     private int mBitRate = 0;
@@ -98,7 +99,7 @@ public class MediaVideoEncoder extends MediaEncoder {
             format.setInteger(MediaFormat.KEY_BIT_RATE, calcBitRate());
         }
         format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 240);
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL);
         if (DEBUG) Log.i(TAG, "format: " + format);
 
         mMediaCodec = MediaCodec.createEncoderByType(MIME_TYPE);
