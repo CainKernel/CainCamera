@@ -16,6 +16,11 @@
             android:layout_height="wrap_content" />
     </com.cgfay.utilslibrary.AspectFrameLayout>
 
+    <EditText
+        android:id="@+id/et_rtmp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <Button
         android:id="@+id/btn_push"
         android:layout_width="wrap_content"

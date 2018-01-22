@@ -7,12 +7,14 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.cgfay.caincamera.R;
@@ -38,6 +40,9 @@ public class RtmpPushActivity extends AppCompatActivity implements View.OnClickL
     private RtmpPusher mRtmpPusher;
     private AudioPusher mAudioPusher;
 
+    private String mRtmpUrl = "rtmp://192.168.0.102/live/test";
+
+    private EditText mEtRtmp;
     private Button mBtnPush;
 
     private AspectFrameLayout mLayoutAspect;
@@ -53,6 +58,10 @@ public class RtmpPushActivity extends AppCompatActivity implements View.OnClickL
 
         mLayoutAspect = (AspectFrameLayout) findViewById(R.id.layout_aspect);
         mLayoutAspect.setAspectRatio(mCurrentRatio);
+
+        mEtRtmp = (EditText) findViewById(R.id.et_rtmp);
+        mEtRtmp.setText(mRtmpUrl);
+
         mBtnPush = (Button) findViewById(R.id.btn_push);
         mBtnPush.setOnClickListener(this);
 
@@ -244,7 +253,11 @@ public class RtmpPushActivity extends AppCompatActivity implements View.OnClickL
      */
     private boolean startPush() {
         mRtmpPusher = new RtmpPusher();
-        int result = mRtmpPusher.initVideo("rtmp://192.168.0.102/live/test",
+        String url = mRtmpUrl;
+        if (!TextUtils.isEmpty(mEtRtmp.getText())) {
+            url = mEtRtmp.getText().toString();
+        }
+        int result = mRtmpPusher.initVideo(url,
                 mImageHeight, mImageWidth, (int) (mImageWidth * mImageHeight * 8 * 0.25));
         if (result == 0) {
             mAudioPusher = new AudioPusher(mRtmpPusher);
