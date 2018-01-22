@@ -114,8 +114,10 @@ public class MediaAudioEncoder extends MediaEncoder {
 
 	@Override
     protected void release() {
-		mAudioThread.stopRecording();
-		mAudioThread = null;
+		if (mAudioThread != null) {
+			mAudioThread.stopRecording();
+			mAudioThread = null;
+		}
 		super.release();
     }
 
