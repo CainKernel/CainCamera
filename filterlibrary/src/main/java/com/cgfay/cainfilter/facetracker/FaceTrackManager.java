@@ -132,6 +132,9 @@ public class FaceTrackManager {
                 new LicenseManager.TakeLicenseCallback() {
                     @Override
                     public void onSuccess() {
+                        if (isDebug) {
+                            Log.d("LicenseManager", "success to register license!");
+                        }
                         canFaceTrack = true;
                     }
 
@@ -317,6 +320,9 @@ public class FaceTrackManager {
                 @Override
                 public void run() {
                     if (facepp == null) {
+                        if (mFaceTrackerCallback != null) {
+                            mFaceTrackerCallback.onTrackingFinish(false);
+                        }
                         return;
                     }
                     mPreviewSize = CameraUtils.getPreviewSize();
