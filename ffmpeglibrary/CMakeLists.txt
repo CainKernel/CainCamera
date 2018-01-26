@@ -30,7 +30,7 @@ set_target_properties( ffmpeg
 # 这里需要添加ffmpeg库的路径，用来编译生成ffmpeg_cmd.so
 # 这里如果不引入头文件，会出现libavresample/avresample.h等头文件找不到的情况
 # 因为原来就没有引入libavresample库
-include_directories(D:/FFmpeg/ffmpeg-3.3.3
+include_directories(${CMAKE_SOURCE_DIR}/../sources/ffmpeg
                     src/main/cpp/ffmpeg
                     src/main/cpp/ffmpeg/include )
 
