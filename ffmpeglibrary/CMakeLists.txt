@@ -66,7 +66,7 @@ target_link_libraries(
 #--------------------------------- libencoder.so 编译 start ----------------------------------------
 
 # 添加头文件
-include_directories(src/main/cpp/ffmpeg
+include_directories(src/main/cpp/common
                     src/main/cpp/ffmpeg/include
                     src/main/cpp/encoder/include )
 
@@ -94,3 +94,28 @@ target_link_libraries(
                        ${log-lib} )
 
 #---------------------------------- libencoder.so 编译 end -----------------------------------------
+
+#----------------------------------- libsdl.so 编译 start ------------------------------------------
+#添加头文件
+include_directories(src/main/cpp/common
+                    src/main/cpp/ffmpeg/include
+                    src/main/cpp/cainmedia/cainsdl )
+
+# 添加自身的jni库
+add_library( sdl
+
+             SHARED
+
+             src/main/cpp/cainmedia/cainsdl/cainsdl_audio.c
+             src/main/cpp/cainmedia/cainsdl/cainsdl_egl.c
+             src/main/cpp/cainmedia/cainsdl/cainsdl_mutex.c
+             src/main/cpp/cainmedia/cainsdl/cainsdl_thread.c
+             src/main/cpp/cainmedia/cainsdl/cainsdl_timer.c
+             )
+
+# 链接库文件
+target_link_libraries(
+                       sdl
+
+                       ${log-lib} )
+#------------------------------------ libsdl.so 编译 end -------------------------------------------
