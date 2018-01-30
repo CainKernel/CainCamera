@@ -113,9 +113,16 @@ add_library( sdl
              src/main/cpp/cainmedia/cainsdl/cainsdl_timer.c
              )
 
-# 链接库文件
-target_link_libraries(
-                       sdl
+# 查找Android存在的库
+find_library( OpenGLES-lib OpenSLES )
+find_library( EGL-lib EGL )
+find_library( GLESv2-lib GLESv2 )
 
-                       ${log-lib} )
+# 链接库文件
+target_link_libraries( sdl
+
+                       ${log-lib}
+                       ${OpenGLES-lib}
+                       ${EGL-lib}
+                       ${GLESv2-lib} )
 #------------------------------------ libsdl.so 编译 end -------------------------------------------
