@@ -759,12 +759,24 @@ public class CameraUtils {
         switch (calculateType) {
             // 直接使用最小值
             case Min:
-                perfectSize = Collections.min(noBigEnough, new CompareAreaSize());
+                // 不大于期望值的分辨率列表有可能为空或者只有一个的情况，
+                // Collections.min会因越界报NoSuchElementException
+                if (noBigEnough.size() > 1) {
+                    perfectSize = Collections.min(noBigEnough, new CompareAreaSize());
+                } else if (noBigEnough.size() == 1) {
+                    perfectSize = noBigEnough.get(0);
+                }
                 break;
 
             // 直接使用最大值
             case Max:
-                perfectSize = Collections.max(bigEnough, new CompareAreaSize());
+                // 如果bigEnough只有一个元素，使用Collections.max就会因越界报NoSuchElementException
+                // 因此，当只有一个元素时，直接使用该元素
+                if (bigEnough.size() > 1) {
+                    perfectSize = Collections.max(bigEnough, new CompareAreaSize());
+                } else if (bigEnough.size() == 1) {
+                    perfectSize = bigEnough.get(0);
+                }
                 break;
 
             // 小一点
