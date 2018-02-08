@@ -95,22 +95,28 @@ target_link_libraries(
 
 #---------------------------------- libencoder.so 编译 end -----------------------------------------
 
-#----------------------------------- libsdl.so 编译 start ------------------------------------------
+#-------------------------------- libcainplayer.so 编译 start --------------------------------------
 #添加头文件
 include_directories(src/main/cpp/common
                     src/main/cpp/ffmpeg/include
-                    src/main/cpp/cainmedia/cainsdl )
+                    src/main/cpp/cainmedia/cainsdl
+                    src/main/cpp/cainmedia/cainplayer )
 
-# 添加自身的jni库
-add_library( sdl
+#添加自身的jni文件
+add_library( cainplayer
 
              SHARED
 
-             src/main/cpp/cainmedia/cainsdl/cainsdl_audio.c
-             src/main/cpp/cainmedia/cainsdl/cainsdl_egl.c
-             src/main/cpp/cainmedia/cainsdl/cainsdl_mutex.c
-             src/main/cpp/cainmedia/cainsdl/cainsdl_thread.c
-             src/main/cpp/cainmedia/cainsdl/cainsdl_timer.c
+             src/main/cpp/cainmedia/cainplayer/CainPlayer.cpp
+             src/main/cpp/cainmedia/cainplayer/CainThread.cpp
+             src/main/cpp/cainmedia/cainplayer/CainClock.cpp
+             src/main/cpp/cainmedia/cainplayer/CainCmdUtils.cpp
+             src/main/cpp/cainmedia/cainplayer/CainFrameQueue.cpp
+             src/main/cpp/cainmedia/cainplayer/CainGLUtils.cpp
+             src/main/cpp/cainmedia/cainplayer/CainMutex.cpp
+             src/main/cpp/cainmedia/cainplayer/CainPacketQueue.cpp
+             src/main/cpp/cainmedia/cainplayer/CainShaders.cpp
+             src/main/cpp/cainmedia/cainplayer/CainVideoRender.cpp
              )
 
 # 查找Android存在的库
@@ -119,10 +125,15 @@ find_library( EGL-lib EGL )
 find_library( GLESv2-lib GLESv2 )
 
 # 链接库文件
-target_link_libraries( sdl
+target_link_libraries(
+                       cainplayer
 
+                       # 第三方库
+                       ffmpeg
+
+                       # Android 自带的库
                        ${log-lib}
                        ${OpenGLES-lib}
                        ${EGL-lib}
                        ${GLESv2-lib} )
-#------------------------------------ libsdl.so 编译 end -------------------------------------------
+#--------------------------------- libcainplayer.so 编译 end ---------------------------------------
