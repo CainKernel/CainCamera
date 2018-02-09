@@ -19,11 +19,19 @@
             android:text="使用MediaCode播放视频"/>
 
         <Button
+            android:id="@+id/btn_ijkplayer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_gravity="center"
+            android:text="使用ijkplayer播放视频"/>
+
+        <Button
             android:id="@+id/btn_ffmpeg"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:layout_gravity="center"
-            android:text="使用ffmpeg播放视频"/>
+            android:text="使用ffmpeg播放视频(暂未实现)"/>
     </LinearLayout>
 </FrameLayout>

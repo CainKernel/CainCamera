@@ -28,7 +28,8 @@
         </activity>
         <activity android:name=".activity.MediaScanActivity" />
         <activity android:name=".activity.MediaPlayerActivity" />
-        <activity android:name=".activity.FFPlayerActivity"></activity>
+        <activity android:name=".activity.FFPlayerActivity" />
+        <activity android:name=".activity.IJKPlayerActivity"></activity>
     </application>
 
 </manifest>

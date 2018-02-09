@@ -17,6 +17,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE = 0;
     private Button mBtnMadiaCodec;
+    private Button mBtnIJKPlayer;
     private Button mBtnFFmpeg;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +28,15 @@ public class MainActivity extends AppCompatActivity {
         mBtnMadiaCodec.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startMediaViewAvtivity(false);
+                startMediaViewAvtivity(0);
+            }
+        });
+
+        mBtnIJKPlayer = (Button) findViewById(R.id.btn_ijkplayer);
+        mBtnIJKPlayer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startMediaViewAvtivity(1);
             }
         });
 
@@ -35,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         mBtnFFmpeg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startMediaViewAvtivity(true);
+                startMediaViewAvtivity(2);
             }
         });
     }
@@ -58,11 +67,11 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 跳转至媒体库找数据
-     * @param usingFFmpeg 是否使用ffmpeg来播放视频
+     * @param usingType 0表示使用MediaCodec，1表示使用ijkplayer，2表示使用ffmpeg
      */
-    private void startMediaViewAvtivity(boolean usingFFmpeg) {
+    private void startMediaViewAvtivity(int usingType) {
         Intent intent = new Intent(MainActivity.this, MediaScanActivity.class);
-        intent.putExtra(MediaScanActivity.USE_FFMPEG, usingFFmpeg);
+        intent.putExtra(MediaScanActivity.USE_FFMPEG, usingType);
         startActivity(intent);
         finish();
     }

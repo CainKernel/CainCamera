@@ -101,7 +101,9 @@ void CainPlayer::Stop() {
  * 异步装载流媒体
  */
 void CainPlayer::PrepareAsync() {
-
+    assert(!is);
+    assert(input_filename);
+    is = stream_open(input_filename, NULL);
 }
 
 /**
@@ -282,8 +284,7 @@ int CainPlayer::decoder_decode_frame(Decoder *d, AVFrame *frame, AVSubtitle *sub
         if (ret < 0) {
             d->packet_pending = 0;
         } else {
-            d->pkt_temp.dts =
-            d->pkt_temp.pts = AV_NOPTS_VALUE;
+            d->pkt_temp.dts = d->pkt_temp.pts = AV_NOPTS_VALUE;
             if (d->pkt_temp.data) {
                 if (d->avctx->codec_type != AVMEDIA_TYPE_AUDIO)
                     ret = d->pkt_temp.size;
@@ -346,8 +347,9 @@ void CainPlayer::stream_component_close(VideoState *is, int stream_index) {
     AVFormatContext *ic = is->ic;
     AVCodecParameters *codecpar;
 
-    if (stream_index < 0 || stream_index >= ic->nb_streams)
+    if (stream_index < 0 || stream_index >= ic->nb_streams) {
         return;
+    }
     codecpar = ic->streams[stream_index]->codecpar;
     // 根据解码类型销毁不同的解码器、释放资源等
     switch (codecpar->codec_type) {
@@ -542,13 +544,14 @@ double CainPlayer::compute_target_delay(double delay, VideoState *is) {
         sync_threshold = FFMAX(AV_SYNC_THRESHOLD_MIN, FFMIN(AV_SYNC_THRESHOLD_MAX, delay));
         // 判断时间差是否在许可范围内
         if (!isnan(diff) && fabs(diff) < is->max_frame_duration) {
-            // 滞后
-            if (diff <= -sync_threshold)
+
+            if (diff <= -sync_threshold) { // 滞后
                 delay = FFMAX(0, delay + diff);
-            else if (diff >= sync_threshold && delay > AV_SYNC_FRAMEDUP_THRESHOLD) // 超前
+            } else if (diff >= sync_threshold && delay > AV_SYNC_FRAMEDUP_THRESHOLD) { // 超前
                 delay = delay + diff;
-            else if (diff >= sync_threshold) // 超过了理论阈值
+            } else if (diff >= sync_threshold) { // 超过了理论阈值
                 delay = 2 * delay;
+            }
         }
     }
 
@@ -559,7 +562,7 @@ double CainPlayer::compute_target_delay(double delay, VideoState *is) {
 }
 
 /**
- * 计算显示时长
+ * 计算显示时长，限定在0 ~ max_frame_duration之间
  * @param is
  * @param vp
  * @param nextvp
@@ -568,10 +571,11 @@ double CainPlayer::compute_target_delay(double delay, VideoState *is) {
 double CainPlayer::vp_duration(VideoState *is, Frame *vp, Frame *nextvp) {
     if (vp->serial == nextvp->serial) {
         double duration = nextvp->pts - vp->pts;
-        if (isnan(duration) || duration <= 0 || duration > is->max_frame_duration)
+        if (isnan(duration) || duration <= 0 || duration > is->max_frame_duration) {
             return vp->duration;
-        else
+        } else {
             return duration;
+        }
     } else {
         return 0.0;
     }
@@ -591,12 +595,162 @@ void CainPlayer::update_video_pts(VideoState *is, double pts, int64_t pos, int s
 }
 
 /**
- * 刷新视频帧，显示线程执行实体 TODO 还没实现
+ * 刷新视频帧，显示线程执行实体
  * @param opaque
  * @param remaining_time
  */
 void CainPlayer::video_refresh(void *opaque, double *remaining_time) {
+    VideoState *is = (VideoState *)opaque;
+    double time;
 
+    // 主同步类型是外部时钟同步，并且是实时码流，则检查外部时钟速度
+    if (!is->paused && get_master_sync_type(is) == AV_SYNC_EXTERNAL_CLOCK && is->realtime) {
+        check_external_clock_speed(is);
+    }
+
+    // 音频码流
+    if (!display_disable && is->show_mode != SHOW_MODE_VIDEO && is->audio_st) {
+        time = av_gettime_relative() / 1000000.0;
+        if (is->force_refresh || is->last_vis_time + rdftspeed < time) {
+            // 如果视频流存在，则显示画面
+            if (is->video_st) {
+                video_image_display(is);
+            }
+            is->last_vis_time = time;
+        }
+        // 剩余时间
+        *remaining_time = FFMIN(*remaining_time, is->last_vis_time + rdftspeed - time);
+    }
+
+    // 视频码流
+    if (is->video_st) {
+retry:
+        if (frame_queue_nb_remaining(&is->pictq) == 0) {
+            // nothing to do, no picture to display in the queue
+        } else {
+            double last_duration, duration, delay;
+            Frame *vp, *lastvp;
+
+            /* dequeue the picture */
+            lastvp = frame_queue_peek_last(&is->pictq);
+            vp = frame_queue_peek(&is->pictq);
+
+            // 视频队列
+            if (vp->serial != is->videoq.serial) {
+                frame_queue_next(&is->pictq);
+                goto retry;
+            }
+
+            // seek操作时才会产生变化
+            if (lastvp->serial != vp->serial) {
+                is->frame_timer = av_gettime_relative() / 1000000.0;
+            }
+
+            // 如果处于停止
+            if (is->paused) {
+                goto display;
+            }
+
+            /* compute nominal last_duration */
+            // 计算上一个时长
+            last_duration = vp_duration(is, lastvp, vp);
+            // 计算目标延时
+            delay = compute_target_delay(last_duration, is);
+            // 获取时间
+            time= av_gettime_relative()/1000000.0;
+            // 如果时间小于帧时间加延时，则获取剩余时间，继续显示当前的帧
+            if (time < is->frame_timer + delay) {
+                // 获取剩余时间
+                *remaining_time = FFMIN(is->frame_timer + delay - time, *remaining_time);
+                goto display;
+            }
+            // 计算帧的计时器
+            is->frame_timer += delay;
+            // 判断当前的时间是否大于同步阈值，如果大于，则使用当前的时间作为帧的计时器
+            if (delay > 0 && time - is->frame_timer > AV_SYNC_THRESHOLD_MAX) {
+                is->frame_timer = time;
+            }
+
+            // 更新显示时间戳
+            Cain_LockMutex(is->pictq.mutex);
+            if (!isnan(vp->pts)) {
+                update_video_pts(is, vp->pts, vp->pos, vp->serial);
+            }
+            Cain_UnlockMutex(is->pictq.mutex);
+
+            // 判断是否还有剩余的帧
+            if (frame_queue_nb_remaining(&is->pictq) > 1) {
+                // 取得下一帧
+                Frame *nextvp = frame_queue_peek_next(&is->pictq);
+                // 取得下一帧的时长
+                duration = vp_duration(is, vp, nextvp);
+                // 判断是否需要丢弃一部分帧
+                if(!is->step && (framedrop>0 || (framedrop && get_master_sync_type(is) != AV_SYNC_VIDEO_MASTER)) && time > is->frame_timer + duration){
+                    is->frame_drops_late++;
+                    frame_queue_next(&is->pictq);
+                    goto retry;
+                }
+            }
+
+            frame_queue_next(&is->pictq);
+            is->force_refresh = 1;
+
+            if (is->step && !is->paused) {
+                stream_toggle_pause(is);
+            }
+        }
+display:
+        /* display picture */
+        // 显示视频画面
+        if (!display_disable && is->video_st && is->force_refresh
+            && is->show_mode == SHOW_MODE_VIDEO && is->pictq.rindex_shown) {
+            video_image_display(is);
+        }
+    }
+    is->force_refresh = 0;
+    if (show_status) {
+        static int64_t last_time;
+        int64_t cur_time;
+        int aqsize, vqsize, sqsize;
+        double av_diff;
+
+        cur_time = av_gettime_relative();
+        if (!last_time || (cur_time - last_time) >= 30000) {
+            aqsize = 0;
+            vqsize = 0;
+            sqsize = 0;
+            if (is->audio_st) {
+                aqsize = is->audioq.size;
+            }
+            if (is->video_st) {
+                vqsize = is->videoq.size;
+            }
+            if (is->subtitle_st) {
+                sqsize = is->subtitleq.size;
+            }
+            av_diff = 0;
+            if (is->audio_st && is->video_st) {
+                av_diff = get_clock(&is->audclk) - get_clock(&is->vidclk);
+            } else if (is->video_st) {
+                av_diff = get_master_clock(is) - get_clock(&is->vidclk);
+            } else if (is->audio_st) {
+                av_diff = get_master_clock(is) - get_clock(&is->audclk);
+            }
+            av_log(NULL, AV_LOG_INFO,
+                   "%7.2f %s:%7.3f fd=%4d aq=%5dKB vq=%5dKB sq=%5dB f=%"PRId64"/%"PRId64"   \r",
+                   get_master_clock(is),
+                   (is->audio_st && is->video_st) ? "A-V" : (is->video_st ? "M-V" : (is->audio_st ? "M-A" : "   ")),
+                   av_diff,
+                   is->frame_drops_early + is->frame_drops_late,
+                   aqsize / 1024,
+                   vqsize / 1024,
+                   sqsize,
+                   is->video_st ? is->viddec.avctx->pts_correction_num_faulty_dts : 0,
+                   is->video_st ? is->viddec.avctx->pts_correction_num_faulty_pts : 0);
+            fflush(stdout);
+            last_time = cur_time;
+        }
+    }
 }
 
 /**
@@ -902,7 +1056,68 @@ int CainPlayer::audio_decode_frame(VideoState *is) {
  * @param len
  */
 static void audio_callback(void *opaque, uint8_t *stream, int len) {
+    CainPlayer *player = (CainPlayer *) opaque;
+    // 执行回调
+    player->audioCallbackProcess(stream, len);
+}
 
+/**
+ * 音频回调执行方法
+ * @param stream
+ * @param len
+ */
+void CainPlayer::audioCallbackProcess(uint8_t *stream, int len) {
+    int audio_size, len1;
+
+    audio_callback_time = av_gettime_relative();
+
+    // TODO 播放速度发生变化时，这里需要设置PlaybackRate
+
+    while (len > 0) {
+        if (is->audio_buf_index >= is->audio_buf_size) {
+            // 取得解码帧
+            audio_size = audio_decode_frame(is);
+            //  如果不存在音频帧，则输出静音
+            if (audio_size < 0) {
+                /* if error, just output silence */
+                is->audio_buf = NULL;
+                is->audio_buf_size = SDL_AUDIO_MIN_BUFFER_SIZE / is->audio_tgt.frame_size
+                                     * is->audio_tgt.frame_size;
+            } else {
+                // TODO 显示音频波形
+//                if (is->show_mode != SHOW_MODE_VIDEO) {
+//                    update_sample_display(is, (int16_t *) is->audio_buf, audio_size);
+//                }
+
+                is->audio_buf_size = audio_size;
+            }
+            is->audio_buf_index = 0;
+        }
+        len1 = is->audio_buf_size - is->audio_buf_index;
+        if (len1 > len)
+            len1 = len;
+        // 如果不处于静音模式并且声音最大
+        if (!is->muted && is->audio_buf && is->audio_volume == MIX_MAXVOLUME) {
+            memcpy(stream, (uint8_t *) is->audio_buf + is->audio_buf_index, len1);
+        } else {
+            memset(stream, 0, len1);
+            // 非静音、并且音量不是最大，则需要混音
+            if (!is->muted && is->audio_buf) {
+                // TODO 混音
+//                Cain_MixAudio(stream, (uint8_t *) is->audio_buf + is->audio_buf_index, len1,
+//                             is->audio_volume);
+            }
+        }
+        len -= len1;
+        stream += len1;
+        is->audio_buf_index += len1;
+    }
+    is->audio_write_buf_size = is->audio_buf_size - is->audio_buf_index;
+    /* Let's assume the audio driver that is used by SDL has two periods. */
+    if (!isnan(is->audio_clock)) {
+        set_clock_at(&is->audclk, is->audio_clock - (double)(2 * is->audio_hw_buf_size + is->audio_write_buf_size) / is->audio_tgt.bytes_per_sec, is->audio_clock_serial, audio_callback_time / 1000000.0);
+        sync_clock_to_slave(&is->extclk, &is->audclk);
+    }
 }
 
 /**
@@ -917,82 +1132,83 @@ static void audio_callback(void *opaque, uint8_t *stream, int len) {
 int CainPlayer::audio_open(void *opaque, int64_t wanted_channel_layout, int wanted_nb_channels,
                int wanted_sample_rate, struct AudioParams *audio_hw_params) {
 
-//    SDL_AudioSpec wanted_spec, spec;
-//    const char *env;
-//    static const int next_nb_channels[] = {0, 0, 1, 6, 2, 6, 4, 6};
-//    static const int next_sample_rates[] = {0, 44100, 48000, 96000, 192000};
-//    int next_sample_rate_idx = FF_ARRAY_ELEMS(next_sample_rates) - 1;
-//
-//    env = SDL_getenv("SDL_AUDIO_CHANNELS");
-//    if (env) {
-//        wanted_nb_channels = atoi(env);
-//        wanted_channel_layout = av_get_default_channel_layout(wanted_nb_channels);
-//    }
-//    if (!wanted_channel_layout || wanted_nb_channels != av_get_channel_layout_nb_channels(wanted_channel_layout)) {
-//        wanted_channel_layout = av_get_default_channel_layout(wanted_nb_channels);
-//        wanted_channel_layout &= ~AV_CH_LAYOUT_STEREO_DOWNMIX;
-//    }
-//    wanted_nb_channels = av_get_channel_layout_nb_channels(wanted_channel_layout);
-//    wanted_spec.channels = wanted_nb_channels;
-//    wanted_spec.freq = wanted_sample_rate;
-//    if (wanted_spec.freq <= 0 || wanted_spec.channels <= 0) {
-//        av_log(NULL, AV_LOG_ERROR, "Invalid sample rate or channel count!\n");
-//        return -1;
-//    }
-//    while (next_sample_rate_idx && next_sample_rates[next_sample_rate_idx] >= wanted_spec.freq) {
-//        next_sample_rate_idx--;
-//    }
-//    wanted_spec.format = AUDIO_S16SYS;
-//    wanted_spec.silence = 0;
-//    wanted_spec.samples = FFMAX(SDL_AUDIO_MIN_BUFFER_SIZE, 2 << av_log2(wanted_spec.freq / SDL_AUDIO_MAX_CALLBACKS_PER_SEC));
-//    wanted_spec.callback = audio_callback;
-//    wanted_spec.userdata = opaque;
-//    // 打开音频播放器
-//    while (SDL_OpenAudio(&wanted_spec, &spec) < 0) {
-//        av_log(NULL, AV_LOG_WARNING, "SDL_OpenAudio (%d channels, %d Hz): %s\n",
-//               wanted_spec.channels, wanted_spec.freq, SDL_GetError());
-//        wanted_spec.channels = next_nb_channels[FFMIN(7, wanted_spec.channels)];
-//        if (!wanted_spec.channels) {
-//            wanted_spec.freq = next_sample_rates[next_sample_rate_idx--];
-//            wanted_spec.channels = wanted_nb_channels;
-//            if (!wanted_spec.freq) {
-//                av_log(NULL, AV_LOG_ERROR,
-//                       "No more combinations to try, audio open failed\n");
-//                return -1;
-//            }
-//        }
-//        wanted_channel_layout = av_get_default_channel_layout(wanted_spec.channels);
-//    }
-//    if (spec.format != AUDIO_S16SYS) {
-//        av_log(NULL, AV_LOG_ERROR,
-//               "SDL advised audio format %d is not supported!\n", spec.format);
-//        return -1;
-//    }
-//    if (spec.channels != wanted_spec.channels) {
-//        wanted_channel_layout = av_get_default_channel_layout(spec.channels);
-//        if (!wanted_channel_layout) {
-//            av_log(NULL, AV_LOG_ERROR,
-//                   "SDL advised channel count %d is not supported!\n", spec.channels);
-//            return -1;
-//        }
-//    }
-//    // 设置音频硬件参数
-//    audio_hw_params->fmt = AV_SAMPLE_FMT_S16;
-//    audio_hw_params->freq = spec.freq;
-//    audio_hw_params->channel_layout = wanted_channel_layout;
-//    audio_hw_params->channels =  spec.channels;
-//    audio_hw_params->frame_size = av_samples_get_buffer_size(NULL, audio_hw_params->channels, 1,
-//                                                             audio_hw_params->fmt, 1);
-//    audio_hw_params->bytes_per_sec = av_samples_get_buffer_size(NULL, audio_hw_params->channels,
-//                                                                audio_hw_params->freq,
-//                                                                audio_hw_params->fmt, 1);
-//
-//    if (audio_hw_params->bytes_per_sec <= 0 || audio_hw_params->frame_size <= 0) {
-//        av_log(NULL, AV_LOG_ERROR, "av_samples_get_buffer_size failed\n");
-//        return -1;
-//    }
-//    return spec.size;
-    return -1;
+    CainAudioSpec wanted_spec, spec;
+    static const int next_nb_channels[] = {0, 0, 1, 6, 2, 6, 4, 6};
+    static const int next_sample_rates[] = {0, 44100, 48000};
+    int next_sample_rate_idx = FF_ARRAY_ELEMS(next_sample_rates) - 1;
+
+    if (!wanted_channel_layout || wanted_nb_channels != av_get_channel_layout_nb_channels(wanted_channel_layout)) {
+        wanted_channel_layout = av_get_default_channel_layout(wanted_nb_channels);
+        wanted_channel_layout &= ~AV_CH_LAYOUT_STEREO_DOWNMIX;
+    }
+    wanted_nb_channels = av_get_channel_layout_nb_channels(wanted_channel_layout);
+    wanted_spec.channels = wanted_nb_channels;
+    wanted_spec.freq = wanted_sample_rate;
+    if (wanted_spec.freq <= 0 || wanted_spec.channels <= 0) {
+        av_log(NULL, AV_LOG_ERROR, "Invalid sample rate or channel count!\n");
+        return -1;
+    }
+    while (next_sample_rate_idx && next_sample_rates[next_sample_rate_idx] >= wanted_spec.freq) {
+        next_sample_rate_idx--;
+    }
+    wanted_spec.format = AUDIO_S16SYS;
+    wanted_spec.silence = 0;
+    wanted_spec.samples = FFMAX(SDL_AUDIO_MIN_BUFFER_SIZE, 2 << av_log2(wanted_spec.freq / SDL_AUDIO_MAX_CALLBACKS_PER_SEC));
+    wanted_spec.callback = audio_callback;
+    wanted_spec.userdata = this;
+    // 打开音频播放器
+    while (Cain_OpenAudio(&wanted_spec, &spec) < 0) {
+        // 如果请求取消，则退出循环
+        if (is->abort_request) {
+            return -1;
+        }
+        av_log(NULL, AV_LOG_WARNING, "SDL_OpenAudio (%d channels, %d Hz): %s\n",
+               wanted_spec.channels, wanted_spec.freq, Cain_GetError());
+        // 获取声道数
+        wanted_spec.channels = next_nb_channels[FFMIN(7, wanted_spec.channels)];
+        // 判断声道数量是否存在，如果不存在，则需要重新设置
+        if (!wanted_spec.channels) {
+            wanted_spec.freq = next_sample_rates[next_sample_rate_idx--];
+            wanted_spec.channels = wanted_nb_channels;
+            if (!wanted_spec.freq) {
+                av_log(NULL, AV_LOG_ERROR,
+                       "No more combinations to try, audio open failed\n");
+                return -1;
+            }
+        }
+        wanted_channel_layout = av_get_default_channel_layout(wanted_spec.channels);
+    }
+    // 判断声道格式是不是16bit的
+    if (spec.format != AUDIO_S16SYS) {
+        av_log(NULL, AV_LOG_ERROR,
+               "SDL advised audio format %d is not supported!\n", spec.format);
+        return -1;
+    }
+    // 声道是否跟期望值相同，不相同则需要获取声道格式(channel_layout)
+    if (spec.channels != wanted_spec.channels) {
+        wanted_channel_layout = av_get_default_channel_layout(spec.channels);
+        if (!wanted_channel_layout) {
+            av_log(NULL, AV_LOG_ERROR,
+                   "SDL advised channel count %d is not supported!\n", spec.channels);
+            return -1;
+        }
+    }
+    // 设置音频硬件参数
+    audio_hw_params->fmt = AV_SAMPLE_FMT_S16;
+    audio_hw_params->freq = spec.freq;
+    audio_hw_params->channel_layout = wanted_channel_layout;
+    audio_hw_params->channels =  spec.channels;
+    audio_hw_params->frame_size = av_samples_get_buffer_size(NULL, audio_hw_params->channels, 1,
+                                                             audio_hw_params->fmt, 1);
+    audio_hw_params->bytes_per_sec = av_samples_get_buffer_size(NULL, audio_hw_params->channels,
+                                                                audio_hw_params->freq,
+                                                                audio_hw_params->fmt, 1);
+
+    if (audio_hw_params->bytes_per_sec <= 0 || audio_hw_params->frame_size <= 0) {
+        av_log(NULL, AV_LOG_ERROR, "av_samples_get_buffer_size failed\n");
+        return -1;
+    }
+    return spec.size;
 }
 
 /**
@@ -1189,8 +1405,7 @@ int CainPlayer::stream_component_open(VideoState *is, int stream_index) {
                 goto out;
             }
 
-            // TODO 停止音频
-            // Cain_PauseAudio(0);
+            Cain_PauseAudio(0);
             break;
 
         // 视频
@@ -1274,6 +1489,16 @@ static int read_thread(void *arg) {
 }
 
 /**
+ * 视频刷新线程
+ * @param arg
+ * @return
+ */
+static int video_refresh_thread(void *arg) {
+    CainPlayer *player = (CainPlayer *) arg;
+    return player->videoRefresh();
+}
+
+/**
  * 打开流，这里是prepare入口
  * @param filename
  * @param iformat
@@ -1336,6 +1561,15 @@ VideoState *CainPlayer::stream_open(const char *filename, AVInputFormat *iformat
     // 是否静音
     is->muted = 0;
     is->av_sync_type = av_sync_type;
+
+    // 创建刷新线程
+    CainThread videoThread;
+    is->video_refresh_tid = Cain_CreateThread(&videoThread, video_refresh_thread,
+                                              this, "video_refresh_thread");
+    // 判断刷新线程是否创建成功
+    if (!is->video_refresh_tid) {
+        goto fail;
+    }
 
     // 3、创建读线程，该线程从文件/地址源源不断地读取数据
     CainThread thread;
@@ -1421,8 +1655,9 @@ int CainPlayer::readAndDemuxing(void) {
     }
     is->ic = ic;
 
-    if (genpts)
+    if (genpts) {
         ic->flags |= AVFMT_FLAG_GENPTS;
+    }
 
     av_format_inject_global_side_data(ic);
 
@@ -1431,8 +1666,10 @@ int CainPlayer::readAndDemuxing(void) {
 
     err = avformat_find_stream_info(ic, opts);
 
-    for (i = 0; i < orig_nb_streams; i++)
+    // 释放参数使用的对象
+    for (i = 0; i < orig_nb_streams; i++) {
         av_dict_free(&opts[i]);
+    }
     av_freep(&opts);
 
     if (err < 0) {
@@ -1442,12 +1679,13 @@ int CainPlayer::readAndDemuxing(void) {
         goto fail;
     }
 
-    if (ic->pb)
+    if (ic->pb) {
         ic->pb->eof_reached = 0; // FIXME hack, ffplay maybe should not use avio_feof() to test for the end
+    }
 
-    if (seek_by_bytes < 0)
+    if (seek_by_bytes < 0) {
         seek_by_bytes = !!(ic->iformat->flags & AVFMT_TS_DISCONT) && strcmp("ogg", ic->iformat->name);
-
+    }
     is->max_frame_duration = (ic->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0;
 
     /* if seeking requested, we execute it */
@@ -1469,8 +1707,9 @@ int CainPlayer::readAndDemuxing(void) {
     //  判断是否实时流
     is->realtime = is_realtime(ic);
     // 打印信息
-    if (show_status)
+    if (show_status) {
         av_dump_format(ic, 0, is->filename, 0);
+    }
     // 4、获取码流对应的索引
     for (i = 0; i < ic->nb_streams; i++) {
         AVStream *st = ic->streams[i];
@@ -1489,19 +1728,23 @@ int CainPlayer::readAndDemuxing(void) {
     }
 
     // 5、查找视频流
-    if (!video_disable)
+    if (!video_disable) {
         st_index[AVMEDIA_TYPE_VIDEO] =
                 av_find_best_stream(ic, AVMEDIA_TYPE_VIDEO,
                                     st_index[AVMEDIA_TYPE_VIDEO], -1, NULL, 0);
+    }
+
     // 6、查找音频流
-    if (!audio_disable)
+    if (!audio_disable) {
         st_index[AVMEDIA_TYPE_AUDIO] =
                 av_find_best_stream(ic, AVMEDIA_TYPE_AUDIO,
                                     st_index[AVMEDIA_TYPE_AUDIO],
                                     st_index[AVMEDIA_TYPE_VIDEO],
                                     NULL, 0);
+    }
+
     // 7、查找字幕流
-    if (!video_disable && !subtitle_disable)
+    if (!video_disable && !subtitle_disable) {
         st_index[AVMEDIA_TYPE_SUBTITLE] =
                 av_find_best_stream(ic, AVMEDIA_TYPE_SUBTITLE,
                                     st_index[AVMEDIA_TYPE_SUBTITLE],
@@ -1509,6 +1752,7 @@ int CainPlayer::readAndDemuxing(void) {
                                      st_index[AVMEDIA_TYPE_AUDIO] :
                                      st_index[AVMEDIA_TYPE_VIDEO]),
                                     NULL, 0);
+    }
     // 设置显示模式
     is->show_mode = show_mode;
 
@@ -1524,9 +1768,9 @@ int CainPlayer::readAndDemuxing(void) {
         ret = stream_component_open(is, st_index[AVMEDIA_TYPE_VIDEO]);
     }
     // 设置显示视频还是自适应滤波
-    if (is->show_mode == SHOW_MODE_NONE)
+    if (is->show_mode == SHOW_MODE_NONE) {
         is->show_mode = ret >= 0 ? SHOW_MODE_VIDEO : SHOW_MODE_RDFT;
-
+    }
     // 10、打开字幕流
     if (st_index[AVMEDIA_TYPE_SUBTITLE] >= 0) {
         stream_component_open(is, st_index[AVMEDIA_TYPE_SUBTITLE]);
@@ -1642,8 +1886,10 @@ int CainPlayer::readAndDemuxing(void) {
                     packet_queue_put_nullpacket(&is->subtitleq, is->subtitle_stream, flush_pkt);
                 is->eof = 1;
             }
-            if (ic->pb && ic->pb->error)
+            // 出错则直接退出循环
+            if (ic->pb && ic->pb->error) {
                 break;
+            }
             Cain_LockMutex(wait_mutex);
             Cain_CondWaitTimeout(is->continue_read_thread, wait_mutex, 10);
             Cain_UnlockMutex(wait_mutex);
@@ -1786,5 +2032,25 @@ int CainPlayer::audioDecode(void) {
  */
 int CainPlayer::subtitleDecode() {
     // TODO 解码字幕
+    return 0;
+}
+
+/**
+ * 视频刷新线程执行实体
+ * @return
+ */
+int CainPlayer::videoRefresh() {
+    double remaining_time = 0.0;
+    // 如果不取消的话，不断刷新画面
+    while (!is->abort_request) {
+        if (remaining_time > 0.0) {
+            av_usleep((int) (int64_t) (remaining_time * 1000000.0));
+        }
+        remaining_time = REFRESH_RATE;
+        if (is->show_mode != SHOW_MODE_NONE && (!is->paused || is->force_refresh)) {
+            video_refresh(is, &remaining_time);
+        }
+    }
+
     return 0;
 }

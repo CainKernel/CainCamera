@@ -29,7 +29,8 @@ public class MediaScanActivity extends AppCompatActivity
 
     public static final String USE_FFMPEG = "use_ffmpeg";
 
-    private boolean mUsingFFmpeg = false;
+    // 0表示使用MediaCodec播放，1表示使用IJKPlayer播放，2表示使用ffmpeg自定义播放
+    private int mUsingType = 0;
 
     private static final int REQUEST_STORAGE_READ = 0x01;
     private static final int COLUMNSIZE = 3;
@@ -48,7 +49,7 @@ public class MediaScanActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media_scan);
-        mUsingFFmpeg = getIntent().getBooleanExtra(USE_FFMPEG, false);
+        mUsingType = getIntent().getIntExtra(USE_FFMPEG, 0);
         initView();
         if (PermissionUtils.permissionChecking(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
             startAsyncScaneMedia();
@@ -117,15 +118,33 @@ public class MediaScanActivity extends AppCompatActivity
         // 更新当前选中的模式
         mCurrentSelecetedIndex = position;
         if (mImageLists.get(position).getMimeType().startsWith("video/")) {
-            if (!mUsingFFmpeg) {
-                Intent intent = new Intent(MediaScanActivity.this, MediaPlayerActivity.class);
-                intent.putExtra(MediaPlayerActivity.PATH, mImageLists.get(position).getPath());
-                intent.putExtra(MediaPlayerActivity.ORIENTATION, mImageLists.get(position).getOrientation());
-                startActivity(intent);
-            } else {
-                Intent intent = new Intent(MediaScanActivity.this, FFPlayerActivity.class);
-                intent.putExtra(FFPlayerActivity.PATH, mImageLists.get(position).getPath());
-                startActivity(intent);
+            switch (mUsingType) {
+
+                // 使用MediaCodec播放
+                case 0: {
+                    Intent intent = new Intent(MediaScanActivity.this, MediaPlayerActivity.class);
+                    intent.putExtra(MediaPlayerActivity.PATH, mImageLists.get(position).getPath());
+                    intent.putExtra(MediaPlayerActivity.ORIENTATION, mImageLists.get(position).getOrientation());
+                    startActivity(intent);
+                    break;
+                }
+
+                // 使用ijkplayer播放
+                case 1: {
+                    Intent intent = new Intent(MediaScanActivity.this, IJKPlayerActivity.class);
+                    intent.putExtra(IJKPlayerActivity.PATH, mImageLists.get(position).getPath());
+                    intent.putExtra(IJKPlayerActivity.ORIENTATION, mImageLists.get(position).getOrientation());
+                    startActivity(intent);
+                    break;
+                }
+
+                // 使用自定义ffmpeg播放
+                case 2: {
+                    Intent intent = new Intent(MediaScanActivity.this, FFPlayerActivity.class);
+                    intent.putExtra(FFPlayerActivity.PATH, mImageLists.get(position).getPath());
+                    startActivity(intent);
+                    break;
+                }
             }
         }
     }

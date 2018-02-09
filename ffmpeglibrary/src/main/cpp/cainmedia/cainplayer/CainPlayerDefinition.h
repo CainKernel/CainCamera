@@ -37,9 +37,7 @@ extern "C" {
 #include "CainThread.h"
 #include "CainMutex.h"
 #include "native_log.h"
-
-#define MIX_MAXVOLUME 128
-
+#include "CainAudio.h"
 
 
 #define MAX_QUEUE_SIZE (15 * 1024 * 1024)
@@ -304,6 +302,8 @@ typedef struct VideoState {
 
     Cond *continue_read_thread;                 // 连续读线程条件锁
 
+    CainThread *video_refresh_tid;              // 视频刷新线程
+    
 } VideoState;
 
 #endif //CAINCAMERA_CAINPLAYERDEFINITION_H

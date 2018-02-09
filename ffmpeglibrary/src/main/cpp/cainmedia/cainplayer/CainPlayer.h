@@ -158,6 +158,10 @@ public:
     int videoDecode(void);
     // 字幕解码线程执行实体
     int subtitleDecode(void);
+    // 刷线画面
+    int videoRefresh(void);
+    // 音频回调执行
+    void audioCallbackProcess(uint8_t *stream, int len);
 
 };
 

@@ -109,6 +109,7 @@ add_library( cainplayer
 
              src/main/cpp/cainmedia/cainplayer/CainPlayer.cpp
              src/main/cpp/cainmedia/cainplayer/CainThread.cpp
+             src/main/cpp/cainmedia/cainplayer/CainAudio.cpp
              src/main/cpp/cainmedia/cainplayer/CainClock.cpp
              src/main/cpp/cainmedia/cainplayer/CainCmdUtils.cpp
              src/main/cpp/cainmedia/cainplayer/CainFrameQueue.cpp
@@ -120,7 +121,7 @@ add_library( cainplayer
              )
 
 # 查找Android存在的库
-find_library( OpenGLES-lib OpenSLES )
+find_library( OpenSLES-lib OpenSLES )
 find_library( EGL-lib EGL )
 find_library( GLESv2-lib GLESv2 )
 
@@ -133,7 +134,7 @@ target_link_libraries(
 
                        # Android 自带的库
                        ${log-lib}
-                       ${OpenGLES-lib}
+                       ${OpenSLES-lib}
                        ${EGL-lib}
                        ${GLESv2-lib} )
 #--------------------------------- libcainplayer.so 编译 end ---------------------------------------

@@ -3,6 +3,7 @@ package com.cgfay.videoplayer.activity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 
 import com.cgfay.utilslibrary.CainSurfaceView;
 import com.cgfay.videoplayer.R;
@@ -13,13 +14,14 @@ public class FFPlayerActivity extends AppCompatActivity implements SurfaceHolder
 
     private String mVideoPath;
 
-    private CainSurfaceView mVideoSurfaceView;
+    private CainSurfaceView mSurfaceView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ffplayer);
-        mVideoSurfaceView.getHolder().addCallback(this);
+        mSurfaceView = (CainSurfaceView) findViewById(R.id.cv_player);
+        mSurfaceView.getHolder().addCallback(this);
         mVideoPath = getIntent().getStringExtra(PATH);
     }
 
