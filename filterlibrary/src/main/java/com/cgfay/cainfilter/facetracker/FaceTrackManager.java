@@ -323,6 +323,7 @@ public class FaceTrackManager {
                         if (mFaceTrackerCallback != null) {
                             mFaceTrackerCallback.onTrackingFinish(false);
                         }
+                        isDetecting = false;
                         return;
                     }
                     mPreviewSize = CameraUtils.getPreviewSize();
@@ -493,6 +494,7 @@ public class FaceTrackManager {
             if (mFaceTrackerCallback != null) {
                 mFaceTrackerCallback.onTrackingFinish(false);
             }
+            isDetecting = false;
         }
     }
 

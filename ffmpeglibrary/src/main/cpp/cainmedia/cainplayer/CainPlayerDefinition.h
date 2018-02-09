@@ -150,7 +150,6 @@ typedef struct Clock {
  */
 typedef struct Frame {
     AVFrame *frame;                              // 帧数据
-    AVSubtitle sub;                              // 字幕
     int serial;                                  // 序列
     double pts;                                  // 帧的显示时间戳
     double duration;                             // 帧显示时长
@@ -221,7 +220,6 @@ typedef enum ShowMode {
 // 视频状态结构
 typedef struct VideoState {
     CainThread *read_tid;                       // 读取线程
-    AVInputFormat *iformat;                     // 输入格式
     int abort_request;                          // 请求取消
     int force_refresh;                          // 强制刷新
     int paused;                                 // 停止
@@ -239,7 +237,6 @@ typedef struct VideoState {
     Clock extclk;                               // 外部时钟
 
     FrameQueue pictq;                           // 视频队列
-    FrameQueue subpq;                           // 字幕队列
     FrameQueue sampq;                           // 音频队列
 
     Decoder auddec;                             // 音频解码器
@@ -279,10 +276,6 @@ typedef struct VideoState {
     int sample_array_index;                     // 采样索引
     int last_i_start;                           // 上一开始
     double last_vis_time;                       //
-    int subtitle_stream;                        // 字幕码流Id
-    AVStream *subtitle_st;                      // 字幕码流
-    PacketQueue subtitleq;                      // 字幕包队列
-
     double frame_timer;                         // 帧计时器
     double frame_last_returned_time;            // 上一次返回时间
     double frame_last_filter_delay;             // 上一个过滤器延时
@@ -292,13 +285,11 @@ typedef struct VideoState {
     double max_frame_duration;                  // 最大帧显示时间
     struct SwsContext *img_convert_ctx;         // 视频转码上下文
     int eof;                                    // 结束标志
-
     char *filename;                             // 文件名
     int width, height, xleft, ytop;             // 宽高，起始坐标等
     int step;                                   // 步进
-
-    // 上一个视频码流Id、上一个音频码流Id、上一个字幕码流Id
-    int last_video_stream, last_audio_stream, last_subtitle_stream;
+    int last_video_stream;                      // 上一个视频码流Id
+    int last_audio_stream;                      // 上一个音频码流Id
 
     Cond *continue_read_thread;                 // 连续读线程条件锁
 

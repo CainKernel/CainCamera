@@ -34,6 +34,6 @@ void Cain_FlushAudio() {
 /**
  * 关闭音频
  */
-void Cain_CloseAusio() {
+void Cain_CloseAudio() {
 
 }

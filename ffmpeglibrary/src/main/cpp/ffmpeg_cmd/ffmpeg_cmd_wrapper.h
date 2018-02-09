@@ -9,7 +9,7 @@ extern "C" {
 
 
 JNIEXPORT jint
-JNICALL Java_com_cgfay_caincamera_jni_FFmpegCmd_run
+JNICALL Java_com_cgfay_cainffmpeg_nativehelper_FFmpegCmd_run
         (JNIEnv *env, jclass obj, jobjectArray commands);
 
 #ifdef __cplusplus

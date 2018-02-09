@@ -25,7 +25,6 @@ private:
     char *input_filename;		                    // 输入文件名
     int audio_disable;					            // 是否禁止播放声音
     int video_disable;					            // 是否禁止播放视频
-    int subtitle_disable;				            // 是否禁止播放字幕
     char* wanted_stream_spec[AVMEDIA_TYPE_NB] = {0};
     int seek_by_bytes = -1;				            // 以字节方式查找
     int display_disable;					        // 显示禁止
@@ -44,9 +43,8 @@ private:
     int framedrop = -1;					            // 舍弃帧
     int infinite_buffer = -1;				        // 无限缓冲区
     enum ShowMode show_mode = SHOW_MODE_NONE;       // 显示类型
-    const char *audio_codec_name;	                // 音频解码器名称
-    const char *subtitle_codec_name;	            // 字幕解码器名称
-    const char *video_codec_name;	                // 视频解码器名称
+    char *audio_codec_name;	                        // 音频解码器名称
+    char *video_codec_name;	                        // 视频解码器名称
     double rdftspeed = 0.02;						// 自适应滤波器的速度
     int autorotate = 1;						        // 是否自动旋转
     int64_t audio_callback_time;			        // 音频回调时间
@@ -156,8 +154,6 @@ public:
     int audioDecode(void);
     // 视频解码线程执行实体
     int videoDecode(void);
-    // 字幕解码线程执行实体
-    int subtitleDecode(void);
     // 刷线画面
     int videoRefresh(void);
     // 音频回调执行

@@ -199,6 +199,7 @@ bool CainVideoRender::drawFrame(int textureId, GLfloat verticex[], GLfloat textu
     onDrawBegin();
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     onDrawAfter();
+    unbindValue();
     glUseProgram(0);
     return true;
 }

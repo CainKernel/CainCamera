@@ -107,6 +107,7 @@ add_library( cainplayer
 
              SHARED
 
+             src/main/cpp/cainmedia/cainplayer/CainPlayerController.cpp
              src/main/cpp/cainmedia/cainplayer/CainPlayer.cpp
              src/main/cpp/cainmedia/cainplayer/CainThread.cpp
              src/main/cpp/cainmedia/cainplayer/CainAudio.cpp

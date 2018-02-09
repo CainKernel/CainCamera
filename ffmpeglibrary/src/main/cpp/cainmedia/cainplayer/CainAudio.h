@@ -79,6 +79,6 @@ void Cain_PauseAudio(int pause_on);
 // 刷出剩余音频
 void Cain_FlushAudio();
 // 关闭音频
-void Cain_CloseAusio();
+void Cain_CloseAudio();
 
 #endif //CAINCAMERA_CAINAUDIO_H

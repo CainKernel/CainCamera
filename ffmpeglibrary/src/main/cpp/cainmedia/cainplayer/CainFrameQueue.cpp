@@ -16,8 +16,6 @@ void frame_queue_unref_item(Frame *vp)
 {
     // 销毁帧
     av_frame_unref(vp->frame);
-    // 销毁字幕
-    avsubtitle_free(&vp->sub);
 }
 
 

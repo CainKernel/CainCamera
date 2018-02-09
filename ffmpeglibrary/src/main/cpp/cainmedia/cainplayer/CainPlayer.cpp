@@ -8,6 +8,7 @@
 #include "CainClock.h"
 #include "CainFrameQueue.h"
 #include "CainPacketQueue.h"
+
 /**
  * 构造器
  */
@@ -236,7 +237,7 @@ int CainPlayer::decoder_decode_frame(Decoder *d, AVFrame *frame, AVSubtitle *sub
             d->packet_pending = 1;
         }
 
-        // 根据解码器类型判断是音频还是视频还是字幕
+        // 根据解码器类型判断是音频还是视频
         switch (d->avctx->codec_type) {
             // 视频解码
             case AVMEDIA_TYPE_VIDEO:
@@ -270,10 +271,6 @@ int CainPlayer::decoder_decode_frame(Decoder *d, AVFrame *frame, AVSubtitle *sub
                         d->next_pts_tb = tb;
                     }
                 }
-                break;
-                // 字幕解码
-            case AVMEDIA_TYPE_SUBTITLE:
-                ret = avcodec_decode_subtitle2(d->avctx, sub, &got_frame, &d->pkt_temp);
                 break;
 
             default:
@@ -356,8 +353,7 @@ void CainPlayer::stream_component_close(VideoState *is, int stream_index) {
         // 关闭音频流
         case AVMEDIA_TYPE_AUDIO:
             decoder_abort(&is->auddec, &is->sampq);
-            // TODO 停止音频
-            // Cain_CloseAudio();
+            Cain_CloseAudio();
             decoder_destroy(&is->auddec);
             swr_free(&is->swr_ctx);
             av_freep(&is->audio_buf1);
@@ -369,12 +365,6 @@ void CainPlayer::stream_component_close(VideoState *is, int stream_index) {
         case AVMEDIA_TYPE_VIDEO:
             decoder_abort(&is->viddec, &is->pictq);
             decoder_destroy(&is->viddec);
-            break;
-
-        // 关闭字幕流
-        case AVMEDIA_TYPE_SUBTITLE:
-            decoder_abort(&is->subdec, &is->subpq);
-            decoder_destroy(&is->subdec);
             break;
 
         default:
@@ -393,11 +383,6 @@ void CainPlayer::stream_component_close(VideoState *is, int stream_index) {
             is->video_st = NULL;
             is->video_stream = -1;
             break;
-        case AVMEDIA_TYPE_SUBTITLE:
-            is->subtitle_st = NULL;
-            is->subtitle_stream = -1;
-            break;
-
         default:
             break;
     }
@@ -420,9 +405,6 @@ void CainPlayer::stream_close(VideoState *is) {
     if (is->video_stream >= 0) {
         stream_component_close(is, is->video_stream);
     }
-    if (is->subtitle_stream >= 0) {
-        stream_component_close(is, is->subtitle_stream);
-    }
 
     // 关闭输入上下文
     avformat_close_input(&is->ic);
@@ -430,12 +412,10 @@ void CainPlayer::stream_close(VideoState *is) {
     // 销毁待解码包队列
     packet_queue_destroy(&is->videoq);
     packet_queue_destroy(&is->audioq);
-    packet_queue_destroy(&is->subtitleq);
 
     // 销毁已解码帧队列
     frame_queue_destory(&is->pictq);
     frame_queue_destory(&is->sampq);
-    frame_queue_destory(&is->subpq);
 
     // 销毁连续读/解复用线程
     Cain_DestroyCond(is->continue_read_thread);
@@ -540,7 +520,7 @@ double CainPlayer::compute_target_delay(double delay, VideoState *is) {
         /* skip or repeat frame. We take into account the
            delay to compute the threshold. I still don't know
            if it is the best guess */
-        // 计算同步预支
+        // 计算同步阈值
         sync_threshold = FFMAX(AV_SYNC_THRESHOLD_MIN, FFMIN(AV_SYNC_THRESHOLD_MAX, delay));
         // 判断时间差是否在许可范围内
         if (!isnan(diff) && fabs(diff) < is->max_frame_duration) {
@@ -554,10 +534,6 @@ double CainPlayer::compute_target_delay(double delay, VideoState *is) {
             }
         }
     }
-
-    av_log(NULL, AV_LOG_TRACE, "video: delay=%0.3f A-V=%f\n",
-           delay, -diff);
-
     return delay;
 }
 
@@ -589,7 +565,7 @@ double CainPlayer::vp_duration(VideoState *is, Frame *vp, Frame *nextvp) {
  * @param serial
  */
 void CainPlayer::update_video_pts(VideoState *is, double pts, int64_t pos, int serial) {
-    /* update current video pts */
+    // 更新当前的pts
     set_clock(&is->vidclk, pts, serial);
     sync_clock_to_slave(&is->extclk, &is->vidclk);
 }
@@ -708,49 +684,6 @@ display:
         }
     }
     is->force_refresh = 0;
-    if (show_status) {
-        static int64_t last_time;
-        int64_t cur_time;
-        int aqsize, vqsize, sqsize;
-        double av_diff;
-
-        cur_time = av_gettime_relative();
-        if (!last_time || (cur_time - last_time) >= 30000) {
-            aqsize = 0;
-            vqsize = 0;
-            sqsize = 0;
-            if (is->audio_st) {
-                aqsize = is->audioq.size;
-            }
-            if (is->video_st) {
-                vqsize = is->videoq.size;
-            }
-            if (is->subtitle_st) {
-                sqsize = is->subtitleq.size;
-            }
-            av_diff = 0;
-            if (is->audio_st && is->video_st) {
-                av_diff = get_clock(&is->audclk) - get_clock(&is->vidclk);
-            } else if (is->video_st) {
-                av_diff = get_master_clock(is) - get_clock(&is->vidclk);
-            } else if (is->audio_st) {
-                av_diff = get_master_clock(is) - get_clock(&is->audclk);
-            }
-            av_log(NULL, AV_LOG_INFO,
-                   "%7.2f %s:%7.3f fd=%4d aq=%5dKB vq=%5dKB sq=%5dB f=%"PRId64"/%"PRId64"   \r",
-                   get_master_clock(is),
-                   (is->audio_st && is->video_st) ? "A-V" : (is->video_st ? "M-V" : (is->audio_st ? "M-A" : "   ")),
-                   av_diff,
-                   is->frame_drops_early + is->frame_drops_late,
-                   aqsize / 1024,
-                   vqsize / 1024,
-                   sqsize,
-                   is->video_st ? is->viddec.avctx->pts_correction_num_faulty_dts : 0,
-                   is->video_st ? is->viddec.avctx->pts_correction_num_faulty_pts : 0);
-            fflush(stdout);
-            last_time = cur_time;
-        }
-    }
 }
 
 /**
@@ -1026,7 +959,6 @@ int CainPlayer::audio_decode_frame(VideoState *is) {
         resampled_data_size = data_size;
     }
 
-    audio_clock0 = is->audio_clock;
     /* update the audio clock with the pts */
     // 判断audioFrame 的pts 是否存在，如果存在，则更新音频时钟，否则置为无穷大(NAN)
     if (!isnan(af->pts)) {
@@ -1037,14 +969,6 @@ int CainPlayer::audio_decode_frame(VideoState *is) {
     // 更新音频时钟序列
     is->audio_clock_serial = af->serial;
 
-    // 打印输出
-    {
-        static double last_clock;
-        ALOGD("audio: delay=%0.3f clock=%0.3f clock0=%0.3f\n",
-               is->audio_clock - last_clock,
-               is->audio_clock, audio_clock0);
-        last_clock = is->audio_clock;
-    }
     // 返回重采样数据大小
     return resampled_data_size;
 }
@@ -1085,17 +1009,14 @@ void CainPlayer::audioCallbackProcess(uint8_t *stream, int len) {
                                      * is->audio_tgt.frame_size;
             } else {
                 // TODO 显示音频波形
-//                if (is->show_mode != SHOW_MODE_VIDEO) {
-//                    update_sample_display(is, (int16_t *) is->audio_buf, audio_size);
-//                }
-
                 is->audio_buf_size = audio_size;
             }
             is->audio_buf_index = 0;
         }
         len1 = is->audio_buf_size - is->audio_buf_index;
-        if (len1 > len)
+        if (len1 > len) {
             len1 = len;
+        }
         // 如果不处于静音模式并且声音最大
         if (!is->muted && is->audio_buf && is->audio_volume == MIX_MAXVOLUME) {
             memcpy(stream, (uint8_t *) is->audio_buf + is->audio_buf_index, len1);
@@ -1121,7 +1042,7 @@ void CainPlayer::audioCallbackProcess(uint8_t *stream, int len) {
 }
 
 /**
- * 打开音频 TODO 暂未实现
+ * 打开音频
  * @param opaque
  * @param wanted_channel_layout
  * @param wanted_nb_channels
@@ -1232,16 +1153,6 @@ static int video_thread(void *arg) {
 }
 
 /**
- * 字幕解码线程
- * @param arg
- * @return
- */
-static int subtitle_thread(void *arg) {
-    CainPlayer *player = (CainPlayer *)arg;
-    return player->subtitleDecode();
-}
-
-/**
  * 打开码流
  * @param is
  * @param stream_index
@@ -1282,12 +1193,6 @@ int CainPlayer::stream_component_open(VideoState *is, int stream_index) {
         case AVMEDIA_TYPE_AUDIO:
             is->last_audio_stream = stream_index;
             forced_codec_name = audio_codec_name;
-            break;
-
-        // 字幕流
-        case AVMEDIA_TYPE_SUBTITLE:
-            is->last_subtitle_stream = stream_index;
-            forced_codec_name = subtitle_codec_name;
             break;
 
         // 视频流
@@ -1421,17 +1326,6 @@ int CainPlayer::stream_component_open(VideoState *is, int stream_index) {
             is->queue_attachments_req = 1;
             break;
 
-        // 字幕
-        case AVMEDIA_TYPE_SUBTITLE:
-            is->subtitle_stream = stream_index;
-            is->subtitle_st = ic->streams[stream_index];
-            // 9.3.1、字幕解码器初始化
-            decoder_init(&is->subdec, avctx, &is->subtitleq, is->continue_read_thread);
-            // 9.3.2、字幕解码队列和线程初始化
-            if ((ret = decoder_start(&is->subdec, subtitle_thread, this)) < 0)
-                goto out;
-            break;
-
         default:
             break;
     }
@@ -1510,9 +1404,9 @@ VideoState *CainPlayer::stream_open(const char *filename, AVInputFormat *iformat
     if (!is)
         return NULL;
     is->filename = av_strdup(filename);
-    if (!is->filename)
+    if (!is->filename) {
         goto fail;
-    is->iformat = iformat;
+    }
     is->ytop = 0;
     is->xleft = 0;
 
@@ -1523,17 +1417,12 @@ VideoState *CainPlayer::stream_open(const char *filename, AVInputFormat *iformat
     if (frame_queue_init(&is->pictq, &is->videoq, VIDEO_PICTURE_QUEUE_SIZE, 1) < 0) {
         goto fail;
     }
-    if (frame_queue_init(&is->subpq, &is->subtitleq, SUBPICTURE_QUEUE_SIZE, 0) < 0) {
-        goto fail;
-    }
     if (frame_queue_init(&is->sampq, &is->audioq, SAMPLE_QUEUE_SIZE, 1) < 0) {
         goto fail;
     }
 
     // 2、创建视频、字幕和音频的待解码队列
-    if (packet_queue_init(&is->videoq) < 0 ||
-        packet_queue_init(&is->audioq) < 0 ||
-        packet_queue_init(&is->subtitleq) < 0) {
+    if (packet_queue_init(&is->videoq) < 0 || packet_queue_init(&is->audioq) < 0) {
         goto fail;
     }
     // 创建读条件锁
@@ -1621,7 +1510,6 @@ int CainPlayer::readAndDemuxing(void) {
     memset(st_index, -1, sizeof(st_index));
     is->last_video_stream = is->video_stream = -1;
     is->last_audio_stream = is->audio_stream = -1;
-    is->last_subtitle_stream = is->subtitle_stream = -1;
     is->eof = 0;
 
     // 1、创建输入上下文
@@ -1641,7 +1529,7 @@ int CainPlayer::readAndDemuxing(void) {
         scan_all_pmts_set = 1;
     }
     // 3、打开文件
-    err = avformat_open_input(&ic, is->filename, is->iformat, &format_opts);
+    err = avformat_open_input(&ic, is->filename, NULL, &format_opts);
     if (err < 0) {
         print_error(is->filename, err);
         ret = -1;
@@ -1695,8 +1583,9 @@ int CainPlayer::readAndDemuxing(void) {
 
         timestamp = start_time;
         /* add the stream start time */
-        if (ic->start_time != AV_NOPTS_VALUE)
+        if (ic->start_time != AV_NOPTS_VALUE) {
             timestamp += ic->start_time;
+        }
         // 定位文件
         ret = avformat_seek_file(ic, -1, INT64_MIN, timestamp, INT64_MAX, 0);
         if (ret < 0) {
@@ -1721,8 +1610,8 @@ int CainPlayer::readAndDemuxing(void) {
     }
     for (i = 0; i < AVMEDIA_TYPE_NB; i++) {
         if (wanted_stream_spec[i] && st_index[i] == -1) {
-            av_log(NULL, AV_LOG_ERROR, "Stream specifier %s does not match any %s stream\n", wanted_stream_spec[i], av_get_media_type_string(
-                    (AVMediaType) i));
+            av_log(NULL, AV_LOG_ERROR, "Stream specifier %s does not match any %s stream\n",
+                   wanted_stream_spec[i], av_get_media_type_string((AVMediaType) i));
             st_index[i] = INT_MAX;
         }
     }
@@ -1743,26 +1632,16 @@ int CainPlayer::readAndDemuxing(void) {
                                     NULL, 0);
     }
 
-    // 7、查找字幕流
-    if (!video_disable && !subtitle_disable) {
-        st_index[AVMEDIA_TYPE_SUBTITLE] =
-                av_find_best_stream(ic, AVMEDIA_TYPE_SUBTITLE,
-                                    st_index[AVMEDIA_TYPE_SUBTITLE],
-                                    (st_index[AVMEDIA_TYPE_AUDIO] >= 0 ?
-                                     st_index[AVMEDIA_TYPE_AUDIO] :
-                                     st_index[AVMEDIA_TYPE_VIDEO]),
-                                    NULL, 0);
-    }
     // 设置显示模式
     is->show_mode = show_mode;
 
     /* open the streams */
-    // 8、打开音频流
+    // 7、打开音频流
     if (st_index[AVMEDIA_TYPE_AUDIO] >= 0) {
         stream_component_open(is, st_index[AVMEDIA_TYPE_AUDIO]);
     }
 
-    // 9、打开视频流
+    // 8、打开视频流
     ret = -1;
     if (st_index[AVMEDIA_TYPE_VIDEO] >= 0) {
         ret = stream_component_open(is, st_index[AVMEDIA_TYPE_VIDEO]);
@@ -1770,10 +1649,6 @@ int CainPlayer::readAndDemuxing(void) {
     // 设置显示视频还是自适应滤波
     if (is->show_mode == SHOW_MODE_NONE) {
         is->show_mode = ret >= 0 ? SHOW_MODE_VIDEO : SHOW_MODE_RDFT;
-    }
-    // 10、打开字幕流
-    if (st_index[AVMEDIA_TYPE_SUBTITLE] >= 0) {
-        stream_component_open(is, st_index[AVMEDIA_TYPE_SUBTITLE]);
     }
 
     // 如果音频流和视频流都不存在，则退出
@@ -1786,7 +1661,7 @@ int CainPlayer::readAndDemuxing(void) {
 
     if (infinite_buffer < 0 && is->realtime)
         infinite_buffer = 1;
-    // 11、不断从本地或IP地址读取数据包
+    // 9、不断从本地或IP地址读取数据包
     for (;;) {
 
         // 取消读，则退出循环
@@ -1799,8 +1674,6 @@ int CainPlayer::readAndDemuxing(void) {
             int64_t seek_target = is->seek_pos;
             int64_t seek_min    = is->seek_rel > 0 ? seek_target - is->seek_rel + 2: INT64_MIN;
             int64_t seek_max    = is->seek_rel < 0 ? seek_target - is->seek_rel - 2: INT64_MAX;
-// FIXME the +-2 is due to rounding being not done in the correct direction in generation
-//      of the seek_pos/seek_rel variables
             // 定位文件
             ret = avformat_seek_file(is->ic, -1, seek_min, seek_target, seek_max, is->seek_flags);
             if (ret < 0) {
@@ -1811,11 +1684,6 @@ int CainPlayer::readAndDemuxing(void) {
                 if (is->audio_stream >= 0) {
                     packet_queue_flush(&is->audioq);
                     packet_queue_put(&is->audioq, &flush_pkt, flush_pkt);
-                }
-                // 字幕入队
-                if (is->subtitle_stream >= 0) {
-                    packet_queue_flush(&is->subtitleq);
-                    packet_queue_put(&is->subtitleq, &flush_pkt, flush_pkt);
                 }
                 // 视频入队
                 if (is->video_stream >= 0) {
@@ -1849,13 +1717,9 @@ int CainPlayer::readAndDemuxing(void) {
 
         /* if the queue are full, no need to read more */
         // 待解码数据写入队列失败，并且待解码数据还有足够的包时，等待待解码队列的数据消耗掉
-        if (infinite_buffer<1 &&
-            // MAX_QUEUE_SIZE
-            (is->audioq.size + is->videoq.size + is->subtitleq.size > MAX_QUEUE_SIZE
-             //            (is->audioq.size + is->videoq.size + is->subtitleq.size > dcc.max_buffer_size
+        if (infinite_buffer<1 && (is->audioq.size + is->videoq.size > MAX_QUEUE_SIZE
              || (stream_has_enough_packets(is->audio_st, is->audio_stream, &is->audioq) &&
-                 stream_has_enough_packets(is->video_st, is->video_stream, &is->videoq) &&
-                 stream_has_enough_packets(is->subtitle_st, is->subtitle_stream, &is->subtitleq)))) {
+                 stream_has_enough_packets(is->video_st, is->video_stream, &is->videoq)))) {
             /* wait 10 ms */
             Cain_LockMutex(wait_mutex);
             Cain_CondWaitTimeout(is->continue_read_thread, wait_mutex, 10);
@@ -1878,12 +1742,12 @@ int CainPlayer::readAndDemuxing(void) {
         if (ret < 0) {
             // 读取结束或失败
             if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !is->eof) {
-                if (is->video_stream >= 0)
+                if (is->video_stream >= 0) {
                     packet_queue_put_nullpacket(&is->videoq, is->video_stream, flush_pkt);
-                if (is->audio_stream >= 0)
+                }
+                if (is->audio_stream >= 0) {
                     packet_queue_put_nullpacket(&is->audioq, is->audio_stream, flush_pkt);
-                if (is->subtitle_stream >= 0)
-                    packet_queue_put_nullpacket(&is->subtitleq, is->subtitle_stream, flush_pkt);
+                }
                 is->eof = 1;
             }
             // 出错则直接退出循环
@@ -1913,8 +1777,6 @@ int CainPlayer::readAndDemuxing(void) {
         } else if (pkt->stream_index == is->video_stream && pkt_in_play_range
                    && !(is->video_st->disposition & AV_DISPOSITION_ATTACHED_PIC)) {
             packet_queue_put(&is->videoq, pkt, flush_pkt);
-        } else if (pkt->stream_index == is->subtitle_stream && pkt_in_play_range) {
-            packet_queue_put(&is->subtitleq, pkt, flush_pkt);
         } else {
             av_packet_unref(pkt);
         }
@@ -2024,15 +1886,6 @@ int CainPlayer::audioDecode(void) {
     // 释放
     av_frame_free(&frame);
     return ret;
-}
-
-/**
- * 字幕解码线程执行实体
- * @return
- */
-int CainPlayer::subtitleDecode() {
-    // TODO 解码字幕
-    return 0;
 }
 
 /**
