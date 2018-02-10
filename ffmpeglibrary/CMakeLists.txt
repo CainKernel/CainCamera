@@ -107,6 +107,9 @@ add_library( cainplayer
 
              SHARED
 
+             #EGL包装类，参考Java层的EglCore类的写法
+             src/main/cpp/cainmedia/cainegl/EglCore.cpp
+
              src/main/cpp/cainmedia/cainplayer/CainPlayerController.cpp
              src/main/cpp/cainmedia/cainplayer/CainPlayer.cpp
              src/main/cpp/cainmedia/cainplayer/CainThread.cpp
