@@ -1,30 +1,21 @@
 //
-// Created by Administrator on 2018/2/7.
+// Created by cain on 2018/2/11.
 //
 
-#include "CainVideoRender.h"
+#include "BaseImageFilter.h"
 
-
-/**
- * 获取ViertexShader
- * @return
- */
-const char* CainVideoRender::getVertexShader() {
+const char* BaseImageFilter::getVertexShader() {
     return vertex_shader;
 }
 
-/**
- * 获取FragmentShader
- * @return
- */
-const char* CainVideoRender::getFragmentShader() {
+const char* BaseImageFilter::getFragmentShader() {
     return fragment_shader;
 }
 
 /**
  * 初始化句柄
  */
-void CainVideoRender::initHandle() {
+void BaseImageFilter::initHandle() {
     if (programHandle == GL_NONE) {
         ALOGE("program is empty!");
         return;
@@ -41,7 +32,7 @@ void CainVideoRender::initHandle() {
  * @param vertices
  * @param textureCoords
  */
-void CainVideoRender::bindValue(GLint texture, GLfloat *vertices, GLfloat *textureCoords) {
+void BaseImageFilter::bindValue(GLint texture, GLfloat *vertices, GLfloat *textureCoords) {
     glVertexAttribPointer(positionHandle, 2, GL_FLOAT, GL_FALSE, 0, vertices);
     glEnableVertexAttribArray(positionHandle);
 
@@ -57,38 +48,34 @@ void CainVideoRender::bindValue(GLint texture, GLfloat *vertices, GLfloat *textu
 /**
  * 解绑
  */
-void CainVideoRender::unbindValue() {
+void BaseImageFilter::unbindValue() {
     glDisableVertexAttribArray(positionHandle);
     glDisableVertexAttribArray(textureCoordsHandle);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-/**
- * 获取Texture类型,YUV/RGB
- * @return
- */
-TextureType CainVideoRender::getTextureType() {
+TextureType BaseImageFilter::getTextureType() {
     return type;
 }
 
 /**
- * 渲染之前
+ * 渲染之前的操作
  */
-void CainVideoRender::onDrawBegin() {
+void BaseImageFilter::onDrawBegin() {
 
 }
 
 /**
- * 渲染之后
+ * 渲染之后的操作
  */
-void CainVideoRender::onDrawAfter() {
+void BaseImageFilter::onDrawAfter() {
 
 }
 
 /**
- * 释放
+ * 释放资源
  */
-void CainVideoRender::release() {
+void BaseImageFilter::release() {
     // MTK有些设备的创建得到的program是从0开始的
     if (programHandle >= 0) {
         glDeleteProgram(programHandle);
@@ -101,22 +88,24 @@ void CainVideoRender::release() {
 }
 
 /**
- * 初始化坐标
+ * 初始化坐标缓冲
  */
-void CainVideoRender::initCoordinates() {
-    // bottom left
+void BaseImageFilter::initCoordinates() {
+    // 初始化顶点坐标
+    // 0 bottom left
     vertexCoordinates[0] = -1.0f;
     vertexCoordinates[1] = -1.0f;
-    // bottom right
+    // 1 bottom right
     vertexCoordinates[2] = 1.0f;
     vertexCoordinates[3] = -1.0f;
-    // top left
+    // 2 top left
     vertexCoordinates[4] = -1.0f;
     vertexCoordinates[5] = 1.0f;
-    // top right
+    // 3 top right
     vertexCoordinates[6] = 1.0f;
     vertexCoordinates[7] = 1.0f;
 
+    // 初始化纹理坐标
     // 0 bottom left
     textureCoordinates[0] = 0.0f;
     textureCoordinates[1] = 0.0f;
@@ -134,8 +123,8 @@ void CainVideoRender::initCoordinates() {
 /**
  * 构造器
  */
-CainVideoRender::CainVideoRender() {
-    CainVideoRender(getVertexShader(), getFragmentShader());
+BaseImageFilter::BaseImageFilter() {
+    BaseImageFilter(getVertexShader(), getFragmentShader());
 }
 
 /**
@@ -143,7 +132,7 @@ CainVideoRender::CainVideoRender() {
  * @param vertexShader
  * @param fragmentShader
  */
-CainVideoRender::CainVideoRender(const char *vertexShader, const char *fragmentShader) {
+BaseImageFilter::BaseImageFilter(const char *vertexShader, const char *fragmentShader) {
     programHandle = createProgram(vertexShader, fragmentShader);
     initHandle();
     initIdentityMatrix();
@@ -153,7 +142,7 @@ CainVideoRender::CainVideoRender(const char *vertexShader, const char *fragmentS
 /**
  * 析构
  */
-CainVideoRender::~CainVideoRender() {
+BaseImageFilter::~BaseImageFilter() {
     release();
 }
 
@@ -162,40 +151,43 @@ CainVideoRender::~CainVideoRender() {
  * @param width
  * @param height
  */
-void CainVideoRender::onInputSizeChanged(int width, int height) {
-    videoWidth = width;
-    videoHeight = height;
+void BaseImageFilter::onInputSizeChanged(int width, int height) {
+    textureWidth = width;
+    textureHeight = height;
 }
 
 /**
- * 预览大小发生变化
+ * 界面大小发生变化
  * @param width
  * @param height
  */
-void CainVideoRender::onDisplaySizeChanged(int width, int height) {
+void BaseImageFilter::onDisplayChanged(int width, int height) {
     displayWidth = width;
     displayHeight = height;
 }
 
 /**
- * 渲染视频帧
- * @param textureId
+ * 渲染
+ * @param texture
  * @return
  */
-bool CainVideoRender::drawFrame(int textureId) {
-    return drawFrame(textureId, vertexCoordinates, textureCoordinates);
+bool BaseImageFilter::drawFrame(int texture) {
+    return drawFrame(texture, vertexCoordinates, textureCoordinates);
 }
 
 /**
- * 渲染视频
+ * 渲染
+ * @param texture
+ * @param vertices
+ * @param textureCoords
  * @return
  */
-bool CainVideoRender::drawFrame(int textureId, GLfloat verticex[], GLfloat textureCoords[]) {
-    if (textureId < 0 || programHandle < 0) {
+bool BaseImageFilter::drawFrame(int texture, GLfloat *vertices, GLfloat *textureCoords) {
+    if (texture < 0 || programHandle < 0) {
         return false;
     }
     glUseProgram(programHandle);
-    bindValue(textureId, verticex, textureCoords);
+    bindValue(texture, vertices, textureCoords);
     onDrawBegin();
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     onDrawAfter();
@@ -207,7 +199,7 @@ bool CainVideoRender::drawFrame(int textureId, GLfloat verticex[], GLfloat textu
 /**
  * 初始化单位矩阵
  */
-void CainVideoRender::initIdentityMatrix() {
+void BaseImageFilter::initIdentityMatrix() {
     setIdentityM(mvpMatrix);
 }
 
@@ -215,14 +207,16 @@ void CainVideoRender::initIdentityMatrix() {
  * 设置总变换矩阵
  * @param matrix
  */
-void CainVideoRender::setMVPMatrix(ESMatrix *matrix) {
+void BaseImageFilter::setMVPMatrix(ESMatrix *matrix) {
+    ESMatrix *temp = mvpMatrix;
     mvpMatrix = matrix;
+    free(temp);
 }
 
 /**
- * 设置渲染器类型
+ * 设置渲染类型
  * @param type
  */
-void CainVideoRender::setTextureType(TextureType type) {
+void BaseImageFilter::setTextureType(TextureType type) {
     this->type = type;
 }
