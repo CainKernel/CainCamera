@@ -99,17 +99,28 @@ target_link_libraries(
 #添加头文件
 include_directories(src/main/cpp/common
                     src/main/cpp/ffmpeg/include
-                    src/main/cpp/cainmedia/cainsdl
-                    src/main/cpp/cainmedia/cainplayer )
+                    src/main/cpp/cainmedia )
 
 #添加自身的jni文件
 add_library( cainplayer
 
              SHARED
 
-             #EGL包装类，参考Java层的EglCore类的写法
-             src/main/cpp/cainmedia/cainegl/EglCore.cpp
+             # common
+             src/main/cpp/common/Handler.cpp
+             src/main/cpp/common/MessageQueue.cpp
+             src/main/cpp/common/Thread.cpp
 
+             # cainaudio
+             src/main/cpp/cainmedia/cainaudio/AudioOutput.cpp
+             src/main/cpp/cainmedia/cainaudio/SLESContext.cpp
+
+             # caingles
+             src/main/cpp/cainmedia/caingles/EglCore.cpp
+             src/main/cpp/cainmedia/caingles/GlUtils.cpp
+             src/main/cpp/cainmedia/caingles/GlShaders.cpp
+
+             # cainplayer
              src/main/cpp/cainmedia/cainplayer/CainPlayerController.cpp
              src/main/cpp/cainmedia/cainplayer/CainPlayer.cpp
              src/main/cpp/cainmedia/cainplayer/CainThread.cpp
@@ -117,10 +128,8 @@ add_library( cainplayer
              src/main/cpp/cainmedia/cainplayer/CainClock.cpp
              src/main/cpp/cainmedia/cainplayer/CainCmdUtils.cpp
              src/main/cpp/cainmedia/cainplayer/CainFrameQueue.cpp
-             src/main/cpp/cainmedia/cainplayer/CainGLUtils.cpp
              src/main/cpp/cainmedia/cainplayer/CainMutex.cpp
              src/main/cpp/cainmedia/cainplayer/CainPacketQueue.cpp
-             src/main/cpp/cainmedia/cainplayer/CainShaders.cpp
              src/main/cpp/cainmedia/cainplayer/CainVideoRender.cpp
              )
 

@@ -15,7 +15,7 @@ extern "C" {
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2platform.h>
 
-#include "CainShaders.h"
+#include "GlShaders.h"
 #include "native_log.h"
 
 #define PI 3.1415926535897932384626433832795f

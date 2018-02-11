@@ -5,7 +5,7 @@
 #ifndef CAINCAMERA_CAINVIDEORENDER_H
 #define CAINCAMERA_CAINVIDEORENDER_H
 
-#include "CainGLUtils.h"
+#include "caingles/GlUtils.h"
 
 // Texture类型，输入的视频数据是yuv还是RGB类型
 typedef enum TextureType {

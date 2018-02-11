@@ -2,7 +2,7 @@
 // Created by Administrator on 2018/2/2.
 //
 
-#include "CainGLUtils.h"
+#include "GlUtils.h"
 
 #ifdef __cplusplus
 extern "C" {
