@@ -3,7 +3,7 @@
 //
 
 
-#include "CainMutex.h"
+#include "Mutex.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,7 +19,7 @@ extern "C" {
  * 创建互斥锁
  * @return
  */
-Mutex *Cain_CreateMutex(void) {
+Mutex *MutexCreate(void) {
     Mutex *mutex;
     mutex = (Mutex *) malloc(sizeof(Mutex));
     if (!mutex) {
@@ -37,7 +37,7 @@ Mutex *Cain_CreateMutex(void) {
  * 销毁互斥锁
  * @param mutex
  */
-void Cain_DestroyMutex(Mutex *mutex) {
+void MutexDestroy(Mutex *mutex) {
     if (mutex) {
         pthread_mutex_destroy(&mutex->id);
         free(mutex);
@@ -48,9 +48,9 @@ void Cain_DestroyMutex(Mutex *mutex) {
  * 销毁互斥锁指针
  * @param mutex
  */
-void Cain_DestroyMutexPointer(Mutex **mutex) {
+void MutexDestroyPointer(Mutex **mutex) {
     if (mutex) {
-        Cain_DestroyMutex(*mutex);
+        MutexDestroy(*mutex);
         *mutex = NULL;
     }
 }
@@ -60,7 +60,7 @@ void Cain_DestroyMutexPointer(Mutex **mutex) {
  * @param mutex
  * @return
  */
-int Cain_LockMutex(Mutex *mutex) {
+int MutexLock(Mutex *mutex) {
     assert(mutex);
     if (!mutex) {
         return -1;
@@ -73,7 +73,7 @@ int Cain_LockMutex(Mutex *mutex) {
  * @param mutex
  * @return
  */
-int Cain_UnlockMutex(Mutex *mutex) {
+int MutexUnlock(Mutex *mutex) {
     assert(mutex);
     if (!mutex) {
         return -1;
@@ -87,7 +87,7 @@ int Cain_UnlockMutex(Mutex *mutex) {
  * 创建条件锁
  * @return
  */
-Cond *Cain_CreateCond(void) {
+Cond *CondCreate(void) {
     Cond *cond;
     cond = (Cond *) malloc(sizeof(Cond));
     if (!cond) {
@@ -106,7 +106,7 @@ Cond *Cain_CreateCond(void) {
  * 销毁条件锁
  * @param cond
  */
-void Cain_DestroyCond(Cond *cond) {
+void CondDestroy(Cond *cond) {
     if (cond) {
         pthread_cond_destroy(&cond->id);
         free(cond);
@@ -117,9 +117,9 @@ void Cain_DestroyCond(Cond *cond) {
  * 销毁条件锁指针
  * @param cond
  */
-void Cain_DestroyCondPointer(Cond **cond) {
+void CondDestroyPointer(Cond **cond) {
     if (cond) {
-        Cain_DestroyCond(*cond);
+        CondDestroy(*cond);
         *cond = NULL;
     }
 }
@@ -129,7 +129,7 @@ void Cain_DestroyCondPointer(Cond **cond) {
  * @param cond
  * @return
  */
-int Cain_CondSignal(Cond *cond) {
+int CondSignal(Cond *cond) {
     assert(cond);
     if (!cond) {
         return -1;
@@ -142,7 +142,7 @@ int Cain_CondSignal(Cond *cond) {
  * @param cond
  * @return
  */
-int Cain_CondBroadcast(Cond *cond) {
+int CondBroadcast(Cond *cond) {
     assert(cond);
     if (!cond) {
         return -1;
@@ -156,7 +156,7 @@ int Cain_CondBroadcast(Cond *cond) {
  * @param mutex
  * @return
  */
-int Cain_CondWait(Cond *cond, Mutex *mutex) {
+int CondWait(Cond *cond, Mutex *mutex) {
     assert(cond);
     assert(mutex);
     if (!cond || !mutex) {
@@ -173,7 +173,7 @@ int Cain_CondWait(Cond *cond, Mutex *mutex) {
  * @param ms
  * @return
  */
-int Cain_CondWaitTimeout(Cond *cond, Mutex *mutex, uint32_t ms) {
+int CondWaitTimeout(Cond *cond, Mutex *mutex, uint32_t ms) {
     int retval;
     struct timeval delta;
     struct timespec abstime;
@@ -200,7 +200,7 @@ int Cain_CondWaitTimeout(Cond *cond, Mutex *mutex, uint32_t ms) {
         } else if (retval == EINTR) {
             continue;
         } else if (retval == ETIMEDOUT) {
-            return SDL_MUTEX_TIMEDOUT;
+            return MUTEX_TIMEDOUT;
         } else {
             break;
         }
@@ -212,7 +212,7 @@ int Cain_CondWaitTimeout(Cond *cond, Mutex *mutex, uint32_t ms) {
  * 出错信息
  * @return
  */
-const char *Cain_GetError(void) {
+const char *GetError(void) {
     return NULL;
 }
 

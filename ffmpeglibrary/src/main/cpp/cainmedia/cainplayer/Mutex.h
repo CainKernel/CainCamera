@@ -11,8 +11,8 @@ extern "C" {
 #include <pthread.h>
 #include <stdint.h>
 
-#define SDL_MUTEX_TIMEDOUT  1
-#define SDL_MUTEX_MAXWAIT   (~(uint32_t)0)
+#define MUTEX_TIMEDOUT  1
+#define MUTEX_MAXWAIT   (~(uint32_t)0)
 
 // 互斥锁结构
 typedef struct Mutex {
@@ -20,15 +20,15 @@ typedef struct Mutex {
 } Mutex;
 
 // 创建互斥锁
-Mutex *Cain_CreateMutex(void);
+Mutex *MutexCreate(void);
 // 销毁互斥锁
-void Cain_DestroyMutex(Mutex *mutex);
+void MutexDestroy(Mutex *mutex);
 // 销毁互斥锁指针
-void Cain_DestroyMutexPointer(Mutex **pMutex);
+void MutexDestroyPointer(Mutex **pMutex);
 // 上锁
-int Cain_LockMutex(Mutex *mutex);
+int MutexLock(Mutex *mutex);
 // 解锁
-int Cain_UnlockMutex(Mutex *mutex);
+int MutexUnlock(Mutex *mutex);
 
 // 条件锁结构
 typedef struct Cond {
@@ -36,22 +36,22 @@ typedef struct Cond {
 } Cond;
 
 // 创建条件锁
-Cond *Cain_CreateCond(void);
+Cond *CondCreate(void);
 // 销毁条件锁
-void Cain_DestroyCond(Cond *cond);
+void CondDestroy(Cond *cond);
 // 销毁条件锁指针
-void Cain_DestroyCondPointer(Cond **pCond);
+void CondDestroyPointer(Cond **pCond);
 // 条件锁信号
-int Cain_CondSignal(Cond *cond);
+int CondSignal(Cond *cond);
 // 条件锁广播
-int Cain_CondBroadcast(Cond *cond);
+int CondBroadcast(Cond *cond);
 // 等待条件锁
-int Cain_CondWait(Cond *cond, Mutex *mutex);
+int CondWait(Cond *cond, Mutex *mutex);
 // 等待条件锁多少秒
-int Cain_CondWaitTimeout(Cond *cond, Mutex *mutex, uint32_t msec);
+int CondWaitTimeout(Cond *cond, Mutex *mutex, uint32_t msec);
 
 // 出错信息
-const char *Cain_GetError(void);
+const char *GetError(void);
 
 #ifdef __cplusplus
 }

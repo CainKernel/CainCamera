@@ -117,7 +117,6 @@ add_library( cainplayer
 
              #cainfilters
              src/main/cpp/cainmedia/cainfilters/BaseImageFilter.cpp
-             src/main/cpp/cainmedia/cainfilters/BaseImageFilterGroup.cpp
 
              # caingles
              src/main/cpp/cainmedia/caingles/EglCore.cpp
@@ -125,15 +124,10 @@ add_library( cainplayer
              src/main/cpp/cainmedia/caingles/GlShaders.cpp
 
              # cainplayer
-             src/main/cpp/cainmedia/cainplayer/CainPlayerController.cpp
-             src/main/cpp/cainmedia/cainplayer/CainPlayer.cpp
-             src/main/cpp/cainmedia/cainplayer/CainThread.cpp
-             src/main/cpp/cainmedia/cainplayer/CainAudio.cpp
-             src/main/cpp/cainmedia/cainplayer/CainClock.cpp
-             src/main/cpp/cainmedia/cainplayer/CainCmdUtils.cpp
-             src/main/cpp/cainmedia/cainplayer/CainFrameQueue.cpp
-             src/main/cpp/cainmedia/cainplayer/CainMutex.cpp
-             src/main/cpp/cainmedia/cainplayer/CainPacketQueue.cpp
+             src/main/cpp/cainmedia/cainplayer/Clock.cpp
+             src/main/cpp/cainmedia/cainplayer/Mutex.cpp
+             src/main/cpp/cainmedia/cainplayer/FrameQueue.cpp
+             src/main/cpp/cainmedia/cainplayer/PacketQueue.cpp
              )
 
 # 查找Android存在的库
