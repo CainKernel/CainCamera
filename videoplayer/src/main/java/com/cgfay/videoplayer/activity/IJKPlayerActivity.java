@@ -66,16 +66,20 @@ public class IJKPlayerActivity extends AppCompatActivity implements View.OnClick
         } catch (IOException e) {
             e.printStackTrace();
         }
+        // 使用MediaCodec
+        mediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1);
+        mediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-auto-rotate", 1);
+        mediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-handle-resolution-change", 1);
         // 准备监听
         mediaPlayer.setOnPreparedListener(this);
         // 播放完成监听
         mediaPlayer.setOnCompletionListener(this);
         //当前加载进度的监听
         mediaPlayer.setOnBufferingUpdateListener(this);
-        // 允许设置播放速度
+        // 允许设置变声变速
         mediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "soundtouch", 1);
         // 设置播放速度
-        mediaPlayer.setSpeed(4.0f);
+        mediaPlayer.setSpeed(1.0f);
     }
 
     private void initSurfaceView() {
