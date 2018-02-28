@@ -1,8 +1,10 @@
-package com.cgfay.cainffmpeg.nativehelper;
+package com.cgfay.cainmedia;
 
+import android.graphics.SurfaceTexture;
 import android.view.Surface;
 
 /**
+ * 给予ffmpeg的自定义播放器
  * Created by cain on 2018/2/9.
  */
 
@@ -17,25 +19,27 @@ public class CainPlayer {
     }
 
     // native 方法
+    private native static void nativeInit();
     private native static void setNativeDataSource(String path);
     private native static void setNativeSurface(Surface surface);
     private native static int getNativeCurrentPosition();
-    private native static int getNativeAudioSessionId();
     private native static int getNativeDuration();
     private native static boolean isNativeLooping();
     private native static boolean isNativePlaying();
     private native static void nativePause();
     private native static void nativeStart();
     private native static void nativeStop();
-    private native static int nativePrepareAsync();
-    private native static void nativeReset();
+    private native static void nativePrepare();
     private native static void nativeRelease();
     private native static void nativeSeekTo(int msec);
-    private native static void nativeSeekToRegion(int lmsec, int rmsec);
     private native static void nativeSetLooping(boolean loop);
     private native static void nativeSetReverse(boolean reverse);
     private native static void nativeSetPlayAudio(boolean play);
     private native static void nativeChangedSize(int width, int height);
+
+    public CainPlayer() {
+        nativeInit();
+    }
 
     /**
      * 设置数据源
@@ -45,8 +49,20 @@ public class CainPlayer {
         setNativeDataSource(path);
     }
 
-
+    /**
+     * 设置Surface
+     * @param surface
+     */
     public void setSurface(Surface surface) {
+        setNativeSurface(surface);
+    }
+
+    /**
+     * 设置SurfaceTexture
+     * @param surfaceTexture
+     */
+    public void setSurfaceTexture(SurfaceTexture surfaceTexture) {
+        Surface surface = new Surface(surfaceTexture);
         setNativeSurface(surface);
     }
 
@@ -56,14 +72,6 @@ public class CainPlayer {
      */
     public int getCurrentPosition() {
         return getNativeCurrentPosition();
-    }
-
-    /**
-     * 获取当前音频的Seesion id
-     * @return
-     */
-    public int getAudioSessionId() {
-        return getNativeAudioSessionId();
     }
 
     /**
@@ -114,15 +122,8 @@ public class CainPlayer {
     /**
      * 准备
      */
-    public void prepareAsync() {
-        nativePrepareAsync();
-    }
-
-    /**
-     * 重置所有状态
-     */
-    public void reset() {
-        nativeReset();
+    public void prepare() {
+        nativePrepare();
     }
 
     /**
@@ -138,15 +139,6 @@ public class CainPlayer {
      */
     public void seekTo(int msec) {
         nativeSeekTo(msec);
-    }
-
-    /**
-     * 定位播放区域
-     * @param lmsec
-     * @param rmsec
-     */
-    public void seekToRegion(int lmsec, int rmsec) {
-        nativeSeekToRegion(lmsec, rmsec);
     }
 
     /**

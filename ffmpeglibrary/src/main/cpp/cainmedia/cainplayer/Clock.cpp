@@ -1,12 +1,15 @@
 //
-// Created by Administrator on 2018/2/12.
+// Created by Administrator on 2018/2/27.
 //
 
-#include <math.h>
 #include "Clock.h"
+#include "CainPlayerDefinition.h"
 
 Clock::Clock(int *queue_serial) {
-    init(queue_serial);
+    this->speed = 1.0;
+    this->paused = 0;
+    this->queue_serial = queue_serial;
+    setClock(NAN, -1);
 }
 
 double Clock::getClock() {
@@ -21,35 +24,29 @@ double Clock::getClock() {
     }
 }
 
-void Clock::setClockAt(double pts, int serial, double time) {
+void Clock::setClock(double pts, int serial, double time) {
     this->pts = pts;
     this->last_updated = time;
-    this->pts_drift = pts - time;
+    this->pts_drift = this->pts - time;
     this->serial = serial;
 }
 
-
 void Clock::setClock(double pts, int serial) {
     double time = av_gettime_relative() / 1000000.0;
-    setClockAt(pts, serial, time);
+    setClock(pts, serial, time);
 }
 
-void Clock::setClockSpeed(double speed) {
+void Clock::setSpeed(double speed) {
     setClock(getClock(), serial);
     this->speed = speed;
 }
 
-void Clock::init(int *queue_serial) {
-    speed = 1.0;
-    paused = 0;
-    this->queue_serial = queue_serial;
-    setClock(NAN, -1);
-}
-
 void Clock::syncToSlave(Clock *slave) {
-    double  clock = getClock();
-    double slaveClock = slave->getClock();
-    if (!isnan(slaveClock) && (isnan(clock) || fabs(clock - slaveClock) > AV_NOSYNC_THRESHOLD)) {
-        setClock(slaveClock, slave->serial);
+    double clock = getClock();
+    double slave_clock = slave->getClock();
+    if (!isnan(slave_clock) && (isnan(clock) || fabs(clock - slave_clock) > AV_NOSYNC_THRESHOLD)) {
+        setClock(slave_clock, slave->serial);
     }
 }
+
+

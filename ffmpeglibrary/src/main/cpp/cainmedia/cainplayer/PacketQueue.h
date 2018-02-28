@@ -1,60 +1,72 @@
 //
-// Created by Administrator on 2018/2/12.
+// Created by cain on 2018/2/22.
 //
 
 #ifndef CAINCAMERA_PACKETQUEUE_H
 #define CAINCAMERA_PACKETQUEUE_H
 
-#include "PlayerDefintion.h"
+#include <pthread.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+
+#ifdef __cplusplus
+};
+#endif
+
+// 包结构体
+typedef struct MyAVPacketList {
+    AVPacket pkt;
+    struct MyAVPacketList *next;
+    int serial;
+} MyAVPacketList;
 
 class PacketQueue {
-private:
-    // 队列头尾指针
-    MyAVPacketList *first_pkt, *last_pkt;
-    // 待解码的数量
-    int nb_packets;
-    // 待解码的总大小
-    int size;
-    // 待解码的总时长
-    int64_t duration;
-    // 取消入队标志
-    int abort_request;
-    // 序列
-    int serial;
-    // 互斥锁
-    Mutex *mutex;
-    // 条件锁
-    Cond *cond;
-
-    // 初始化
-    int init();
-
-    // 销毁队列
-    void destroy();
-
 public:
-
     PacketQueue();
     virtual ~PacketQueue();
-    // 入队
-    int put(AVPacket *pkt, AVPacket flush_PKt);
-    // 入队空数据包
-    int putNullPacket(int stream_index, AVPacket flush_pkt);
-    // 刷出剩余帧
-    void flush();
-    // 请求舍弃待解码包
-    void abort();
-    // 队列开始
-    void start(AVPacket flush_pkt);
-    // 获取包
-    int get(AVPacket *pkt, int block, int *serial);
+    // 刷出剩余裸数据
+    void flush(void);
+    // 入队数据
+    int put(AVPacket *pkt);
+    // 入队空数据
+    int putNullPacket(int streamIndex);
+    // 获取裸数据包
+    int get(AVPacket *pkt, bool block, int *serial);
+    // 获取队列大小
+    int size(void);
+    // 是否取消入队
+    bool isAbort(void);
+    // 取消入队
+    void abort(void);
+    // 队列是否为空
+    bool isEmpty(void);
+    // 获取时长
+    int64_t getDuration(void);
+    // 设置flush 的裸数据包
+    void setFlushPacket(AVPacket *pkt);
+    // 开始
+    void start(void);
 
-    // 是否处于舍弃状态
-    int isAbort();
-    // 获取序列
-    int getSerial();
+    int serial;
 
+private:
+    AVPacket *flush_pkt;
+    int putPrivate(AVPacket *pkt);
+
+    MyAVPacketList *mFirst;
+    MyAVPacketList *mLast;
+    int mPackets;
+    int mSize;
+    int64_t duration;
+    bool mAbortRequest;
+
+    pthread_mutex_t mLock;
+    pthread_cond_t mCondition;
 };
 
 

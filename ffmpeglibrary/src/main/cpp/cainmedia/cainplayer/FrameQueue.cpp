@@ -1,69 +1,51 @@
 //
-// Created by Administrator on 2018/2/12.
+// Created by cain on 2018/2/25.
 //
 
 #include "FrameQueue.h"
 
 FrameQueue::FrameQueue(PacketQueue *pktq, int max_size, int keep_last) {
-    init(pktq, max_size, keep_last);
+    pthread_mutex_init(&mLock, NULL);
+    pthread_cond_init(&mCondition, NULL);
+    this->pktq = pktq;
+    this->maxSize = FFMIN(max_size, MAX_FRAME_QUEUE_SIZE);
+    this->keepLast = !!keep_last;
+    for (int i = 0; i < maxSize; ++i) {
+        if (!(queue[i].frame = av_frame_alloc())) {
+            break;
+        }
+    }
 }
 
 FrameQueue::~FrameQueue() {
-    destroy();
-}
-
-void FrameQueue::unref_item(Frame *vp) {
-    av_frame_unref(vp->frame);
-}
-
-int FrameQueue::init(PacketQueue *pktq, int max_size, int keep_last) {
-    int i;
-    mutex = MutexCreate();
-    if (!mutex) {
-        av_log(NULL, AV_LOG_FATAL, "MutexCreate(): %s\n", GetError());
-        return AVERROR(ENOMEM);
-    }
-    cond = CondCreate();
-    if (!cond) {
-        av_log(NULL, AV_LOG_FATAL, "CondCreate(): %s\n", GetError());
-        return AVERROR(ENOMEM);
-    }
-
-    this->pktq = pktq;
-    this->max_size = FFMIN(max_size, FRAME_QUEUE_SIZE);
-    this->keep_last = !!keep_last;
-
-    for (i = 0; i < this->max_size; ++i) {
-        if (!(queue[i].frame = av_frame_alloc())) {
-            return AVERROR(ENOMEM);
-        }
-    }
-    return 0;
-}
-
-void FrameQueue::destroy() {
-    int i;
-    for (i = 0; i < max_size; i++) {
+    // 销毁队列中的AVFrame
+    for (int i = 0; i < maxSize; ++i) {
         Frame *vp = &queue[i];
-        unref_item(vp);
+        unref(vp);
+        av_frame_free(&vp->frame);
     }
-    MutexDestroy(mutex);
-    CondDestroy(cond);
+    pktq = NULL;
+    pthread_mutex_destroy(&mLock);
+    pthread_cond_destroy(&mCondition);
 }
 
+void FrameQueue::unref(Frame *vp) {
+    av_frame_unref(vp->frame);
+    avsubtitle_free(&vp->sub);
+}
 
 void FrameQueue::signal() {
-    MutexLock(mutex);
-    CondSignal(cond);
-    MutexUnlock(mutex);
+    pthread_mutex_lock(&mLock);
+    pthread_cond_signal(&mCondition);
+    pthread_mutex_unlock(&mLock);
 }
 
 Frame* FrameQueue::peek() {
-    return &queue[(rindex + rindex_shown) % max_size];
+    return &queue[(rindex + rindexShown) % maxSize];
 }
 
 Frame* FrameQueue::peekNext() {
-    return &queue[(rindex + rindex_shown + 1) % max_size];
+    return &queue[(rindex + rindexShown + 1) % maxSize];
 }
 
 Frame* FrameQueue::peekLast() {
@@ -71,12 +53,12 @@ Frame* FrameQueue::peekLast() {
 }
 
 Frame* FrameQueue::peekWritable() {
-    MutexLock(mutex);
-    while (size >= max_size && !pktq->isAbort()) {
-        CondWait(cond, mutex);
+    pthread_mutex_lock(&mLock);
+    // 如果存放的数据太大，则等待销毁完毕
+    while (mSize >= maxSize && !pktq->isAbort()) {
+        pthread_cond_wait(&mCondition, &mLock);
     }
-    MutexUnlock(mutex);
-
+    pthread_mutex_unlock(&mLock);
     if (pktq->isAbort()) {
         return NULL;
     }
@@ -84,45 +66,61 @@ Frame* FrameQueue::peekWritable() {
 }
 
 Frame* FrameQueue::peekReadable() {
-    MutexLock(mutex);
-    while (size - rindex_shown <= 0 && !pktq->isAbort()) {
-        CondWait(cond, mutex);
+    pthread_mutex_lock(&mLock);
+    // 如果没有读出数据，则一直等待
+    while (mSize - rindexShown <= 0 && !pktq->isAbort()) {
+        pthread_cond_wait(&mCondition, &mLock);
     }
-    MutexUnlock(mutex);
+    pthread_mutex_unlock(&mLock);
     if (pktq->isAbort()) {
         return NULL;
     }
-    return &queue[(rindex + rindex_shown) % max_size];
+    return &queue[(rindex + rindexShown) % maxSize];
 }
 
 void FrameQueue::push() {
-    if (++windex == max_size) {
+    if (++windex == maxSize) {
         windex = 0;
     }
-    MutexLock(mutex);
-    size++;
-    MutexUnlock(mutex);
+    pthread_mutex_lock(&mLock);
+    mSize++;
+    pthread_cond_signal(&mCondition);
+    pthread_mutex_unlock(&mLock);
 }
 
 void FrameQueue::next() {
-    if (keep_last && !rindex_shown) {
-        rindex_shown = 1;
+    if (keepLast && !rindexShown) {
+        rindexShown = 1;
         return;
     }
-    MutexLock(mutex);
-    size--;
-    CondSignal(cond);
-    MutexUnlock(mutex);
-}
-
-int FrameQueue::nbRemain() {
-    return size - rindex_shown;
-}
-
-int64_t FrameQueue::lasePos() {
-    Frame *vp = &queue[rindex];
-    if (rindex_shown && vp->serial == pktq->getSerial()) {
-        return vp->pos;
+    // 释放帧
+    unref(&queue[rindex]);
+    if (++rindex == maxSize) {
+        rindex = 0;
     }
-    return -1;
+    pthread_mutex_lock(&mLock);
+    mSize--;
+    pthread_cond_signal(&mCondition);
+    pthread_mutex_unlock(&mLock);
+}
+
+int FrameQueue::nbRemaining() {
+    return mSize - rindexShown;
+}
+
+int64_t FrameQueue::lastPos() {
+    Frame *fp = &queue[rindex];
+    if (rindexShown && fp->serial == pktq->serial) {
+        return fp->pos;
+    } else {
+        return -1;
+    }
+}
+
+void FrameQueue::lock() {
+    pthread_mutex_lock(&mLock);
+}
+
+void FrameQueue::unlock() {
+    pthread_mutex_unlock(&mLock);
 }

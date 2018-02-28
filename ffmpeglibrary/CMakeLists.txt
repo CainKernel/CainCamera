@@ -109,7 +109,6 @@ add_library( cainplayer
              # common
              src/main/cpp/common/Handler.cpp
              src/main/cpp/common/MessageQueue.cpp
-             src/main/cpp/common/Thread.cpp
 
              # cainaudio
              src/main/cpp/cainmedia/cainaudio/AudioOutput.cpp
@@ -124,10 +123,14 @@ add_library( cainplayer
              src/main/cpp/cainmedia/caingles/GlShaders.cpp
 
              # cainplayer
+             src/main/cpp/cainmedia/cainplayer/CainPlayer.cpp
+             src/main/cpp/cainmedia/cainplayer/CainPlayerController.cpp
              src/main/cpp/cainmedia/cainplayer/Clock.cpp
-             src/main/cpp/cainmedia/cainplayer/Mutex.cpp
+             src/main/cpp/cainmedia/cainplayer/Decoder.cpp
              src/main/cpp/cainmedia/cainplayer/FrameQueue.cpp
+             src/main/cpp/cainmedia/cainplayer/Mutex.cpp
              src/main/cpp/cainmedia/cainplayer/PacketQueue.cpp
+             src/main/cpp/cainmedia/cainplayer/Thread.cpp
              )
 
 # 查找Android存在的库
@@ -143,6 +146,8 @@ target_link_libraries(
                        ffmpeg
 
                        # Android 自带的库
+                       -ljnigraphics
+                       -landroid
                        ${log-lib}
                        ${OpenSLES-lib}
                        ${EGL-lib}

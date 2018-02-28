@@ -1,149 +1,128 @@
 //
-// Created by Administrator on 2018/2/12.
+// Created by cain on 2018/2/22.
 //
 
 #include "PacketQueue.h"
 
 PacketQueue::PacketQueue() {
-    init();
+    pthread_mutex_init(&mLock, NULL);
+    pthread_cond_init(&mCondition, NULL);
+    mFirst = NULL;
+    mLast = NULL;
+    flush_pkt = NULL;
+    mPackets = 0;
+    mSize = 0;
+    mAbortRequest = true;
 }
 
 PacketQueue::~PacketQueue() {
-    destroy();
+    flush();
+    flush_pkt = NULL;
+    pthread_mutex_destroy(&mLock);
+    pthread_cond_destroy(&mCondition);
 }
 
-/**
- * 入队
- * @param pkt
- * @param flush_PKt
- * @return
- */
-int PacketQueue::put(AVPacket *pkt, AVPacket flush_PKt) {
-    int ret;
-    MutexLock(mutex);
-
-    MyAVPacketList *pkt1;
-    if (abort_request) {
-        ret = -1;
-        goto end;
-    }
-    pkt1 = (MyAVPacketList *) malloc(sizeof(MyAVPacketList));
-    if (!pkt1) {
-        ret = -1;
-        goto end;
-    }
-    pkt1->pkt = *pkt;
-    pkt1->next = NULL;
-    if (pkt == &flush_PKt) {
-        serial++;
-    } else {
-        last_pkt->next = pkt1;
-    }
-    last_pkt = pkt1;
-    nb_packets++;
-    size += pkt1->pkt.size + sizeof(*pkt1);
-    duration += pkt1->pkt.duration;
-end:
-    MutexUnlock(mutex);
-    if (pkt != &flush_PKt && ret < 0) {
-        av_packet_unref(pkt);
-    }
-
-    return ret;
+void PacketQueue::setFlushPacket(AVPacket *pkt) {
+    pthread_mutex_lock(&mLock);
+    putPrivate(pkt);
+    pthread_mutex_unlock(&mLock);
 }
 
-/**
- * 入队一个空包
- * @param stream_index
- * @param flush_pkt
- * @return
- */
-int PacketQueue::putNullPacket(int stream_index, AVPacket flush_pkt) {
-    AVPacket pkt1, *pkt = &pkt1;
-    av_init_packet(pkt);
-    pkt->data = NULL;
-    pkt->size = 0;
-    pkt->stream_index = stream_index;
-    put(pkt, flush_pkt);
+int PacketQueue::size() {
+    pthread_mutex_lock(&mLock);
+    int size = mPackets;
+    pthread_mutex_unlock(&mLock);
+    return size;
 }
-
-
-int PacketQueue::init() {
-    mutex = MutexCreate();
-    if (!mutex) {
-        av_log(NULL, AV_LOG_FATAL, "Cain_CreateMutex(): %s\n", GetError());
-        return AVERROR(ENOMEM);
-    }
-    cond = CondCreate();
-    if (!cond) {
-        av_log(NULL, AV_LOG_FATAL, "Cain_CreateCond(): %s\n", GetError());
-        return AVERROR(ENOMEM);
-    }
-
-    abort_request = 1;
-    return 0;
-}
-
 
 void PacketQueue::flush() {
     MyAVPacketList *pkt, *pkt1;
-    MutexLock(mutex);
-    for (pkt = first_pkt; pkt; pkt = pkt1) {
+    pthread_mutex_lock(&mLock);
+    for (pkt = mFirst; pkt != NULL; pkt = pkt1) {
         pkt1 = pkt->next;
         av_packet_unref(&pkt->pkt);
         av_free(&pkt);
     }
-    last_pkt = NULL;
-    first_pkt = NULL;
-    nb_packets = 0;
-    size = 0;
+    mLast = NULL;
+    mFirst = NULL;
+    mPackets = 0;
+    mSize = 0;
     duration = 0;
-    MutexUnlock(mutex);
+    pthread_mutex_unlock(&mLock);
 }
 
-void PacketQueue::destroy() {
-    flush();
-    MutexDestroy(mutex);
-    CondDestroy(cond);
+int PacketQueue::putPrivate(AVPacket *pkt) {
+    MyAVPacketList *pkt1;
+    if (isAbort()) {
+        return -1;
+    }
+    pkt1 = (MyAVPacketList *) av_malloc(sizeof(MyAVPacketList));
+    if (!pkt1) {
+        return -1;
+    }
+    pkt1->pkt = *pkt;
+    pkt1->next = NULL;
+    // 如果时flush类型的裸数据包，则调整序列
+    if (pkt == flush_pkt) {
+        serial++;
+    }
+    pkt1->serial = serial;
+    // 调整指针
+    if (!mLast) {
+        mFirst = pkt1;
+    } else {
+        mLast->next = pkt1;
+    }
+    mLast = pkt1;
+    mPackets++;
+    mSize += pkt1->pkt.size + sizeof(*pkt1);
+    duration += pkt1->pkt.duration;
+    pthread_cond_signal(&mCondition);
+    return 0;
 }
 
+int PacketQueue::put(AVPacket *pkt) {
+    int ret;
+    pthread_mutex_lock(&mLock);
+    ret = putPrivate(pkt);
+    pthread_mutex_unlock(&mLock);
 
-void PacketQueue::abort() {
-    MutexLock(mutex);
-    abort_request = 1;
-    CondSignal(cond);
-    MutexUnlock(mutex);
+    if (pkt != flush_pkt && ret < 0) {
+        av_packet_unref(pkt);
+    }
+    return ret;
 }
 
-
-void PacketQueue::start(AVPacket flush_pkt) {
-    MutexLock(mutex);
-    abort_request = 0;
-    put(&flush_pkt, flush_pkt);
-    MutexUnlock(mutex);
+int PacketQueue::putNullPacket(int streamIndex) {
+    AVPacket pkt1, *pkt = &pkt1;
+    av_init_packet(pkt);
+    pkt->data = NULL;
+    pkt->size = 0;
+    pkt->stream_index = streamIndex;
+    return put(pkt);
 }
 
-int PacketQueue::get(AVPacket *pkt, int block, int *serial) {
+int PacketQueue::get(AVPacket *pkt, bool block, int *serial) {
     MyAVPacketList *pkt1;
     int ret;
-    MutexLock(mutex);
 
-    for (;;) {
-        if (abort_request) {
+    pthread_mutex_lock(&mLock);
+    for(;;) {
+        if (mAbortRequest) {
+            ret = -1;
             break;
         }
 
-        pkt1 = first_pkt;
+        pkt1 = mFirst;
         if (pkt1) {
-            first_pkt = pkt1->next;
-            if (!first_pkt) {
-                last_pkt = NULL;
+            mFirst = pkt1->next;
+            if (!mFirst) {
+                mLast = NULL;
             }
-            nb_packets--;
-            size -= pkt1->pkt.size + sizeof(*pkt1);
+            mPackets--;
+            mSize -= pkt1->pkt.size + sizeof(*pkt1);
             duration -= pkt1->pkt.duration;
             *pkt = pkt1->pkt;
-
             if (serial) {
                 *serial = pkt1->serial;
             }
@@ -154,17 +133,37 @@ int PacketQueue::get(AVPacket *pkt, int block, int *serial) {
             ret = 0;
             break;
         } else {
-            CondWait(cond, mutex);
+            pthread_cond_wait(&mCondition, &mLock);
         }
     }
-
-    MutexUnlock(mutex);
+    pthread_mutex_unlock(&mLock);
+    return ret;
 }
 
-int PacketQueue::isAbort() {
-    return abort_request;
+bool PacketQueue::isAbort() {
+    pthread_mutex_lock(&mLock);
+    bool abort = mAbortRequest;
+    pthread_mutex_unlock(&mLock);
+    return abort;
 }
 
-int PacketQueue::getSerial() {
-    return serial;
+void PacketQueue::abort() {
+    pthread_mutex_lock(&mLock);
+    mAbortRequest = true;
+    pthread_cond_signal(&mCondition);
+    pthread_mutex_unlock(&mLock);
+}
+
+void PacketQueue::start() {
+    pthread_mutex_lock(&mLock);
+    mAbortRequest = false;
+    pthread_mutex_unlock(&mLock);
+}
+
+bool PacketQueue::isEmpty() {
+    return mPackets == 0;
+}
+
+int64_t PacketQueue::getDuration() {
+    return duration;
 }

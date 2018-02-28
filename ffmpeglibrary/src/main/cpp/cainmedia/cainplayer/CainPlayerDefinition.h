@@ -1,9 +1,9 @@
 //
-// Created by Administrator on 2018/2/12.
+// Created by Administrator on 2018/2/27.
 //
 
-#ifndef CAINCAMERA_PLAYERDEFINTION_H
-#define CAINCAMERA_PLAYERDEFINTION_H
+#ifndef CAINCAMERA_CAINPLAYERDEFINITION_H
+#define CAINCAMERA_CAINPLAYERDEFINITION_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,9 +34,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-#include "native_log.h"
-#include "Mutex.h"
 
 #define MAX_QUEUE_SIZE (15 * 1024 * 1024)
 #define MIN_FRAMES 25
@@ -92,30 +89,22 @@ extern "C" {
 /* TODO: We assume that a decoded and resampled frame fits into this buffer */
 // 采样大小
 #define SAMPLE_ARRAY_SIZE (8 * 65536)
-#define FRAME_QUEUE_SIZE 16
 
-// 待解码包列表结构体
-typedef struct MyAVPacketList {
-    AVPacket pkt;                               // 待解码包对象
-    struct MyAVPacketList *next;                // 下一个待解码包指针
-    int serial;                                 // 序列标志
-} MyAVPacketList;
+#define CURSOR_HIDE_DELAY 1000000
 
-/**
- * 解码帧结构体
- */
-typedef struct Frame {
-    AVFrame *frame;                              // 帧数据
-    int serial;                                  // 序列
-    double pts;                                  // 帧的显示时间戳
-    double duration;                             // 帧显示时长
-    int64_t pos;                                 // 文件中的位置
-    int width;                                   // 帧的宽度
-    int height;                                  // 帧的高度
-    int format;                                  // 格式
-    AVRational sar;                              // 额外参数
-    int uploaded;                                // 上载
-    int flip_v;                                  // 反转
-} Frame;
+#define USE_ONEPASS_SUBTITLE_RENDER 1
 
-#endif //CAINCAMERA_PLAYERDEFINTION_H
+// 冲采样标志
+static unsigned sws_flags = SWS_BICUBIC;
+
+#define VIDEO_PICTURE_QUEUE_SIZE 3
+#define SAMPLE_QUEUE_SIZE 9
+
+// 时钟同步类型
+enum {
+    AV_SYNC_AUDIO_MASTER,		// 音频作为同步，默认以音频同步 /* default choice */
+    AV_SYNC_VIDEO_MASTER,		// 视频作为同步
+    AV_SYNC_EXTERNAL_CLOCK,     // 外部时钟作为同步 /* synchronize to an external clock */
+};
+
+#endif //CAINCAMERA_CAINPLAYERDEFINITION_H
