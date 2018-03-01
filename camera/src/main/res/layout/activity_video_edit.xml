@@ -1,23 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent"
+    android:background="@color/video_window_background"
     tools:context="com.cgfay.caincamera.activity.VideoEditActivity">
-    <!-- 视频预览TextureView -->
-    <com.cgfay.caincamera.view.VideoTextureView
-        android:id="@+id/video_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top"/>
-    <!-- 导航栏（动态设置上下移动） -->
+
+    <!--顶部导航栏-->
     <RelativeLayout
-        android:id="@+id/layout_operation"
+        android:id="@+id/layout_navigation"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp40"
         android:layout_margin="@dimen/dp10"
-        android:layout_gravity="top">
+        android:layout_alignParentTop="true" >
         <Button
             android:id="@+id/btn_cancel"
             android:layout_width="wrap_content"
@@ -25,8 +20,18 @@
             android:layout_centerVertical="true"
             android:layout_alignParentStart="true"
             android:background="@android:color/transparent"
+            android:minHeight="@dimen/dp40"
+            android:minWidth="@dimen/dp50"
             android:textColor="@color/white"
             android:text="@string/cancel"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textColor="@color/white"
+            android:text="@string/edit_title"/>
+
         <Button
             android:id="@+id/btn_done"
             android:layout_width="wrap_content"
@@ -34,121 +39,108 @@
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
             android:background="@android:color/transparent"
-            android:textColor="@color/green"
+            android:minHeight="@dimen/dp40"
+            android:minWidth="@dimen/dp50"
+            android:textColor="@color/white"
+            android:layout_gravity="end"
             android:text="@string/finish"/>
     </RelativeLayout>
-    <!--输入文字-->
-    <EditText
-        android:id="@+id/et_text"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="@dimen/dp5"
-        android:textSize="24sp"
-        android:layout_below="@id/btn_done"
-        android:visibility="gone"
-        android:textColor="#fff"
-        android:background="@null"/>
 
-    <!-- 底部功能按钮 -->
-    <LinearLayout
-        android:id="@+id/layout_bottom"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/dp50"
-        android:layout_gravity="bottom">
-        <!--画笔-->
-        <RelativeLayout
-            android:id="@+id/layout_pen"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="@dimen/dp50">
-            <ImageView
-                android:id="@+id/iv_pen"
-                android:layout_width="@dimen/dp20"
-                android:layout_height="@dimen/dp20"
-                android:layout_centerInParent="true"
-                android:src="@drawable/pen" />
-        </RelativeLayout>
-
-        <!--贴纸-->
-        <RelativeLayout
-            android:id="@+id/layout_icon"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="@dimen/dp50">
-            <ImageView
-                android:id="@+id/iv_icon"
-                android:layout_width="@dimen/dp20"
-                android:layout_height="@dimen/dp20"
-                android:layout_centerInParent="true"
-                android:src="@drawable/icon" />
-        </RelativeLayout>
-
-        <!--文字-->
-        <RelativeLayout
-            android:id="@+id/layout_text"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="@dimen/dp50">
-            <ImageView
-                android:layout_width="@dimen/dp20"
-                android:layout_height="@dimen/dp20"
-                android:layout_centerInParent="true"
-                android:src="@drawable/text_click" />
-        </RelativeLayout>
-
-        <!--视频剪辑-->
-        <RelativeLayout
-            android:id="@+id/layout_cut_time"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="@dimen/dp50">
-            <ImageView
-                android:layout_width="@dimen/dp20"
-                android:layout_height="@dimen/dp20"
-                android:layout_centerInParent="true"
-                android:src="@drawable/cut_time" />
-        </RelativeLayout>
-    </LinearLayout>
-
-    <!-- 字体颜色选择区域 -->
-    <LinearLayout
-        android:id="@+id/layout_color"
+    <!--底部编辑栏-->
+    <RelativeLayout
+        android:id="@+id/layoutt_bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="@dimen/dp60"
-        android:visibility="gone"
-        android:background="@android:color/transparent"
-        android:orientation="horizontal">
-    </LinearLayout>
+        android:layout_alignParentBottom="true">
 
-    <!-- 贴纸选择区域 -->
-    <RelativeLayout
-        android:id="@+id/layout_sticker"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/dp180"
-        android:layout_gravity="bottom"
-        android:background="@color/white"
-        android:visibility="gone"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp40"
+            android:layout_margin="@dimen/dp10">
 
-    <!-- 底部缩略图 -->
-    <RelativeLayout
-        android:id="@+id/layout_thumb"
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true">
+                <Button
+                    android:id="@+id/btn_filters"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:minHeight="@dimen/dp40"
+                    android:minWidth="@dimen/dp50"
+                    android:textColor="@color/white"
+                    android:text="@string/filters" />
+
+                <Button
+                    android:id="@+id/btn_edit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp10"
+                    android:background="@android:color/transparent"
+                    android:minHeight="@dimen/dp40"
+                    android:minWidth="@dimen/dp50"
+                    android:textColor="@color/white"
+                    android:text="@string/edit" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_alignParentEnd="true">
+                <Button
+                    android:id="@+id/btn_music"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/dp10"
+                    android:background="@android:color/transparent"
+                    android:minHeight="@dimen/dp40"
+                    android:minWidth="@dimen/dp50"
+                    android:textColor="@color/white"
+                    android:text="音乐" />
+
+                <Button
+                    android:id="@+id/btn_volume"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:minHeight="@dimen/dp40"
+                    android:minWidth="@dimen/dp50"
+                    android:textColor="@color/white"
+                    android:text="声音" />
+
+            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp1"
+                android:layout_alignParentBottom="true"
+                android:background="@color/white"/>
+        </RelativeLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp140">
+
+        </FrameLayout>
+
+    </RelativeLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/dp50"
-        android:layout_marginBottom="@dimen/dp60"
-        android:layout_gravity="bottom"
-        android:visibility="gone">
-        <!-- 用于存放缩略图 -->
-        <LinearLayout
-            android:id="@+id/layout_thumbnail"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:layout_below="@id/layout_navigation"
+        android:layout_above="@id/layoutt_bottom">
+
+        <com.cgfay.caincamera.view.VideoTextureView
+            android:id="@+id/video_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal"/>
-        <!--区域选择视图-->
-        <com.cgfay.caincamera.view.FrameThumbnailView
-            android:id="@+id/thumbnailView"
-            android:layout_width="match_parent"
-            android:layout_height="50dp" />
-    </RelativeLayout>
-</FrameLayout>
+            android:layout_gravity="center" />
+    </LinearLayout>
+
+
+
+</RelativeLayout>
