@@ -17,19 +17,27 @@
         android:orientation="vertical"
         android:gravity="center"
         android:layout_centerInParent="true">
-        <Button
-            android:id="@+id/btn_single"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:text="单线程"/>
 
         <Button
             android:id="@+id/btn_multi"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:text="双线程"/>
+            android:text="@string/btn_muti"/>
+
+        <Button
+            android:id="@+id/btn_face_test"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/btn_facepp"/>
+
+        <Button
+            android:id="@+id/btn_face_test2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/btn_facepp2"/>
 
     </LinearLayout>
 

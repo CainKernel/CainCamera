@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.cgfay.caincamera.R;
+import com.cgfay.caincamera.activity.camera.TestActivity;
 import com.cgfay.utilslibrary.PermissionUtils;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -17,6 +18,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mBtnCamera;
     private Button mBtnEdit;
     private Button mBtnPush;
+    private Button mBtnTest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +58,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBtnEdit.setOnClickListener(this);
         mBtnPush = (Button) findViewById(R.id.btn_push);
         mBtnPush.setOnClickListener(this);
+        mBtnTest = (Button) findViewById(R.id.btn_test);
+        mBtnTest.setOnClickListener(this);
     }
 
     @Override
@@ -63,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.btn_camera:
                 startActivity(new Intent(MainActivity.this, CameraActivity.class));
-                finish();
                 break;
 
             case R.id.btn_edit:
@@ -72,6 +75,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_push:
                 startActivity(new Intent(MainActivity.this, RtmpPushActivity.class));
+                break;
+
+            case R.id.btn_test:
+                startActivity(new Intent(MainActivity.this, TestActivity.class));
                 break;
         }
     }

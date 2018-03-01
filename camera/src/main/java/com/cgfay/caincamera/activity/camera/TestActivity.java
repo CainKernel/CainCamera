@@ -12,6 +12,8 @@ import android.widget.Button;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.activity.CameraActivity;
+import com.cgfay.caincamera.activity.facetrack.FaceTrack2Activity;
+import com.cgfay.caincamera.activity.facetrack.FaceTrackActivity;
 import com.cgfay.utilslibrary.PermissionUtils;
 
 public class TestActivity extends AppCompatActivity implements View.OnClickListener {
@@ -25,8 +27,9 @@ public class TestActivity extends AppCompatActivity implements View.OnClickListe
     private boolean mCameraEnable = false;
     private boolean mStorageWriteEnable = false;
 
-    private Button mBtnSingle;
     private Button mBtnMulti;
+    private Button mBtnFaceTest;
+    private Button mBtnFaceTest2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,21 +51,30 @@ public class TestActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initView() {
-        mBtnSingle = (Button) findViewById(R.id.btn_single);
-        mBtnSingle.setOnClickListener(this);
         mBtnMulti = (Button) findViewById(R.id.btn_multi);
         mBtnMulti.setOnClickListener(this);
+
+        mBtnFaceTest = (Button) findViewById(R.id.btn_face_test);
+        mBtnFaceTest.setOnClickListener(this);
+
+        mBtnFaceTest2 = (Button) findViewById(R.id.btn_face_test2);
+        mBtnFaceTest2.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.btn_single:
-                startActivity(new Intent(TestActivity.this, CameraActivity.class));
-                break;
 
             case R.id.btn_multi:
                 startActivity(new Intent(TestActivity.this, CameraTestActivity.class));
+                break;
+
+            case R.id.btn_face_test:
+                startActivity(new Intent(TestActivity.this, FaceTrackActivity.class));
+                break;
+
+            case R.id.btn_face_test2:
+                startActivity(new Intent(TestActivity.this, FaceTrack2Activity.class));
                 break;
         }
     }
