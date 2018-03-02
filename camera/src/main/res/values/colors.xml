@@ -31,5 +31,6 @@
     <color name="graffitiYellow">#FECD52</color>
     <color name="graffitiBlue">#145CB9</color>
     <color name="graffitiGreen">#21AE58</color>
+    <color name="bottomBackground">#2A2A2A</color>
 
 </resources>

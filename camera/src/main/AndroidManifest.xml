@@ -46,21 +46,19 @@
         <activity
             android:name=".activity.CameraActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/CameraTheme">
-        </activity>
-        <activity android:name=".activity.PhotoViewActivity">
-        </activity>
+            android:theme="@style/CameraTheme"></activity>
+        <activity android:name=".activity.PhotoViewActivity"></activity>
         <activity android:name=".activity.CapturePreviewActivity" />
         <!-- 视频编辑 -->
         <activity android:name=".activity.VideoEditActivity" />
-        <activity android:name=".activity.RtmpPushActivity"/>
+        <activity android:name=".activity.RtmpPushActivity" />
 
         <!-- 测试的Activity -->
-        <activity android:name=".activity.facetrack.FaceTrackActivity"/>
-        <activity android:name=".activity.facetrack.FaceTrack2Activity"/>
+        <activity android:name=".activity.facetrack.FaceTrackActivity" />
+        <activity android:name=".activity.facetrack.FaceTrack2Activity" />
         <activity android:name=".activity.camera.CameraTestActivity" />
         <activity android:name=".activity.camera.TestActivity" />
-
+        <activity android:name=".activity.videoedit.MusicSelectActivity"></activity>
     </application>
 
 </manifest>

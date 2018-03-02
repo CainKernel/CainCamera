@@ -36,17 +36,24 @@
     <string name="hue">色调</string>
     <string name="saturation">饱和度</string>
     <string name="sharpness">锐度</string>
+
     <!--编辑视频-->
-    <string name="cancel">返回</string>
+    <string name="back">返回</string>
     <string name="edit_title">编辑视频</string>
-    <string name="finish">下一步</string>
+    <string name="next">下一步</string>
     <string name="filters">滤镜</string>
     <string name="edit">编辑</string>
     <string name="speed">加速</string>
     <string name="subtitle">字幕</string>
     <string name="cut">剪辑</string>
     <string name="graffiti">魔法涂鸦</string>
-    <string name="mvfilters">MV特效</string>
+    <string name="hiphop">嘻哈特效</string>
+
+    <string name="cancel">取消</string>
+    <string name="confirm">确定</string>
+
+    <string name="edit_title_speed">加速变声</string>
+    <string name="edit_title_volume">调节音量</string>
 
     <string-array name="trackig_mode_array">
         <item>Normal</item>

@@ -21,4 +21,7 @@
     <style name="CameraTheme" parent="CameraTheme.Base">
     </style>
 
+    <style name="CustomSeekBar" parent="Base.Widget.AppCompat.SeekBar">
+    </style>
+
 </resources>

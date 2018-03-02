@@ -14,7 +14,7 @@
         android:layout_margin="@dimen/dp10"
         android:layout_alignParentTop="true" >
         <Button
-            android:id="@+id/btn_cancel"
+            android:id="@+id/btn_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -23,9 +23,10 @@
             android:minHeight="@dimen/dp40"
             android:minWidth="@dimen/dp50"
             android:textColor="@color/white"
-            android:text="@string/cancel"/>
+            android:text="@string/back"/>
 
         <TextView
+            android:id="@+id/edit_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
@@ -33,7 +34,7 @@
             android:text="@string/edit_title"/>
 
         <Button
-            android:id="@+id/btn_done"
+            android:id="@+id/btn_next"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -43,20 +44,22 @@
             android:minWidth="@dimen/dp50"
             android:textColor="@color/white"
             android:layout_gravity="end"
-            android:text="@string/finish"/>
+            android:text="@string/next"/>
     </RelativeLayout>
 
     <!--底部编辑栏-->
-    <RelativeLayout
-        android:id="@+id/layoutt_bottom"
+    <FrameLayout
+        android:id="@+id/layout_bottom"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/dp140"
         android:layout_alignParentBottom="true">
 
+        <!-- 编辑栏按钮 -->
         <RelativeLayout
+            android:id="@+id/layout_botom_menu"
             android:layout_width="match_parent"
             android:layout_height="@dimen/dp40"
-            android:layout_margin="@dimen/dp10">
+            android:layout_gravity="top">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -118,28 +121,134 @@
                 android:background="@color/white"/>
         </RelativeLayout>
 
+        <!-- 内容框 -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/dp140">
+            android:layout_height="@dimen/dp100"
+            android:layout_gravity="bottom">
+
+            <!-- 滤镜列表 -->
+            <com.cgfay.utilslibrary.AsyncRecyclerview
+                android:id="@+id/filter_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center">
+            </com.cgfay.utilslibrary.AsyncRecyclerview>
+
+            <!-- 编辑按钮列表 -->
+            <include
+                android:visibility="gone"
+                layout="@layout/view_bottom_edit" />
 
         </FrameLayout>
 
-    </RelativeLayout>
+        <!-- 调整播放速度 -->
+        <FrameLayout
+            android:id="@+id/layout_speed"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
+            android:background="@color/video_window_background"
+            android:layout_marginBottom="@dimen/dp40"
+            android:visibility="gone">
 
-    <LinearLayout
+        </FrameLayout>
+
+        <!-- 调整音量大小 -->
+
+        <!-- 底部确认按钮 -->
+        <LinearLayout
+            android:id="@+id/layout_bottom_confirm"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp40"
+            android:layout_gravity="bottom"
+            android:background="@color/bottomBackground"
+            android:orientation="horizontal"
+            android:visibility="gone">
+            <Button
+                android:id="@+id/btn_cancel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@android:color/white"
+                android:text="@string/cancel"
+                android:background="@android:color/transparent"/>
+            <View
+                android:layout_width="@dimen/dp1"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:layout_margin="@dimen/dp5"/>
+            <Button
+                android:id="@+id/btn_confirm"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@android:color/white"
+                android:text="@string/confirm"
+                android:background="@android:color/transparent"/>
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- 视频播放栏 -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
         android:gravity="center"
         android:layout_below="@id/layout_navigation"
-        android:layout_above="@id/layoutt_bottom">
+        android:layout_above="@id/layout_bottom">
 
         <com.cgfay.caincamera.view.VideoTextureView
             android:id="@+id/video_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center" />
-    </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_play_indicator"
+            android:layout_width="@dimen/dp80"
+            android:layout_height="@dimen/dp80"
+            android:layout_gravity="center"
+            android:background="@drawable/video_play"
+            android:visibility="gone"/>
+
+        <!-- 播放进度 -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom">
+            <!-- 当前播放进度 -->
+            <TextView
+                android:id="@+id/tv_current"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_marginBottom="@dimen/dp5"
+                android:layout_marginStart="@dimen/dp5"
+                android:textColor="@android:color/white" />
+            <!-- 播放时长 -->
+            <TextView
+                android:id="@+id/tv_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginBottom="@dimen/dp5"
+                android:layout_marginEnd="@dimen/dp5"
+                android:textColor="@android:color/white" />
+            <!-- 进度条 -->
+            <SeekBar
+                android:id="@+id/play_progress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/tv_duration"
+                android:layout_toEndOf="@id/tv_current"
+                android:layout_marginBottom="@dimen/dp5"
+                android:layout_marginStart="@dimen/dp5"
+                android:layout_marginEnd="@dimen/dp5"
+                style="@style/CustomSeekBar" />
+        </RelativeLayout>
+    </FrameLayout>
 
 
 

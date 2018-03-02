@@ -254,6 +254,18 @@ public class StringUtils {
     }
 
     /**
+     * 时间显示(只显示到秒)
+     * @param totalMillisSeconds
+     * @return
+     */
+    public static String generateStandardTime(int totalMillisSeconds) {
+        int totalSeconds = totalMillisSeconds / 1000;
+        int seconds = totalSeconds % 60;
+        int minutes = (totalSeconds / 60) % 60;
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    /**
      * 转换文件大小
      * @param size
      * @return
