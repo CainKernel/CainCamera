@@ -69,10 +69,7 @@ blog: [cain_huang](http://www.jianshu.com/u/fd6f2b25d0f4)
 [Android 使用OpenGLES 的粒子系统](http://www.jianshu.com/p/0831b40a0bc9)
 
 
-
-
 ## 相机相关
-
 [关于Android Camera2 API 的几个问题](http://www.jianshu.com/p/5148090c2191)
 
 [Android Camera SurfaceView 预览拍照](http://www.jianshu.com/p/9e0f3fc5a3b4)
@@ -91,13 +88,34 @@ blog: [cain_huang](http://www.jianshu.com/u/fd6f2b25d0f4)
 
 [OpenGLES + MediaCodec 短视频分段录制实现与无丢帧录制优化](http://www.jianshu.com/p/9dc03b01bae3)
 
+[Android MediaExtractor + MediaCodec 实现简易播放器](https://www.jianshu.com/p/ec5fd369c518)
+
 [使用 MediaExtractor + MediaMuxer 多个视频合成MP4](http://www.jianshu.com/p/97b79842b47a)
 
-## FFmpeg相关
-[windows环境下编译ffmpeg打包成单个so并使用Cmake集成到Android工程中](http://www.jianshu.com/p/ed2266abe28b)
+## 多媒体相关
+[关于EXIF格式的分析](https://www.jianshu.com/p/ae7b9ab20bca)
 
+[Android中的YUV格式解析](https://www.jianshu.com/p/0d5800b5d9a2)
+
+[FLV视频封装格式详细解析](https://www.jianshu.com/p/07657d85617e)
+
+## FFmpeg相关
 [Android Studio + cmake 编译 ffmpeg 命令工具](http://www.jianshu.com/p/99aa2ce1960e)
 
+[windows环境下编译ffmpeg打包成单个so并使用Cmake集成到Android工程中](http://www.jianshu.com/p/ed2266abe28b)
+
+[FFmpeg编程开发笔记 —— 多媒体概念](https://www.jianshu.com/p/86163f48f3dd)
+
+[FFmpeg编程开发笔记 —— FFmpeg介绍](https://www.jianshu.com/p/71d5d0f7a1c4)
+
+[FFmpeg编程开发笔记 —— Android 移植 FFmpeg + SDL2.0 库](https://www.jianshu.com/p/ff60dc41f876)
+
+[FFmpeg编程开发笔记 —— Android FFmpeg + SDL2.0简易播放器实现](https://www.jianshu.com/p/77c8944d9058)
+
+[FFmpeg编程开发笔记 —— ffplay.c 源码注释](https://www.jianshu.com/p/87ac510edf07)
+
+[FFmpeg编程开发笔记 —— Android环境使用FFmpeg录制视频](https://www.jianshu.com/p/0fd017336b06)
 
 
-
+## Android C/C++ 相关
+[Android C++ 学习笔记 (一) —— 使用JNI](https://www.jianshu.com/p/7b83d825fc5c)
