@@ -55,6 +55,15 @@
     <string name="edit_title_speed">加速变声</string>
     <string name="edit_title_volume">调节音量</string>
 
+    <!-- 编辑图片页面 -->
+    <string name="image_edit_beautify">美颜</string>
+    <string name="image_edit_filters">滤镜</string>
+    <string name="image_edit_font">文字</string>
+    <string name="image_edit_graffiti">涂鸦</string>
+    <string name="image_edit_crop">裁剪</string>
+    <string name="image_edit_rotate">旋转</string>
+
+
     <string-array name="trackig_mode_array">
         <item>Normal</item>
         <item>Robust</item>

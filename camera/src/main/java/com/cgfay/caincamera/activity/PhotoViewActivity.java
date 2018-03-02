@@ -38,24 +38,10 @@ import java.util.Iterator;
 import java.util.List;
 
 public class PhotoViewActivity extends AppCompatActivity
-        implements PhotoViewAdapter.OnItemClickLitener, SeekBar.OnSeekBarChangeListener,
-        View.OnClickListener, FaceTrackerCallback {
+        implements PhotoViewAdapter.OnItemClickLitener {
 
     private static final int REQUEST_STORAGE_READ = 0x01;
     private static final int COLUMNSIZE = 3;
-    // 原始滤镜值
-    private static final float[] OriginalValues = new float[] {0, 1.0f, 0, 0, 1.0f, 0};
-
-    // 滤镜值索引
-    private static final int BrightnessIndex = 0;
-    private static final int ContrastIndex = 1;
-    private static final int ExposureIndex = 2;
-    private static final int HueIndex = 3;
-    private static final int SaturationIndex = 4;
-    private static final int SharpnessIndex = 5;
-
-    // Seekbar的最大值
-    private static final int SeekBarMax = 100;
 
     private boolean multiSelectEnable = false;
     private int mCurrentSelecetedIndex = -1; // 单选模式下的当前位置
@@ -66,21 +52,6 @@ public class PhotoViewActivity extends AppCompatActivity
     private PhotoViewAdapter mPhotoAdapter;
     // 媒体库中的图片数据
     List<MediaMeta> mImageLists;
-
-    // 编辑图片
-    private RelativeLayout mPhotoEditLayout;
-    private ImageView mEditImageView;
-    private SeekBar mSeekbar;
-    private Button mBrightness;
-    private Button mContrast;
-    private Button mExposure;
-    private Button mHue;
-    private Button mSaturation;
-    private Button mSharpness;
-    private TextView mValueShow;
-    // 用于记录六种选项值
-    private float[] mValues = OriginalValues;
-    private int mCurrentFilterIndex = BrightnessIndex;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,9 +67,6 @@ public class PhotoViewActivity extends AppCompatActivity
         } else {
             requestStorageReadPermission();
         }
-        // Face++请求联网认证
-        FaceTrackManager.getInstance().requestFaceNetwork(this);
-        FaceTrackManager.getInstance().setFaceCallback(this);
     }
 
     private void initView() {
@@ -107,32 +75,6 @@ public class PhotoViewActivity extends AppCompatActivity
         mLayoutManager = new GridLayoutManager(PhotoViewActivity.this, COLUMNSIZE);
         mPhototView.setLayoutManager(mLayoutManager);
         mImageLists = new ArrayList<MediaMeta>();
-        // 编辑图片
-        mPhotoEditLayout = (RelativeLayout) findViewById(R.id.layout_photo_edit);
-        mEditImageView = (ImageView) findViewById(R.id.photo_edit);
-        mValueShow = (TextView) findViewById(R.id.show_value);
-
-        // 绑定图片显示视图
-        PhotoEditManager.getInstance().setContext(this);
-        PhotoEditManager.getInstance().setImageView(mEditImageView);
-
-        mSeekbar = (SeekBar) findViewById(R.id.edit_value);
-        mBrightness = (Button) findViewById(R.id.btn_brightness);
-        mContrast = (Button) findViewById(R.id.btn_contrast);
-        mExposure = (Button) findViewById(R.id.btn_exposure);
-        mHue = (Button) findViewById(R.id.btn_hue);
-        mSaturation = (Button)findViewById(R.id.btn_saturation);
-        mSharpness = (Button) findViewById(R.id.btn_sharpness);
-        mValueShow = (TextView) findViewById(R.id.show_value);
-
-        mSeekbar.setMax(SeekBarMax);
-        mSeekbar.setOnSeekBarChangeListener(this);
-        mBrightness.setOnClickListener(this);
-        mContrast.setOnClickListener(this);
-        mExposure.setOnClickListener(this);
-        mHue.setOnClickListener(this);
-        mSaturation.setOnClickListener(this);
-        mSharpness.setOnClickListener(this);
     }
 
     @Override
@@ -197,9 +139,10 @@ public class PhotoViewActivity extends AppCompatActivity
             Intent intent = new Intent(PhotoViewActivity.this, VideoEditActivity.class);
             intent.putExtra(VideoEditActivity.PATH, mImageLists.get(position).getPath());
             startActivity(intent);
-        } else {
-            // 预览编辑选中的照片
-            showPhotoEditView();
+        } else if (mImageLists.get(position).getMimeType().startsWith("image/")) {
+            Intent intent = new Intent(PhotoViewActivity.this, ImageEditActivity.class);
+            intent.putExtra(ImageEditActivity.PATH, mImageLists.get(position).getPath());
+            startActivity(intent);
         }
     }
 
@@ -254,147 +197,6 @@ public class PhotoViewActivity extends AppCompatActivity
 
     }
 
-    /**
-     * 显示图片编辑界面
-     */
-    private void showPhotoEditView() {
-        // 显示预览画面
-        mPhototView.setVisibility(View.GONE);
-        mPhotoEditLayout.setVisibility(View.VISIBLE);
-        // 在开始预览之前先设置图像元数据
-        MediaMeta mediaMeta = mImageLists.get(mCurrentSelecetedIndex);
-        PhotoEditManager.getInstance().setImageMeta(mediaMeta);
-        // 显示图片
-        PhotoEditManager.getInstance().showImage();
-    }
-
-    @Override
-    public void onTrackingFinish(boolean hasFaces) {
-        Log.d("onTracking", "has faces ? " + hasFaces);
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            // 亮度
-            case R.id.btn_brightness:
-                PhotoEditManager.getInstance().setBrightness(mValues[BrightnessIndex]);
-                mCurrentFilterIndex = BrightnessIndex;
-                mSeekbar.setProgress((int) (mValues[BrightnessIndex] * SeekBarMax));
-                break;
-
-            // 对比度
-            case R.id.btn_contrast:
-                PhotoEditManager.getInstance().setContrast(mValues[ContrastIndex]);
-                mCurrentFilterIndex = ContrastIndex;
-                mSeekbar.setProgress((int) (mValues[ContrastIndex] * SeekBarMax / 2.0f));
-                break;
-
-            // 曝光
-            case R.id.btn_exposure:
-                PhotoEditManager.getInstance().setExposure(mValues[ExposureIndex]);
-                mCurrentFilterIndex = ExposureIndex;
-                mSeekbar.setProgress((int) (mValues[ExposureIndex] * SeekBarMax));
-                break;
-
-            // 色调
-            case R.id.btn_hue:
-                PhotoEditManager.getInstance().setHue(mValues[HueIndex]);
-                mCurrentFilterIndex = HueIndex;
-                mSeekbar.setProgress((int) (mValues[HueIndex] * SeekBarMax / 360f));
-                break;
-
-            // 饱和度
-            case R.id.btn_saturation:
-                PhotoEditManager.getInstance().setSaturation(mValues[SaturationIndex]);
-                mCurrentFilterIndex = SaturationIndex;
-                mSeekbar.setProgress((int) (mValues[SaturationIndex] * SeekBarMax / 2.0f));
-                break;
-
-            // 锐度
-            case R.id.btn_sharpness:
-                PhotoEditManager.getInstance().setSharpness(mValues[SharpnessIndex]);
-                mCurrentFilterIndex = SharpnessIndex;
-                mSeekbar.setProgress((int) (mValues[SharpnessIndex] * SeekBarMax));
-                break;
-        }
-    }
-
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        setFilterValues(progress);
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-        mValueShow.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-        mValueShow.setVisibility(View.GONE);
-    }
-
-    /**
-     * 设置滤镜值
-     * @param progress seekbar的进度值
-     */
-    private void setFilterValues(int progress) {
-        float value = (float) progress / (float) SeekBarMax;
-        // 计算百分比
-        float text = (float)Math.round(value * 100);
-        String string = text + "%";
-        // 设置显示的值
-        mValueShow.setText(string);
-        // 调整实际的率净值
-        if (mCurrentFilterIndex == HueIndex) {
-            value = value * 360f; // 色调在0 ~ 360度之间变化
-        } else if (mCurrentFilterIndex == SaturationIndex
-                || mCurrentFilterIndex == ContrastIndex) {
-            value = value * 2.0f; // 对比度在0 ~ 2之间变化
-        }
-        // 缓存当前的滤镜值
-        mValues[mCurrentFilterIndex] = value;
-        switch (mCurrentFilterIndex) {
-            case BrightnessIndex:
-                PhotoEditManager.getInstance().setBrightness(value);
-                break;
-
-            case ContrastIndex:
-                PhotoEditManager.getInstance().setContrast(value);
-                break;
-
-            case ExposureIndex:
-                PhotoEditManager.getInstance().setExposure(value);
-                break;
-
-            case HueIndex:
-                PhotoEditManager.getInstance().setHue(value);
-                break;
-
-            case SaturationIndex:
-                PhotoEditManager.getInstance().setSaturation(value);
-                break;
-
-            case SharpnessIndex:
-                PhotoEditManager.getInstance().setSharpness(value);
-                break;
-        }
-    }
-
-    /**
-     * 重置滤镜为原始值
-     */
-    private void resetFilterValues() {
-        mValues = OriginalValues;
-        PhotoEditManager.getInstance().setBrightness(OriginalValues[BrightnessIndex]);
-        PhotoEditManager.getInstance().setContrast(OriginalValues[ContrastIndex]);
-        PhotoEditManager.getInstance().setExposure(OriginalValues[ExposureIndex]);
-        PhotoEditManager.getInstance().setHue(OriginalValues[HueIndex]);
-        PhotoEditManager.getInstance().setSaturation(OriginalValues[SaturationIndex]);
-        PhotoEditManager.getInstance().setSharpness(OriginalValues[SharpnessIndex]);
-    }
-
     MediaMetadataRetriever mRetriever;
 
     // 扫描媒体库
@@ -413,8 +215,10 @@ public class PhotoViewActivity extends AppCompatActivity
                         String path = cursor.getString(cursor
                                 .getColumnIndex(MediaStore.Images.Media.DATA));
                         // 跳过不存在图片的路径，比如第三方应用删除了图片不更新媒体库，此时会出现不存在的图片
+                        // 剔除gif，编辑图片时，不支持gif
                         File file = new File(path);
-                        if (!file.exists()) {
+                        if (!file.exists() || cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.MIME_TYPE))
+                                .toLowerCase().endsWith("gif")) {
                             continue;
                         }
                         MediaMeta image = new MediaMeta();
