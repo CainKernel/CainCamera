@@ -56,12 +56,19 @@
     <string name="edit_title_volume">调节音量</string>
 
     <!-- 编辑图片页面 -->
-    <string name="image_edit_beautify">美颜</string>
-    <string name="image_edit_filters">滤镜</string>
+    <string name="image_edit_title">编辑图片</string>
+    <string name="image_edit_beautify">一键美化</string>
+    <string name="image_edit_filters">特效</string>
+    <string name="image_edit_crop">裁剪旋转</string>
+    <string name="image_edit_stickers">贴纸</string>
     <string name="image_edit_font">文字</string>
-    <string name="image_edit_graffiti">涂鸦</string>
-    <string name="image_edit_crop">裁剪</string>
-    <string name="image_edit_rotate">旋转</string>
+    <string name="image_edit_adjust">调节</string>
+    <string name="image_edit_grafitti">涂鸦</string>
+    <string name="image_edit_mosaic">马赛克</string>
+    <string name="image_edit_edge">边框</string>
+    <string name="image_edit_enhancement">夜景增强</string>
+    <string name="image_edit_blur">虚化</string>
+    <string name="image_edit_mat_blur">抠图虚化</string>
 
 
     <string-array name="trackig_mode_array">

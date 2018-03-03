@@ -1,11 +1,13 @@
 package com.cgfay.caincamera.activity;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.session.PlaybackState;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -229,6 +231,11 @@ public class CapturePreviewActivity extends AppCompatActivity
         File file = new File(mPath);
         String newPath = ParamsManager.AlbumPath + file.getName();
         FileUtils.copyFile(mPath, newPath);
+        // 更新媒体库
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.DATA, newPath);
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, file.getName());
+        getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
         // 保存成功
         Toast.makeText(this, "保存成功!", Toast.LENGTH_LONG);
         executeDeleteFile();
@@ -242,7 +249,7 @@ public class CapturePreviewActivity extends AppCompatActivity
     private void combineVideo() {
         final String path = ParamsManager.AlbumPath
                 + "CainCamera_" + System.currentTimeMillis() + ".mp4";
-        File file = new File(path);
+        final File file = new File(path);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }
@@ -292,6 +299,12 @@ public class CapturePreviewActivity extends AppCompatActivity
                                     }
                                 });
                                 executeDeleteFile();
+                                // 更更新媒体库
+                                ContentValues values = new ContentValues();
+                                values.put(MediaStore.Images.Media.DATA, path);
+                                values.put(MediaStore.Images.Media.DISPLAY_NAME, file.getName());
+                                getContentResolver().insert(
+                                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
                                 // 跳转至视频编辑页面
                                 Intent intent = new Intent(CapturePreviewActivity.this,
                                         VideoEditActivity.class);

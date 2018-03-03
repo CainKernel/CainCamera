@@ -117,7 +117,7 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
         mBtnSpeed = (Button) findViewById(R.id.btn_speed);
         mBtnSubtitle = (Button) findViewById(R.id.btn_subtitle);
         mBtnCut = (Button) findViewById(R.id.btn_cut);
-        mBtnGraffiti = (Button) findViewById(R.id.btn_graffiti);
+        mBtnGraffiti = (Button) findViewById(R.id.btn_graffitti);
         mBtnHipHop = (Button) findViewById(R.id.btn_hip_hop);
 
         mLayoutBottomConfirm = (LinearLayout) findViewById(R.id.layout_bottom_confirm);
@@ -290,8 +290,8 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
                 break;
 
             // 魔法涂鸦
-            case R.id.btn_graffiti:
-                showGraffitiView();
+            case R.id.btn_graffitti:
+                showGraffittiView();
                 break;
 
             // 嘻哈特效
@@ -448,7 +448,7 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
     /**
      * 显示魔法涂鸦页面
      */
-    private void showGraffitiView() {
+    private void showGraffittiView() {
 
     }
 

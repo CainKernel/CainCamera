@@ -10,71 +10,21 @@
     <include
         layout="@layout/view_edit_navigation" />
 
+    <!-- 底部编辑栏 -->
+    <FrameLayout
+        android:id="@+id/layout_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/dp50"
+        android:layout_alignParentBottom="true">
+    </FrameLayout>
+
     <ImageView
         android:id="@+id/iv_image"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/layout_navigation" />
-
-    <!-- 底部编辑功能选项 -->
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true">
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:id="@+id/btn_beautify"
-                android:layout_width="@dimen/dp80"
-                android:layout_height="@dimen/dp50"
-                android:background= "@android:color/transparent"
-                android:textColor="@android:color/white"
-                android:text="@string/image_edit_beautify"  />
-
-            <Button
-                android:id="@+id/btn_filters"
-                android:layout_width="@dimen/dp80"
-                android:layout_height="@dimen/dp50"
-                android:background="@android:color/transparent"
-                android:textColor="@android:color/white"
-                android:text="@string/image_edit_filters" />
-
-            <Button
-                android:id="@+id/btn_font"
-                android:layout_width="@dimen/dp80"
-                android:layout_height="@dimen/dp50"
-                android:background="@android:color/transparent"
-                android:textColor="@android:color/white"
-                android:text="@string/image_edit_font"/>
-
-            <Button
-                android:id="@+id/btn_graffiti"
-                android:layout_width="@dimen/dp80"
-                android:layout_height="@dimen/dp50"
-                android:background="@android:color/transparent"
-                android:textColor="@android:color/white"
-                android:text="@string/image_edit_graffiti"/>
-
-            <Button
-                android:id="@+id/btn_crop"
-                android:layout_width="@dimen/dp80"
-                android:layout_height="@dimen/dp50"
-                android:background= "@android:color/transparent"
-                android:textColor="@android:color/white"
-                android:text="@string/image_edit_crop"/>
-
-            <Button
-                android:id="@+id/btn_rotate"
-                android:layout_width="@dimen/dp80"
-                android:layout_height="@dimen/dp50"
-                android:background= "@android:color/transparent"
-                android:textColor="@android:color/white"
-                android:text="@string/image_edit_rotate"/>
-
-        </LinearLayout>
-    </HorizontalScrollView>
+        android:layout_below="@id/layout_navigation"
+        android:layout_above="@id/layout_bottom"/>
 
 </RelativeLayout>
