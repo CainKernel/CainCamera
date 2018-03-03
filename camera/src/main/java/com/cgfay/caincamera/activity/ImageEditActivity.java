@@ -1,6 +1,9 @@
 package com.cgfay.caincamera.activity;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
+import com.cgfay.utilslibrary.BitmapUtils;
 
 public class ImageEditActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -24,6 +28,8 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
 
     private String mImagePath;
 
+    private Bitmap mSource;
+    private Bitmap mCurrent;
     private ImageView mImageView;
 
     private Button mBtnBack;
@@ -60,6 +66,8 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
         mInflater = (LayoutInflater) getApplicationContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         initView();
+        mSource = BitmapFactory.decodeFile(mImagePath);
+        mImageView.setImageBitmap(mSource);
     }
 
     /**
@@ -73,6 +81,12 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
 
         mBtnBack = (Button) findViewById(R.id.btn_back);
         mBtnNext = (Button) findViewById(R.id.btn_next);
+
+        mScrollView = (HorizontalScrollView) mInflater
+                .inflate(R.layout.view_image_edit_bottom, null);
+        mLayoutBottom = (FrameLayout) findViewById(R.id.layout_bottom);
+        resetBottomView();
+
         mBtnBeautify = (Button) findViewById(R.id.btn_beautify);
         mBtnFilters = (Button) findViewById(R.id.btn_filters);
         mBtnCropRotate = (Button) findViewById(R.id.btn_crop_rotate);
@@ -101,12 +115,6 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
         mBtnEnhancement.setOnClickListener(this);
         mBtnBlur.setOnClickListener(this);
         mBtnMatBlur.setOnClickListener(this);
-
-
-        mScrollView = (HorizontalScrollView) mInflater
-                .inflate(R.layout.view_image_edit_bottom, null);
-        mLayoutBottom = (FrameLayout) findViewById(R.id.layout_bottom);
-        resetBottomView();
 
     }
 
