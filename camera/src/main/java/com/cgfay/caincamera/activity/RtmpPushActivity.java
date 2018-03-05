@@ -3,10 +3,11 @@ package com.cgfay.caincamera.activity;
 import android.app.Activity;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
+import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Surface;
@@ -18,6 +19,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.cgfay.caincamera.R;
+import com.cgfay.cainfilter.utils.TextureRotationUtils;
 import com.cgfay.pushlibrary.AudioPusher;
 import com.cgfay.pushlibrary.RtmpPusher;
 import com.cgfay.utilslibrary.AspectFrameLayout;
@@ -51,9 +53,16 @@ public class RtmpPushActivity extends AppCompatActivity implements View.OnClickL
     private HandlerThread mRenderThread;
     private Handler mRenderHandler;
 
+    private boolean mBackReverse;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        String phoneName = Build.MODEL;
+        if (phoneName.toLowerCase().contains("bullhead")
+                || phoneName.toLowerCase().contains("nexus 5x")) {
+            mBackReverse = true;
+        }
         setContentView(R.layout.activity_rtmp_push);
 
         mLayoutAspect = (AspectFrameLayout) findViewById(R.id.layout_aspect);
@@ -318,7 +327,6 @@ public class RtmpPushActivity extends AppCompatActivity implements View.OnClickL
         int fps = chooseFixedPreviewFps(parameters, 30 * 1000);
         parameters.setRecordingHint(true);
         // 设置自动对焦
-        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
         mCamera.setParameters(parameters);
         // 设置预览宽高
         setPreviewSize(mCamera, DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -327,7 +335,11 @@ public class RtmpPushActivity extends AppCompatActivity implements View.OnClickL
         // 设置后置摄像头旋转角度
         int orientation = calculateCameraPreviewOrientation(RtmpPushActivity.this,
                 Camera.CameraInfo.CAMERA_FACING_BACK);
-        mCamera.setDisplayOrientation(orientation);
+        if (mBackReverse) {
+            mCamera.setDisplayOrientation(360 - orientation);
+        } else {
+            mCamera.setDisplayOrientation(orientation);
+        }
 
         // 获取实际预览的宽高
         Camera.Size size = mCamera.getParameters().getPreviewSize();
