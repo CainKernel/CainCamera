@@ -1,11 +1,14 @@
-package com.cgfay.caincamera.activity;
+package com.cgfay.caincamera.activity.videoedit;
 
+import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -14,12 +17,15 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
+import com.cgfay.caincamera.adapter.EffectFilterAdapter;
 import com.cgfay.caincamera.type.StateType;
 import com.cgfay.caincamera.view.VideoTextureView;
+import com.cgfay.cainfilter.core.ColorFilterManager;
 import com.cgfay.utilslibrary.AsyncRecyclerview;
 import com.cgfay.utilslibrary.StringUtils;
 
@@ -36,6 +42,8 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
     private SeekBar mPlayProgressBar;
     private TextView mCurrentPositionView;
     private TextView mDurationView;
+
+    private LayoutInflater mInflater;
 
     // 更新进度条线程停止标志
     private volatile boolean mStopThread;
@@ -56,14 +64,17 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
     // 播放按钮
     private Button mBtnPlayIndicator;
 
+    private RelativeLayout mLayoutBottomMenu;
     // 底部功能选择栏按钮
     private Button mBtnFilters;
     private Button mBtnEdit;
     private Button mBtnMusic;
     private Button mBtnVolume;
 
+    private FrameLayout mLayoutSubContent;
+
     // 编辑列表
-    private HorizontalScrollView mEditList;
+    private HorizontalScrollView mEditButtonList;
     // 编辑栏的按钮
     private Button mBtnSpeed;
     private Button mBtnSubtitle;
@@ -72,12 +83,10 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
     private Button mBtnHipHop;
 
     // 滤镜列表
-    private AsyncRecyclerview mFilterList;
+    private AsyncRecyclerview mFilterListView;
     private LinearLayoutManager mFilterListManager;
 
-
-    // 调整播放速度布局
-    private FrameLayout mLayoutSpeed;
+    private int mColorIndex = 0;
 
     // 底部确认按钮布局
     private LinearLayout mLayoutBottomConfirm;
@@ -93,6 +102,8 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_video_edit);
         mVideoPath = getIntent().getStringExtra(PATH);
+        mInflater = (LayoutInflater) getApplicationContext()
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         initView();
         initVideoPlayer();
     }
@@ -101,36 +112,40 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
      * 初始化视图
      */
     private void initView() {
+
+        mEditTitle = (TextView) findViewById(R.id.edit_title);
         mBtnBack = (Button) findViewById(R.id.btn_back);
         mBtnNext = (Button) findViewById(R.id.btn_next);
-        mEditTitle = (TextView) findViewById(R.id.edit_title);
-
-        mBtnFilters = (Button) findViewById(R.id.btn_filters);
-        mBtnFilters.setTextColor(getResources().getColor(R.color.red));
-        mBtnEdit = (Button) findViewById(R.id.btn_edit);
-        mBtnMusic = (Button) findViewById(R.id.btn_music);
-        mBtnVolume = (Button) findViewById(R.id.btn_volume);
-        mBtnPlayIndicator = (Button) findViewById(R.id.btn_play_indicator);
-
-        mEditList = (HorizontalScrollView) findViewById(R.id.edit_list);
-        mEditList.setVisibility(View.GONE);
-        mBtnSpeed = (Button) findViewById(R.id.btn_speed);
-        mBtnSubtitle = (Button) findViewById(R.id.btn_subtitle);
-        mBtnCut = (Button) findViewById(R.id.btn_cut);
-        mBtnGraffiti = (Button) findViewById(R.id.btn_graffitti);
-        mBtnHipHop = (Button) findViewById(R.id.btn_hip_hop);
-
-        mLayoutBottomConfirm = (LinearLayout) findViewById(R.id.layout_bottom_confirm);
-        mBtnCancel = (Button) findViewById(R.id.btn_cancel);
-        mBtnConfirm = (Button) findViewById(R.id.btn_confirm);
-
         mBtnBack.setOnClickListener(this);
         mBtnNext.setOnClickListener(this);
+
+
+        // 播放指示按钮
+        mBtnPlayIndicator = (Button) findViewById(R.id.btn_play_indicator);
+        mBtnPlayIndicator.setOnClickListener(this);
+
+        // 编辑栏按钮
+        mLayoutBottomMenu = (RelativeLayout) findViewById(R.id.layout_bottom_menu);
+        mBtnFilters = (Button) mLayoutBottomMenu.findViewById(R.id.btn_filters);
+        mBtnEdit = (Button) mLayoutBottomMenu.findViewById(R.id.btn_edit);
+        mBtnMusic = (Button) mLayoutBottomMenu.findViewById(R.id.btn_music);
+        mBtnVolume = (Button) mLayoutBottomMenu.findViewById(R.id.btn_volume);
+
         mBtnFilters.setOnClickListener(this);
         mBtnEdit.setOnClickListener(this);
         mBtnMusic.setOnClickListener(this);
         mBtnVolume.setOnClickListener(this);
-        mBtnPlayIndicator.setOnClickListener(this);
+
+        // 子内容栏
+        mLayoutSubContent = (FrameLayout) findViewById(R.id.layout_sub_content);
+        // 编辑按钮列表
+        mEditButtonList = (HorizontalScrollView) mInflater
+                .inflate(R.layout.view_bottom_edit, null);
+        mBtnSpeed = (Button) mEditButtonList.findViewById(R.id.btn_speed);
+        mBtnSubtitle = (Button) mEditButtonList.findViewById(R.id.btn_subtitle);
+        mBtnCut = (Button) mEditButtonList.findViewById(R.id.btn_cut);
+        mBtnGraffiti = (Button) mEditButtonList.findViewById(R.id.btn_grafitti);
+        mBtnHipHop = (Button) mEditButtonList.findViewById(R.id.btn_hip_hop);
 
         mBtnSpeed.setOnClickListener(this);
         mBtnSubtitle.setOnClickListener(this);
@@ -138,17 +153,40 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
         mBtnGraffiti.setOnClickListener(this);
         mBtnHipHop.setOnClickListener(this);
 
-        mLayoutSpeed = (FrameLayout) findViewById(R.id.layout_speed);
-        mBtnCancel.setOnClickListener(this);
-        mBtnConfirm.setOnClickListener(this);
-
         // 滤镜列表
-        mFilterList = (AsyncRecyclerview) findViewById(R.id.filter_list);
+        mFilterListView = (AsyncRecyclerview) mInflater
+                .inflate(R.layout.view_video_edit_filters, null);
         mFilterListManager = new LinearLayoutManager(this);
         mFilterListManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        mFilterList.setLayoutManager(mFilterListManager);
+        mFilterListView.setLayoutManager(mFilterListManager);
         // TODO 滤镜适配器
+        EffectFilterAdapter adapter = new EffectFilterAdapter(this,
+                ColorFilterManager.getInstance().getFilterType(),
+                ColorFilterManager.getInstance().getFilterName());
 
+        mFilterListView.setAdapter(adapter);
+        adapter.addItemClickListener(new EffectFilterAdapter.OnItemClickLitener() {
+            @Override
+            public void onItemClick(int position) {
+                mColorIndex = position;
+                if (VERBOSE) {
+                    Log.d("changeFilter", "index = " + mColorIndex + ", filter name = "
+                            + ColorFilterManager.getInstance().getColorFilterName(mColorIndex));
+                }
+            }
+        });
+
+        showFilters();
+
+
+        // 底部确认按钮栏
+        mLayoutBottomConfirm = (LinearLayout) mInflater
+                .inflate(R.layout.view_video_edit_bottom_confirm, null);
+        mBtnCancel = (Button) mLayoutBottomConfirm.findViewById(R.id.btn_cancel);
+        mBtnConfirm = (Button) mLayoutBottomConfirm.findViewById(R.id.btn_confirm);
+
+        mBtnCancel.setOnClickListener(this);
+        mBtnConfirm.setOnClickListener(this);
     }
 
     /**
@@ -290,7 +328,7 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
                 break;
 
             // 魔法涂鸦
-            case R.id.btn_graffitti:
+            case R.id.btn_grafitti:
                 showGraffittiView();
                 break;
 
@@ -388,8 +426,8 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
     private void showFilters() {
         mBtnFilters.setTextColor(getResources().getColor(R.color.red));
         mBtnEdit.setTextColor(getResources().getColor(R.color.white));
-        mFilterList.setVisibility(View.VISIBLE);
-        mEditList.setVisibility(View.GONE);
+        mLayoutSubContent.removeAllViews();
+        mLayoutSubContent.addView(mFilterListView);
     }
 
     /**
@@ -398,8 +436,8 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
     private void showEditView() {
         mBtnFilters.setTextColor(getResources().getColor(R.color.white));
         mBtnEdit.setTextColor(getResources().getColor(R.color.red));
-        mFilterList.setVisibility(View.GONE);
-        mEditList.setVisibility(View.VISIBLE);
+        mLayoutSubContent.removeAllViews();
+        mLayoutSubContent.addView(mEditButtonList);
     }
 
     /**
@@ -413,22 +451,20 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
      * 显示声音调整页面
      */
     private void showVolumeChangeView() {
-        mBtnBack.setVisibility(View.GONE);
-        mBtnNext.setVisibility(View.GONE);
-        mEditTitle.setText(getResources().getText(R.string.edit_title_volume));
-        mLayoutBottomConfirm.setVisibility(View.VISIBLE);
-        mLayoutSpeed.setVisibility(View.VISIBLE);
+//        mBtnBack.setVisibility(View.GONE);
+//        mBtnNext.setVisibility(View.GONE);
+//        mEditTitle.setText(getResources().getText(R.string.edit_title_volume));
+//        mLayoutBottomConfirm.setVisibility(View.VISIBLE);
     }
 
     /**
      * 显示音频加速页面
      */
     private void showSpeedChangeView() {
-        mBtnBack.setVisibility(View.GONE);
-        mBtnNext.setVisibility(View.GONE);
-        mEditTitle.setText(getResources().getText(R.string.edit_title_speed));
-        mLayoutBottomConfirm.setVisibility(View.VISIBLE);
-        mLayoutSpeed.setVisibility(View.VISIBLE);
+//        mBtnBack.setVisibility(View.GONE);
+//        mBtnNext.setVisibility(View.GONE);
+//        mEditTitle.setText(getResources().getText(R.string.edit_title_speed));
+//        mLayoutBottomConfirm.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -467,7 +503,6 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
         mBtnNext.setVisibility(View.VISIBLE);
         mEditTitle.setText(getResources().getText(R.string.edit_title));
         mLayoutBottomConfirm.setVisibility(View.GONE);
-        mLayoutSpeed.setVisibility(View.GONE);
     }
 
     /**
@@ -478,6 +513,5 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
         mBtnNext.setVisibility(View.VISIBLE);
         mEditTitle.setText(getResources().getText(R.string.edit_title));
         mLayoutBottomConfirm.setVisibility(View.GONE);
-        mLayoutSpeed.setVisibility(View.GONE);
     }
 }

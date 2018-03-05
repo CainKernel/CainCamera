@@ -78,18 +78,6 @@ public class EffectFilterAdapter extends RecyclerView.Adapter<EffectFilterAdapte
             } else {
                 holder.mImageView.setImageBitmap(mWeakBitmaps.get(position).get());
             }
-//            // 异步加载会导致显示时出现闪烁的情况，由于图片比较小，所以这里可以直接加载
-//            String path = "file:///android_asset/thumbs/"
-//                    + mFilterTypes.get(position).name().toLowerCase() + ".jpg";
-//            RequestOptions options = new RequestOptions()
-//                    .centerCrop()
-//                    .placeholder(R.drawable.mis_default_error)
-//                    .error(R.drawable.mis_default_error)
-//                    .priority(Priority.HIGH);
-//            Glide.with(mContext)
-//                    .load(path)
-//                    .apply(options)
-//                    .into(holder.mImageView);
 
         }
         // 设置滤镜名称
@@ -114,7 +102,7 @@ public class EffectFilterAdapter extends RecyclerView.Adapter<EffectFilterAdapte
     // 点击事件回调
     public interface OnItemClickLitener {
 
-        void onItemClick(int position); // 但选
+        void onItemClick(int position); // 单选
     }
 
     class ImageHolder extends RecyclerView.ViewHolder

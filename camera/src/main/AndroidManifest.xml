@@ -50,7 +50,7 @@
         <activity android:name=".activity.PhotoViewActivity" />
         <activity android:name=".activity.CapturePreviewActivity" />
         <!-- 视频编辑 -->
-        <activity android:name=".activity.VideoEditActivity" />
+        <activity android:name=".activity.videoedit.VideoEditActivity" />
         <activity android:name=".activity.RtmpPushActivity" />
 
         <!-- 测试的Activity -->

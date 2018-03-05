@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/video_window_background"
-    tools:context="com.cgfay.caincamera.activity.VideoEditActivity">
+    tools:context="com.cgfay.caincamera.activity.videoedit.VideoEditActivity">
 
     <!--顶部导航栏-->
     <include
@@ -18,143 +18,21 @@
         android:layout_alignParentBottom="true">
 
         <!-- 编辑栏按钮 -->
-        <RelativeLayout
-            android:id="@+id/layout_botom_menu"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp40"
-            android:layout_gravity="top">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true">
-                <Button
-                    android:id="@+id/btn_filters"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@android:color/transparent"
-                    android:minHeight="@dimen/dp40"
-                    android:minWidth="@dimen/dp50"
-                    android:textColor="@color/white"
-                    android:text="@string/filters" />
-
-                <Button
-                    android:id="@+id/btn_edit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/dp10"
-                    android:background="@android:color/transparent"
-                    android:minHeight="@dimen/dp40"
-                    android:minWidth="@dimen/dp50"
-                    android:textColor="@color/white"
-                    android:text="@string/edit" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_alignParentEnd="true">
-                <Button
-                    android:id="@+id/btn_music"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="@dimen/dp10"
-                    android:background="@android:color/transparent"
-                    android:minHeight="@dimen/dp40"
-                    android:minWidth="@dimen/dp50"
-                    android:textColor="@color/white"
-                    android:text="音乐" />
-
-                <Button
-                    android:id="@+id/btn_volume"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@android:color/transparent"
-                    android:minHeight="@dimen/dp40"
-                    android:minWidth="@dimen/dp50"
-                    android:textColor="@color/white"
-                    android:text="声音" />
-
-            </LinearLayout>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/dp1"
-                android:layout_alignParentBottom="true"
-                android:background="@color/white"/>
-        </RelativeLayout>
+        <include
+            layout="@layout/view_video_edit_bottom_menu" />
 
         <!-- 内容框 -->
         <FrameLayout
+            android:id="@+id/layout_sub_content"
             android:layout_width="match_parent"
             android:layout_height="@dimen/dp100"
             android:layout_gravity="bottom">
-
-            <!-- 滤镜列表 -->
-            <com.cgfay.utilslibrary.AsyncRecyclerview
-                android:id="@+id/filter_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center">
-            </com.cgfay.utilslibrary.AsyncRecyclerview>
-
-            <!-- 编辑按钮列表 -->
-            <include
-                android:visibility="gone"
-                layout="@layout/view_bottom_edit" />
-
         </FrameLayout>
-
-        <!-- 调整播放速度 -->
-        <FrameLayout
-            android:id="@+id/layout_speed"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="bottom"
-            android:background="@color/video_window_background"
-            android:layout_marginBottom="@dimen/dp40"
-            android:visibility="gone">
-
-        </FrameLayout>
-
-        <!-- 调整音量大小 -->
-
-        <!-- 底部确认按钮 -->
-        <LinearLayout
-            android:id="@+id/layout_bottom_confirm"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp40"
-            android:layout_gravity="bottom"
-            android:background="@color/bottomBackground"
-            android:orientation="horizontal"
-            android:visibility="gone">
-            <Button
-                android:id="@+id/btn_cancel"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textColor="@android:color/white"
-                android:text="@string/cancel"
-                android:background="@android:color/transparent"/>
-            <View
-                android:layout_width="@dimen/dp1"
-                android:layout_height="wrap_content"
-                android:background="@android:color/white"
-                android:layout_margin="@dimen/dp5"/>
-            <Button
-                android:id="@+id/btn_confirm"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textColor="@android:color/white"
-                android:text="@string/confirm"
-                android:background="@android:color/transparent"/>
-        </LinearLayout>
-
     </FrameLayout>
 
     <!-- 视频播放栏 -->
     <FrameLayout
+        android:id="@+id/layout_video_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
