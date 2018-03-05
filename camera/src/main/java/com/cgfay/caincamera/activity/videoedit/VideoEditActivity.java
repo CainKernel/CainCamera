@@ -2,6 +2,7 @@ package com.cgfay.caincamera.activity.videoedit;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -102,6 +103,10 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
     private Button mBtnCancel;
     private Button mBtnConfirm;
 
+    // 音频播放器
+    private AudioPlayer mAudioPlayer;
+    AudioManager mAudioManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,11 +114,13 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_video_edit);
+        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         mVideoPath = getIntent().getStringExtra(PATH);
         mInflater = (LayoutInflater) getApplicationContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         initView();
         initVideoPlayer();
+        initAudioPlayer();
     }
 
     /**
@@ -265,6 +272,21 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
         });
     }
 
+    /**
+     * 初始化音频播放器
+     */
+    private void initAudioPlayer() {
+        mAudioPlayer = new AudioPlayer(this);
+        mAudioPlayer.setPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mAudioPlayer.setLooping(true);
+                mAudioPlayer.start();
+            }
+        });
+    }
+
+
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (fromUser) {
@@ -361,14 +383,25 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
     @Override
     protected void onPause() {
         super.onPause();
-        mTextureView.pause();
+        if (mTextureView != null) {
+            mTextureView.pause();
+        }
+
+        if (mAudioPlayer != null) {
+            mAudioPlayer.pause();
+        }
         mStopThread = true;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mTextureView.start();
+        if (mTextureView != null) {
+            mTextureView.start();
+        }
+        if (mAudioPlayer != null) {
+            mAudioPlayer.start();
+        }
         mStopThread = true;
         mPauseThread = false;
         // 开始新的刷新线程
@@ -545,7 +578,14 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
             case REQUEST_MUSIC:
                 if (resultCode == MusicSelectActivity.RESULT_MUSIC) {
                     mCurrentMusic = data.getStringExtra("music");
-
+                    if (mAudioPlayer != null) {
+                        mAudioPlayer.setAudioPath(mCurrentMusic);
+                        mAudioPlayer.openAudio();
+                    }
+                    // 重置为0
+                    if (mTextureView != null) {
+                        mTextureView.seekTo(0);
+                    }
                 }
                 break;
         }
