@@ -1,6 +1,7 @@
 package com.cgfay.caincamera.activity.videoedit;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.EffectFilterAdapter;
@@ -37,6 +39,10 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
 
     public static final String PATH = "path";
 
+    private static final int REQUEST_MUSIC = 0x100;
+
+    private String mCurrentMusic;
+
     private String mVideoPath;
     private VideoTextureView mTextureView;
     private SeekBar mPlayProgressBar;
@@ -49,6 +55,8 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
     private volatile boolean mStopThread;
     private volatile boolean mPauseThread;
 
+    // 视频总时长
+    private int mDuration;
     // 视频宽高
     private int mVideoWidth;
     private int mVideoHeight;
@@ -207,8 +215,9 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
                 // 开始播放
                 mTextureView.setLooping(true);
                 mTextureView.start();
+                mDuration = mp.getDuration();
                 // 设置时长
-                mPlayProgressBar.setMax(mp.getDuration());
+                mPlayProgressBar.setMax(mDuration);
                 mDurationView.setText(StringUtils.generateStandardTime(mp.getDuration()));
             }
         });
@@ -444,7 +453,8 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
      * 显示音乐选择页面
      */
     private void showMusicSeletView() {
-
+        Intent intent = new Intent(VideoEditActivity.this, MusicSelectActivity.class);
+        startActivityForResult(intent, REQUEST_MUSIC);
     }
 
     /**
@@ -485,14 +495,26 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
      * 显示魔法涂鸦页面
      */
     private void showGraffittiView() {
+        if (mDuration > 60 * 1000) {
+            Toast.makeText(this, "魔法涂鸦只支持60s一下的视频~",
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            // TODO 跳转到魔法涂鸦页面
 
+        }
     }
 
     /**
      * 显示嘻哈特效页面
      */
     private void showHiphopView() {
+        if (mDuration > 60 * 1000) {
+            Toast.makeText(this, "嘻哈特效只支持60s一下的视频~",
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            // TODO 跳转到嘻哈特效页面
 
+        }
     }
 
     /**
@@ -513,5 +535,19 @@ public class VideoEditActivity extends AppCompatActivity implements View.OnClick
         mBtnNext.setVisibility(View.VISIBLE);
         mEditTitle.setText(getResources().getText(R.string.edit_title));
         mLayoutBottomConfirm.setVisibility(View.GONE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case REQUEST_MUSIC:
+                if (resultCode == MusicSelectActivity.RESULT_MUSIC) {
+                    mCurrentMusic = data.getStringExtra("music");
+
+                }
+                break;
+        }
     }
 }

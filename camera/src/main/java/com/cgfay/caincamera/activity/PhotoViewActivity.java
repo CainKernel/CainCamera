@@ -17,12 +17,12 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.cgfay.caincamera.R;
+import com.cgfay.caincamera.activity.imageedit.ImageEditActivity;
 import com.cgfay.caincamera.activity.videoedit.VideoEditActivity;
 import com.cgfay.caincamera.adapter.PhotoViewAdapter;
 import com.cgfay.caincamera.bean.MediaMeta;
-import com.cgfay.caincamera.photo_edit.PhotoEditManager;
-import com.cgfay.utilslibrary.PermissionUtils;
 import com.cgfay.utilslibrary.AsyncRecyclerview;
+import com.cgfay.utilslibrary.PermissionUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -71,7 +71,6 @@ public class PhotoViewActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        PhotoEditManager.getInstance().release();
         super.onDestroy();
     }
 

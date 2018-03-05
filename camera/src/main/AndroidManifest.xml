@@ -59,7 +59,7 @@
         <activity android:name=".activity.camera.CameraTestActivity" />
         <activity android:name=".activity.camera.TestActivity" />
         <activity android:name=".activity.videoedit.MusicSelectActivity" />
-        <activity android:name=".activity.ImageEditActivity"></activity>
+        <activity android:name=".activity.imageedit.ImageEditActivity"></activity>
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.activity;
+package com.cgfay.caincamera.activity.imageedit;
 
 import android.content.Context;
 import android.graphics.Bitmap;
