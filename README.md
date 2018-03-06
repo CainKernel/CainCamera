@@ -4,9 +4,9 @@ CainCamera是一个美颜类相机。
 
 # CainCamera 截图
 ## 预览与录制
-[预览与录制](https://github.com/CainKernel/CainCamera/blob/master/images/preview_and_record.png)
+![预览与录制](https://github.com/CainKernel/CainCamera/blob/master/images/preview_and_record.png)
 ## 图片和视频编辑
-[图片和视频编辑](https://github.com/CainKernel/CainCamera/blob/master/images/media_edit.png)
+![图片和视频编辑](https://github.com/CainKernel/CainCamera/blob/master/images/media_edit.png)
 
 # CainCamera 参考项目：
 [grafika](https://github.com/google/grafika)
