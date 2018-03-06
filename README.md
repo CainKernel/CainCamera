@@ -2,24 +2,11 @@
 CainCamera是一个美颜类相机。
 该项目的目的主要用于学习如何实现美颜、磨皮、贴纸、拍照、短视频分段录制、回删、Gif录制等功能，以及各部分子功能的优化实践。
 
-# CainCamera 预览、关键点检测
-## 预览：
-![预览](https://github.com/CainKernel/CainCamera/blob/master/images/preview.png)
-## 关键点
-![关键点](https://github.com/CainKernel/CainCamera/blob/master/images/face_landmark.png)
-
-# CainCamera 切换滤镜
-可以点击右下角魔术棒的按钮弹出滤镜选择列表，也可以通过左右滑动预览画面，切换滤镜
-![滤镜](https://github.com/CainKernel/CainCamera/blob/master/images/filters.png)
-![滤镜1](https://github.com/CainKernel/CainCamera/blob/master/images/filters_01.png)
-
-# CainCamera 录制短视频
-## 录制过程
-![录制短视频](https://github.com/CainKernel/CainCamera/blob/master/images/recording.png)
-## CainCamera 短视频分段录制和回删
-点击带X的箭头可以删除上一段录制的视频，点击带√的按钮可以预览视频，点击绿色按钮可以继续录制下一段视频
-进入预览页面，点击保存，即可将前面录制的分段视频合成
-![分段视频支持](https://github.com/CainKernel/CainCamera/blob/master/images/video_delete_or_preview.png)
+# CainCamera 截图
+## 预览与录制
+[预览与录制](https://github.com/CainKernel/CainCamera/blob/master/images/preview_and_record.png)
+## 图片和视频编辑
+[图片和视频编辑](https://github.com/CainKernel/CainCamera/blob/master/images/media_edit.png)
 
 # CainCamera 参考项目：
 [grafika](https://github.com/google/grafika)
