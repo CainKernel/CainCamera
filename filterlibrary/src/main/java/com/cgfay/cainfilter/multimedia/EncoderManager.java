@@ -6,7 +6,7 @@ import android.opengl.Matrix;
 import android.util.Log;
 
 import com.cgfay.cainfilter.core.ParamsManager;
-import com.cgfay.cainfilter.filter.base.DisplayFilter;
+import com.cgfay.cainfilter.glfilter.base.DisplayFilter;
 import com.cgfay.cainfilter.gles.EglCore;
 import com.cgfay.cainfilter.gles.WindowSurface;
 import com.cgfay.cainfilter.type.ScaleType;

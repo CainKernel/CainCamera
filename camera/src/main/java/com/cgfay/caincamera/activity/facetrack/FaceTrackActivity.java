@@ -15,14 +15,14 @@ import android.view.View;
 import android.widget.RelativeLayout;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.utilslibrary.Size;
 import com.cgfay.cainfilter.facetracker.FacePointsDrawer;
-import com.cgfay.cainfilter.filter.camera.CameraFilter;
+import com.cgfay.cainfilter.glfilter.camera.CameraFilter;
 import com.cgfay.cainfilter.utils.GlUtil;
 import com.cgfay.cainfilter.utils.facepp.ConUtil;
-import com.cgfay.cainfilter.utils.facepp.Util;
 import com.cgfay.cainfilter.utils.facepp.SensorEventUtil;
+import com.cgfay.cainfilter.utils.facepp.Util;
 import com.cgfay.utilslibrary.CameraUtils;
+import com.cgfay.utilslibrary.Size;
 import com.megvii.facepp.sdk.Facepp;
 import com.megvii.licensemanager.sdk.LicenseManager;
 

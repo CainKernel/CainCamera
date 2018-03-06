@@ -12,14 +12,16 @@ if(CMAKE_COMPILER_IS_CLANG)
 endif(CMAKE_COMPILER_IS_CLANG)
 
 # 添加头文件
-include_directories( src/main/cpp/imagefilter )
+include_directories( src/main/cpp/cainmedia/common
+                     src/main/cpp/cainmedia/imagefilter )
 
 # 添加自身的jni库
 add_library( imagefilter
 
              SHARED
 
-             src/main/cpp/imagefilter/BlackWhiteFilter.cpp )
+             src/main/cpp/cainmedia/ImageProcess.cpp
+             src/main/cpp/cainmedia/imagefilter/GrayFilter.cpp )
 
 # 查找Android存在的库
 find_library( log-lib

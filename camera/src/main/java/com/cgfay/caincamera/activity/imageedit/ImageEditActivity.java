@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
+import com.cgfay.cainfilter.ImageFilter.GrayProcessFilter;
 import com.cgfay.utilslibrary.BitmapUtils;
 
 public class ImageEditActivity extends AppCompatActivity implements View.OnClickListener {
@@ -28,8 +29,6 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
 
     private String mImagePath;
 
-    private Bitmap mSource;
-    private Bitmap mCurrent;
     private ImageView mImageView;
 
     private Button mBtnBack;
@@ -55,6 +54,9 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
     private Button mBtnBlur;            // 虚化
     private Button mBtnMatBlur;         // 抠图虚化
 
+    // 图片管理器
+    ImageEditManager mEditManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,8 +68,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
         mInflater = (LayoutInflater) getApplicationContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         initView();
-        mSource = BitmapFactory.decodeFile(mImagePath);
-        mImageView.setImageBitmap(mSource);
+        initImageEditManager();
     }
 
     /**
@@ -116,6 +117,20 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
         mBtnBlur.setOnClickListener(this);
         mBtnMatBlur.setOnClickListener(this);
 
+    }
+
+    private void initImageEditManager() {
+        mEditManager = new ImageEditManager(this, mImagePath, mImageView);
+        mEditManager.startImageEditThread();
+        mEditManager.showSourceImage();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mEditManager.stopImageEditThread();
+        mEditManager.release();
+        mEditManager = null;
     }
 
     @Override

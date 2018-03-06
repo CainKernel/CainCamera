@@ -1,8 +1,8 @@
 package com.cgfay.caincamera.activity.camera;
 
 import com.cgfay.cainfilter.core.FilterManager;
-import com.cgfay.cainfilter.filter.base.BaseImageFilterGroup;
-import com.cgfay.cainfilter.filter.camera.CameraFilter;
+import com.cgfay.cainfilter.glfilter.base.BaseImageFilterGroup;
+import com.cgfay.cainfilter.glfilter.camera.CameraFilter;
 import com.cgfay.cainfilter.type.FilterGroupType;
 import com.cgfay.cainfilter.type.FilterType;
 import com.cgfay.cainfilter.type.ScaleType;

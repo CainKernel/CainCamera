@@ -2,9 +2,9 @@ package com.cgfay.cainfilter.core;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.filter.base.BaseImageFilter;
-import com.cgfay.cainfilter.filter.base.BaseImageFilterGroup;
-import com.cgfay.cainfilter.filter.camera.CameraFilter;
+import com.cgfay.cainfilter.glfilter.base.BaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.BaseImageFilterGroup;
+import com.cgfay.cainfilter.glfilter.camera.CameraFilter;
 import com.cgfay.cainfilter.type.FilterGroupType;
 import com.cgfay.cainfilter.type.FilterType;
 import com.cgfay.cainfilter.type.ScaleType;
