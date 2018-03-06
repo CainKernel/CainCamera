@@ -12,6 +12,7 @@ import android.widget.Button;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.activity.CameraActivity;
+import com.cgfay.caincamera.activity.RtmpPushActivity;
 import com.cgfay.caincamera.activity.facetrack.FaceTrack2Activity;
 import com.cgfay.caincamera.activity.facetrack.FaceTrackActivity;
 import com.cgfay.utilslibrary.PermissionUtils;
@@ -30,6 +31,8 @@ public class TestActivity extends AppCompatActivity implements View.OnClickListe
     private Button mBtnMulti;
     private Button mBtnFaceTest;
     private Button mBtnFaceTest2;
+    private Button mBtnPush;
+    private Button mBtnRecord;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +62,12 @@ public class TestActivity extends AppCompatActivity implements View.OnClickListe
 
         mBtnFaceTest2 = (Button) findViewById(R.id.btn_face_test2);
         mBtnFaceTest2.setOnClickListener(this);
+
+        mBtnPush = (Button) findViewById(R.id.btn_push);
+        mBtnPush.setOnClickListener(this);
+
+        mBtnRecord = (Button) findViewById(R.id.btn_video_record);
+        mBtnRecord.setOnClickListener(this);
     }
 
     @Override
@@ -75,6 +84,14 @@ public class TestActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_face_test2:
                 startActivity(new Intent(TestActivity.this, FaceTrack2Activity.class));
+                break;
+
+            case R.id.btn_push:
+                startActivity(new Intent(TestActivity.this, RtmpPushActivity.class));
+                break;
+
+            case R.id.btn_video_record:
+                startActivity(new Intent(TestActivity.this, VideoRecordActivity.class));
                 break;
         }
     }

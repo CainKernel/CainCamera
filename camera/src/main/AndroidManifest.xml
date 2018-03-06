@@ -51,15 +51,18 @@
         <activity android:name=".activity.CapturePreviewActivity" />
         <!-- 视频编辑 -->
         <activity android:name=".activity.videoedit.VideoEditActivity" />
-        <activity android:name=".activity.RtmpPushActivity" />
+        <activity android:name=".activity.videoedit.MusicSelectActivity" />
+        <!-- 图片编辑 -->
+        <activity android:name=".activity.imageedit.ImageEditActivity" />
 
         <!-- 测试的Activity -->
         <activity android:name=".activity.facetrack.FaceTrackActivity" />
         <activity android:name=".activity.facetrack.FaceTrack2Activity" />
         <activity android:name=".activity.camera.CameraTestActivity" />
         <activity android:name=".activity.camera.TestActivity" />
-        <activity android:name=".activity.videoedit.MusicSelectActivity" />
-        <activity android:name=".activity.imageedit.ImageEditActivity"></activity>
+        <activity android:name=".activity.RtmpPushActivity" />
+        <activity android:name=".activity.camera.VideoRecordActivity"/>
+
     </application>
 
 </manifest>

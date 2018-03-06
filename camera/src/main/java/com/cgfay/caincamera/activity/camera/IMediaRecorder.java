@@ -1,4 +1,4 @@
-package com.cgfay.videoeditor;
+package com.cgfay.caincamera.activity.camera;
 
 /**
  * Created by cain.huang on 2018/1/3.
