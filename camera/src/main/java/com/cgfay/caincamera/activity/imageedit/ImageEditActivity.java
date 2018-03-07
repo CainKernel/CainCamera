@@ -1,9 +1,6 @@
 package com.cgfay.caincamera.activity.imageedit;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -17,8 +14,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.cainfilter.ImageFilter.GrayProcessFilter;
-import com.cgfay.utilslibrary.BitmapUtils;
 
 public class ImageEditActivity extends AppCompatActivity implements View.OnClickListener {
 

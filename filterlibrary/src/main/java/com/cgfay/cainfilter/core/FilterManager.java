@@ -1,48 +1,48 @@
 package com.cgfay.cainfilter.core;
 
-import com.cgfay.cainfilter.glfilter.advanced.SketchFilter;
-import com.cgfay.cainfilter.glfilter.base.BaseImageFilter;
-import com.cgfay.cainfilter.glfilter.base.BaseImageFilterGroup;
-import com.cgfay.cainfilter.glfilter.base.DisplayFilter;
-import com.cgfay.cainfilter.glfilter.beauty.RealtimeBeautify;
+import com.cgfay.cainfilter.glfilter.advanced.GLSketchFilter;
+import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilterGroup;
+import com.cgfay.cainfilter.glfilter.base.GLDisplayFilter;
+import com.cgfay.cainfilter.glfilter.beauty.GLRealtimeBeautyFilter;
 import com.cgfay.cainfilter.glfilter.beauty.WhitenOrReddenFilter;
-import com.cgfay.cainfilter.glfilter.color.AmaroFilter;
-import com.cgfay.cainfilter.glfilter.color.AnitqueFilter;
-import com.cgfay.cainfilter.glfilter.color.BlackCatFilter;
-import com.cgfay.cainfilter.glfilter.color.BlackWhiteFilter;
-import com.cgfay.cainfilter.glfilter.color.BrooklynFilter;
-import com.cgfay.cainfilter.glfilter.color.CalmFilter;
-import com.cgfay.cainfilter.glfilter.color.CoolFilter;
-import com.cgfay.cainfilter.glfilter.color.EarlyBirdFilter;
-import com.cgfay.cainfilter.glfilter.color.EmeraldFilter;
-import com.cgfay.cainfilter.glfilter.color.EvergreenFilter;
-import com.cgfay.cainfilter.glfilter.color.FairyTaleFilter;
-import com.cgfay.cainfilter.glfilter.color.FreudFilter;
-import com.cgfay.cainfilter.glfilter.color.HealthyFilter;
-import com.cgfay.cainfilter.glfilter.color.HefeFilter;
-import com.cgfay.cainfilter.glfilter.color.HudsonFilter;
-import com.cgfay.cainfilter.glfilter.color.KevinFilter;
-import com.cgfay.cainfilter.glfilter.color.LatteFilter;
-import com.cgfay.cainfilter.glfilter.color.LomoFilter;
-import com.cgfay.cainfilter.glfilter.color.NostalgiaFilter;
-import com.cgfay.cainfilter.glfilter.color.RomanceFilter;
-import com.cgfay.cainfilter.glfilter.color.SakuraFilter;
-import com.cgfay.cainfilter.glfilter.color.SunsetFilter;
-import com.cgfay.cainfilter.glfilter.color.WhiteCatFilter;
-import com.cgfay.cainfilter.glfilter.group.DefaultFilterGroup;
-import com.cgfay.cainfilter.glfilter.group.MakeUpFilterGroup;
-import com.cgfay.cainfilter.glfilter.image.BrightnessFilter;
-import com.cgfay.cainfilter.glfilter.image.ContrastFilter;
-import com.cgfay.cainfilter.glfilter.image.ExposureFilter;
-import com.cgfay.cainfilter.glfilter.image.GuassFilter;
-import com.cgfay.cainfilter.glfilter.image.HueFilter;
-import com.cgfay.cainfilter.glfilter.image.MirrorFilter;
-import com.cgfay.cainfilter.glfilter.image.SaturationFilter;
-import com.cgfay.cainfilter.glfilter.image.SharpnessFilter;
-import com.cgfay.cainfilter.glfilter.sticker.StickerFilter;
-import com.cgfay.cainfilter.type.FilterGroupType;
-import com.cgfay.cainfilter.type.FilterIndex;
-import com.cgfay.cainfilter.type.FilterType;
+import com.cgfay.cainfilter.glfilter.color.GLAmaroFilter;
+import com.cgfay.cainfilter.glfilter.color.GLAnitqueFilter;
+import com.cgfay.cainfilter.glfilter.color.GLBlackCatFilter;
+import com.cgfay.cainfilter.glfilter.color.GLBlackWhiteFilter;
+import com.cgfay.cainfilter.glfilter.color.GLBrooklynFilter;
+import com.cgfay.cainfilter.glfilter.color.GLCalmFilter;
+import com.cgfay.cainfilter.glfilter.color.GLCoolFilter;
+import com.cgfay.cainfilter.glfilter.color.GLEarlyBirdFilter;
+import com.cgfay.cainfilter.glfilter.color.GLEmeraldFilter;
+import com.cgfay.cainfilter.glfilter.color.GLEvergreenFilter;
+import com.cgfay.cainfilter.glfilter.color.GLFairyTaleFilter;
+import com.cgfay.cainfilter.glfilter.color.GLFreudFilter;
+import com.cgfay.cainfilter.glfilter.color.GLHealthyFilter;
+import com.cgfay.cainfilter.glfilter.color.GLHefeFilter;
+import com.cgfay.cainfilter.glfilter.color.GLHudsonFilter;
+import com.cgfay.cainfilter.glfilter.color.GLKevinFilter;
+import com.cgfay.cainfilter.glfilter.color.GLLatteFilter;
+import com.cgfay.cainfilter.glfilter.color.GLLomoFilter;
+import com.cgfay.cainfilter.glfilter.color.GLNostalgiaFilter;
+import com.cgfay.cainfilter.glfilter.color.GLRomanceFilter;
+import com.cgfay.cainfilter.glfilter.color.GLSakuraFilter;
+import com.cgfay.cainfilter.glfilter.color.GLSunsetFilter;
+import com.cgfay.cainfilter.glfilter.color.GLWhiteCatFilter;
+import com.cgfay.cainfilter.glfilter.group.GLDefaultFilterGroup;
+import com.cgfay.cainfilter.glfilter.group.GLMakeUpFilterGroup;
+import com.cgfay.cainfilter.glfilter.image.GLBrightnessFilter;
+import com.cgfay.cainfilter.glfilter.image.GLContrastFilter;
+import com.cgfay.cainfilter.glfilter.image.GLExposureFilter;
+import com.cgfay.cainfilter.glfilter.image.GLGuassFilter;
+import com.cgfay.cainfilter.glfilter.image.GLHueFilter;
+import com.cgfay.cainfilter.glfilter.image.GLMirrorFilter;
+import com.cgfay.cainfilter.glfilter.image.GLSaturationFilter;
+import com.cgfay.cainfilter.glfilter.image.GLSharpnessFilter;
+import com.cgfay.cainfilter.glfilter.sticker.GLStickerFilter;
+import com.cgfay.cainfilter.type.GlFilterGroupType;
+import com.cgfay.cainfilter.type.GlFilterIndex;
+import com.cgfay.cainfilter.type.GlFilterType;
 
 import java.util.HashMap;
 
@@ -53,207 +53,207 @@ import java.util.HashMap;
 
 public final class FilterManager {
 
-    private static HashMap<FilterType, FilterIndex> mIndexMap = new HashMap<FilterType, FilterIndex>();
+    private static HashMap<GlFilterType, GlFilterIndex> mIndexMap = new HashMap<GlFilterType, GlFilterIndex>();
     static {
-        mIndexMap.put(FilterType.NONE, FilterIndex.NoneIndex);
+        mIndexMap.put(GlFilterType.NONE, GlFilterIndex.NoneIndex);
 
         // 图片编辑
-        mIndexMap.put(FilterType.BRIGHTNESS, FilterIndex.ImageEditIndex);
-        mIndexMap.put(FilterType.CONTRAST, FilterIndex.ImageEditIndex);
-        mIndexMap.put(FilterType.EXPOSURE, FilterIndex.ImageEditIndex);
-        mIndexMap.put(FilterType.GUASS, FilterIndex.ImageEditIndex);
-        mIndexMap.put(FilterType.HUE, FilterIndex.ImageEditIndex);
-        mIndexMap.put(FilterType.MIRROR, FilterIndex.ImageEditIndex);
-        mIndexMap.put(FilterType.SATURATION, FilterIndex.ImageEditIndex);
-        mIndexMap.put(FilterType.SHARPNESS, FilterIndex.ImageEditIndex);
+        mIndexMap.put(GlFilterType.BRIGHTNESS, GlFilterIndex.ImageEditIndex);
+        mIndexMap.put(GlFilterType.CONTRAST, GlFilterIndex.ImageEditIndex);
+        mIndexMap.put(GlFilterType.EXPOSURE, GlFilterIndex.ImageEditIndex);
+        mIndexMap.put(GlFilterType.GUASS, GlFilterIndex.ImageEditIndex);
+        mIndexMap.put(GlFilterType.HUE, GlFilterIndex.ImageEditIndex);
+        mIndexMap.put(GlFilterType.MIRROR, GlFilterIndex.ImageEditIndex);
+        mIndexMap.put(GlFilterType.SATURATION, GlFilterIndex.ImageEditIndex);
+        mIndexMap.put(GlFilterType.SHARPNESS, GlFilterIndex.ImageEditIndex);
 
         // 水印
-        mIndexMap.put(FilterType.WATERMASK, FilterIndex.WaterMaskIndex);
+        mIndexMap.put(GlFilterType.WATERMASK, GlFilterIndex.WaterMaskIndex);
 
         // 美颜
-        mIndexMap.put(FilterType.REALTIMEBEAUTY, FilterIndex.BeautyIndex);
+        mIndexMap.put(GlFilterType.REALTIMEBEAUTY, GlFilterIndex.BeautyIndex);
 
         // 瘦脸大眼
-        mIndexMap.put(FilterType.FACESTRETCH, FilterIndex.FaceStretchIndex);
+        mIndexMap.put(GlFilterType.FACESTRETCH, GlFilterIndex.FaceStretchIndex);
 
         // 贴纸
-        mIndexMap.put(FilterType.STICKER, FilterIndex.StickerIndex);
+        mIndexMap.put(GlFilterType.STICKER, GlFilterIndex.StickerIndex);
 
         // 彩妆
-        mIndexMap.put(FilterType.MAKEUP, FilterIndex.MakeUpIndex);
+        mIndexMap.put(GlFilterType.MAKEUP, GlFilterIndex.MakeUpIndex);
 
 
         // 颜色滤镜
-        mIndexMap.put(FilterType.AMARO, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.ANTIQUE, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.BLACKCAT, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.BLACKWHITE, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.BROOKLYN, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.CALM, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.COOL, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.EARLYBIRD, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.EMERALD, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.EVERGREEN, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.FAIRYTALE, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.FREUD, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.HEALTHY, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.HEFE, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.HUDSON, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.KEVIN, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.LATTE, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.LOMO, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.NOSTALGIA, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.ROMANCE, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.SAKURA, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.SKETCH, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.SOURCE, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.SUNSET, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.WHITECAT, FilterIndex.ColorIndex);
-        mIndexMap.put(FilterType.WHITENORREDDEN, FilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.AMARO, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.ANTIQUE, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.BLACKCAT, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.BLACKWHITE, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.BROOKLYN, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.CALM, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.COOL, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.EARLYBIRD, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.EMERALD, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.EVERGREEN, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.FAIRYTALE, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.FREUD, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.HEALTHY, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.HEFE, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.HUDSON, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.KEVIN, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.LATTE, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.LOMO, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.NOSTALGIA, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.ROMANCE, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.SAKURA, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.SKETCH, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.SOURCE, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.SUNSET, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.WHITECAT, GlFilterIndex.ColorIndex);
+        mIndexMap.put(GlFilterType.WHITENORREDDEN, GlFilterIndex.ColorIndex);
     }
 
     private FilterManager() {}
 
-    public static BaseImageFilter getFilter(FilterType type) {
+    public static GLBaseImageFilter getFilter(GlFilterType type) {
         switch (type) {
 
             // 图片基本属性编辑滤镜
             // 饱和度
             case SATURATION:
-                return new SaturationFilter();
+                return new GLSaturationFilter();
             // 镜像翻转
             case MIRROR:
-                return new MirrorFilter();
+                return new GLMirrorFilter();
             // 高斯模糊
             case GUASS:
-                return new GuassFilter();
+                return new GLGuassFilter();
             // 亮度
             case BRIGHTNESS:
-                return new BrightnessFilter();
+                return new GLBrightnessFilter();
             // 对比度
             case CONTRAST:
-                return new ContrastFilter();
+                return new GLContrastFilter();
             // 曝光
             case EXPOSURE:
-                return new ExposureFilter();
+                return new GLExposureFilter();
             // 色调
             case HUE:
-                return new HueFilter();
+                return new GLHueFilter();
             // 锐度
             case SHARPNESS:
-                return new SharpnessFilter();
+                return new GLSharpnessFilter();
 
             // TODO 贴纸滤镜需要人脸关键点计算得到
             case STICKER:
 //                return new DisplayFilter();
-                return new StickerFilter();
+                return new GLStickerFilter();
 
             // 白皙还是红润
             case WHITENORREDDEN:
                 return new WhitenOrReddenFilter();
             // 实时磨皮
             case REALTIMEBEAUTY:
-                return new RealtimeBeautify();
+                return new GLRealtimeBeautyFilter();
 
             // AMARO
             case AMARO:
-                return new AmaroFilter();
+                return new GLAmaroFilter();
             // 古董
             case ANTIQUE:
-                return new AnitqueFilter();
+                return new GLAnitqueFilter();
 
             // 黑猫
             case BLACKCAT:
-                return new BlackCatFilter();
+                return new GLBlackCatFilter();
 
             // 黑白
             case BLACKWHITE:
-                return new BlackWhiteFilter();
+                return new GLBlackWhiteFilter();
 
             // 布鲁克林
             case BROOKLYN:
-                return new BrooklynFilter();
+                return new GLBrooklynFilter();
 
             // 冷静
             case CALM:
-                return new CalmFilter();
+                return new GLCalmFilter();
 
             // 冷色调
             case COOL:
-                return new CoolFilter();
+                return new GLCoolFilter();
 
             // 晨鸟
             case EARLYBIRD:
-                return new EarlyBirdFilter();
+                return new GLEarlyBirdFilter();
 
             // 翡翠
             case EMERALD:
-                return new EmeraldFilter();
+                return new GLEmeraldFilter();
 
             // 常绿
             case EVERGREEN:
-                return new EvergreenFilter();
+                return new GLEvergreenFilter();
 
             // 童话
             case FAIRYTALE:
-                return new FairyTaleFilter();
+                return new GLFairyTaleFilter();
 
             // 佛洛伊特
             case FREUD:
-                return new FreudFilter();
+                return new GLFreudFilter();
 
             // 健康
             case HEALTHY:
-                return new HealthyFilter();
+                return new GLHealthyFilter();
 
             // 酵母
             case HEFE:
-                return new HefeFilter();
+                return new GLHefeFilter();
 
             // 哈德森
             case HUDSON:
-                return new HudsonFilter();
+                return new GLHudsonFilter();
 
             // 凯文
             case KEVIN:
-                return new KevinFilter();
+                return new GLKevinFilter();
 
             // 拿铁
             case LATTE:
-                return new LatteFilter();
+                return new GLLatteFilter();
 
             // LOMO
             case LOMO:
-                return new LomoFilter();
+                return new GLLomoFilter();
 
             // 怀旧之情
             case NOSTALGIA:
-                return new NostalgiaFilter();
+                return new GLNostalgiaFilter();
 
             // 浪漫
             case ROMANCE:
-                return new RomanceFilter();
+                return new GLRomanceFilter();
 
             // 樱花
             case SAKURA:
-                return new SakuraFilter();
+                return new GLSakuraFilter();
 
             //  素描
             case SKETCH:
-                return new SketchFilter();
+                return new GLSketchFilter();
 
             // 日落
             case SUNSET:
-                return new SunsetFilter();
+                return new GLSunsetFilter();
 
             // 白猫
             case WHITECAT:
-                return new WhiteCatFilter();
+                return new GLWhiteCatFilter();
 
             case NONE:      // 没有滤镜
             case SOURCE:    // 原图
             default:
-                return new DisplayFilter();
+                return new GLDisplayFilter();
         }
     }
 
@@ -261,20 +261,20 @@ public final class FilterManager {
      * 获取滤镜组
      * @return
      */
-    public static BaseImageFilterGroup getFilterGroup() {
-        return new DefaultFilterGroup();
+    public static GLBaseImageFilterGroup getFilterGroup() {
+        return new GLDefaultFilterGroup();
     }
 
-    public static BaseImageFilterGroup getFilterGroup(FilterGroupType type) {
+    public static GLBaseImageFilterGroup getFilterGroup(GlFilterGroupType type) {
         switch (type) {
             // 彩妆滤镜组
             case MAKEUP:
-                return new MakeUpFilterGroup();
+                return new GLMakeUpFilterGroup();
 
             // 默认滤镜组
             case DEFAULT:
             default:
-                return new DefaultFilterGroup();
+                return new GLDefaultFilterGroup();
         }
     }
 
@@ -283,11 +283,11 @@ public final class FilterManager {
      * @param Type
      * @return
      */
-    public static FilterIndex getIndex(FilterType Type) {
-        FilterIndex index = mIndexMap.get(Type);
+    public static GlFilterIndex getIndex(GlFilterType Type) {
+        GlFilterIndex index = mIndexMap.get(Type);
         if (index != null) {
             return index;
         }
-        return FilterIndex.NoneIndex;
+        return GlFilterIndex.NoneIndex;
     }
 }

@@ -16,7 +16,7 @@ import android.widget.RelativeLayout;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.cainfilter.facetracker.FacePointsDrawer;
-import com.cgfay.cainfilter.glfilter.camera.CameraFilter;
+import com.cgfay.cainfilter.glfilter.camera.GLCameraFilter;
 import com.cgfay.cainfilter.utils.GlUtil;
 import com.cgfay.cainfilter.utils.facepp.ConUtil;
 import com.cgfay.cainfilter.utils.facepp.SensorEventUtil;
@@ -59,7 +59,7 @@ public class FaceTrackActivity extends AppCompatActivity implements Camera.Previ
     private float roi_ratio = 0.8f;
 
     // 相机输入流滤镜
-    private CameraFilter mCameraFilter;
+    private GLCameraFilter mCameraFilter;
 
     boolean isPreviewing = false;
 
@@ -407,7 +407,7 @@ public class FaceTrackActivity extends AppCompatActivity implements Camera.Previ
 
         // 渲染初始化
         Size size = CameraUtils.getPreviewSize();
-        mCameraFilter = new CameraFilter();
+        mCameraFilter = new GLCameraFilter();
         mCameraFilter.onInputSizeChanged(size.getWidth(), size.getHeight());
         // 设置预览回调
         CameraUtils.setPreviewCallback(this);

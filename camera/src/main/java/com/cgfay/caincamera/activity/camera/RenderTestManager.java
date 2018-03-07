@@ -1,10 +1,10 @@
 package com.cgfay.caincamera.activity.camera;
 
 import com.cgfay.cainfilter.core.FilterManager;
-import com.cgfay.cainfilter.glfilter.base.BaseImageFilterGroup;
-import com.cgfay.cainfilter.glfilter.camera.CameraFilter;
-import com.cgfay.cainfilter.type.FilterGroupType;
-import com.cgfay.cainfilter.type.FilterType;
+import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilterGroup;
+import com.cgfay.cainfilter.glfilter.camera.GLCameraFilter;
+import com.cgfay.cainfilter.type.GlFilterGroupType;
+import com.cgfay.cainfilter.type.GlFilterType;
 import com.cgfay.cainfilter.type.ScaleType;
 import com.cgfay.cainfilter.utils.TextureRotationUtils;
 
@@ -28,9 +28,9 @@ public final class RenderTestManager {
     private boolean enableDrawPoints = false;
 
     // 相机输入流滤镜
-    private CameraFilter mCameraFilter;
+    private GLCameraFilter mCameraFilter;
     // 实时滤镜组
-    private BaseImageFilterGroup mRealTimeFilter;
+    private GLBaseImageFilterGroup mRealTimeFilter;
     // 关键点绘制（调试用）
     private FacePointsDrawer mFacePointsDrawer;
     // 顶点和UV坐标缓冲
@@ -75,7 +75,7 @@ public final class RenderTestManager {
      * 初始化滤镜
      */
     private void initFilters() {
-        mCameraFilter = new CameraFilter();
+        mCameraFilter = new GLCameraFilter();
         mFacePointsDrawer = new FacePointsDrawer();
 //        mRealTimeFilter = FilterManager.getFilterGroup();
     }
@@ -173,7 +173,7 @@ public final class RenderTestManager {
      * 更新filter
      * @param type Filter类型
      */
-    public void changeFilter(FilterType type) {
+    public void changeFilter(GlFilterType type) {
         if (mRealTimeFilter != null) {
             mRealTimeFilter.changeFilter(type);
         }
@@ -183,7 +183,7 @@ public final class RenderTestManager {
      * 切换滤镜组
      * @param type
      */
-    public void changeFilterGroup(FilterGroupType type) {
+    public void changeFilterGroup(GlFilterGroupType type) {
         synchronized (mSyncObject) {
             if (mRealTimeFilter != null) {
                 mRealTimeFilter.release();

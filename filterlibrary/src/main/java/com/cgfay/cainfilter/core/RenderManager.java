@@ -2,11 +2,11 @@ package com.cgfay.cainfilter.core;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.glfilter.base.BaseImageFilter;
-import com.cgfay.cainfilter.glfilter.base.BaseImageFilterGroup;
-import com.cgfay.cainfilter.glfilter.camera.CameraFilter;
-import com.cgfay.cainfilter.type.FilterGroupType;
-import com.cgfay.cainfilter.type.FilterType;
+import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilterGroup;
+import com.cgfay.cainfilter.glfilter.camera.GLCameraFilter;
+import com.cgfay.cainfilter.type.GlFilterGroupType;
+import com.cgfay.cainfilter.type.GlFilterType;
 import com.cgfay.cainfilter.type.ScaleType;
 import com.cgfay.cainfilter.utils.TextureRotationUtils;
 
@@ -27,11 +27,11 @@ public final class RenderManager {
     private static Object mSyncObject = new Object();
 
     // 相机输入流滤镜
-    private CameraFilter mCameraFilter;
+    private GLCameraFilter mCameraFilter;
     // 实时滤镜组
-    private BaseImageFilterGroup mRealTimeFilter;
+    private GLBaseImageFilterGroup mRealTimeFilter;
     // 显示输出
-    private BaseImageFilter mDisplayFilter;
+    private GLBaseImageFilter mDisplayFilter;
 
     // 当前的TextureId
     private int mCurrentTextureId;
@@ -90,11 +90,11 @@ public final class RenderManager {
      */
     private void initFilters() {
         // 相机输入流
-        mCameraFilter = new CameraFilter();
+        mCameraFilter = new GLCameraFilter();
         // 渲染滤镜组
         mRealTimeFilter = FilterManager.getFilterGroup();
         // 显示输出
-        mDisplayFilter = FilterManager.getFilter(FilterType.NONE);
+        mDisplayFilter = FilterManager.getFilter(GlFilterType.NONE);
     }
 
     /**
@@ -254,7 +254,7 @@ public final class RenderManager {
      * 更新filter
      * @param type Filter类型
      */
-    public void changeFilter(FilterType type) {
+    public void changeFilter(GlFilterType type) {
         if (mRealTimeFilter != null) {
             mRealTimeFilter.changeFilter(type);
         }
@@ -264,7 +264,7 @@ public final class RenderManager {
      * 切换滤镜组
      * @param type
      */
-    public void changeFilterGroup(FilterGroupType type) {
+    public void changeFilterGroup(GlFilterGroupType type) {
         synchronized (mSyncObject) {
             if (mRealTimeFilter != null) {
                 mRealTimeFilter.release();

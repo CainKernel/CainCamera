@@ -6,8 +6,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.view.SurfaceHolder;
 
-import com.cgfay.cainfilter.type.FilterGroupType;
-import com.cgfay.cainfilter.type.FilterType;
+import com.cgfay.cainfilter.type.GlFilterGroupType;
+import com.cgfay.cainfilter.type.GlFilterType;
 
 import java.lang.ref.WeakReference;
 
@@ -117,14 +117,14 @@ public class RenderHandler extends Handler {
             // 切换滤镜
             case MSG_FILTER_TYPE:
                 if (mWeakRender != null && mWeakRender.get() != null) {
-                    mWeakRender.get().changeFilter((FilterType) msg.obj);
+                    mWeakRender.get().changeFilter((GlFilterType) msg.obj);
                 }
                 break;
 
             // 切换滤镜组
             case MSG_FILTER_GROUP:
                 if (mWeakRender != null && mWeakRender.get() != null) {
-                    mWeakRender.get().changeFilterGroup((FilterGroupType) msg.obj);
+                    mWeakRender.get().changeFilterGroup((GlFilterGroupType) msg.obj);
                 }
                 break;
 

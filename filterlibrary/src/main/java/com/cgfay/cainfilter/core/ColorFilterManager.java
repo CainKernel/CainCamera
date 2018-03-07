@@ -1,6 +1,6 @@
 package com.cgfay.cainfilter.core;
 
-import com.cgfay.cainfilter.type.FilterType;
+import com.cgfay.cainfilter.type.GlFilterType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public final class ColorFilterManager {
     private static ColorFilterManager mInstance;
 
 
-    private ArrayList<FilterType> mFilterType;
+    private ArrayList<GlFilterType> mGlFilterType;
     private ArrayList<String> mFilterName;
 
     public static ColorFilterManager getInstance() {
@@ -34,33 +34,33 @@ public final class ColorFilterManager {
      * 初始化颜色滤镜
      */
     public void initColorFilters() {
-        mFilterType = new ArrayList<FilterType>();
+        mGlFilterType = new ArrayList<GlFilterType>();
 
-        mFilterType.add(FilterType.SOURCE); // 原图
-        mFilterType.add(FilterType.AMARO);
-        mFilterType.add(FilterType.ANTIQUE);
-        mFilterType.add(FilterType.BLACKCAT);
-        mFilterType.add(FilterType.BLACKWHITE);
-        mFilterType.add(FilterType.BROOKLYN);
-        mFilterType.add(FilterType.CALM);
-        mFilterType.add(FilterType.COOL);
-        mFilterType.add(FilterType.EARLYBIRD);
-        mFilterType.add(FilterType.EMERALD);
-        mFilterType.add(FilterType.EVERGREEN);
-        mFilterType.add(FilterType.FAIRYTALE);
-        mFilterType.add(FilterType.FREUD);
-        mFilterType.add(FilterType.HEALTHY);
-        mFilterType.add(FilterType.HEFE);
-        mFilterType.add(FilterType.HUDSON);
-        mFilterType.add(FilterType.KEVIN);
-        mFilterType.add(FilterType.LATTE);
-        mFilterType.add(FilterType.LOMO);
-        mFilterType.add(FilterType.NOSTALGIA);
-        mFilterType.add(FilterType.ROMANCE);
-        mFilterType.add(FilterType.SAKURA);
-        mFilterType.add(FilterType.SKETCH);
-        mFilterType.add(FilterType.SUNSET);
-        mFilterType.add(FilterType.WHITECAT);
+        mGlFilterType.add(GlFilterType.SOURCE); // 原图
+        mGlFilterType.add(GlFilterType.AMARO);
+        mGlFilterType.add(GlFilterType.ANTIQUE);
+        mGlFilterType.add(GlFilterType.BLACKCAT);
+        mGlFilterType.add(GlFilterType.BLACKWHITE);
+        mGlFilterType.add(GlFilterType.BROOKLYN);
+        mGlFilterType.add(GlFilterType.CALM);
+        mGlFilterType.add(GlFilterType.COOL);
+        mGlFilterType.add(GlFilterType.EARLYBIRD);
+        mGlFilterType.add(GlFilterType.EMERALD);
+        mGlFilterType.add(GlFilterType.EVERGREEN);
+        mGlFilterType.add(GlFilterType.FAIRYTALE);
+        mGlFilterType.add(GlFilterType.FREUD);
+        mGlFilterType.add(GlFilterType.HEALTHY);
+        mGlFilterType.add(GlFilterType.HEFE);
+        mGlFilterType.add(GlFilterType.HUDSON);
+        mGlFilterType.add(GlFilterType.KEVIN);
+        mGlFilterType.add(GlFilterType.LATTE);
+        mGlFilterType.add(GlFilterType.LOMO);
+        mGlFilterType.add(GlFilterType.NOSTALGIA);
+        mGlFilterType.add(GlFilterType.ROMANCE);
+        mGlFilterType.add(GlFilterType.SAKURA);
+        mGlFilterType.add(GlFilterType.SKETCH);
+        mGlFilterType.add(GlFilterType.SUNSET);
+        mGlFilterType.add(GlFilterType.WHITECAT);
 
 
 
@@ -98,12 +98,12 @@ public final class ColorFilterManager {
      * @param index
      * @return
      */
-    public FilterType getColorFilterType(int index) {
-        if (mFilterType == null || mFilterType.isEmpty()) {
-            return FilterType.SOURCE;
+    public GlFilterType getColorFilterType(int index) {
+        if (mGlFilterType == null || mGlFilterType.isEmpty()) {
+            return GlFilterType.SOURCE;
         }
-        int i = index % mFilterType.size();
-        return mFilterType.get(i);
+        int i = index % mGlFilterType.size();
+        return mGlFilterType.get(i);
     }
 
     /**
@@ -124,15 +124,15 @@ public final class ColorFilterManager {
      * @return
      */
     public int getColorFilterCount() {
-        return mFilterType == null ? 0 : mFilterType.size();
+        return mGlFilterType == null ? 0 : mGlFilterType.size();
     }
 
     /**
      * 获取滤镜类型
      * @return
      */
-    public List<FilterType> getFilterType() {
-        return mFilterType;
+    public List<GlFilterType> getFilterType() {
+        return mGlFilterType;
     }
 
     /**

@@ -5,8 +5,8 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.view.SurfaceHolder;
 
-import com.cgfay.cainfilter.type.FilterGroupType;
-import com.cgfay.cainfilter.type.FilterType;
+import com.cgfay.cainfilter.type.GlFilterGroupType;
+import com.cgfay.cainfilter.type.GlFilterType;
 
 
 /**
@@ -175,7 +175,7 @@ public class DrawerManager {
     /**
      * 改变Filter类型
      */
-    public void changeFilterType(FilterType type) {
+    public void changeFilterType(GlFilterType type) {
         if (mRenderHandler == null) {
             return;
         }
@@ -189,7 +189,7 @@ public class DrawerManager {
      * 改变滤镜组类型
      * @param type
      */
-    public void changeFilterGroup(FilterGroupType type) {
+    public void changeFilterGroup(GlFilterGroupType type) {
         if (mRenderHandler == null) {
             return;
         }

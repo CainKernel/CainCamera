@@ -98,14 +98,22 @@ public final class ImageEditManager {
                 @Override
                 public void run() {
                     mSourceBitmap = BitmapFactory.decodeFile(mImagePath);
-                    if (mMainHandler != null && mWeakImageView.get() != null) {
-                        mMainHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                mWeakImageView.get().setImageBitmap(mSourceBitmap);
-                            }
-                        });
-                    }
+                    setImageBitmap(mSourceBitmap);
+                }
+            });
+        }
+    }
+
+    /**
+     * 设置图片
+     * @param bitmap
+     */
+    private void setImageBitmap(final Bitmap bitmap) {
+        if (mMainHandler != null && mWeakImageView.get() != null) {
+            mMainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mWeakImageView.get().setImageBitmap(bitmap);
                 }
             });
         }

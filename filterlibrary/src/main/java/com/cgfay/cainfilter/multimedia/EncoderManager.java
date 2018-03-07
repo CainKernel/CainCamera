@@ -6,9 +6,9 @@ import android.opengl.Matrix;
 import android.util.Log;
 
 import com.cgfay.cainfilter.core.ParamsManager;
-import com.cgfay.cainfilter.glfilter.base.DisplayFilter;
 import com.cgfay.cainfilter.gles.EglCore;
 import com.cgfay.cainfilter.gles.WindowSurface;
+import com.cgfay.cainfilter.glfilter.base.GLDisplayFilter;
 import com.cgfay.cainfilter.type.ScaleType;
 import com.cgfay.cainfilter.utils.GlUtil;
 
@@ -58,7 +58,7 @@ public class EncoderManager {
     // 录制视频用的EGLSurface
     private WindowSurface mRecordWindowSurface;
     // 录制的Filter
-    private DisplayFilter mRecordFilter;
+    private GLDisplayFilter mRecordFilter;
 
     // 复用器管理器
     private MediaMuxerWrapper mMuxerManager;
@@ -285,7 +285,7 @@ public class EncoderManager {
      */
     private void initRecordingFilter() {
         if (mRecordFilter == null) {
-            mRecordFilter = new DisplayFilter();
+            mRecordFilter = new GLDisplayFilter();
         }
         mRecordFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
         mRecordFilter.onDisplayChanged(mVideoWidth, mVideoHeight);

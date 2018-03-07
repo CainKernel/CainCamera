@@ -17,8 +17,8 @@ import com.cgfay.cainfilter.facetracker.FaceTrackManager;
 import com.cgfay.cainfilter.facetracker.FaceTrackerCallback;
 import com.cgfay.cainfilter.gles.EglCore;
 import com.cgfay.cainfilter.gles.WindowSurface;
-import com.cgfay.cainfilter.type.FilterGroupType;
-import com.cgfay.cainfilter.type.FilterType;
+import com.cgfay.cainfilter.type.GlFilterGroupType;
+import com.cgfay.cainfilter.type.GlFilterType;
 
 import com.cgfay.cainfilter.utils.GlUtil;
 
@@ -311,7 +311,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 更新filter
      * @param type Filter类型
      */
-    void changeFilter(FilterType type) {
+    void changeFilter(GlFilterType type) {
         RenderManager.getInstance().changeFilter(type);
     }
 
@@ -319,7 +319,7 @@ public class RenderThread extends HandlerThread implements SurfaceTexture.OnFram
      * 切换滤镜组
      * @param type
      */
-    void changeFilterGroup(FilterGroupType type) {
+    void changeFilterGroup(GlFilterGroupType type) {
         synchronized (mSyncIsLooping) {
             RenderManager.getInstance().changeFilterGroup(type);
         }

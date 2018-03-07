@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.cainfilter.type.FilterType;
+import com.cgfay.cainfilter.type.GlFilterType;
 import com.cgfay.utilslibrary.SquareImageView;
 import com.cgfay.utilslibrary.BitmapUtils;
 
@@ -31,7 +31,7 @@ public class EffectFilterAdapter extends RecyclerView.Adapter<EffectFilterAdapte
 
     private Context mContext;
     // 滤镜类型
-    private List<FilterType> mFilterTypes;
+    private List<GlFilterType> mGlFilterTypes;
     // 滤镜名称
     private List<String> mFilterNames;
     // 滤镜显示图片
@@ -41,13 +41,13 @@ public class EffectFilterAdapter extends RecyclerView.Adapter<EffectFilterAdapte
     private OnItemClickLitener mLitener;
 
     public EffectFilterAdapter(Context context,
-                               List<FilterType> filterTypes,
+                               List<GlFilterType> glFilterTypes,
                                List<String> filterNames) {
         mContext = context;
-        mFilterTypes = filterTypes;
+        mGlFilterTypes = glFilterTypes;
         mFilterNames = filterNames;
         // 初始化持有的数量，解决onBindViewHolder可能会出现数组越界的情况
-        for (int i = 0; i < mFilterTypes.size(); i++) {
+        for (int i = 0; i < mGlFilterTypes.size(); i++) {
             mWeakBitmaps.add(i, null);
         }
     }
@@ -61,12 +61,12 @@ public class EffectFilterAdapter extends RecyclerView.Adapter<EffectFilterAdapte
     @Override
     public void onBindViewHolder(ImageHolder holder, int position) {
         // 设置滤镜图片，这里防止重复加载
-        if (mFilterTypes != null && !TextUtils.isEmpty(mFilterTypes.get(position).toString())) {
+        if (mGlFilterTypes != null && !TextUtils.isEmpty(mGlFilterTypes.get(position).toString())) {
             if (mWeakBitmaps.size() <= position
                     || mWeakBitmaps.get(position) == null
                     || mWeakBitmaps.get(position).get() == null
                     || mWeakBitmaps.get(position).get().isRecycled()) {
-                String path = "thumbs/" + mFilterTypes.get(position).name().toLowerCase() + ".jpg";
+                String path = "thumbs/" + mGlFilterTypes.get(position).name().toLowerCase() + ".jpg";
                 Bitmap bitmap = BitmapUtils.getImageFromAssetsFile(mContext, path);
                 if (bitmap != null) {
                     mWeakBitmaps.add(position, new WeakReference<Bitmap>(bitmap));
@@ -88,7 +88,7 @@ public class EffectFilterAdapter extends RecyclerView.Adapter<EffectFilterAdapte
 
     @Override
     public int getItemCount() {
-        return (mFilterTypes == null) ? 0 : mFilterTypes.size();
+        return (mGlFilterTypes == null) ? 0 : mGlFilterTypes.size();
     }
 
     /**
