@@ -28,7 +28,7 @@ import android.widget.Toast;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.activity.videoedit.VideoEditActivity;
-import com.cgfay.cainfilter.core.ParamsManager;
+import com.cgfay.cainfilter.camerarender.ParamsManager;
 import com.cgfay.caincamera.core.VideoListManager;
 import com.cgfay.caincamera.multimedia.MediaPlayerManager;
 import com.cgfay.cainfilter.multimedia.VideoCombineManager;

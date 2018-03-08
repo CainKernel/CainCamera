@@ -1,12 +1,12 @@
-package com.cgfay.cainfilter.core;
+package com.cgfay.cainfilter.camerarender;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilterGroup;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilterGroup;
 import com.cgfay.cainfilter.glfilter.camera.GLCameraFilter;
-import com.cgfay.cainfilter.type.GlFilterGroupType;
-import com.cgfay.cainfilter.type.GlFilterType;
+import com.cgfay.cainfilter.type.GLFilterGroupType;
+import com.cgfay.cainfilter.type.GLFilterType;
 import com.cgfay.cainfilter.type.ScaleType;
 import com.cgfay.cainfilter.utils.TextureRotationUtils;
 
@@ -29,9 +29,9 @@ public final class RenderManager {
     // 相机输入流滤镜
     private GLCameraFilter mCameraFilter;
     // 实时滤镜组
-    private GLBaseImageFilterGroup mRealTimeFilter;
+    private GLImageFilterGroup mRealTimeFilter;
     // 显示输出
-    private GLBaseImageFilter mDisplayFilter;
+    private GLImageFilter mDisplayFilter;
 
     // 当前的TextureId
     private int mCurrentTextureId;
@@ -94,7 +94,7 @@ public final class RenderManager {
         // 渲染滤镜组
         mRealTimeFilter = FilterManager.getFilterGroup();
         // 显示输出
-        mDisplayFilter = FilterManager.getFilter(GlFilterType.NONE);
+        mDisplayFilter = FilterManager.getFilter(GLFilterType.NONE);
     }
 
     /**
@@ -254,7 +254,7 @@ public final class RenderManager {
      * 更新filter
      * @param type Filter类型
      */
-    public void changeFilter(GlFilterType type) {
+    public void changeFilter(GLFilterType type) {
         if (mRealTimeFilter != null) {
             mRealTimeFilter.changeFilter(type);
         }
@@ -264,7 +264,7 @@ public final class RenderManager {
      * 切换滤镜组
      * @param type
      */
-    public void changeFilterGroup(GlFilterGroupType type) {
+    public void changeFilterGroup(GLFilterGroupType type) {
         synchronized (mSyncObject) {
             if (mRealTimeFilter != null) {
                 mRealTimeFilter.release();

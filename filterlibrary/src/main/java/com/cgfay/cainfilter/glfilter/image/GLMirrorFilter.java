@@ -2,13 +2,13 @@ package com.cgfay.cainfilter.glfilter.image;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 
 /**
  * 镜像翻转
  * Created by cain.huang on 2017/7/21.
  */
-public class GLMirrorFilter extends GLBaseImageFilter {
+public class GLMirrorFilter extends GLImageFilter {
 
     private static final String FRAGMENT_MORROR =
             "precision mediump float;\n" +

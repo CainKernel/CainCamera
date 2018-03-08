@@ -2,7 +2,7 @@ package com.cgfay.cainfilter.glfilter.base;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.type.GlFilterType;
+import com.cgfay.cainfilter.type.GLFilterType;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -12,19 +12,19 @@ import java.util.List;
  * 滤镜组基类
  * Created by cain on 17-7-17.
  */
-public abstract class GLBaseImageFilterGroup extends GLBaseImageFilter {
+public abstract class GLImageFilterGroup extends GLImageFilter {
 
     private static int[] mFramebuffers;
     private static int[] mFrameBufferTextures;
 
     private int mCurrentTextureId;
-    protected List<GLBaseImageFilter> mFilters = new ArrayList<GLBaseImageFilter>();
+    protected List<GLImageFilter> mFilters = new ArrayList<GLImageFilter>();
 
-    public GLBaseImageFilterGroup() {
+    public GLImageFilterGroup() {
 
     }
 
-    public GLBaseImageFilterGroup(List<GLBaseImageFilter> filters) {
+    public GLImageFilterGroup(List<GLImageFilter> filters) {
         mFilters = filters;
     }
 
@@ -69,7 +69,7 @@ public abstract class GLBaseImageFilterGroup extends GLBaseImageFilter {
         int size = mFilters.size();
         mCurrentTextureId = textureId;
         for (int i = 0; i < size; i++) {
-            GLBaseImageFilter filter = mFilters.get(i);
+            GLImageFilter filter = mFilters.get(i);
             if (i < size - 1) {
                 GLES30.glViewport(0, 0, mImageWidth, mImageHeight);
                 GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[i]);
@@ -94,7 +94,7 @@ public abstract class GLBaseImageFilterGroup extends GLBaseImageFilter {
         int size = mFilters.size();
         mCurrentTextureId = textureId;
         for (int i = 0; i < size; i++) {
-            GLBaseImageFilter filter = mFilters.get(i);
+            GLImageFilter filter = mFilters.get(i);
             if (i < size - 1) {
                 GLES30.glViewport(0, 0, mImageWidth, mImageHeight);
                 GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[i]);
@@ -149,7 +149,7 @@ public abstract class GLBaseImageFilterGroup extends GLBaseImageFilter {
     @Override
     public void release() {
         if (mFilters != null) {
-            for (GLBaseImageFilter filter : mFilters) {
+            for (GLImageFilter filter : mFilters) {
                 filter.release();
             }
             mFilters.clear();
@@ -220,7 +220,7 @@ public abstract class GLBaseImageFilterGroup extends GLBaseImageFilter {
      * 添加新滤镜
      * @param filters
      */
-    public void addFilters(List<GLBaseImageFilter> filters) {
+    public void addFilters(List<GLImageFilter> filters) {
         mFilters.addAll(filters);
         addFrambuffers();
     }
@@ -235,7 +235,7 @@ public abstract class GLBaseImageFilterGroup extends GLBaseImageFilter {
      * 切换滤镜
      * @param type
      */
-    public abstract void changeFilter(GlFilterType type);
+    public abstract void changeFilter(GLFilterType type);
 
     /**
      * 添加Framebuffer
@@ -267,7 +267,7 @@ public abstract class GLBaseImageFilterGroup extends GLBaseImageFilter {
      * 替换滤镜组
      * @param filters
      */
-    public void replaceWidthFilters(List<GLBaseImageFilter> filters) {
+    public void replaceWidthFilters(List<GLImageFilter> filters) {
         for (int i = 0; i < mFilters.size(); i++) {
             mFilters.get(i).release();
         }

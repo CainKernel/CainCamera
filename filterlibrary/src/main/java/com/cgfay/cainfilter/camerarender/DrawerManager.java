@@ -1,12 +1,12 @@
-package com.cgfay.cainfilter.core;
+package com.cgfay.cainfilter.camerarender;
 
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.view.SurfaceHolder;
 
-import com.cgfay.cainfilter.type.GlFilterGroupType;
-import com.cgfay.cainfilter.type.GlFilterType;
+import com.cgfay.cainfilter.type.GLFilterGroupType;
+import com.cgfay.cainfilter.type.GLFilterType;
 
 
 /**
@@ -175,7 +175,7 @@ public class DrawerManager {
     /**
      * 改变Filter类型
      */
-    public void changeFilterType(GlFilterType type) {
+    public void changeFilterType(GLFilterType type) {
         if (mRenderHandler == null) {
             return;
         }
@@ -189,7 +189,7 @@ public class DrawerManager {
      * 改变滤镜组类型
      * @param type
      */
-    public void changeFilterGroup(GlFilterGroupType type) {
+    public void changeFilterGroup(GLFilterGroupType type) {
         if (mRenderHandler == null) {
             return;
         }

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/photo_edit_function_height"
+    android:background="@color/video_window_background"
+    android:padding="@dimen/layout_margin_height"
+    android:orientation="vertical"
+    android:gravity="bottom"
+    android:layout_gravity="bottom">
+
+    <SeekBar
+        android:id="@+id/edit_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/dp10"/>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_brightness"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:textColor="@android:color/white"
+                android:text="@string/brightness"/>
+            <Button
+                android:id="@+id/btn_contrast"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:textColor="@android:color/white"
+                android:text="@string/contrast"/>
+
+            <Button
+                android:id="@+id/btn_exposure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:textColor="@android:color/white"
+                android:text="@string/exposure" />
+
+            <Button
+                android:id="@+id/btn_hue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:textColor="@android:color/white"
+                android:text="@string/hue" />
+
+            <Button
+                android:id="@+id/btn_saturation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:textColor="@android:color/white"
+                android:text="@string/saturation"/>
+
+            <Button
+                android:id="@+id/btn_sharpness"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:textColor="@android:color/white"
+                android:text="@string/sharpness"/>
+        </LinearLayout>
+    </HorizontalScrollView>
+
+</LinearLayout>

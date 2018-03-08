@@ -1,13 +1,13 @@
 package com.cgfay.cainfilter.glfilter.color;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 
 /**
  * 黑白
  * Created by cain on 2017/11/15.
  */
 
-public class GLBlackWhiteFilter extends GLBaseImageFilter {
+public class GLBlackWhiteFilter extends GLImageFilter {
 
     private static final String FRAGMENT_SHADER = 
             "precision mediump float;\n" +

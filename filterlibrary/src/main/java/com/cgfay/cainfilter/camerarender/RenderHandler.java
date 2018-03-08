@@ -1,4 +1,4 @@
-package com.cgfay.cainfilter.core;
+package com.cgfay.cainfilter.camerarender;
 
 import android.graphics.Rect;
 import android.os.Handler;
@@ -6,8 +6,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.view.SurfaceHolder;
 
-import com.cgfay.cainfilter.type.GlFilterGroupType;
-import com.cgfay.cainfilter.type.GlFilterType;
+import com.cgfay.cainfilter.type.GLFilterGroupType;
+import com.cgfay.cainfilter.type.GLFilterType;
 
 import java.lang.ref.WeakReference;
 
@@ -117,14 +117,14 @@ public class RenderHandler extends Handler {
             // 切换滤镜
             case MSG_FILTER_TYPE:
                 if (mWeakRender != null && mWeakRender.get() != null) {
-                    mWeakRender.get().changeFilter((GlFilterType) msg.obj);
+                    mWeakRender.get().changeFilter((GLFilterType) msg.obj);
                 }
                 break;
 
             // 切换滤镜组
             case MSG_FILTER_GROUP:
                 if (mWeakRender != null && mWeakRender.get() != null) {
-                    mWeakRender.get().changeFilterGroup((GlFilterGroupType) msg.obj);
+                    mWeakRender.get().changeFilterGroup((GLFilterGroupType) msg.obj);
                 }
                 break;
 

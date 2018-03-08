@@ -4,7 +4,7 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 import com.cgfay.cainfilter.utils.GlUtil;
 import com.cgfay.cainfilter.utils.TextureRotationUtils;
 
@@ -14,7 +14,7 @@ import java.nio.FloatBuffer;
  * Created by cain on 2017/7/9.
  */
 
-public class GLCameraFilter extends GLBaseImageFilter {
+public class GLCameraFilter extends GLImageFilter {
     private static final String VERTEX_SHADER =
             "uniform mat4 uMVPMatrix;                               \n" +
             "uniform mat4 uTexMatrix;                               \n" +

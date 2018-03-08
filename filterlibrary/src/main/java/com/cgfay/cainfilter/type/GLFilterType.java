@@ -4,7 +4,7 @@ package com.cgfay.cainfilter.type;
  * Created by cain on 17-7-25.
  */
 
-public enum GlFilterType {
+public enum GLFilterType {
     NONE, // 没有滤镜
 
     // 图片编辑滤镜

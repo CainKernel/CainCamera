@@ -5,7 +5,7 @@ import android.opengl.GLES30;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import com.cgfay.cainfilter.core.ParamsManager;
+import com.cgfay.cainfilter.camerarender.ParamsManager;
 import com.cgfay.cainfilter.gles.EglCore;
 import com.cgfay.cainfilter.gles.WindowSurface;
 import com.cgfay.cainfilter.glfilter.base.GLDisplayFilter;

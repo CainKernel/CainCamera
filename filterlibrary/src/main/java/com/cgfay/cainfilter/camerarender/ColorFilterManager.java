@@ -1,6 +1,6 @@
-package com.cgfay.cainfilter.core;
+package com.cgfay.cainfilter.camerarender;
 
-import com.cgfay.cainfilter.type.GlFilterType;
+import com.cgfay.cainfilter.type.GLFilterType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public final class ColorFilterManager {
     private static ColorFilterManager mInstance;
 
 
-    private ArrayList<GlFilterType> mGlFilterType;
+    private ArrayList<GLFilterType> mGlFilterType;
     private ArrayList<String> mFilterName;
 
     public static ColorFilterManager getInstance() {
@@ -34,33 +34,33 @@ public final class ColorFilterManager {
      * 初始化颜色滤镜
      */
     public void initColorFilters() {
-        mGlFilterType = new ArrayList<GlFilterType>();
+        mGlFilterType = new ArrayList<GLFilterType>();
 
-        mGlFilterType.add(GlFilterType.SOURCE); // 原图
-        mGlFilterType.add(GlFilterType.AMARO);
-        mGlFilterType.add(GlFilterType.ANTIQUE);
-        mGlFilterType.add(GlFilterType.BLACKCAT);
-        mGlFilterType.add(GlFilterType.BLACKWHITE);
-        mGlFilterType.add(GlFilterType.BROOKLYN);
-        mGlFilterType.add(GlFilterType.CALM);
-        mGlFilterType.add(GlFilterType.COOL);
-        mGlFilterType.add(GlFilterType.EARLYBIRD);
-        mGlFilterType.add(GlFilterType.EMERALD);
-        mGlFilterType.add(GlFilterType.EVERGREEN);
-        mGlFilterType.add(GlFilterType.FAIRYTALE);
-        mGlFilterType.add(GlFilterType.FREUD);
-        mGlFilterType.add(GlFilterType.HEALTHY);
-        mGlFilterType.add(GlFilterType.HEFE);
-        mGlFilterType.add(GlFilterType.HUDSON);
-        mGlFilterType.add(GlFilterType.KEVIN);
-        mGlFilterType.add(GlFilterType.LATTE);
-        mGlFilterType.add(GlFilterType.LOMO);
-        mGlFilterType.add(GlFilterType.NOSTALGIA);
-        mGlFilterType.add(GlFilterType.ROMANCE);
-        mGlFilterType.add(GlFilterType.SAKURA);
-        mGlFilterType.add(GlFilterType.SKETCH);
-        mGlFilterType.add(GlFilterType.SUNSET);
-        mGlFilterType.add(GlFilterType.WHITECAT);
+        mGlFilterType.add(GLFilterType.SOURCE); // 原图
+        mGlFilterType.add(GLFilterType.AMARO);
+        mGlFilterType.add(GLFilterType.ANTIQUE);
+        mGlFilterType.add(GLFilterType.BLACKCAT);
+        mGlFilterType.add(GLFilterType.BLACKWHITE);
+        mGlFilterType.add(GLFilterType.BROOKLYN);
+        mGlFilterType.add(GLFilterType.CALM);
+        mGlFilterType.add(GLFilterType.COOL);
+        mGlFilterType.add(GLFilterType.EARLYBIRD);
+        mGlFilterType.add(GLFilterType.EMERALD);
+        mGlFilterType.add(GLFilterType.EVERGREEN);
+        mGlFilterType.add(GLFilterType.FAIRYTALE);
+        mGlFilterType.add(GLFilterType.FREUD);
+        mGlFilterType.add(GLFilterType.HEALTHY);
+        mGlFilterType.add(GLFilterType.HEFE);
+        mGlFilterType.add(GLFilterType.HUDSON);
+        mGlFilterType.add(GLFilterType.KEVIN);
+        mGlFilterType.add(GLFilterType.LATTE);
+        mGlFilterType.add(GLFilterType.LOMO);
+        mGlFilterType.add(GLFilterType.NOSTALGIA);
+        mGlFilterType.add(GLFilterType.ROMANCE);
+        mGlFilterType.add(GLFilterType.SAKURA);
+        mGlFilterType.add(GLFilterType.SKETCH);
+        mGlFilterType.add(GLFilterType.SUNSET);
+        mGlFilterType.add(GLFilterType.WHITECAT);
 
 
 
@@ -98,9 +98,9 @@ public final class ColorFilterManager {
      * @param index
      * @return
      */
-    public GlFilterType getColorFilterType(int index) {
+    public GLFilterType getColorFilterType(int index) {
         if (mGlFilterType == null || mGlFilterType.isEmpty()) {
-            return GlFilterType.SOURCE;
+            return GLFilterType.SOURCE;
         }
         int i = index % mGlFilterType.size();
         return mGlFilterType.get(i);
@@ -131,7 +131,7 @@ public final class ColorFilterManager {
      * 获取滤镜类型
      * @return
      */
-    public List<GlFilterType> getFilterType() {
+    public List<GLFilterType> getFilterType() {
         return mGlFilterType;
     }
 

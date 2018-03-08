@@ -2,7 +2,7 @@ package com.cgfay.cainfilter.glfilter.image;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 
 /**
  * 光照亮度
@@ -11,7 +11,7 @@ import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
  * Created by cain on 2017/7/30.
  */
 
-public class GLBrightnessFilter extends GLBaseImageFilter {
+public class GLBrightnessFilter extends GLImageFilter {
     private static final String FRAGMENT_SHADER =
             "varying highp vec2 textureCoordinate;                                              \n" +
             "uniform sampler2D inputTexture;                                                    \n" +

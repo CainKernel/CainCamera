@@ -1,9 +1,9 @@
 package com.cgfay.cainfilter.glfilter.group;
 
-import com.cgfay.cainfilter.core.FilterManager;
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilterGroup;
-import com.cgfay.cainfilter.type.GlFilterType;
+import com.cgfay.cainfilter.camerarender.FilterManager;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
+import com.cgfay.cainfilter.type.GLFilterIndex;
+import com.cgfay.cainfilter.type.GLFilterType;
 import com.cgfay.cainfilter.glfilter.image.GLBrightnessFilter;
 import com.cgfay.cainfilter.glfilter.image.GLContrastFilter;
 import com.cgfay.cainfilter.glfilter.image.GLExposureFilter;
@@ -18,7 +18,7 @@ import java.util.List;
  * 图片编辑滤镜组，主要用来编辑图片的色温、亮度、饱和度、对比度等
  * Created by cain on 17-7-25.
  */
-public class GLImageFilterGroup extends GLBaseImageFilterGroup {
+public class GLImageEditFilterGroup extends com.cgfay.cainfilter.glfilter.base.GLImageFilterGroup {
 
     private static final int BRIGHTNESS = 0;
     private static final int CONTRAST = 1;
@@ -26,12 +26,13 @@ public class GLImageFilterGroup extends GLBaseImageFilterGroup {
     private static final int HUE = 3;
     private static final int SATURATION = 4;
     private static final int SHARPNESS = 5;
+    private static final int FILTERS = 6;
 
-    public GLImageFilterGroup() {
+    public GLImageEditFilterGroup() {
         this(initFilters());
     }
 
-    public GLImageFilterGroup(List<GLBaseImageFilter> filters) {
+    public GLImageEditFilterGroup(List<GLImageFilter> filters) {
         super(filters);
     }
 
@@ -39,15 +40,16 @@ public class GLImageFilterGroup extends GLBaseImageFilterGroup {
      * 初始化滤镜
      * @return
      */
-    private static List<GLBaseImageFilter> initFilters() {
-        List<GLBaseImageFilter> filters = new ArrayList<GLBaseImageFilter>();
+    private static List<GLImageFilter> initFilters() {
+        List<GLImageFilter> filters = new ArrayList<GLImageFilter>();
 
-        filters.add(BRIGHTNESS, FilterManager.getFilter(GlFilterType.BRIGHTNESS)); // 亮度
-        filters.add(CONTRAST, FilterManager.getFilter(GlFilterType.CONTRAST)); // 对比度
-        filters.add(EXPOSURE, FilterManager.getFilter(GlFilterType.EXPOSURE)); // 曝光
-        filters.add(HUE, FilterManager.getFilter(GlFilterType.HUE)); // 色调
-        filters.add(SATURATION, FilterManager.getFilter(GlFilterType.SATURATION)); // 饱和度
-        filters.add(SHARPNESS, FilterManager.getFilter(GlFilterType.SHARPNESS)); // 锐度
+        filters.add(BRIGHTNESS, FilterManager.getFilter(GLFilterType.BRIGHTNESS)); // 亮度
+        filters.add(CONTRAST, FilterManager.getFilter(GLFilterType.CONTRAST)); // 对比度
+        filters.add(EXPOSURE, FilterManager.getFilter(GLFilterType.EXPOSURE)); // 曝光
+        filters.add(HUE, FilterManager.getFilter(GLFilterType.HUE)); // 色调
+        filters.add(SATURATION, FilterManager.getFilter(GLFilterType.SATURATION)); // 饱和度
+        filters.add(SHARPNESS, FilterManager.getFilter(GLFilterType.SHARPNESS)); // 锐度
+        filters.add(FILTERS, FilterManager.getFilter(GLFilterType.NONE)); // 滤镜
 
         return filters;
     }
@@ -101,11 +103,19 @@ public class GLImageFilterGroup extends GLBaseImageFilterGroup {
 
     @Override
     public void setBeautifyLevel(float percent) {
-
+        // do nothing
     }
 
     @Override
-    public void changeFilter(GlFilterType type) {
-
+    public void changeFilter(GLFilterType type) {
+        GLFilterIndex index = FilterManager.getIndex(type);
+        if (index == GLFilterIndex.ColorIndex) {
+            if (mFilters != null) {
+                mFilters.get(FILTERS).release();
+                mFilters.set(FILTERS, FilterManager.getFilter(type));
+                mFilters.get(FILTERS).onInputSizeChanged(mImageWidth, mImageHeight);
+                mFilters.get(FILTERS).onDisplayChanged(mDisplayWidth, mDisplayHeight);
+            }
+        }
     }
 }

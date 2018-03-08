@@ -7,8 +7,12 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
+import com.cgfay.utilslibrary.BitmapUtils;
+
+import java.io.File;
 import java.lang.ref.WeakReference;
 
 /**
@@ -35,11 +39,17 @@ public final class ImageEditManager {
 
     private Handler mMainHandler;
 
+    private int mScreenWidth;
+    private int mScreenHeight;
+
     public ImageEditManager(Context context, String imagePath, ImageView imageView) {
         mWeakContext = new WeakReference<Context>(context);
         mWeakImageView = new WeakReference<ImageView>(imageView);
         mImagePath = imagePath;
         mMainHandler = new Handler(Looper.getMainLooper());
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        mScreenWidth = wm.getDefaultDisplay().getWidth();
+        mScreenHeight = wm.getDefaultDisplay().getHeight();
     }
 
     /**
@@ -97,7 +107,8 @@ public final class ImageEditManager {
             mEditHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    mSourceBitmap = BitmapFactory.decodeFile(mImagePath);
+                    mSourceBitmap = BitmapUtils.getBitmapFromFile(new File(mImagePath),
+                            mScreenWidth, mScreenHeight);
                     setImageBitmap(mSourceBitmap);
                 }
             });

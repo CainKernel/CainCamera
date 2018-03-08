@@ -2,7 +2,7 @@ package com.cgfay.cainfilter.glfilter.image;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 
 /**
  * 色调
@@ -10,7 +10,7 @@ import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
  * Created by cain on 2017/7/30.
  */
 
-public class GLHueFilter extends GLBaseImageFilter {
+public class GLHueFilter extends GLImageFilter {
     private static final String FRAGMENT_SHADER =
             "precision highp float;                                                 \n" +
             "varying highp vec2 textureCoordinate;                                  \n" +

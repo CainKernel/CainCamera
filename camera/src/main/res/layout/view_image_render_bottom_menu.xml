@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/dp40"
+    android:layout_gravity="bottom"
+    android:gravity="bottom"
+    android:orientation="horizontal">
+    <Button
+        android:id="@+id/btn_filters"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@android:color/transparent"
+        android:textColor="@android:color/white"
+        android:text="@string/image_edit_filters"/>
+    <View
+        android:layout_width="@dimen/dp1"
+        android:layout_height="@dimen/dp30"
+        android:background="@android:color/white"
+        android:layout_margin="@dimen/dp5"/>
+    <Button
+        android:id="@+id/btn_adjust"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@android:color/transparent"
+        android:textColor="@android:color/white"
+        android:text="@string/image_edit_adjust"/>
+</LinearLayout>

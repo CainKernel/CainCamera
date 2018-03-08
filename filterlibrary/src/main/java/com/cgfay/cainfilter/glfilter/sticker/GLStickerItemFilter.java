@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
 
-import com.cgfay.cainfilter.core.ParamsManager;
+import com.cgfay.cainfilter.camerarender.ParamsManager;
 import com.cgfay.cainfilter.type.StickerType;
 import com.cgfay.cainfilter.utils.GlUtil;
 import com.cgfay.utilslibrary.BitmapUtils;

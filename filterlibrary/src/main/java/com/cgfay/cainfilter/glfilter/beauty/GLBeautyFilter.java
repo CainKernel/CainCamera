@@ -2,13 +2,13 @@ package com.cgfay.cainfilter.glfilter.beauty;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 
 /**
  * 实时美颜
  * Created by cain on 2017/7/30.
  */
-public class GLBeautyFilter extends GLBaseImageFilter {
+public class GLBeautyFilter extends GLImageFilter {
 
     private static final String FRAGMENT_SHADER =
              "precision mediump float;\n" +

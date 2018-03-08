@@ -2,13 +2,13 @@ package com.cgfay.cainfilter.glfilter.beauty;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 
 /**
  * 实时磨皮滤镜
  * Created by cain.huang on 2017/10/12.
  */
-public class GLRealtimeBeautyFilter extends GLBaseImageFilter {
+public class GLRealtimeBeautyFilter extends GLImageFilter {
 
     private static String FRAGMENT_SHADER =
             "precision lowp float;\n" +

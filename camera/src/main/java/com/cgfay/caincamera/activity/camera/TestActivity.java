@@ -11,8 +11,6 @@ import android.view.View;
 import android.widget.Button;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.caincamera.activity.CameraActivity;
-import com.cgfay.caincamera.activity.RtmpPushActivity;
 import com.cgfay.caincamera.activity.facetrack.FaceTrack2Activity;
 import com.cgfay.caincamera.activity.facetrack.FaceTrackActivity;
 import com.cgfay.utilslibrary.PermissionUtils;

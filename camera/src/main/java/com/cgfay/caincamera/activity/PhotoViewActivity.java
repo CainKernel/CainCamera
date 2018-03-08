@@ -13,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -32,6 +33,14 @@ import java.util.List;
 
 public class PhotoViewActivity extends AppCompatActivity
         implements PhotoViewAdapter.OnItemClickLitener {
+    private static final String TAG = "PhotoViewActivity";
+
+    public static final String SELECT_MODE = "SelectMode";
+
+    // 图片选择模式，0为静态图片编辑，1为GPU渲染图片
+    public static final int SELECT_MODE_NATIVE = 0;
+    public static final int SELECT_MODE_GPU = 1;
+    private int mSelectMode = SELECT_MODE_NATIVE;
 
     private static final int REQUEST_STORAGE_READ = 0x01;
     private static final int COLUMNSIZE = 3;
@@ -54,6 +63,7 @@ public class PhotoViewActivity extends AppCompatActivity
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_photo_view);
         multiSelectEnable = getIntent().getBooleanExtra("multiSelect", false);
+        mSelectMode = getIntent().getIntExtra(SELECT_MODE, SELECT_MODE_NATIVE);
         initView();
         if (PermissionUtils.permissionChecking(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
             startAsyncScaneMedia();
@@ -132,9 +142,17 @@ public class PhotoViewActivity extends AppCompatActivity
             intent.putExtra(VideoEditActivity.PATH, mImageLists.get(position).getPath());
             startActivity(intent);
         } else if (mImageLists.get(position).getMimeType().startsWith("image/")) {
-            Intent intent = new Intent(PhotoViewActivity.this, ImageEditActivity.class);
-            intent.putExtra(ImageEditActivity.PATH, mImageLists.get(position).getPath());
-            startActivity(intent);
+            if (mSelectMode == SELECT_MODE_NATIVE) {
+                Intent intent = new Intent(PhotoViewActivity.this, ImageEditActivity.class);
+                intent.putExtra(ImageEditActivity.PATH, mImageLists.get(position).getPath());
+                startActivity(intent);
+            } else if (mSelectMode == SELECT_MODE_GPU) {
+                Intent intent = new Intent(PhotoViewActivity.this, ImageRenderActivity.class);
+                intent.putExtra(ImageRenderActivity.PATH, mImageLists.get(position).getPath());
+                intent.putExtra(ImageRenderActivity.WIDTH, mImageLists.get(position).getWidth());
+                intent.putExtra(ImageRenderActivity.HEIGHT, mImageLists.get(position).getHeight());
+                startActivity(intent);
+            }
         }
     }
 
@@ -240,6 +258,11 @@ public class PhotoViewActivity extends AppCompatActivity
                 if (cursor != null) {
                     cursor.close();
                 }
+            }
+
+            // GPU渲染图片时，不需要查找视频
+            if (mSelectMode == SELECT_MODE_GPU) {
+                return null;
             }
 
             try {

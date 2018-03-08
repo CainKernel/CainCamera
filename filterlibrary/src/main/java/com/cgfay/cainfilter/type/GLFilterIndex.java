@@ -1,10 +1,11 @@
 package com.cgfay.cainfilter.type;
 
 /**
+ * 滤镜索引
  * Created by cain on 2017/10/18.
  */
 
-public enum GlFilterIndex {
+public enum GLFilterIndex {
     // 无
     NoneIndex,
 

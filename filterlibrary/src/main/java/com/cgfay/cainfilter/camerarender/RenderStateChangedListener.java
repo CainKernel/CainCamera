@@ -1,4 +1,4 @@
-package com.cgfay.cainfilter.core;
+package com.cgfay.cainfilter.camerarender;
 
 /**
  * 渲染状态变更监听器

@@ -2,14 +2,14 @@ package com.cgfay.cainfilter.glfilter.advanced;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 
 /**
  * 素描滤镜效果
  * Created by cain.huang on 2017/8/8.
  */
 
-public class GLSketchFilter extends GLBaseImageFilter {
+public class GLSketchFilter extends GLImageFilter {
     private static final String FRAGMENT_SHADER =
             "varying highp vec2 textureCoordinate;                                  \n" +
             "precision mediump float;                                               \n" +

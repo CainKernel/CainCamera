@@ -1,4 +1,4 @@
-package com.cgfay.cainfilter.core;
+package com.cgfay.cainfilter.camerarender;
 
 import android.opengl.EGLContext;
 import android.os.Handler;

@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -89,6 +90,68 @@ public class BitmapUtils {
             e.printStackTrace();
         }
         return bitmap;
+    }
+
+    /**
+     *
+     * @param options
+     * @param reqWidth
+     * @param reqHeight
+     * @return
+     */
+    private static int calculateInSampleSize(BitmapFactory.Options options,
+                                             int reqWidth, int reqHeight) {
+        // 计算原始图像的高度和宽度
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        // 当原始图像的高和宽大于所需高度和宽度时
+        if (height > reqHeight || width > reqWidth) {
+            final int heightRatio = Math.round((float) height / (float) reqHeight);
+            final int widthRatio = Math.round((float) width / (float) reqWidth);
+
+            // 算出长宽比后去比例小的作为inSamplesize，保证最后imageview的dimension比request的大
+            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+
+            // 计算总像素是否大于请求的宽高积的2倍
+            final float totalPixels = width * height;
+            final float totalReqPixelsCap = reqWidth * reqHeight * 2;
+            while (totalPixels / (inSampleSize * inSampleSize) > totalReqPixelsCap) {
+                inSampleSize++;
+            }
+        }
+        return inSampleSize;
+    }
+
+
+    /**
+     * 从文件读取Bitmap
+     * @param dst
+     * @param width
+     * @param height
+     * @return
+     */
+    public static Bitmap getBitmapFromFile(File dst, int width, int height) {
+        if (null != dst && dst.exists()) {
+            BitmapFactory.Options opts = null;
+            if (width > 0 && height > 0) {
+                opts = new BitmapFactory.Options();
+                opts.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(dst.getPath(), opts);
+                // 计算图片缩放比例
+                opts.inSampleSize = calculateInSampleSize(opts, width, height);
+                opts.inJustDecodeBounds = false;
+                opts.inInputShareable = true;
+                opts.inPurgeable = true;
+            }
+            try {
+                return BitmapFactory.decodeFile(dst.getPath(), opts);
+            } catch (OutOfMemoryError e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
 }

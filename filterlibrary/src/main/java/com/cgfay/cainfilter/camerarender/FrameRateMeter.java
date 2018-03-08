@@ -1,4 +1,4 @@
-package com.cgfay.cainfilter.core;
+package com.cgfay.cainfilter.camerarender;
 
 /**
  * FPS计算类

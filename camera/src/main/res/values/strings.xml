@@ -87,13 +87,14 @@
     <string name="btn_camera">滤镜相机</string>
     <string name="btn_video_record">使用FFmpeg录制视频</string>
     <string name="btn_edit">编辑图片/视频</string>
-    <string name="btn_push">RTMP推流</string>
-
-    <!-- 测试按钮问题 -->
+    <string name="btn_image_render">GPU渲染图片</string>
     <string name="btn_test">测试页面</string>
+
+    <!-- 测试按钮 -->
     <string name="btn_muti">双HandlerThread线程渲染</string>
     <string name="btn_facepp">Face++关键点(使用GLSurfaceView)</string>
     <string name="btn_facepp2">Face++关键点(使用SurfaceView)</string>
+    <string name="btn_push">RTMP推流</string>
 
     <!--合并视频提示-->
     <string name="combining">正在合并视频...</string>

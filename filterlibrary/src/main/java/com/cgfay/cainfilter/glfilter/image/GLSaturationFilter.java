@@ -2,7 +2,7 @@ package com.cgfay.cainfilter.glfilter.image;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 
 /**
  * 饱和度滤镜
@@ -10,7 +10,7 @@ import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
  * 饱和度是某种色光纯度的反映，饱和度越高，则深色越深
  * Created by cain.huang on 2017/7/21.
  */
-public class GLSaturationFilter extends GLBaseImageFilter {
+public class GLSaturationFilter extends GLImageFilter {
 
     // 详细解释请参照assets/shaders/fragment_saturation.glsl文件
 //    private static final String FRAGMENT_SATURATION =

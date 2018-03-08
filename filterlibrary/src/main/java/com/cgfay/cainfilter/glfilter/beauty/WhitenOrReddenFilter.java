@@ -2,13 +2,13 @@ package com.cgfay.cainfilter.glfilter.beauty;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 
 /**
  * 处理画面白皙还是红润
  * Created by cain on 2017/7/30.
  */
-public class WhitenOrReddenFilter extends GLBaseImageFilter {
+public class WhitenOrReddenFilter extends GLImageFilter {
 
     private static final String FRAGMENT_SHADER =
             "precision highp float;\n" +

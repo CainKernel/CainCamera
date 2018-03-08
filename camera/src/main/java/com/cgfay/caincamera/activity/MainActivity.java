@@ -17,6 +17,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_CODE = 0;
     private Button mBtnCamera;
     private Button mBtnEdit;
+    private Button mBtnImageRender;
     private Button mBtnTest;
 
     @Override
@@ -55,6 +56,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBtnCamera.setOnClickListener(this);
         mBtnEdit = (Button) findViewById(R.id.btn_edit);
         mBtnEdit.setOnClickListener(this);
+        mBtnImageRender = (Button) findViewById(R.id.btn_image_render);
+        mBtnImageRender.setOnClickListener(this);
         mBtnTest = (Button) findViewById(R.id.btn_test);
         mBtnTest.setOnClickListener(this);
     }
@@ -62,17 +65,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.btn_camera:
+            case R.id.btn_camera: {
                 startActivity(new Intent(MainActivity.this, CameraActivity.class));
                 break;
+            }
 
-            case R.id.btn_edit:
-                startActivity(new Intent(MainActivity.this, PhotoViewActivity.class));
+            case R.id.btn_edit: {
+                Intent intent = new Intent(MainActivity.this, PhotoViewActivity.class);
+                intent.putExtra(PhotoViewActivity.SELECT_MODE, PhotoViewActivity.SELECT_MODE_NATIVE);
+                startActivity(intent);
                 break;
+            }
 
-            case R.id.btn_test:
+            case R.id.btn_image_render: {
+                Intent intent = new Intent(MainActivity.this, PhotoViewActivity.class);
+                intent.putExtra(PhotoViewActivity.SELECT_MODE, PhotoViewActivity.SELECT_MODE_GPU);
+                startActivity(intent);
+                break;
+            }
+
+            case R.id.btn_test: {
                 startActivity(new Intent(MainActivity.this, TestActivity.class));
                 break;
+            }
         }
     }
 }

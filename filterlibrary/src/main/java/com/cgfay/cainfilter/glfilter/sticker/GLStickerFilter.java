@@ -1,6 +1,6 @@
 package com.cgfay.cainfilter.glfilter.sticker;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 
 /**
  * 贴纸滤镜，贴纸在经过透视变换、人脸在侧脸、抬头、低头等都会产生一个姿态角，
@@ -11,7 +11,7 @@ import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
  * Created by cain.huang on 2017/11/24.
  */
 
-public class GLStickerFilter extends GLBaseImageFilter {
+public class GLStickerFilter extends GLImageFilter {
 
     protected static final String VERTEX_SHADER =
             "uniform mat4 uMVPMatrix;                                   \n" +

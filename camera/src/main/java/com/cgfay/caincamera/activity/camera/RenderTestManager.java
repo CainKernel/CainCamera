@@ -1,10 +1,10 @@
 package com.cgfay.caincamera.activity.camera;
 
-import com.cgfay.cainfilter.core.FilterManager;
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilterGroup;
+import com.cgfay.cainfilter.camerarender.FilterManager;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilterGroup;
 import com.cgfay.cainfilter.glfilter.camera.GLCameraFilter;
-import com.cgfay.cainfilter.type.GlFilterGroupType;
-import com.cgfay.cainfilter.type.GlFilterType;
+import com.cgfay.cainfilter.type.GLFilterGroupType;
+import com.cgfay.cainfilter.type.GLFilterType;
 import com.cgfay.cainfilter.type.ScaleType;
 import com.cgfay.cainfilter.utils.TextureRotationUtils;
 
@@ -30,7 +30,7 @@ public final class RenderTestManager {
     // 相机输入流滤镜
     private GLCameraFilter mCameraFilter;
     // 实时滤镜组
-    private GLBaseImageFilterGroup mRealTimeFilter;
+    private GLImageFilterGroup mRealTimeFilter;
     // 关键点绘制（调试用）
     private FacePointsDrawer mFacePointsDrawer;
     // 顶点和UV坐标缓冲
@@ -173,7 +173,7 @@ public final class RenderTestManager {
      * 更新filter
      * @param type Filter类型
      */
-    public void changeFilter(GlFilterType type) {
+    public void changeFilter(GLFilterType type) {
         if (mRealTimeFilter != null) {
             mRealTimeFilter.changeFilter(type);
         }
@@ -183,7 +183,7 @@ public final class RenderTestManager {
      * 切换滤镜组
      * @param type
      */
-    public void changeFilterGroup(GlFilterGroupType type) {
+    public void changeFilterGroup(GLFilterGroupType type) {
         synchronized (mSyncObject) {
             if (mRealTimeFilter != null) {
                 mRealTimeFilter.release();

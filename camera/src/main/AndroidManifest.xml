@@ -60,9 +60,9 @@
         <activity android:name=".activity.facetrack.FaceTrack2Activity" />
         <activity android:name=".activity.camera.CameraTestActivity" />
         <activity android:name=".activity.camera.TestActivity" />
-        <activity android:name=".activity.RtmpPushActivity" />
-        <activity android:name=".activity.camera.VideoRecordActivity"/>
-
+        <activity android:name=".activity.camera.RtmpPushActivity" />
+        <activity android:name=".activity.camera.VideoRecordActivity" />
+        <activity android:name=".activity.ImageRenderActivity"></activity>
     </application>
 
 </manifest>

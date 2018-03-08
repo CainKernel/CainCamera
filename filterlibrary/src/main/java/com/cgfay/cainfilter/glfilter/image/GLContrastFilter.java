@@ -2,14 +2,14 @@ package com.cgfay.cainfilter.glfilter.image;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 
 /**
  * 对比度
  * Created by cain.huang on 2017/8/8.
  */
 
-public class GLContrastFilter extends GLBaseImageFilter {
+public class GLContrastFilter extends GLImageFilter {
 
     private static final String FRAGMENT_SHADER =
             "varying highp vec2 textureCoordinate;                                                              \n" +

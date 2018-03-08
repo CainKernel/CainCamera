@@ -28,7 +28,7 @@ import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.EffectFilterAdapter;
 import com.cgfay.caincamera.type.StateType;
 import com.cgfay.caincamera.view.VideoTextureView;
-import com.cgfay.cainfilter.core.ColorFilterManager;
+import com.cgfay.cainfilter.camerarender.ColorFilterManager;
 import com.cgfay.utilslibrary.AsyncRecyclerview;
 import com.cgfay.utilslibrary.StringUtils;
 

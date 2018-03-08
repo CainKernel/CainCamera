@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.cainfilter.type.GlFilterType;
+import com.cgfay.cainfilter.type.GLFilterType;
 import com.cgfay.utilslibrary.SquareImageView;
 import com.cgfay.utilslibrary.BitmapUtils;
 
@@ -31,7 +31,7 @@ public class EffectFilterAdapter extends RecyclerView.Adapter<EffectFilterAdapte
 
     private Context mContext;
     // 滤镜类型
-    private List<GlFilterType> mGlFilterTypes;
+    private List<GLFilterType> mGlFilterTypes;
     // 滤镜名称
     private List<String> mFilterNames;
     // 滤镜显示图片
@@ -41,7 +41,7 @@ public class EffectFilterAdapter extends RecyclerView.Adapter<EffectFilterAdapte
     private OnItemClickLitener mLitener;
 
     public EffectFilterAdapter(Context context,
-                               List<GlFilterType> glFilterTypes,
+                               List<GLFilterType> glFilterTypes,
                                List<String> filterNames) {
         mContext = context;
         mGlFilterTypes = glFilterTypes;

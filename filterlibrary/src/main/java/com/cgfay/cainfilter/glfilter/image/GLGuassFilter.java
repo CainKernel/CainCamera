@@ -2,13 +2,13 @@ package com.cgfay.cainfilter.glfilter.image;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 
 /**
  * 高斯模糊滤镜
  * Created by cain.huang on 2017/7/21.
  */
-public class GLGuassFilter extends GLBaseImageFilter {
+public class GLGuassFilter extends GLImageFilter {
 
     private static final String FRAGMENT_SHADER =
             "precision mediump float;                                                         \n" +

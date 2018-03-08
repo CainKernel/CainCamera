@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.activity;
+package com.cgfay.caincamera.activity.camera;
 
 import android.app.Activity;
 import android.graphics.PixelFormat;
@@ -19,7 +19,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.cainfilter.utils.TextureRotationUtils;
 import com.cgfay.pushlibrary.AudioPusher;
 import com.cgfay.pushlibrary.RtmpPusher;
 import com.cgfay.utilslibrary.AspectFrameLayout;

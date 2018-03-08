@@ -2,14 +2,14 @@ package com.cgfay.cainfilter.glfilter.image;
 
 import android.opengl.GLES30;
 
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
 
 /**
  * 锐度变换
  * Created by cain.huang on 2017/8/8.
  */
 
-public class GLSharpnessFilter extends GLBaseImageFilter {
+public class GLSharpnessFilter extends GLImageFilter {
     private static final String VERTEX_SHADER =
             "uniform mat4 uMVPMatrix;                                       \n" +
             "attribute vec4 aPosition;                                      \n" +

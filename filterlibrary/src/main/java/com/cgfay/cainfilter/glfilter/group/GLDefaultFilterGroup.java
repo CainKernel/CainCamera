@@ -1,11 +1,11 @@
 package com.cgfay.cainfilter.glfilter.group;
 
-import com.cgfay.cainfilter.core.FilterManager;
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilter;
-import com.cgfay.cainfilter.glfilter.base.GLBaseImageFilterGroup;
+import com.cgfay.cainfilter.camerarender.FilterManager;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilter;
+import com.cgfay.cainfilter.glfilter.base.GLImageFilterGroup;
 import com.cgfay.cainfilter.glfilter.beauty.GLRealtimeBeautyFilter;
-import com.cgfay.cainfilter.type.GlFilterIndex;
-import com.cgfay.cainfilter.type.GlFilterType;
+import com.cgfay.cainfilter.type.GLFilterIndex;
+import com.cgfay.cainfilter.type.GLFilterType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
  * 默认实时美颜滤镜组
  * Created by cain on 2017/7/30.
  */
-public class GLDefaultFilterGroup extends GLBaseImageFilterGroup {
+public class GLDefaultFilterGroup extends GLImageFilterGroup {
     // 实时美颜层
     private static final int BeautyfyIndex = 0;
     // 颜色层
@@ -28,16 +28,16 @@ public class GLDefaultFilterGroup extends GLBaseImageFilterGroup {
         this(initFilters());
     }
 
-    private GLDefaultFilterGroup(List<GLBaseImageFilter> filters) {
+    private GLDefaultFilterGroup(List<GLImageFilter> filters) {
         mFilters = filters;
     }
 
-    private static List<GLBaseImageFilter> initFilters() {
-        List<GLBaseImageFilter> filters = new ArrayList<GLBaseImageFilter>();
-        filters.add(BeautyfyIndex, FilterManager.getFilter(GlFilterType.REALTIMEBEAUTY));
-        filters.add(ColorIndex, FilterManager.getFilter(GlFilterType.SOURCE));
-        filters.add(FaceStretchIndex, FilterManager.getFilter(GlFilterType.FACESTRETCH));
-        filters.add(StickersIndex, FilterManager.getFilter(GlFilterType.STICKER));
+    private static List<GLImageFilter> initFilters() {
+        List<GLImageFilter> filters = new ArrayList<GLImageFilter>();
+        filters.add(BeautyfyIndex, FilterManager.getFilter(GLFilterType.REALTIMEBEAUTY));
+        filters.add(ColorIndex, FilterManager.getFilter(GLFilterType.SOURCE));
+        filters.add(FaceStretchIndex, FilterManager.getFilter(GLFilterType.FACESTRETCH));
+        filters.add(StickersIndex, FilterManager.getFilter(GLFilterType.STICKER));
         return filters;
     }
 
@@ -47,17 +47,17 @@ public class GLDefaultFilterGroup extends GLBaseImageFilterGroup {
     }
 
     @Override
-    public void changeFilter(GlFilterType type) {
-        GlFilterIndex index = FilterManager.getIndex(type);
-        if (index == GlFilterIndex.BeautyIndex) {
+    public void changeFilter(GLFilterType type) {
+        GLFilterIndex index = FilterManager.getIndex(type);
+        if (index == GLFilterIndex.BeautyIndex) {
             changeBeautyFilter(type);
-        } else if (index == GlFilterIndex.ColorIndex) {
+        } else if (index == GLFilterIndex.ColorIndex) {
             changeColorFilter(type);
-        } else if (index == GlFilterIndex.FaceStretchIndex) {
+        } else if (index == GLFilterIndex.FaceStretchIndex) {
             changeFaceStretchFilter(type);
-        } else if (index == GlFilterIndex.MakeUpIndex) {
+        } else if (index == GLFilterIndex.MakeUpIndex) {
             changeMakeupFilter(type);
-        } else if (index == GlFilterIndex.StickerIndex) {
+        } else if (index == GLFilterIndex.StickerIndex) {
             changeStickerFilter(type);
         }
     }
@@ -66,7 +66,7 @@ public class GLDefaultFilterGroup extends GLBaseImageFilterGroup {
      * 切换美颜滤镜
      * @param type
      */
-    private void changeBeautyFilter(GlFilterType type) {
+    private void changeBeautyFilter(GLFilterType type) {
         if (mFilters != null) {
             mFilters.get(BeautyfyIndex).release();
             mFilters.set(BeautyfyIndex, FilterManager.getFilter(type));
@@ -80,7 +80,7 @@ public class GLDefaultFilterGroup extends GLBaseImageFilterGroup {
      * 切换颜色滤镜
      * @param type
      */
-    private void changeColorFilter(GlFilterType type) {
+    private void changeColorFilter(GLFilterType type) {
         if (mFilters != null) {
             mFilters.get(ColorIndex).release();
             mFilters.set(ColorIndex, FilterManager.getFilter(type));
@@ -94,7 +94,7 @@ public class GLDefaultFilterGroup extends GLBaseImageFilterGroup {
      * 切换瘦脸大眼滤镜
      * @param type
      */
-    private void changeFaceStretchFilter(GlFilterType type) {
+    private void changeFaceStretchFilter(GLFilterType type) {
         if (mFilters != null) {
             mFilters.get(FaceStretchIndex).release();
             mFilters.set(FaceStretchIndex, FilterManager.getFilter(type));
@@ -108,7 +108,7 @@ public class GLDefaultFilterGroup extends GLBaseImageFilterGroup {
      * 切换贴纸滤镜
      * @param type
      */
-    private void changeStickerFilter(GlFilterType type) {
+    private void changeStickerFilter(GLFilterType type) {
         if (mFilters != null) {
             mFilters.get(StickersIndex).release();
             mFilters.set(StickersIndex, FilterManager.getFilter(type));
@@ -122,7 +122,7 @@ public class GLDefaultFilterGroup extends GLBaseImageFilterGroup {
      * 切换彩妆滤镜
      * @param type
      */
-    private void changeMakeupFilter(GlFilterType type) {
+    private void changeMakeupFilter(GLFilterType type) {
         // Do nothing, 彩妆滤镜放在彩妆滤镜组里面
     }
 }

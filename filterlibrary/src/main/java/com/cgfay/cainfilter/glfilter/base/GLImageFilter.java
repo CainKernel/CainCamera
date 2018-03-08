@@ -17,7 +17,7 @@ import java.util.LinkedList;
  * Created by cain on 2017/7/9.
  */
 
-public class GLBaseImageFilter {
+public class GLImageFilter {
 
     protected static final String VERTEX_SHADER =
             "uniform mat4 uMVPMatrix;                                   \n" +
@@ -65,11 +65,11 @@ public class GLBaseImageFilter {
 
     private final LinkedList<Runnable> mRunOnDraw;
 
-    public GLBaseImageFilter() {
+    public GLImageFilter() {
         this(VERTEX_SHADER, FRAGMENT_SHADER_2D);
     }
 
-    public GLBaseImageFilter(String vertexShader, String fragmentShader) {
+    public GLImageFilter(String vertexShader, String fragmentShader) {
         mRunOnDraw = new LinkedList<>();
         mProgramHandle = GlUtil.createProgram(vertexShader, fragmentShader);
         initHandle();
