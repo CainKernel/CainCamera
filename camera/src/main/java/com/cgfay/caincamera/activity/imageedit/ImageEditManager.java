@@ -3,6 +3,7 @@ package com.cgfay.caincamera.activity.imageedit;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -10,6 +11,9 @@ import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import com.cgfay.cainfilter.ImageFilter.ImageFilter;
+import com.cgfay.cainfilter.ImageFilter.NativeFilter;
+import com.cgfay.cainfilter.type.ImageFilterType;
 import com.cgfay.utilslibrary.BitmapUtils;
 
 import java.io.File;
@@ -101,15 +105,16 @@ public final class ImageEditManager {
     /**
      * 显示图片
      */
-    public void showSourceImage() {
-
+    public void setSourceImage() {
         if (mEditHandler != null) {
             mEditHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     mSourceBitmap = BitmapUtils.getBitmapFromFile(new File(mImagePath),
                             mScreenWidth, mScreenHeight);
-                    setImageBitmap(mSourceBitmap);
+                    mCurrentBitmap = Bitmap.createBitmap(mSourceBitmap.getWidth(),
+                            mSourceBitmap.getHeight(), mSourceBitmap.getConfig());
+                    setImageBitmap(mCurrentBitmap);
                 }
             });
         }
@@ -131,51 +136,115 @@ public final class ImageEditManager {
     }
 
     /**
-     * 设置亮度
+     * 切换滤镜
+     * @param type
+     */
+    public void changeFilter(final ImageFilterType type) {
+        if (mEditHandler != null) {
+            mEditHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    ImageFilter.getInstance().changeFilter(type, mSourceBitmap, mCurrentBitmap);
+                    setImageBitmap(mCurrentBitmap);
+                }
+            });
+        }
+    }
+
+    /**
+     * 设置亮度 -255 ~ 255
      * @param brightness
      */
-    public void setBrightness(float brightness) {
-        Log.d(TAG, "brightness = " + brightness);
+    public void setBrightness(final float brightness) {
+        if (mEditHandler != null) {
+            mEditHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    ImageFilter.getInstance().setBrightness(brightness, mSourceBitmap, mCurrentBitmap);
+                    setImageBitmap(mCurrentBitmap);
+                }
+            });
+        }
     }
 
     /**
      * 设置对比度
      * @param contrast
      */
-    public void setContrast(float contrast) {
-        Log.d(TAG, "contrast = " + contrast);
+    public void setContrast(final float contrast) {
+        if (mEditHandler != null) {
+            mEditHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    ImageFilter.getInstance().setContrast(contrast, mSourceBitmap, mCurrentBitmap);
+                    setImageBitmap(mCurrentBitmap);
+                }
+            });
+        }
     }
 
     /**
      * 设置曝光
      * @param exposure
      */
-    public void setExposure(float exposure) {
-        Log.d(TAG, "exposure = " + exposure);
+    public void setExposure(final float exposure) {
+        if (mEditHandler != null) {
+            mEditHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    ImageFilter.getInstance().setExposure(exposure, mSourceBitmap, mCurrentBitmap);
+                    setImageBitmap(mCurrentBitmap);
+                }
+            });
+        }
     }
 
     /**
      * 设置色调 0 ~ 360度
      * @param hue
      */
-    public void setHue(float hue) {
-        Log.d(TAG, "hue = " + hue);
+    public void setHue(final float hue) {
+        if (mEditHandler != null) {
+            mEditHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    ImageFilter.getInstance().setHue(hue, mSourceBitmap, mCurrentBitmap);
+                    setImageBitmap(mCurrentBitmap);
+                }
+            });
+        }
     }
 
     /**
      * 设置饱和度 0.0 ~ 2.0之间
      * @param saturation
      */
-    public void setSaturation(float saturation) {
-        Log.d(TAG, "saturation = " + saturation);
+    public void setSaturation(final float saturation) {
+        if (mEditHandler != null) {
+            mEditHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    ImageFilter.getInstance().setSaturation(saturation, mSourceBitmap, mCurrentBitmap);
+                    setImageBitmap(mCurrentBitmap);
+                }
+            });
+        }
     }
 
     /**
      * 设置锐度
      * @param sharpness
      */
-    public void setSharpness(float sharpness) {
-        Log.d(TAG, "sharpness = " + sharpness);
+    public void setSharpness(final float sharpness) {
+        if (mEditHandler != null) {
+            mEditHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    ImageFilter.getInstance().setSharpness(sharpness, mSourceBitmap, mCurrentBitmap);
+                    setImageBitmap(mCurrentBitmap);
+                }
+            });
+        }
     }
 
 }

@@ -117,7 +117,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
     private void initImageEditManager() {
         mEditManager = new ImageEditManager(this, mImagePath, mImageView);
         mEditManager.startImageEditThread();
-        mEditManager.showSourceImage();
+        mEditManager.setSourceImage();
     }
 
     @Override

@@ -12,7 +12,7 @@ class GrayFilter : public IImageFilter {
 public:
     GrayFilter(int *pixels, int width, int height);
 
-    int *processImage() override;
+    void processImage(int *destPixels) override;
 };
 
 

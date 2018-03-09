@@ -30,7 +30,7 @@ public:
         this->height = height;
     }
 
-    virtual int* processImage() = 0;
+    virtual void processImage(int *destPixels) = 0;
 
 protected:
     int *pixels;

@@ -20,8 +20,21 @@ add_library( imagefilter
 
              SHARED
 
-             src/main/cpp/cainmedia/ImageProcess.cpp
-             src/main/cpp/cainmedia/imagefilter/GrayFilter.cpp )
+             src/main/cpp/cainmedia/ImageProcessJni.cpp
+
+             src/main/cpp/cainmedia/imagefilter/ImageProcess.cpp
+
+             # 图像调节
+             src/main/cpp/cainmedia/imagefilter/BrightnessFilter.cpp
+             src/main/cpp/cainmedia/imagefilter/ContrastFilter.cpp
+             src/main/cpp/cainmedia/imagefilter/ExposureFilter.cpp
+             src/main/cpp/cainmedia/imagefilter/HueFilter.cpp
+             src/main/cpp/cainmedia/imagefilter/SaturationFilter.cpp
+             src/main/cpp/cainmedia/imagefilter/SharpnessFilter.cpp
+
+             # 图像滤镜
+             src/main/cpp/cainmedia/imagefilter/GrayFilter.cpp
+             src/main/cpp/cainmedia/imagefilter/MosaicFilter.cpp )
 
 # 查找Android存在的库
 find_library( log-lib
@@ -32,4 +45,5 @@ find_library( log-lib
 target_link_libraries(
                        imagefilter
 
+                       -ljnigraphics
                        ${log-lib} )
