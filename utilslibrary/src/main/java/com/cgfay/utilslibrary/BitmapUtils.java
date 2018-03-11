@@ -1,12 +1,27 @@
 package com.cgfay.utilslibrary;
 
+import android.content.ContentProviderClient;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
+import android.media.ExifInterface;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.RemoteException;
+import android.provider.MediaStore;
+import android.util.*;
+import android.view.View;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -15,6 +30,26 @@ import java.io.InputStream;
  */
 
 public class BitmapUtils {
+
+    public static final String[] EXIF_TAGS = {
+            "FNumber",
+            ExifInterface.TAG_DATETIME,
+            "ExposureTime",
+            ExifInterface.TAG_FLASH,
+            ExifInterface.TAG_FOCAL_LENGTH,
+            "GPSAltitude", "GPSAltitudeRef",
+            ExifInterface.TAG_GPS_DATESTAMP,
+            ExifInterface.TAG_GPS_LATITUDE,
+            ExifInterface.TAG_GPS_LATITUDE_REF,
+            ExifInterface.TAG_GPS_LONGITUDE,
+            ExifInterface.TAG_GPS_LONGITUDE_REF,
+            ExifInterface.TAG_GPS_PROCESSING_METHOD,
+            ExifInterface.TAG_GPS_TIMESTAMP,
+            ExifInterface.TAG_IMAGE_LENGTH,
+            ExifInterface.TAG_IMAGE_WIDTH, "ISOSpeedRatings",
+            ExifInterface.TAG_MAKE, ExifInterface.TAG_MODEL,
+            ExifInterface.TAG_WHITE_BALANCE,
+    };
 
     /**
      * 旋转图片
@@ -154,4 +189,224 @@ public class BitmapUtils {
         return null;
     }
 
+    /**
+     * 保存图片
+     * @param context
+     * @param path
+     * @param bitmap
+     */
+    public static void saveBitmap(Context context, String path, Bitmap bitmap) {
+        saveBitmap(context, path, bitmap, true);
+    }
+
+    /**
+     * 保存图片
+     * @param context
+     * @param path
+     * @param bitmap
+     * @param addToMediaStore
+     */
+    public static void saveBitmap(Context context, String path, Bitmap bitmap,
+                                  boolean addToMediaStore) {
+        final File file = new File(path);
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+
+        FileOutputStream fOut = null;
+        try {
+            fOut = new FileOutputStream(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+        try {
+            fOut.flush();
+            fOut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // 添加到媒体库
+        if (addToMediaStore) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DATA, path);
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, file.getName());
+            context.getContentResolver().insert(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        }
+    }
+
+    /**
+     * 获取图片旋转角度
+     * @param path
+     * @return
+     */
+    public static int getOrientation(final String path) {
+        int rotation = 0;
+        try {
+            File file = new File(path);
+            ExifInterface exif = new ExifInterface(file.getAbsolutePath());
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL);
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    rotation = 90;
+                    break;
+
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    rotation = 180;
+                    break;
+
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    rotation = 270;
+                    break;
+
+                default:
+                    rotation = 0;
+                    break;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return rotation;
+    }
+
+    /**
+     * 获取Uri路径图片的旋转角度
+     * @param context
+     * @param uri
+     * @return
+     */
+    public static int getOrientation(Context context, Uri uri) {
+        final String scheme = uri.getScheme();
+        ContentProviderClient provider = null;
+        if (scheme == null || ContentResolver.SCHEME_FILE.equals(scheme)) {
+            return getOrientation(uri.getPath());
+        } else if (scheme.equals(ContentResolver.SCHEME_CONTENT)) {
+            try {
+                provider = context.getContentResolver().acquireContentProviderClient(uri);
+            } catch (SecurityException e) {
+                return 0;
+            }
+            if (provider != null) {
+                Cursor cursor;
+                try {
+                    cursor = provider.query(uri, new String[] {
+                            MediaStore.Images.ImageColumns.ORIENTATION,
+                            MediaStore.Images.ImageColumns.DATA},
+                            null, null, null);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                    return 0;
+                }
+                if (cursor == null) {
+                    return 0;
+                }
+
+                int orientationIndex = cursor
+                        .getColumnIndex(MediaStore.Images.ImageColumns.ORIENTATION);
+                int dataIndex = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+
+                try {
+                    if (cursor.getCount() > 0) {
+                        cursor.moveToFirst();
+
+                        int rotation = 0;
+
+                        if (orientationIndex > -1) {
+                            rotation = cursor.getInt(orientationIndex);
+                        }
+
+                        if (dataIndex > -1) {
+                            String path = cursor.getString(dataIndex);
+                            rotation |= getOrientation(path);
+                        }
+                        return rotation;
+                    }
+                } finally {
+                    cursor.close();
+                }
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * 获取图片大小
+     * @param path
+     * @return
+     */
+    public static Size getBitmapSize(String path) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, options);
+        return new Size(options.outWidth, options.outHeight);
+    }
+
+    /**
+     * 将Bitmap图片旋转90度
+     * @param data
+     * @return
+     */
+    public static Bitmap rotationBitmap(byte[] data) {
+        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+        Matrix matrix = new Matrix();
+        matrix.reset();
+        matrix.postRotate(90);
+        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
+                bitmap.getHeight(), matrix, true);
+        bitmap.recycle();
+        System.gc();
+        return rotatedBitmap;
+    }
+
+    /**
+     * 获取Exif参数
+     * @param path
+     * @param bundle
+     * @return
+     */
+    public static boolean loadExifAttributes(String path, Bundle bundle) {
+        ExifInterface exifInterface;
+        try {
+            exifInterface = new ExifInterface(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        for (String tag : EXIF_TAGS) {
+            bundle.putString(tag, exifInterface.getAttribute(tag));
+        }
+        return true;
+    }
+
+    /**
+     * 保存Exif属性
+     * @param path
+     * @param bundle
+     * @return
+     */
+    public static boolean saveExifAttributes(String path, Bundle bundle) {
+        ExifInterface exif;
+        try {
+            exif = new ExifInterface(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        for (String tag : EXIF_TAGS) {
+            if (bundle.containsKey(tag)) {
+                exif.setAttribute(tag, bundle.getString(tag));
+            }
+        }
+        try {
+            exif.saveAttributes();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
 }
