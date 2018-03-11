@@ -127,6 +127,16 @@ public class ImageRenderThread extends HandlerThread {
     }
 
     /**
+     * 保存图片
+     * @param listener
+     */
+    void saveImage(OnRenderListener listener) {
+        if (listener != null && mDisplaySurface != null) {
+            listener.onSaveImageListener(mDisplaySurface.getCurrentFrame(), mViewWidth, mViewHeight);
+        }
+    }
+
+    /**
      * 请求刷新
      */
     private void requestRender() {

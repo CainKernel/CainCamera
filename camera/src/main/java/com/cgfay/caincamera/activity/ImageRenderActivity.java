@@ -1,6 +1,7 @@
 package com.cgfay.caincamera.activity;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,11 +22,20 @@ import com.cgfay.caincamera.adapter.EffectFilterAdapter;
 import com.cgfay.cainfilter.camerarender.ColorFilterManager;
 import com.cgfay.cainfilter.camerarender.ParamsManager;
 import com.cgfay.cainfilter.imagerender.ImageRenderManager;
+import com.cgfay.cainfilter.imagerender.OnRenderListener;
 import com.cgfay.utilslibrary.AspectFrameLayout;
 import com.cgfay.utilslibrary.AsyncRecyclerview;
+import com.cgfay.utilslibrary.BitmapUtils;
 import com.cgfay.utilslibrary.CainSurfaceView;
 
-public class ImageRenderActivity extends AppCompatActivity implements View.OnClickListener, SurfaceHolder.Callback,SeekBar.OnSeekBarChangeListener {
+import java.io.BufferedOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+public class ImageRenderActivity extends AppCompatActivity implements View.OnClickListener,
+        SurfaceHolder.Callback,SeekBar.OnSeekBarChangeListener, OnRenderListener {
 
     private static final String TAG = "ImageRenderActivity";
     private static final boolean VERBOSE = true;
@@ -127,7 +137,9 @@ public class ImageRenderActivity extends AppCompatActivity implements View.OnCli
         mBtnNext.setOnClickListener(this);
 
         mLayoutAspect = (AspectFrameLayout) findViewById(R.id.layout_aspect);
-        mLayoutAspect.setAspectRatio(mOriginWidth / mOriginHeight);
+        if (mOriginWidth != 0 && mOriginHeight != 0) {
+            mLayoutAspect.setAspectRatio(mOriginWidth / mOriginHeight);
+        }
         mImageSurfaceView = new CainSurfaceView(this);
         mImageSurfaceView.getHolder().addCallback(this);
         mLayoutAspect.addView(mImageSurfaceView);
@@ -228,7 +240,7 @@ public class ImageRenderActivity extends AppCompatActivity implements View.OnCli
 
             // 保存图片
             case R.id.btn_next:
-
+                ImageRenderManager.getInstance().saveImage(this);
                 break;
 
             // 滤镜
@@ -318,6 +330,23 @@ public class ImageRenderActivity extends AppCompatActivity implements View.OnCli
                 mBtnSharpness.setTextColor(getResources().getColor(android.R.color.holo_red_light));
                 break;
             }
+        }
+    }
+
+
+    @Override
+    public void onSaveImageListener(ByteBuffer buffer, int width, int height) {
+        String filename = ParamsManager.AlbumPath
+                + "CainCamera_" + System.currentTimeMillis() + ".png";
+
+        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        bmp.copyPixelsFromBuffer(buffer);
+        Bitmap bitmap = BitmapUtils.flipBitmap(bmp, false, true);
+        BitmapUtils.saveBitmap(this, filename, bitmap);
+        bitmap.recycle();
+        bmp.recycle();
+        if (VERBOSE) {
+            Log.d(TAG, "Saved " + width + "x" + height + " frame as '" + filename);
         }
     }
 

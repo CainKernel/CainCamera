@@ -123,6 +123,17 @@ public final class ImageRenderManager {
     }
 
     /**
+     * 保存图片
+     * @param listener
+     */
+    public void saveImage(OnRenderListener listener) {
+        if (mHandler != null) {
+            mHandler.sendMessage(mHandler
+                    .obtainMessage(ImageRenderHandler.MSG_SAVE_IMAGE, listener));
+        }
+    }
+
+    /**
      * 设置亮度
      * @param brightness
      */

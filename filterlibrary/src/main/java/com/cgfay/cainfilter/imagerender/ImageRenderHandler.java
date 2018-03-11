@@ -20,9 +20,9 @@ public class ImageRenderHandler extends Handler {
     static final int MSG_SURFACE_DESTORYED = 0x003;
 
     static final int MSG_DRAW_IMAGE = 0x100;
-
     static final int MSG_IMAGE_PATH = 0x101;
     static final int MSG_SCREEN_SIZE = 0x102;
+    static final int MSG_SAVE_IMAGE = 0x103;
 
     static final int MSG_SET_BRIGHTNESS = 0x200;
     static final int MSG_SET_CONTRAST = 0x201;
@@ -72,6 +72,11 @@ public class ImageRenderHandler extends Handler {
             // 图片原始大小
             case MSG_SCREEN_SIZE:
                 mWeakThread.get().setScreenSize(msg.arg1, msg.arg2);
+                break;
+
+            // 保存图片
+            case MSG_SAVE_IMAGE:
+                mWeakThread.get().saveImage((OnRenderListener) msg.obj);
                 break;
 
             // 设置亮度
