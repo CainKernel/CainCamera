@@ -8,17 +8,12 @@ import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.MediaStore;
-import android.util.*;
-import android.view.View;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -69,9 +64,20 @@ public class BitmapUtils {
      * @param bitmap
      * @return
      */
-    public static Bitmap getFlipBitmap(Bitmap bitmap) {
+    public static Bitmap flipBitmap(Bitmap bitmap) {
+        return flipBitmap(bitmap, true, false);
+    }
+
+    /**
+     * 翻转图片
+     * @param bitmap
+     * @param flipX
+     * @param flipY
+     * @return
+     */
+    public static Bitmap flipBitmap(Bitmap bitmap, boolean flipX, boolean flipY) {
         Matrix matrix = new Matrix();
-        matrix.setScale(-1, 1);
+        matrix.setScale(flipX ? -1 : 1, flipY ? -1 : 1);
         matrix.postTranslate(bitmap.getWidth(), 0);
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
                 bitmap.getHeight(), matrix, false);
@@ -348,15 +354,49 @@ public class BitmapUtils {
      * @param data
      * @return
      */
-    public static Bitmap rotationBitmap(byte[] data) {
+    public static Bitmap rotateBitmap(byte[] data) {
+        return rotateBitmap(data, 90);
+    }
+
+    /**
+     * 将Bitmap图片旋转一定角度
+     * @param data
+     * @param rotate
+     * @return
+     */
+    public static Bitmap rotateBitmap(byte[] data, int rotate) {
         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
         Matrix matrix = new Matrix();
         matrix.reset();
-        matrix.postRotate(90);
+        matrix.postRotate(rotate);
         Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
                 bitmap.getHeight(), matrix, true);
         bitmap.recycle();
         System.gc();
+        return rotatedBitmap;
+    }
+
+    /**
+     * 将Bitmap图片旋转90度
+     * @param bitmap
+     * @return
+     */
+    public static Bitmap rotateBitmap(Bitmap bitmap) {
+        return rotateBitmap(bitmap, 90);
+    }
+
+    /**
+     * 将Bitmap图片旋转一定角度
+     * @param bitmap
+     * @param rotate
+     * @return
+     */
+    public static Bitmap rotateBitmap(Bitmap bitmap, int rotate) {
+        Matrix matrix = new Matrix();
+        matrix.reset();
+        matrix.postRotate(rotate);
+        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
+                bitmap.getHeight(), matrix, true);
         return rotatedBitmap;
     }
 

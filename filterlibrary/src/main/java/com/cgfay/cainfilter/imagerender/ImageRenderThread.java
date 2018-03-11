@@ -1,10 +1,8 @@
 package com.cgfay.cainfilter.imagerender;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES30;
 import android.os.HandlerThread;
-import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.cgfay.cainfilter.camerarender.FilterManager;
@@ -219,7 +217,9 @@ public class ImageRenderThread extends HandlerThread {
             mTextureId = GlUtil.GL_NOT_INIT;
         }
         // 重新创建Bitmap 和Texture
-        mBitmap = BitmapUtils.getBitmapFromFile(new File(mImagePath), mScreenWidth, mScreenHeight);
+        Bitmap bitmap = BitmapUtils.getBitmapFromFile(new File(mImagePath), mScreenWidth, mScreenHeight);
+        mBitmap = BitmapUtils.flipBitmap(bitmap, false, true);
+        bitmap.recycle();
         mImageWidth = mBitmap.getWidth();
         mImageHeight = mBitmap.getHeight();
         if (mImageFilter != null) {

@@ -743,7 +743,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                     Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                     bmp.copyPixelsFromBuffer(buffer);
                     bmp = BitmapUtils.getRotatedBitmap(bmp, 180);
-                    bmp = BitmapUtils.getFlipBitmap(bmp);
+                    bmp = BitmapUtils.flipBitmap(bmp);
                     bmp.compress(Bitmap.CompressFormat.JPEG, 100, bos);
                     bmp.recycle();
                 } catch (FileNotFoundException e) {
