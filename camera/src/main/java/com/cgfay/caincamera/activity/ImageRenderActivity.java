@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.EffectFilterAdapter;
@@ -28,10 +30,6 @@ import com.cgfay.utilslibrary.AsyncRecyclerview;
 import com.cgfay.utilslibrary.BitmapUtils;
 import com.cgfay.utilslibrary.CainSurfaceView;
 
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class ImageRenderActivity extends AppCompatActivity implements View.OnClickListener,
@@ -348,6 +346,7 @@ public class ImageRenderActivity extends AppCompatActivity implements View.OnCli
         if (VERBOSE) {
             Log.d(TAG, "Saved " + width + "x" + height + " frame as '" + filename);
         }
+        Toast.makeText(this, filename + " 保存成功", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -446,6 +445,20 @@ public class ImageRenderActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        float imageAspect = 0;
+        if (mOriginWidth != 0 & mOriginHeight != 0) {
+            imageAspect = (float) mOriginWidth / (float) mOriginHeight;
+        }
+        float aspect = (float) width / (float) height;
+        Log.d(TAG, "surfaceChanged: imageAspect = " + imageAspect + ", aspect = " + aspect);
+        if (imageAspect > aspect) {
+            height = (int) (width / imageAspect);
+        } else if (imageAspect != 0) {
+            width = (int) (height * imageAspect);
+        }
+        mLayoutAspect.setAspectRatio(width / height);
+        mLayoutAspect.requestLayout();
+        mImageSurfaceView.requestLayout();
         ImageRenderManager.getInstance().surfaceChanged(width, height);
     }
 

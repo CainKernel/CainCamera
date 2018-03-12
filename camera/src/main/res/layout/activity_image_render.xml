@@ -15,7 +15,9 @@
         android:id="@+id/layout_aspect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/dp50">
+        android:layout_marginTop="@dimen/dp50"
+        android:layout_marginBottom="@dimen/dp140"
+        android:layout_gravity="top">
     </com.cgfay.utilslibrary.AspectFrameLayout>
 
     <!--用于显示滤镜值-->
@@ -32,8 +34,7 @@
     <FrameLayout
         android:id="@+id/layout_bottom"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/dp50"
+        android:layout_height="@dimen/dp140"
         android:layout_gravity="bottom">
 
     </FrameLayout>

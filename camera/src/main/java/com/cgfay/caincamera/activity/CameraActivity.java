@@ -705,7 +705,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
      * 查看媒体库中的图片
      */
     private void viewPhoto() {
-        startActivity(new Intent(CameraActivity.this, PhotoViewActivity.class));
+        startActivity(new Intent(CameraActivity.this, MediaSelectActivity.class));
     }
 
     /**

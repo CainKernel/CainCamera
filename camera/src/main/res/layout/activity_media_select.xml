@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    tools:context="com.cgfay.caincamera.activity.PhotoViewActivity">
+    tools:context="com.cgfay.caincamera.activity.MediaSelectActivity">
 
     <com.cgfay.utilslibrary.AsyncRecyclerview
         android:id="@+id/photo_view"

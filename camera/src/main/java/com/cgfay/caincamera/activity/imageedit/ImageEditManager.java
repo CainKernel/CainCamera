@@ -114,6 +114,7 @@ public final class ImageEditManager {
                             mScreenWidth, mScreenHeight);
                     mCurrentBitmap = Bitmap.createBitmap(mSourceBitmap.getWidth(),
                             mSourceBitmap.getHeight(), mSourceBitmap.getConfig());
+                    mCurrentBitmap = mSourceBitmap.copy(mSourceBitmap.getConfig(), true);
                     setImageBitmap(mCurrentBitmap);
                 }
             });

@@ -6,6 +6,21 @@
     android:background="@color/video_window_background"
     tools:context="com.cgfay.caincamera.activity.imageedit.ImageEditActivity">
 
+    <!-- 图片 -->
+    <FrameLayout
+        android:id="@+id/layout_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:layout_marginBottom="@dimen/dp140">
+        <ImageView
+            android:id="@+id/iv_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scaleType="fitCenter"
+            android:layout_gravity="center" />
+    </FrameLayout>
+
     <!--顶部导航栏-->
     <include
         layout="@layout/view_edit_navigation" />
@@ -14,17 +29,9 @@
     <FrameLayout
         android:id="@+id/layout_bottom"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/dp50"
+        android:layout_height="@dimen/dp140"
+        android:gravity="center"
         android:layout_alignParentBottom="true">
     </FrameLayout>
-
-    <ImageView
-        android:id="@+id/iv_image"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@id/layout_navigation"
-        android:layout_above="@id/layout_bottom"/>
 
 </RelativeLayout>

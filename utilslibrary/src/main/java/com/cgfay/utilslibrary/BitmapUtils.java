@@ -225,7 +225,14 @@ public class BitmapUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+        boolean compress = true;
+        if (path.endsWith(".png")) {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+        } else if (path.endsWith(".jpeg") || path.endsWith(".jpg")) {
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+        } else { // 除了png和jpeg之外的图片格式暂时不支持
+            compress = false;
+        }
         try {
             fOut.flush();
             fOut.close();
@@ -233,7 +240,7 @@ public class BitmapUtils {
             e.printStackTrace();
         }
         // 添加到媒体库
-        if (addToMediaStore) {
+        if (addToMediaStore && compress) {
             ContentValues values = new ContentValues();
             values.put(MediaStore.Images.Media.DATA, path);
             values.put(MediaStore.Images.Media.DISPLAY_NAME, file.getName());

@@ -47,7 +47,7 @@
             android:name=".activity.CameraActivity"
             android:screenOrientation="portrait"
             android:theme="@style/CameraTheme" />
-        <activity android:name=".activity.PhotoViewActivity" />
+        <activity android:name=".activity.MediaSelectActivity" />
         <activity android:name=".activity.CapturePreviewActivity" />
         <!-- 视频编辑 -->
         <activity android:name=".activity.videoedit.VideoEditActivity" />
@@ -62,7 +62,7 @@
         <activity android:name=".activity.camera.TestActivity" />
         <activity android:name=".activity.camera.RtmpPushActivity" />
         <activity android:name=".activity.camera.VideoRecordActivity" />
-        <activity android:name=".activity.ImageRenderActivity"></activity>
+        <activity android:name=".activity.ImageRenderActivity" />
     </application>
 
 </manifest>

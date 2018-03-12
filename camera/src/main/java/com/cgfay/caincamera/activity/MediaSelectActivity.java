@@ -13,15 +13,13 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.activity.imageedit.ImageEditActivity;
-import com.cgfay.caincamera.activity.imageedit.ImageEditManager;
 import com.cgfay.caincamera.activity.videoedit.VideoEditActivity;
-import com.cgfay.caincamera.adapter.PhotoViewAdapter;
+import com.cgfay.caincamera.adapter.MediaViewAdapter;
 import com.cgfay.caincamera.bean.MediaMeta;
 import com.cgfay.utilslibrary.AsyncRecyclerview;
 import com.cgfay.utilslibrary.PermissionUtils;
@@ -31,9 +29,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class PhotoViewActivity extends AppCompatActivity
-        implements PhotoViewAdapter.OnItemClickLitener {
-    private static final String TAG = "PhotoViewActivity";
+public class MediaSelectActivity extends AppCompatActivity
+        implements MediaViewAdapter.OnItemClickLitener {
+    private static final String TAG = "MediaSelectActivity";
 
     public static final String SELECT_MODE = "SelectMode";
 
@@ -51,7 +49,7 @@ public class PhotoViewActivity extends AppCompatActivity
     // 显示列表
     private AsyncRecyclerview mPhototView;
     private GridLayoutManager mLayoutManager;
-    private PhotoViewAdapter mPhotoAdapter;
+    private MediaViewAdapter mPhotoAdapter;
     // 媒体库中的图片数据
     List<MediaMeta> mImageLists;
 
@@ -61,7 +59,7 @@ public class PhotoViewActivity extends AppCompatActivity
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_photo_view);
+        setContentView(R.layout.activity_media_select);
         multiSelectEnable = getIntent().getBooleanExtra("multiSelect", false);
         mSelectMode = getIntent().getIntExtra(SELECT_MODE, SELECT_MODE_NATIVE);
         initView();
@@ -75,7 +73,7 @@ public class PhotoViewActivity extends AppCompatActivity
     private void initView() {
         // 显示媒体库数据
         mPhototView = (AsyncRecyclerview) findViewById(R.id.photo_view);
-        mLayoutManager = new GridLayoutManager(PhotoViewActivity.this, COLUMNSIZE);
+        mLayoutManager = new GridLayoutManager(MediaSelectActivity.this, COLUMNSIZE);
         mPhototView.setLayoutManager(mLayoutManager);
         mImageLists = new ArrayList<MediaMeta>();
     }
@@ -98,7 +96,7 @@ public class PhotoViewActivity extends AppCompatActivity
      * 设置适配器
      */
     private void setupAdapter() {
-        mPhotoAdapter = new PhotoViewAdapter(PhotoViewActivity.this, mImageLists);
+        mPhotoAdapter = new MediaViewAdapter(MediaSelectActivity.this, mImageLists);
         mPhotoAdapter.addItemClickListener(this);
         mPhotoAdapter.setMultiSelectEnable(multiSelectEnable);
         mPhototView.setAdapter(mPhotoAdapter);
@@ -138,16 +136,16 @@ public class PhotoViewActivity extends AppCompatActivity
         // 更新当前选中的模式
         mCurrentSelecetedIndex = position;
         if (mImageLists.get(position).getMimeType().startsWith("video/")) {
-            Intent intent = new Intent(PhotoViewActivity.this, VideoEditActivity.class);
+            Intent intent = new Intent(MediaSelectActivity.this, VideoEditActivity.class);
             intent.putExtra(VideoEditActivity.PATH, mImageLists.get(position).getPath());
             startActivity(intent);
         } else if (mImageLists.get(position).getMimeType().startsWith("image/")) {
             if (mSelectMode == SELECT_MODE_NATIVE) {
-                Intent intent = new Intent(PhotoViewActivity.this, ImageEditActivity.class);
+                Intent intent = new Intent(MediaSelectActivity.this, ImageEditActivity.class);
                 intent.putExtra(ImageEditActivity.PATH, mImageLists.get(position).getPath());
                 startActivity(intent);
             } else if (mSelectMode == SELECT_MODE_GPU) {
-                Intent intent = new Intent(PhotoViewActivity.this, ImageRenderActivity.class);
+                Intent intent = new Intent(MediaSelectActivity.this, ImageRenderActivity.class);
                 intent.putExtra(ImageRenderActivity.PATH, mImageLists.get(position).getPath());
                 intent.putExtra(ImageRenderActivity.WIDTH, mImageLists.get(position).getWidth());
                 intent.putExtra(ImageRenderActivity.HEIGHT, mImageLists.get(position).getHeight());

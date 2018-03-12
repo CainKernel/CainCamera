@@ -1,8 +1,11 @@
 package com.cgfay.caincamera.activity.imageedit;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -11,9 +14,16 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cgfay.caincamera.R;
+import com.cgfay.caincamera.adapter.EffectFilterAdapter;
+import com.cgfay.cainfilter.camerarender.ColorFilterManager;
+import com.cgfay.cainfilter.camerarender.ParamsManager;
+import com.cgfay.utilslibrary.AsyncRecyclerview;
+import com.cgfay.utilslibrary.BitmapUtils;
 
 public class ImageEditActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -24,16 +34,19 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
 
     private String mImagePath;
 
+    // 内容栏
+    private FrameLayout mLayoutContent;
     private ImageView mImageView;
 
+    private LayoutInflater mInflater;   // 布局加载器器
+
+    // 顶部导航栏
+    private RelativeLayout mLayoutNavigation;
     private Button mBtnBack;
     private Button mBtnNext;
     private TextView mEditTitle;
 
-
-    private LayoutInflater mInflater;   // 布局加载器器
     private FrameLayout mLayoutBottom;  // 底部编辑栏
-
     // 底部按钮scrollview
     private HorizontalScrollView mScrollView;
     private Button mBtnBeautify;        // 一键美化
@@ -52,6 +65,14 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
     // 图片管理器
     ImageEditManager mEditManager;
 
+    // 处于编辑状态
+    private boolean mEditerShowing = false;
+
+    // 特效列表
+    private AsyncRecyclerview mFilterListView;
+    private LinearLayoutManager mFilterListManager;
+    private int mColorIndex = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +85,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         initView();
         initImageEditManager();
+        initFilterListView();
     }
 
     /**
@@ -71,13 +93,20 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      */
     private void initView() {
 
-        mImageView = (ImageView) findViewById(R.id.iv_image);
+        // 顶部导航栏
+        mLayoutNavigation = (RelativeLayout) findViewById(R.id.layout_navigation);
         mEditTitle = (TextView) findViewById(R.id.edit_title);
         mEditTitle.setText(getResources().getText(R.string.image_edit_title));
-
         mBtnBack = (Button) findViewById(R.id.btn_back);
         mBtnNext = (Button) findViewById(R.id.btn_next);
+        mBtnBack.setOnClickListener(this);
+        mBtnNext.setOnClickListener(this);
 
+        // 内容栏
+        mLayoutContent = (FrameLayout) findViewById(R.id.layout_content);
+        mImageView = (ImageView) findViewById(R.id.iv_image);
+
+        // 底部编辑栏
         mScrollView = (HorizontalScrollView) mInflater
                 .inflate(R.layout.view_image_edit_bottom, null);
         mLayoutBottom = (FrameLayout) findViewById(R.id.layout_bottom);
@@ -96,9 +125,6 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
         mBtnBlur = (Button) findViewById(R.id.btn_blur);
         mBtnMatBlur = (Button) findViewById(R.id.btn_mat_blur);
 
-
-        mBtnBack.setOnClickListener(this);
-        mBtnNext.setOnClickListener(this);
         mBtnBeautify.setOnClickListener(this);
         mBtnFilters.setOnClickListener(this);
         mBtnCropRotate.setOnClickListener(this);
@@ -114,6 +140,37 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
 
     }
 
+    /**
+     * 初始化特效列表
+     */
+    private void initFilterListView() {
+        // 滤镜列表
+        mFilterListView = (AsyncRecyclerview) mInflater
+                .inflate(R.layout.view_video_edit_filters, null);
+        mFilterListManager = new LinearLayoutManager(this);
+        mFilterListManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        mFilterListView.setLayoutManager(mFilterListManager);
+        // TODO 滤镜适配器
+        EffectFilterAdapter adapter = new EffectFilterAdapter(this,
+                ColorFilterManager.getInstance().getFilterType(),
+                ColorFilterManager.getInstance().getFilterName());
+
+        mFilterListView.setAdapter(adapter);
+        adapter.addItemClickListener(new EffectFilterAdapter.OnItemClickLitener() {
+            @Override
+            public void onItemClick(int position) {
+                mColorIndex = position;
+                if (VERBOSE) {
+                    Log.d("changeFilter", "index = " + mColorIndex + ", filter name = "
+                            + ColorFilterManager.getInstance().getColorFilterName(mColorIndex));
+                }
+            }
+        });
+    }
+
+    /**
+     * 初始化图片编辑器
+     */
     private void initImageEditManager() {
         mEditManager = new ImageEditManager(this, mImagePath, mImageView);
         mEditManager.startImageEditThread();
@@ -121,11 +178,20 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
     }
 
     @Override
+    public void onBackPressed() {
+        if (isShowingEditView()) {
+            resetBottomView();
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    @Override
     protected void onDestroy() {
-        super.onDestroy();
         mEditManager.stopImageEditThread();
         mEditManager.release();
         mEditManager = null;
+        super.onDestroy();
     }
 
     @Override
@@ -209,13 +275,20 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
     private void resetBottomView() {
         mLayoutBottom.removeAllViews();
         mLayoutBottom.addView(mScrollView);
+        mLayoutNavigation.setVisibility(View.VISIBLE);
+        mEditerShowing = false;
     }
 
     /**
      * 保存图片
      */
     private void saveImage() {
-
+        mImageView.setDrawingCacheEnabled(true);
+        Bitmap bitmap = Bitmap.createBitmap(mImageView.getDrawingCache());
+        mImageView.setDrawingCacheEnabled(false);
+        String path = ParamsManager.AlbumPath + "CainCamera_" + System.currentTimeMillis() + ".jpeg";
+        BitmapUtils.saveBitmap(this, path, bitmap);
+        Toast.makeText(this, path + " 保存成功", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -229,7 +302,13 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      * 显示特效视图
      */
     private void showFilterView() {
-
+        if (mFilterListView == null) {
+            initFilterListView();
+        }
+        mLayoutBottom.removeAllViews();
+        mLayoutBottom.addView(mFilterListView);
+        mLayoutNavigation.setVisibility(View.GONE);
+        mEditerShowing = true;
     }
 
     /**
@@ -300,6 +379,14 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      */
     private void showMatBlurView() {
 
+    }
+
+    /**
+     * 是否处于编辑视图，用于点击返回按钮时，直接
+     * @return
+     */
+    private boolean isShowingEditView() {
+        return mEditerShowing;
     }
 }
 

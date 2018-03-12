@@ -71,15 +71,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             case R.id.btn_edit: {
-                Intent intent = new Intent(MainActivity.this, PhotoViewActivity.class);
-                intent.putExtra(PhotoViewActivity.SELECT_MODE, PhotoViewActivity.SELECT_MODE_NATIVE);
+                Intent intent = new Intent(MainActivity.this, MediaSelectActivity.class);
+                intent.putExtra(MediaSelectActivity.SELECT_MODE, MediaSelectActivity.SELECT_MODE_NATIVE);
                 startActivity(intent);
                 break;
             }
 
             case R.id.btn_image_render: {
-                Intent intent = new Intent(MainActivity.this, PhotoViewActivity.class);
-                intent.putExtra(PhotoViewActivity.SELECT_MODE, PhotoViewActivity.SELECT_MODE_GPU);
+                Intent intent = new Intent(MainActivity.this, MediaSelectActivity.class);
+                intent.putExtra(MediaSelectActivity.SELECT_MODE, MediaSelectActivity.SELECT_MODE_GPU);
                 startActivity(intent);
                 break;
             }

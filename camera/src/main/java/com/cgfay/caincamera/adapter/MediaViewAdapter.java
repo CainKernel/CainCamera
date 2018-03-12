@@ -22,7 +22,7 @@ import java.util.List;
  * Created by cain.huang on 2017/8/9.
  */
 
-public class PhotoViewAdapter extends RecyclerView.Adapter<PhotoViewAdapter.PhotoHolder> {
+public class MediaViewAdapter extends RecyclerView.Adapter<MediaViewAdapter.PhotoHolder> {
 
     private boolean multiSelectEnable = false;
 
@@ -34,7 +34,7 @@ public class PhotoViewAdapter extends RecyclerView.Adapter<PhotoViewAdapter.Phot
     private boolean canLongClick = false;
 
 
-    public PhotoViewAdapter(Context context, List<MediaMeta> photoList) {
+    public MediaViewAdapter(Context context, List<MediaMeta> photoList) {
         mContext = context;
         mPhotoList = photoList;
     }
