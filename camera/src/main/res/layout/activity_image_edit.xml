@@ -34,4 +34,16 @@
         android:layout_alignParentBottom="true">
     </FrameLayout>
 
+
+    <!--用于显示滤镜值-->
+    <TextView
+        android:id="@+id/show_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_centerInParent="true"
+        android:textColor="@color/colorValueShow"
+        android:textSize="@dimen/show_value_size"
+        android:visibility="gone"/>
+
 </RelativeLayout>

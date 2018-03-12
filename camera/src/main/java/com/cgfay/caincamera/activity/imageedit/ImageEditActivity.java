@@ -2,10 +2,8 @@ package com.cgfay.caincamera.activity.imageedit;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -19,10 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.caincamera.adapter.EffectFilterAdapter;
-import com.cgfay.cainfilter.camerarender.ColorFilterManager;
 import com.cgfay.cainfilter.camerarender.ParamsManager;
-import com.cgfay.utilslibrary.AsyncRecyclerview;
 import com.cgfay.utilslibrary.BitmapUtils;
 
 public class ImageEditActivity extends AppCompatActivity implements View.OnClickListener {
@@ -62,16 +57,18 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
     private Button mBtnBlur;            // 虚化
     private Button mBtnMatBlur;         // 抠图虚化
 
-    // 图片管理器
-    ImageEditManager mEditManager;
-
     // 处于编辑状态
     private boolean mEditerShowing = false;
 
-    // 特效列表
-    private AsyncRecyclerview mFilterListView;
-    private LinearLayoutManager mFilterListManager;
-    private int mColorIndex = 0;
+    // 显示滤镜名称/滤镜值
+    private TextView mShowValueTextView;
+
+    // 一键美化编辑器
+    private BeautifyEditer mBeautifyEditer;
+    // 特效编辑器
+    private FilterEditer mFilterEditer;
+    // 调节编辑器
+    private AdjustEditer mAdjustEditer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,8 +81,6 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
         mInflater = (LayoutInflater) getApplicationContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         initView();
-        initImageEditManager();
-        initFilterListView();
     }
 
     /**
@@ -105,6 +100,8 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
         // 内容栏
         mLayoutContent = (FrameLayout) findViewById(R.id.layout_content);
         mImageView = (ImageView) findViewById(R.id.iv_image);
+
+        mShowValueTextView = (TextView) findViewById(R.id.show_value);
 
         // 底部编辑栏
         mScrollView = (HorizontalScrollView) mInflater
@@ -140,42 +137,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
 
     }
 
-    /**
-     * 初始化特效列表
-     */
-    private void initFilterListView() {
-        // 滤镜列表
-        mFilterListView = (AsyncRecyclerview) mInflater
-                .inflate(R.layout.view_video_edit_filters, null);
-        mFilterListManager = new LinearLayoutManager(this);
-        mFilterListManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        mFilterListView.setLayoutManager(mFilterListManager);
-        // TODO 滤镜适配器
-        EffectFilterAdapter adapter = new EffectFilterAdapter(this,
-                ColorFilterManager.getInstance().getFilterType(),
-                ColorFilterManager.getInstance().getFilterName());
 
-        mFilterListView.setAdapter(adapter);
-        adapter.addItemClickListener(new EffectFilterAdapter.OnItemClickLitener() {
-            @Override
-            public void onItemClick(int position) {
-                mColorIndex = position;
-                if (VERBOSE) {
-                    Log.d("changeFilter", "index = " + mColorIndex + ", filter name = "
-                            + ColorFilterManager.getInstance().getColorFilterName(mColorIndex));
-                }
-            }
-        });
-    }
-
-    /**
-     * 初始化图片编辑器
-     */
-    private void initImageEditManager() {
-        mEditManager = new ImageEditManager(this, mImagePath, mImageView);
-        mEditManager.startImageEditThread();
-        mEditManager.setSourceImage();
-    }
 
     @Override
     public void onBackPressed() {
@@ -184,14 +146,6 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
             return;
         }
         super.onBackPressed();
-    }
-
-    @Override
-    protected void onDestroy() {
-        mEditManager.stopImageEditThread();
-        mEditManager.release();
-        mEditManager = null;
-        super.onDestroy();
     }
 
     @Override
@@ -295,20 +249,35 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      * 显示一键美化视图
      */
     private void showBeautifyView() {
-
+        if (mBeautifyEditer == null) {
+            mBeautifyEditer = new BeautifyEditer(this);
+            mBeautifyEditer.setTextView(mShowValueTextView);
+        }
+        mLayoutBottom.removeAllViews();
+        mLayoutBottom.addView(mBeautifyEditer.getLayoutBeautify());
+        mLayoutNavigation.setVisibility(View.GONE);
+        mEditerShowing = true;
     }
 
     /**
      * 显示特效视图
      */
     private void showFilterView() {
-        if (mFilterListView == null) {
-            initFilterListView();
+        if (mFilterEditer == null) {
+            mFilterEditer = new FilterEditer(this);
+            mFilterEditer.setTextView(mShowValueTextView);
         }
         mLayoutBottom.removeAllViews();
-        mLayoutBottom.addView(mFilterListView);
+        mLayoutBottom.addView(mFilterEditer.getFilterListView());
         mLayoutNavigation.setVisibility(View.GONE);
         mEditerShowing = true;
+    }
+
+    /**
+     * 显示裁剪旋转视图
+     */
+    private void showCropRotateView() {
+
     }
 
     /**
@@ -333,17 +302,17 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
     }
 
     /**
-     * 显示裁剪旋转视图
-     */
-    private void showCropRotateView() {
-
-    }
-
-    /**
      * 显示调节视图
      */
     private void showAdjustView() {
-
+        if (mAdjustEditer == null) {
+            mAdjustEditer = new AdjustEditer(this);
+            mAdjustEditer.setTextView(mShowValueTextView);
+        }
+        mLayoutBottom.removeAllViews();
+        mLayoutBottom.addView(mAdjustEditer.getLayoutAdjust());
+        mLayoutNavigation.setVisibility(View.GONE);
+        mEditerShowing = true;
     }
 
     /**
