@@ -17,8 +17,8 @@ public class EnhancementEditer extends BaseEditer implements SeekBar.OnSeekBarCh
 
     private SeekBar mSeekBar;
 
-    public EnhancementEditer(Context context) {
-        super(context);
+    public EnhancementEditer(Context context, ImageEditManager manager) {
+        super(context, manager);
     }
 
     @Override

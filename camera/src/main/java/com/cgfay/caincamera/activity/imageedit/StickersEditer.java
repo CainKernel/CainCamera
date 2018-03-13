@@ -8,8 +8,8 @@ import android.content.Context;
  */
 
 public class StickersEditer extends BaseEditer {
-    public StickersEditer(Context context) {
-        super(context);
+    public StickersEditer(Context context, ImageEditManager manager) {
+        super(context, manager);
     }
 
     @Override

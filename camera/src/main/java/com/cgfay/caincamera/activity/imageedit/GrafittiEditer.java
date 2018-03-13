@@ -9,8 +9,8 @@ import android.content.Context;
 
 public class GrafittiEditer extends BaseEditer {
 
-    public GrafittiEditer(Context context) {
-        super(context);
+    public GrafittiEditer(Context context, ImageEditManager manager) {
+        super(context, manager);
     }
 
     @Override

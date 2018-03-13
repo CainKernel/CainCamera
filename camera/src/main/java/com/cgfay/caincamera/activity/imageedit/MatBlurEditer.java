@@ -19,8 +19,8 @@ public class MatBlurEditer extends BaseEditer implements View.OnClickListener {
     private Button mBtnPreview;
     private Button mBtnErase;
 
-    public MatBlurEditer(Context context) {
-        super(context);
+    public MatBlurEditer(Context context, ImageEditManager manager) {
+        super(context, manager);
     }
 
     @Override

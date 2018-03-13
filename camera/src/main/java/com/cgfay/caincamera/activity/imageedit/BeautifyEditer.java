@@ -22,8 +22,8 @@ public class BeautifyEditer extends BaseEditer implements View.OnClickListener {
     private Button mBtnScreen;  // 风景
     private Button mBtnPerson;  // 人物
 
-    public BeautifyEditer(Context context) {
-        super(context);
+    public BeautifyEditer(Context context, ImageEditManager manager) {
+        super(context, manager);
     }
 
     @Override

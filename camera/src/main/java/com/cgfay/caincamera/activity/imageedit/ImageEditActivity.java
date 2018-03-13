@@ -29,6 +29,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
 
     private String mImagePath;
 
+    private ImageEditManager mEditManager;
     // 内容栏
     private FrameLayout mLayoutContent;
     private ImageView mImageView;
@@ -95,6 +96,9 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
         mInflater = (LayoutInflater) getApplicationContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         initView();
+        mEditManager = new ImageEditManager(this, mImageView);
+        mEditManager.setImagePath(mImagePath);
+        ParamsManager.context = this;
     }
 
     /**
@@ -170,6 +174,17 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
             return;
         }
         super.onBackPressed();
+    }
+
+    @Override
+    protected void onDestroy() {
+        ParamsManager.context = null;
+        if (mEditManager != null) {
+            mEditManager.destroyEGLSurface();
+            mEditManager.destroyEGLRenderThread();
+            mEditManager = null;
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -290,7 +305,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      */
     private void showBeautifyView() {
         if (mBeautifyEditer == null) {
-            mBeautifyEditer = new BeautifyEditer(this);
+            mBeautifyEditer = new BeautifyEditer(this, mEditManager);
             mBeautifyEditer.setTextView(mShowValueTextView);
         }
         mLayoutBottom.removeAllViews();
@@ -305,7 +320,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      */
     private void showFilterView() {
         if (mFilterEditer == null) {
-            mFilterEditer = new FilterEditer(this);
+            mFilterEditer = new FilterEditer(this, mEditManager);
             mFilterEditer.setTextView(mShowValueTextView);
         }
         mLayoutBottom.removeAllViews();
@@ -320,7 +335,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      */
     private void showCropRotateView() {
         if (mCropRotateEditer == null) {
-            mCropRotateEditer = new CropRotateEditer(this);
+            mCropRotateEditer = new CropRotateEditer(this, mEditManager);
             mCropRotateEditer.setTextView(mShowValueTextView);
         }
         mLayoutBottom.removeAllViews();
@@ -356,7 +371,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      */
     private void showAdjustView() {
         if (mAdjustEditer == null) {
-            mAdjustEditer = new AdjustEditer(this);
+            mAdjustEditer = new AdjustEditer(this, mEditManager);
             mAdjustEditer.setTextView(mShowValueTextView);
         }
         mLayoutBottom.removeAllViews();
@@ -387,7 +402,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      */
     private void showEnhancementView() {
         if (mEnhancementEditer == null) {
-            mEnhancementEditer = new EnhancementEditer(this);
+            mEnhancementEditer = new EnhancementEditer(this, mEditManager);
             mEnhancementEditer.setTextView(mShowValueTextView);
         }
         mLayoutBottom.removeAllViews();
@@ -402,7 +417,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      */
     private void showBlurView() {
         if (mBlurEditer == null) {
-            mBlurEditer = new BlurEditer(this);
+            mBlurEditer = new BlurEditer(this, mEditManager);
             mBlurEditer.setTextView(mShowValueTextView);
         }
         mLayoutBottom.removeAllViews();
@@ -417,7 +432,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      */
     private void showMatBlurView() {
         if (mMatBlurEditer == null) {
-            mMatBlurEditer = new MatBlurEditer(this);
+            mMatBlurEditer = new MatBlurEditer(this, mEditManager);
             mMatBlurEditer.setTextView(mShowValueTextView);
         }
         mLayoutBottom.removeAllViews();

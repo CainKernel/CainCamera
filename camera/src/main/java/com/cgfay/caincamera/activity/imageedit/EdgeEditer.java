@@ -8,8 +8,8 @@ import android.content.Context;
  */
 
 public class EdgeEditer extends BaseEditer {
-    public EdgeEditer(Context context) {
-        super(context);
+    public EdgeEditer(Context context, ImageEditManager manager) {
+        super(context, manager);
     }
 
     @Override

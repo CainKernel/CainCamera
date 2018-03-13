@@ -30,8 +30,8 @@ public class CropRotateEditer extends BaseEditer
     private Button mBtnNineToSixteen;
     private Button mBtnSixteenToNine;
 
-    public CropRotateEditer(Context context) {
-        super(context);
+    public CropRotateEditer(Context context, ImageEditManager manager) {
+        super(context, manager);
     }
 
 

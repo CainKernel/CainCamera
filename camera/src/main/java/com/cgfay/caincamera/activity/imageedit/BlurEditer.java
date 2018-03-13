@@ -20,8 +20,8 @@ public class BlurEditer extends BaseEditer implements View.OnClickListener, Seek
     private SeekBar mSeekBar;
     private Button mBtnBlurType;
 
-    public BlurEditer(Context context) {
-        super(context);
+    public BlurEditer(Context context, ImageEditManager manager) {
+        super(context, manager);
     }
 
     @Override

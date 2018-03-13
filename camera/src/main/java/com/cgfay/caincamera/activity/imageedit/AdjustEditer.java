@@ -46,8 +46,8 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
     private int mCurrentFilterIndex;
 
 
-    public AdjustEditer(Context context) {
-        super(context);
+    public AdjustEditer(Context context, ImageEditManager manager) {
+        super(context, manager);
     }
 
     /**
@@ -80,7 +80,9 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
             // 亮度
             case R.id.btn_brightness: {
                 resetAdjustButtonColor();
-//                ImageRenderManager.getInstance().setBrightness(mValues[BrightnessIndex]);
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setBrightness(mValues[BrightnessIndex]);
+                }
                 mCurrentFilterIndex = BrightnessIndex;
                 int progress = (int) (mValues[BrightnessIndex] * SeekBarMax);
                 mSeekbar.setProgress(progress);
@@ -92,7 +94,9 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
             // 对比度
             case R.id.btn_contrast: {
                 resetAdjustButtonColor();
-//                ImageRenderManager.getInstance().setContrast(mValues[ContrastIndex]);
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setContrast(mValues[ContrastIndex]);
+                }
                 mCurrentFilterIndex = ContrastIndex;
                 int progress = (int) (mValues[ContrastIndex] * SeekBarMax / 2.0f);
                 mSeekbar.setProgress(progress);
@@ -104,7 +108,9 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
             // 曝光
             case R.id.btn_exposure: {
                 resetAdjustButtonColor();
-//                ImageRenderManager.getInstance().setExposure(mValues[ExposureIndex]);
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setExposure(mValues[ExposureIndex]);
+                }
                 mCurrentFilterIndex = ExposureIndex;
                 int progress = (int) (mValues[ExposureIndex] * SeekBarMax);
                 mSeekbar.setProgress(progress);
@@ -116,7 +122,9 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
             // 色调
             case R.id.btn_hue: {
                 resetAdjustButtonColor();
-//                ImageRenderManager.getInstance().setHue(mValues[HueIndex]);
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setHue(mValues[HueIndex]);
+                }
                 mCurrentFilterIndex = HueIndex;
                 int progress = (int) (mValues[HueIndex] * SeekBarMax / 360f);
                 mSeekbar.setProgress(progress);
@@ -128,7 +136,9 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
             // 饱和度
             case R.id.btn_saturation: {
                 resetAdjustButtonColor();
-//                ImageRenderManager.getInstance().setSaturation(mValues[SaturationIndex]);
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setSaturation(mValues[SaturationIndex]);
+                }
                 mCurrentFilterIndex = SaturationIndex;
                 int progress = (int) (mValues[SaturationIndex] * SeekBarMax / 2.0f);
                 mSeekbar.setProgress(progress);
@@ -140,7 +150,9 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
             // 锐度
             case R.id.btn_sharpness: {
                 resetAdjustButtonColor();
-//                ImageRenderManager.getInstance().setSharpness(mValues[SharpnessIndex]);
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setSharpness(mValues[SharpnessIndex]);
+                }
                 mCurrentFilterIndex = SharpnessIndex;
                 int progress = (int) (mValues[SharpnessIndex] * SeekBarMax);
                 mSeekbar.setProgress(progress);
@@ -220,33 +232,70 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
             // 亮度
             case BrightnessIndex:
                 Log.d(TAG, "setFilterValues: Brightness - " + value);
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setBrightness(mValues[BrightnessIndex]);
+                }
                 break;
 
             // 对比度
             case ContrastIndex:
                 Log.d(TAG, "setFilterValues: Contrast - " + value);
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setContrast(mValues[ContrastIndex]);
+                }
                 break;
 
             // 曝光
             case ExposureIndex:
                 Log.d(TAG, "setFilterValues: Exposure - " + value);
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setExposure(mValues[ExposureIndex]);
+                }
                 break;
 
             // 色调
             case HueIndex:
                 Log.d(TAG, "setFilterValues: Hue - " + value);
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setHue(mValues[HueIndex]);
+                }
                 break;
 
             // 饱和度
             case SaturationIndex:
                 Log.d(TAG, "setFilterValues: Saturation - " + value);
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setSaturation(mValues[SaturationIndex]);
+                }
                 break;
 
             // 锐度
             case SharpnessIndex:
                 Log.d(TAG, "setFilterValues: Sharpness - " + value);
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setSharpness(mValues[SharpnessIndex]);
+                }
                 break;
         }
     }
 
+    @Override
+    public void resetAllChanged() {
+        resetFilterValues();
+    }
+
+    /**
+     * 重置滤镜为原始值
+     */
+    private void resetFilterValues() {
+        mValues = OriginalValues;
+        if (mWeakManager != null && mWeakManager.get() != null) {
+            mWeakManager.get().setBrightness(mValues[BrightnessIndex]);
+            mWeakManager.get().setContrast(mValues[ContrastIndex]);
+            mWeakManager.get().setExposure(mValues[ExposureIndex]);
+            mWeakManager.get().setHue(mValues[HueIndex]);
+            mWeakManager.get().setSaturation(mValues[SaturationIndex]);
+            mWeakManager.get().setSharpness(mValues[SharpnessIndex]);
+        }
+    }
 }

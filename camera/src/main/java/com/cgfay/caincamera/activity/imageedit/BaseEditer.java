@@ -16,14 +16,19 @@ public class BaseEditer {
     protected WeakReference<TextView> mWeakTextView;
     protected Context mContext;
     protected LayoutInflater mInflater;   // 布局加载器器
+    protected WeakReference<ImageEditManager> mWeakManager;
 
-    public BaseEditer(Context context) {
+    public BaseEditer(Context context, ImageEditManager manager) {
         mContext = context;
+        mWeakManager = new WeakReference<ImageEditManager>(manager);
         mInflater = (LayoutInflater) mContext.getApplicationContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         initView();
     }
 
+    /**
+     * 初始化视图
+     */
     protected void initView() {
 
     }
@@ -39,4 +44,10 @@ public class BaseEditer {
         mWeakTextView = new WeakReference<TextView>(textView);
     }
 
+    /**
+     * 重置所有值
+     */
+    public void resetAllChanged() {
+
+    }
 }

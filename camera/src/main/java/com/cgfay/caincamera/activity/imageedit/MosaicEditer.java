@@ -8,8 +8,8 @@ import android.content.Context;
  */
 
 public class MosaicEditer extends BaseEditer {
-    public MosaicEditer(Context context) {
-        super(context);
+    public MosaicEditer(Context context, ImageEditManager manager) {
+        super(context, manager);
     }
 
     @Override

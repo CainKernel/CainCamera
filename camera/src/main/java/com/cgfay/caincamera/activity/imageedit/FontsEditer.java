@@ -8,8 +8,8 @@ import android.content.Context;
  */
 
 public class FontsEditer extends BaseEditer {
-    public FontsEditer(Context context) {
-        super(context);
+    public FontsEditer(Context context, ImageEditManager manager) {
+        super(context, manager);
     }
 
     @Override

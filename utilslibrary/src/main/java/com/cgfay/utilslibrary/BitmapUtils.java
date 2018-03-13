@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Created by cain on 2017/7/9.
@@ -83,6 +84,41 @@ public class BitmapUtils {
                 bitmap.getHeight(), matrix, false);
     }
 
+    /**
+     * 从Buffer中创建Bitmap
+     * @param buffer
+     * @param width
+     * @param height
+     * @return
+     */
+    public static Bitmap getBitmapFromBuffer(ByteBuffer buffer, int width, int height) {
+        return getBitmapFromBuffer(buffer, width, height, false, false);
+    }
+
+    /**
+     * 从Buffer中创建Bitmap
+     * @param buffer
+     * @param width
+     * @param height
+     * @param flipX
+     * @param flipY
+     * @return
+     */
+    public static Bitmap getBitmapFromBuffer(ByteBuffer buffer, int width, int height,
+                                             boolean flipX, boolean flipY) {
+        if (buffer == null) {
+            return null;
+        }
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        bitmap.copyPixelsFromBuffer(buffer);
+        if (flipX || flipY) {
+            Bitmap result = flipBitmap(bitmap, flipX, flipY);
+            bitmap.recycle();
+            return result;
+        } else {
+            return bitmap;
+        }
+    }
 
     /**
      * 加载Assets文件夹下的图片

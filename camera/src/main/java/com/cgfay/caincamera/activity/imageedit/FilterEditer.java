@@ -24,8 +24,8 @@ public class FilterEditer extends BaseEditer {
     private LinearLayoutManager mFilterListManager;
     private int mColorIndex = 0;
 
-    public FilterEditer(Context context) {
-        super(context);
+    public FilterEditer(Context context, ImageEditManager manager) {
+        super(context, manager);
     }
 
     /**
@@ -48,6 +48,10 @@ public class FilterEditer extends BaseEditer {
             @Override
             public void onItemClick(int position) {
                 mColorIndex = position;
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().changeFilter(
+                            ColorFilterManager.getInstance().getColorFilterType(mColorIndex));
+                }
                 if (VERBOSE) {
                     Log.d("changeFilter", "index = " + mColorIndex + ", filter name = "
                             + ColorFilterManager.getInstance().getColorFilterName(mColorIndex));
