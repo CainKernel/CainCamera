@@ -3,13 +3,12 @@ package com.cgfay.caincamera.activity.imageedit;
 import android.content.Context;
 
 /**
- * 涂鸦编辑器
+ * 马赛克编辑器
  * Created by Administrator on 2018/3/12.
  */
 
-public class GrafittiEditer extends BaseEditor {
-
-    public GrafittiEditer(Context context, ImageEditManager manager) {
+public class MosaicEditor extends BaseEditor {
+    public MosaicEditor(Context context, ImageEditManager manager) {
         super(context, manager);
     }
 
