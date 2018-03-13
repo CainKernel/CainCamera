@@ -1,4 +1,4 @@
-package com.cgfay.cainfilter.imagerender;
+package com.cgfay.caincamera.activity.imagerender;
 
 import java.nio.ByteBuffer;
 

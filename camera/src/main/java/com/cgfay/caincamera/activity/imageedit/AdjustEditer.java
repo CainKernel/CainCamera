@@ -1,6 +1,7 @@
 package com.cgfay.caincamera.activity.imageedit;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -14,6 +15,8 @@ import com.cgfay.caincamera.R;
  */
 
 public class AdjustEditer extends BaseEditer implements View.OnClickListener, SeekBar.OnSeekBarChangeListener  {
+
+    private static final String TAG = "AdjustEditer";
 
     // 原始滤镜值
     private static final float[] OriginalValues = new float[] { 0, 1.0f, 0, 0, 1.0f, 0 };
@@ -54,6 +57,7 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
         mLayoutAdjust = (LinearLayout) mInflater.inflate(R.layout.view_image_edit_adjust, null);
         mSeekbar = (SeekBar) mLayoutAdjust.findViewById(R.id.edit_value);
         mBtnBrightness = (Button) mLayoutAdjust.findViewById(R.id.btn_brightness);
+        mBtnBrightness.setTextColor(mContext.getResources().getColor(android.R.color.holo_red_light));
         mBtnContrast = (Button) mLayoutAdjust.findViewById(R.id.btn_contrast);
         mBtnExposure = (Button) mLayoutAdjust.findViewById(R.id.btn_exposure);
         mBtnHue = (Button) mLayoutAdjust.findViewById(R.id.btn_hue);
@@ -215,26 +219,32 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
         switch (mCurrentFilterIndex) {
             // 亮度
             case BrightnessIndex:
+                Log.d(TAG, "setFilterValues: Brightness - " + value);
                 break;
 
             // 对比度
             case ContrastIndex:
+                Log.d(TAG, "setFilterValues: Contrast - " + value);
                 break;
 
             // 曝光
             case ExposureIndex:
+                Log.d(TAG, "setFilterValues: Exposure - " + value);
                 break;
 
             // 色调
             case HueIndex:
+                Log.d(TAG, "setFilterValues: Hue - " + value);
                 break;
 
             // 饱和度
             case SaturationIndex:
+                Log.d(TAG, "setFilterValues: Saturation - " + value);
                 break;
 
             // 锐度
             case SharpnessIndex:
+                Log.d(TAG, "setFilterValues: Sharpness - " + value);
                 break;
         }
     }

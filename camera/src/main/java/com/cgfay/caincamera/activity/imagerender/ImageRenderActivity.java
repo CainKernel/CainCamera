@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.activity;
+package com.cgfay.caincamera.activity.imagerender;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -23,8 +22,6 @@ import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.adapter.EffectFilterAdapter;
 import com.cgfay.cainfilter.camerarender.ColorFilterManager;
 import com.cgfay.cainfilter.camerarender.ParamsManager;
-import com.cgfay.cainfilter.imagerender.ImageRenderManager;
-import com.cgfay.cainfilter.imagerender.OnRenderListener;
 import com.cgfay.utilslibrary.AspectFrameLayout;
 import com.cgfay.utilslibrary.AsyncRecyclerview;
 import com.cgfay.utilslibrary.BitmapUtils;

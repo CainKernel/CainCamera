@@ -1,4 +1,4 @@
-package com.cgfay.cainfilter.imagerender;
+package com.cgfay.caincamera.activity.imagerender;
 
 /**
  * Created by Administrator on 2018/3/8.

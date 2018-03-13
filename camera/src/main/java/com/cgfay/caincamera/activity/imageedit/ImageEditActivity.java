@@ -57,6 +57,11 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
     private Button mBtnBlur;            // 虚化
     private Button mBtnMatBlur;         // 抠图虚化
 
+    private RelativeLayout mLayoutBottomOperation;
+    private Button mBtnCancel;
+    private Button mBtnApply;
+    private Button mBtnReset;
+
     // 处于编辑状态
     private boolean mEditerShowing = false;
 
@@ -67,8 +72,17 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
     private BeautifyEditer mBeautifyEditer;
     // 特效编辑器
     private FilterEditer mFilterEditer;
+    // 裁剪旋转编辑器
+    private CropRotateEditer mCropRotateEditer;
     // 调节编辑器
     private AdjustEditer mAdjustEditer;
+
+    // 夜景增强编辑器
+    private EnhancementEditer mEnhancementEditer;
+    // 虚化编辑器
+    private BlurEditer mBlurEditer;
+    // 抠图虚化编辑器
+    private MatBlurEditer mMatBlurEditer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +116,16 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
         mImageView = (ImageView) findViewById(R.id.iv_image);
 
         mShowValueTextView = (TextView) findViewById(R.id.show_value);
+
+        // 底部操作栏
+        mLayoutBottomOperation = (RelativeLayout) findViewById(R.id.layout_bottom_operation);
+        mBtnCancel = (Button) findViewById(R.id.btn_cancel);
+        mBtnReset = (Button) findViewById(R.id.btn_reset);
+        mBtnApply = (Button) findViewById(R.id.btn_apply);
+
+        mBtnCancel.setOnClickListener(this);
+        mBtnReset.setOnClickListener(this);
+        mBtnApply.setOnClickListener(this);
 
         // 底部编辑栏
         mScrollView = (HorizontalScrollView) mInflater
@@ -142,7 +166,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
     @Override
     public void onBackPressed() {
         if (isShowingEditView()) {
-            resetBottomView();
+            cancelCurrentOperation();
             return;
         }
         super.onBackPressed();
@@ -220,6 +244,21 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
             case R.id.btn_mat_blur:
                 showMatBlurView();
                 break;
+
+            // 取消编辑
+            case R.id.btn_cancel:
+                cancelCurrentOperation();
+                break;
+
+            // 重置编辑
+            case R.id.btn_reset:
+                resetCurrentOperation();
+                break;
+
+            // 应用编辑
+            case R.id.btn_apply:
+                applyCurrentOperation();
+                break;
         }
     }
 
@@ -231,6 +270,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
         mLayoutBottom.addView(mScrollView);
         mLayoutNavigation.setVisibility(View.VISIBLE);
         mEditerShowing = false;
+        mLayoutBottomOperation.setVisibility(View.GONE);
     }
 
     /**
@@ -257,6 +297,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
         mLayoutBottom.addView(mBeautifyEditer.getLayoutBeautify());
         mLayoutNavigation.setVisibility(View.GONE);
         mEditerShowing = true;
+        mLayoutBottomOperation.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -271,34 +312,43 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
         mLayoutBottom.addView(mFilterEditer.getFilterListView());
         mLayoutNavigation.setVisibility(View.GONE);
         mEditerShowing = true;
+        mLayoutBottomOperation.setVisibility(View.VISIBLE);
     }
 
     /**
      * 显示裁剪旋转视图
      */
     private void showCropRotateView() {
-
+        if (mCropRotateEditer == null) {
+            mCropRotateEditer = new CropRotateEditer(this);
+            mCropRotateEditer.setTextView(mShowValueTextView);
+        }
+        mLayoutBottom.removeAllViews();
+        mLayoutBottom.addView(mCropRotateEditer.getLayoutCropRotate());
+        mLayoutNavigation.setVisibility(View.GONE);
+        mEditerShowing = true;
+        mLayoutBottomOperation.setVisibility(View.VISIBLE);
     }
 
     /**
      * 显示贴纸视图
      */
     private void showStickersView() {
-
+        Toast.makeText(this, "贴纸功能暂未实现", Toast.LENGTH_SHORT).show();
     }
 
     /**
      * 添加文字
      */
     private void addFonts() {
-
+        Toast.makeText(this, "文字功能暂未实现", Toast.LENGTH_SHORT).show();
     }
 
     /**
      * 显示涂鸦视图
      */
     private void showGrafittiView() {
-
+        Toast.makeText(this, "涂鸦功能暂未实现", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -313,6 +363,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
         mLayoutBottom.addView(mAdjustEditer.getLayoutAdjust());
         mLayoutNavigation.setVisibility(View.GONE);
         mEditerShowing = true;
+        mLayoutBottomOperation.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -320,6 +371,7 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      */
     private void showMosaicView() {
 
+        Toast.makeText(this, "马赛克功能暂未实现", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -327,35 +379,82 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      */
     private void showEdgeView() {
 
+        Toast.makeText(this, "边框功能暂未实现", Toast.LENGTH_SHORT).show();
     }
 
     /**
      * 显示夜景增强视图
      */
     private void showEnhancementView() {
-
+        if (mEnhancementEditer == null) {
+            mEnhancementEditer = new EnhancementEditer(this);
+            mEnhancementEditer.setTextView(mShowValueTextView);
+        }
+        mLayoutBottom.removeAllViews();
+        mLayoutBottom.addView(mEnhancementEditer.getLayoutEnhancement());
+        mLayoutNavigation.setVisibility(View.GONE);
+        mEditerShowing = true;
+        mLayoutBottomOperation.setVisibility(View.VISIBLE);
     }
 
     /**
      * 显示虚化视图
      */
     private void showBlurView() {
-
+        if (mBlurEditer == null) {
+            mBlurEditer = new BlurEditer(this);
+            mBlurEditer.setTextView(mShowValueTextView);
+        }
+        mLayoutBottom.removeAllViews();
+        mLayoutBottom.addView(mBlurEditer.getLayoutBlur());
+        mLayoutNavigation.setVisibility(View.GONE);
+        mEditerShowing = true;
+        mLayoutBottomOperation.setVisibility(View.VISIBLE);
     }
 
     /**
      * 显示抠图虚化视图
      */
     private void showMatBlurView() {
-
+        if (mMatBlurEditer == null) {
+            mMatBlurEditer = new MatBlurEditer(this);
+            mMatBlurEditer.setTextView(mShowValueTextView);
+        }
+        mLayoutBottom.removeAllViews();
+        mLayoutBottom.addView(mMatBlurEditer.getLayoutMatblur());
+        mLayoutNavigation.setVisibility(View.GONE);
+        mEditerShowing = true;
+        mLayoutBottomOperation.setVisibility(View.VISIBLE);
     }
 
     /**
-     * 是否处于编辑视图，用于点击返回按钮时，直接
+     * 是否处于编辑视图，用于点击返回按钮时，隐藏编辑页面还是退出页面
      * @return
      */
     private boolean isShowingEditView() {
         return mEditerShowing;
+    }
+
+
+    /**
+     * 取消当前编辑操作
+     */
+    private void cancelCurrentOperation() {
+        resetBottomView();
+    }
+
+    /**
+     * 重置当前编辑操作
+     */
+    private void resetCurrentOperation() {
+
+    }
+
+    /**
+     * 应用当前编辑
+     */
+    private void applyCurrentOperation() {
+        resetBottomView();
     }
 }
 

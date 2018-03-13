@@ -18,6 +18,7 @@ import android.view.WindowManager;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.activity.imageedit.ImageEditActivity;
+import com.cgfay.caincamera.activity.imagerender.ImageRenderActivity;
 import com.cgfay.caincamera.activity.videoedit.VideoEditActivity;
 import com.cgfay.caincamera.adapter.MediaViewAdapter;
 import com.cgfay.caincamera.bean.MediaMeta;

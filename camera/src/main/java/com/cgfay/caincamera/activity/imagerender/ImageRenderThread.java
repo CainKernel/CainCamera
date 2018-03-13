@@ -1,4 +1,4 @@
-package com.cgfay.cainfilter.imagerender;
+package com.cgfay.caincamera.activity.imagerender;
 
 import android.graphics.Bitmap;
 import android.opengl.GLES30;

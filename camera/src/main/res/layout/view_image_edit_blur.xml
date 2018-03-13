@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/dp40"
+    android:layout_gravity="bottom"
+    android:gravity="bottom">
+
+    <Button
+        android:id="@+id/btn_blur_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:background="@android:color/transparent"
+        android:layout_marginEnd="@dimen/dp20"
+        android:textColor="@android:color/white"
+        android:text="无光斑"/>
+
+    <SeekBar
+        android:id="@+id/sb_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="@dimen/dp40"
+        android:layout_marginEnd="@dimen/dp20"
+        android:layout_toLeftOf="@id/btn_blur_type"/>
+
+
+</RelativeLayout>

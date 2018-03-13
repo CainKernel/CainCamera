@@ -62,7 +62,7 @@
         <activity android:name=".activity.camera.TestActivity" />
         <activity android:name=".activity.camera.RtmpPushActivity" />
         <activity android:name=".activity.camera.VideoRecordActivity" />
-        <activity android:name=".activity.ImageRenderActivity" />
+        <activity android:name=".activity.imagerender.ImageRenderActivity" />
     </application>
 
 </manifest>
