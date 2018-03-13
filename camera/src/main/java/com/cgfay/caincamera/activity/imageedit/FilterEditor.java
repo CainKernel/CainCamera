@@ -14,9 +14,9 @@ import com.cgfay.utilslibrary.AsyncRecyclerview;
  * Created by Administrator on 2018/3/12.
  */
 
-public class FilterEditer extends BaseEditer {
+public class FilterEditor extends BaseEditor {
 
-    private static final String TAG = "FilterEditer";
+    private static final String TAG = "FilterEditor";
     private static final boolean VERBOSE = true;
 
     // 特效列表
@@ -24,7 +24,7 @@ public class FilterEditer extends BaseEditer {
     private LinearLayoutManager mFilterListManager;
     private int mColorIndex = 0;
 
-    public FilterEditer(Context context, ImageEditManager manager) {
+    public FilterEditor(Context context, ImageEditManager manager) {
         super(context, manager);
     }
 
@@ -66,5 +66,14 @@ public class FilterEditer extends BaseEditer {
      */
     public AsyncRecyclerview getFilterListView() {
         return mFilterListView;
+    }
+
+
+    @Override
+    public void resetAllChanged() {
+        if (mWeakManager != null && mWeakManager.get() != null) {
+            mWeakManager.get().changeFilter(
+                    ColorFilterManager.getInstance().getColorFilterType(0));
+        }
     }
 }

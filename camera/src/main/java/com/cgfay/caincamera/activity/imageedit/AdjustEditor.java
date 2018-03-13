@@ -14,9 +14,9 @@ import com.cgfay.caincamera.R;
  * Created by Administrator on 2018/3/12.
  */
 
-public class AdjustEditer extends BaseEditer implements View.OnClickListener, SeekBar.OnSeekBarChangeListener  {
+public class AdjustEditor extends BaseEditor implements View.OnClickListener, SeekBar.OnSeekBarChangeListener  {
 
-    private static final String TAG = "AdjustEditer";
+    private static final String TAG = "AdjustEditor";
 
     // 原始滤镜值
     private static final float[] OriginalValues = new float[] { 0, 1.0f, 0, 0, 1.0f, 0 };
@@ -46,7 +46,7 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
     private int mCurrentFilterIndex;
 
 
-    public AdjustEditer(Context context, ImageEditManager manager) {
+    public AdjustEditor(Context context, ImageEditManager manager) {
         super(context, manager);
     }
 
@@ -86,7 +86,7 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
                 mCurrentFilterIndex = BrightnessIndex;
                 int progress = (int) (mValues[BrightnessIndex] * SeekBarMax);
                 mSeekbar.setProgress(progress);
-                setFilterValues(progress);
+                setFilterValues();
                 mBtnBrightness.setTextColor(mContext.getResources().getColor(android.R.color.holo_red_light));
                 break;
             }
@@ -100,7 +100,7 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
                 mCurrentFilterIndex = ContrastIndex;
                 int progress = (int) (mValues[ContrastIndex] * SeekBarMax / 2.0f);
                 mSeekbar.setProgress(progress);
-                setFilterValues(progress);
+                setFilterValues();
                 mBtnContrast.setTextColor(mContext.getResources().getColor(android.R.color.holo_red_light));
                 break;
             }
@@ -114,7 +114,7 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
                 mCurrentFilterIndex = ExposureIndex;
                 int progress = (int) (mValues[ExposureIndex] * SeekBarMax);
                 mSeekbar.setProgress(progress);
-                setFilterValues(progress);
+                setFilterValues();
                 mBtnExposure.setTextColor(mContext.getResources().getColor(android.R.color.holo_red_light));
                 break;
             }
@@ -128,7 +128,7 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
                 mCurrentFilterIndex = HueIndex;
                 int progress = (int) (mValues[HueIndex] * SeekBarMax / 360f);
                 mSeekbar.setProgress(progress);
-                setFilterValues(progress);
+                setFilterValues();
                 mBtnHue.setTextColor(mContext.getResources().getColor(android.R.color.holo_red_light));
                 break;
             }
@@ -142,7 +142,7 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
                 mCurrentFilterIndex = SaturationIndex;
                 int progress = (int) (mValues[SaturationIndex] * SeekBarMax / 2.0f);
                 mSeekbar.setProgress(progress);
-                setFilterValues(progress);
+                setFilterValues();
                 mBtnSaturation.setTextColor(mContext.getResources().getColor(android.R.color.holo_red_light));
                 break;
             }
@@ -156,7 +156,7 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
                 mCurrentFilterIndex = SharpnessIndex;
                 int progress = (int) (mValues[SharpnessIndex] * SeekBarMax);
                 mSeekbar.setProgress(progress);
-                setFilterValues(progress);
+                setFilterValues();
                 mBtnSharpness.setTextColor(mContext.getResources().getColor(android.R.color.holo_red_light));
                 break;
             }
@@ -166,7 +166,7 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (fromUser) {
-            setFilterValues(progress);
+            calculateFilterValue(progress);
         }
     }
 
@@ -182,6 +182,7 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
         if (mWeakTextView != null && mWeakTextView.get() != null) {
             mWeakTextView.get().setVisibility(View.GONE);
         }
+        setFilterValues();
     }
 
     /**
@@ -204,12 +205,60 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
         return mLayoutAdjust;
     }
 
+    /**
+     * 设置滤镜值
+     */
+    private void setFilterValues() {
+        switch (mCurrentFilterIndex) {
+            // 亮度
+            case BrightnessIndex:
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setBrightness(mValues[BrightnessIndex]);
+                }
+                break;
+
+            // 对比度
+            case ContrastIndex:
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setContrast(mValues[ContrastIndex]);
+                }
+                break;
+
+            // 曝光
+            case ExposureIndex:
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setExposure(mValues[ExposureIndex]);
+                }
+                break;
+
+            // 色调
+            case HueIndex:
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setHue(mValues[HueIndex]);
+                }
+                break;
+
+            // 饱和度
+            case SaturationIndex:
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setSaturation(mValues[SaturationIndex]);
+                }
+                break;
+
+            // 锐度
+            case SharpnessIndex:
+                if (mWeakManager != null && mWeakManager.get() != null) {
+                    mWeakManager.get().setSharpness(mValues[SharpnessIndex]);
+                }
+                break;
+        }
+    }
 
     /**
      * 设置滤镜值
      * @param progress seekbar的进度值
      */
-    private void setFilterValues(int progress) {
+    private void calculateFilterValue(int progress) {
         float value = (float) progress / (float) SeekBarMax;
         // 计算百分比
         float text = (float)Math.round(value * 100);
@@ -228,55 +277,6 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
 
         // 缓存当前的滤镜值
         mValues[mCurrentFilterIndex] = value;
-        switch (mCurrentFilterIndex) {
-            // 亮度
-            case BrightnessIndex:
-                Log.d(TAG, "setFilterValues: Brightness - " + value);
-                if (mWeakManager != null && mWeakManager.get() != null) {
-                    mWeakManager.get().setBrightness(mValues[BrightnessIndex]);
-                }
-                break;
-
-            // 对比度
-            case ContrastIndex:
-                Log.d(TAG, "setFilterValues: Contrast - " + value);
-                if (mWeakManager != null && mWeakManager.get() != null) {
-                    mWeakManager.get().setContrast(mValues[ContrastIndex]);
-                }
-                break;
-
-            // 曝光
-            case ExposureIndex:
-                Log.d(TAG, "setFilterValues: Exposure - " + value);
-                if (mWeakManager != null && mWeakManager.get() != null) {
-                    mWeakManager.get().setExposure(mValues[ExposureIndex]);
-                }
-                break;
-
-            // 色调
-            case HueIndex:
-                Log.d(TAG, "setFilterValues: Hue - " + value);
-                if (mWeakManager != null && mWeakManager.get() != null) {
-                    mWeakManager.get().setHue(mValues[HueIndex]);
-                }
-                break;
-
-            // 饱和度
-            case SaturationIndex:
-                Log.d(TAG, "setFilterValues: Saturation - " + value);
-                if (mWeakManager != null && mWeakManager.get() != null) {
-                    mWeakManager.get().setSaturation(mValues[SaturationIndex]);
-                }
-                break;
-
-            // 锐度
-            case SharpnessIndex:
-                Log.d(TAG, "setFilterValues: Sharpness - " + value);
-                if (mWeakManager != null && mWeakManager.get() != null) {
-                    mWeakManager.get().setSharpness(mValues[SharpnessIndex]);
-                }
-                break;
-        }
     }
 
     @Override
@@ -289,13 +289,12 @@ public class AdjustEditer extends BaseEditer implements View.OnClickListener, Se
      */
     private void resetFilterValues() {
         mValues = OriginalValues;
+        mCurrentFilterIndex = BrightnessIndex;
+        mBtnBrightness.setTextColor(mContext.getResources().getColor(android.R.color.holo_red_light));
+        int progress = (int) (mValues[BrightnessIndex] * SeekBarMax);
+        mSeekbar.setProgress(progress);
         if (mWeakManager != null && mWeakManager.get() != null) {
-            mWeakManager.get().setBrightness(mValues[BrightnessIndex]);
-            mWeakManager.get().setContrast(mValues[ContrastIndex]);
-            mWeakManager.get().setExposure(mValues[ExposureIndex]);
-            mWeakManager.get().setHue(mValues[HueIndex]);
-            mWeakManager.get().setSaturation(mValues[SaturationIndex]);
-            mWeakManager.get().setSharpness(mValues[SharpnessIndex]);
+            mWeakManager.get().resetAdjustFilter();
         }
     }
 }

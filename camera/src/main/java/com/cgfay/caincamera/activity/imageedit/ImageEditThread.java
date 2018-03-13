@@ -100,6 +100,19 @@ public class ImageEditThread extends HandlerThread {
     }
 
     /**
+     * 重置调节滤镜
+     */
+    public void resetAdjustFilter() {
+        mImageFilter.setBrightness(0);
+        mImageFilter.setContrast(1);
+        mImageFilter.setExposure(0);
+        mImageFilter.setHue(0);
+        mImageFilter.setSaturation(1);
+        mImageFilter.setSharpness(0);
+        requestRender();
+    }
+
+    /**
      * 设置亮度
      * @param brightness
      */

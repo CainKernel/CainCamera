@@ -11,13 +11,13 @@ import com.cgfay.caincamera.R;
  * Created by Administrator on 2018/3/12.
  */
 
-public class EnhancementEditer extends BaseEditer implements SeekBar.OnSeekBarChangeListener {
+public class EnhancementEditor extends BaseEditor implements SeekBar.OnSeekBarChangeListener {
 
     private LinearLayout mLayoutEnhancement;
 
     private SeekBar mSeekBar;
 
-    public EnhancementEditer(Context context, ImageEditManager manager) {
+    public EnhancementEditor(Context context, ImageEditManager manager) {
         super(context, manager);
     }
 

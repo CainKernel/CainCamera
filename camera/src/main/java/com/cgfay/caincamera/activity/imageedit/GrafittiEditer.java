@@ -7,7 +7,7 @@ import android.content.Context;
  * Created by Administrator on 2018/3/12.
  */
 
-public class GrafittiEditer extends BaseEditer {
+public class GrafittiEditer extends BaseEditor {
 
     public GrafittiEditer(Context context, ImageEditManager manager) {
         super(context, manager);

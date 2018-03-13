@@ -29,6 +29,7 @@ public class ImageEditHandler extends Handler {
     static final int MSG_SET_HUE = 0x203;
     static final int MSG_SET_SATURATION = 0x204;
     static final int MSG_SET_SHARPNESS = 0x205;
+    static final int MSG_RESET_ADJUST = 0x206;
 
     static final int MSG_CHANGE_FILTER = 0x301;
     static final int MSG_CHANGE_FILTER_GROUP = 0x302;
@@ -101,6 +102,11 @@ public class ImageEditHandler extends Handler {
             // 设置锐度
             case MSG_SET_SHARPNESS:
                 thread.setSharpness((Float) msg.obj);
+                break;
+
+            // 重置调节滤镜
+            case MSG_RESET_ADJUST:
+                thread.resetAdjustFilter();
                 break;
 
             // 切换滤镜

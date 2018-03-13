@@ -13,7 +13,7 @@ import com.cgfay.caincamera.R;
  * Created by Administrator on 2018/3/12.
  */
 
-public class CropRotateEditer extends BaseEditer
+public class CropRotateEditor extends BaseEditor
         implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
     private RelativeLayout mLayoutCropRotate;
@@ -30,7 +30,7 @@ public class CropRotateEditer extends BaseEditer
     private Button mBtnNineToSixteen;
     private Button mBtnSixteenToNine;
 
-    public CropRotateEditer(Context context, ImageEditManager manager) {
+    public CropRotateEditor(Context context, ImageEditManager manager) {
         super(context, manager);
     }
 

@@ -11,14 +11,14 @@ import java.lang.ref.WeakReference;
  * Created by Administrator on 2018/3/12.
  */
 
-public class BaseEditer {
+public class BaseEditor {
 
     protected WeakReference<TextView> mWeakTextView;
     protected Context mContext;
     protected LayoutInflater mInflater;   // 布局加载器器
     protected WeakReference<ImageEditManager> mWeakManager;
 
-    public BaseEditer(Context context, ImageEditManager manager) {
+    public BaseEditor(Context context, ImageEditManager manager) {
         mContext = context;
         mWeakManager = new WeakReference<ImageEditManager>(manager);
         mInflater = (LayoutInflater) mContext.getApplicationContext()

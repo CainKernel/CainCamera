@@ -12,7 +12,7 @@ import com.cgfay.caincamera.R;
  * Created by Administrator on 2018/3/12.
  */
 
-public class BeautifyEditer extends BaseEditer implements View.OnClickListener {
+public class BeautifyEditor extends BaseEditor implements View.OnClickListener {
 
     private HorizontalScrollView mLayoutBeautify;
     private Button mBtnSource;  // 原片
@@ -22,7 +22,7 @@ public class BeautifyEditer extends BaseEditer implements View.OnClickListener {
     private Button mBtnScreen;  // 风景
     private Button mBtnPerson;  // 人物
 
-    public BeautifyEditer(Context context, ImageEditManager manager) {
+    public BeautifyEditor(Context context, ImageEditManager manager) {
         super(context, manager);
     }
 

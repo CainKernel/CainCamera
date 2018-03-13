@@ -7,7 +7,7 @@ import android.content.Context;
  * Created by Administrator on 2018/3/12.
  */
 
-public class MosaicEditer extends BaseEditer {
+public class MosaicEditer extends BaseEditor {
     public MosaicEditer(Context context, ImageEditManager manager) {
         super(context, manager);
     }

@@ -12,14 +12,14 @@ import com.cgfay.caincamera.R;
  * Created by Administrator on 2018/3/12.
  */
 
-public class MatBlurEditer extends BaseEditer implements View.OnClickListener {
+public class MatBlurEditor extends BaseEditor implements View.OnClickListener {
 
     private LinearLayout mLayoutMatblur;
     private Button mBtnMat;
     private Button mBtnPreview;
     private Button mBtnErase;
 
-    public MatBlurEditer(Context context, ImageEditManager manager) {
+    public MatBlurEditor(Context context, ImageEditManager manager) {
         super(context, manager);
     }
 

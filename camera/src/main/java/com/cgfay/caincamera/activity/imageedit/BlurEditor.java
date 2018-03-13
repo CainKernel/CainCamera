@@ -13,14 +13,14 @@ import com.cgfay.caincamera.R;
  * Created by Administrator on 2018/3/12.
  */
 
-public class BlurEditer extends BaseEditer implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+public class BlurEditor extends BaseEditor implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
     private RelativeLayout mLayoutBlur;
 
     private SeekBar mSeekBar;
     private Button mBtnBlurType;
 
-    public BlurEditer(Context context, ImageEditManager manager) {
+    public BlurEditor(Context context, ImageEditManager manager) {
         super(context, manager);
     }
 

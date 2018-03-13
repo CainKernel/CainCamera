@@ -243,5 +243,13 @@ public final class ImageEditManager implements OnImageEditListener {
                     .obtainMessage(ImageEditHandler.MSG_SET_SHARPNESS, sharpness));
         }
     }
-    
+
+    /**
+     * 重置调节滤镜
+     */
+    public void resetAdjustFilter() {
+        if (mHandler != null) {
+            mHandler.sendMessage(mHandler.obtainMessage(ImageEditHandler.MSG_RESET_ADJUST));
+        }
+    }
 }
