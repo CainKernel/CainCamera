@@ -11,6 +11,8 @@ import android.view.View;
 import android.widget.Button;
 
 import com.cgfay.caincamera.R;
+import com.cgfay.caincamera.activity.MainActivity;
+import com.cgfay.caincamera.activity.MediaSelectActivity;
 import com.cgfay.caincamera.activity.facetrack.FaceTrack2Activity;
 import com.cgfay.caincamera.activity.facetrack.FaceTrackActivity;
 import com.cgfay.utilslibrary.PermissionUtils;
@@ -31,6 +33,7 @@ public class TestActivity extends AppCompatActivity implements View.OnClickListe
     private Button mBtnFaceTest2;
     private Button mBtnPush;
     private Button mBtnRecord;
+    private Button mBtnImageRender;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +69,9 @@ public class TestActivity extends AppCompatActivity implements View.OnClickListe
 
         mBtnRecord = (Button) findViewById(R.id.btn_video_record);
         mBtnRecord.setOnClickListener(this);
+
+        mBtnImageRender = (Button) findViewById(R.id.btn_image_render);
+        mBtnImageRender.setOnClickListener(this);
     }
 
     @Override
@@ -91,6 +97,13 @@ public class TestActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_video_record:
                 startActivity(new Intent(TestActivity.this, VideoRecordActivity.class));
                 break;
+
+            case R.id.btn_image_render: {
+                Intent intent = new Intent(TestActivity.this, MediaSelectActivity.class);
+                intent.putExtra(MediaSelectActivity.SELECT_MODE, MediaSelectActivity.SELECT_MODE_GPU);
+                startActivity(intent);
+                break;
+            }
         }
     }
 

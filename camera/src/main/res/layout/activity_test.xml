@@ -1,16 +1,17 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="center"
     tools:context="com.cgfay.caincamera.activity.camera.TestActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center"
-        android:layout_centerInParent="true">
+        android:layout_gravity="center_vertical"
+        android:gravity="center">
 
         <Button
             android:id="@+id/btn_multi"
@@ -47,6 +48,12 @@
             android:layout_margin="@dimen/dp5"
             android:text="@string/btn_video_record"/>
 
+        <Button
+            android:id="@+id/btn_image_render"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp5"
+            android:text="@string/btn_image_render"/>
     </LinearLayout>
 
-</RelativeLayout>
+</ScrollView>

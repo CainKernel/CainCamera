@@ -17,7 +17,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_CODE = 0;
     private Button mBtnCamera;
     private Button mBtnEdit;
-    private Button mBtnImageRender;
     private Button mBtnTest;
 
     @Override
@@ -56,8 +55,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBtnCamera.setOnClickListener(this);
         mBtnEdit = (Button) findViewById(R.id.btn_edit);
         mBtnEdit.setOnClickListener(this);
-        mBtnImageRender = (Button) findViewById(R.id.btn_image_render);
-        mBtnImageRender.setOnClickListener(this);
         mBtnTest = (Button) findViewById(R.id.btn_test);
         mBtnTest.setOnClickListener(this);
     }
@@ -73,13 +70,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_edit: {
                 Intent intent = new Intent(MainActivity.this, MediaSelectActivity.class);
                 intent.putExtra(MediaSelectActivity.SELECT_MODE, MediaSelectActivity.SELECT_MODE_NATIVE);
-                startActivity(intent);
-                break;
-            }
-
-            case R.id.btn_image_render: {
-                Intent intent = new Intent(MainActivity.this, MediaSelectActivity.class);
-                intent.putExtra(MediaSelectActivity.SELECT_MODE, MediaSelectActivity.SELECT_MODE_GPU);
                 startActivity(intent);
                 break;
             }
