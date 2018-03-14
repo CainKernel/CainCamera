@@ -1,5 +1,6 @@
 package com.cgfay.utilslibrary;
 
+import android.annotation.TargetApi;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -8,14 +9,19 @@ import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.MediaStore;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -170,32 +176,33 @@ public class BitmapUtils {
     }
 
     /**
-     *
+     * 计算 inSampleSize的值
      * @param options
      * @param reqWidth
      * @param reqHeight
      * @return
      */
-    private static int calculateInSampleSize(BitmapFactory.Options options,
-                                             int reqWidth, int reqHeight) {
-        // 计算原始图像的高度和宽度
+    public static int calculateInSampleSize(BitmapFactory.Options options,
+                                            int reqWidth, int reqHeight) {
         final int height = options.outHeight;
         final int width = options.outWidth;
         int inSampleSize = 1;
 
-        // 当原始图像的高和宽大于所需高度和宽度时
         if (height > reqHeight || width > reqWidth) {
-            final int heightRatio = Math.round((float) height / (float) reqHeight);
-            final int widthRatio = Math.round((float) width / (float) reqWidth);
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
 
-            // 算出长宽比后去比例小的作为inSamplesize，保证最后imageview的dimension比request的大
-            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+            while ((halfHeight / inSampleSize) > reqHeight
+                    && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
 
-            // 计算总像素是否大于请求的宽高积的2倍
-            final float totalPixels = width * height;
-            final float totalReqPixelsCap = reqWidth * reqHeight * 2;
-            while (totalPixels / (inSampleSize * inSampleSize) > totalReqPixelsCap) {
-                inSampleSize++;
+            long totalPixels = width * height / inSampleSize;
+            final long totalReqPixelsCap = reqWidth * reqHeight * 2;
+
+            while (totalPixels > totalReqPixelsCap) {
+                inSampleSize *= 2;
+                totalPixels /= 2;
             }
         }
         return inSampleSize;
@@ -229,6 +236,42 @@ public class BitmapUtils {
             }
         }
         return null;
+    }
+
+    public static Bitmap getBitmapFromDrawable(Drawable drawable) {
+        int w = drawable.getIntrinsicWidth();
+        int h = drawable.getIntrinsicHeight();
+        Bitmap.Config config =
+                drawable.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888
+                        : Bitmap.Config.RGB_565;
+        Bitmap bitmap = Bitmap.createBitmap(w, h, config);
+        // 在View或者SurfaceView里的canvas.drawBitmap会看不到图，需要用以下方式处理
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, w, h);
+        drawable.draw(canvas);
+
+        return bitmap;
+    }
+
+    /**
+     * 图片等比缩放
+     * @param bitmap
+     * @param newWidth
+     * @param newHeight
+     * @return
+     */
+    public static Bitmap zoomBitmap(Bitmap bitmap, int newWidth, int newHeight) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        Matrix matrix = new Matrix();
+        if (scaleWidth < scaleHeight) {
+            matrix.postScale(scaleWidth, scaleWidth);
+        } else {
+            matrix.postScale(scaleHeight, scaleHeight);
+        }
+        return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
     }
 
     /**

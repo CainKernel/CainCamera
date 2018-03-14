@@ -111,7 +111,16 @@ public final class ImageEditManager implements OnImageEditListener {
      */
     public void setImagePath(String path) {
         mImagePath = path;
-        mBitmap = BitmapUtils.getBitmapFromFile(new File(path), mScreenWidth, mScreenHeight);
+        if (mBitmap != null && !mBitmap.isRecycled()) {
+            mBitmap.recycle();
+        }
+        Bitmap bitmap = BitmapUtils.getBitmapFromFile(new File(path), mScreenWidth, mScreenHeight);
+        if (bitmap.getWidth() < mScreenWidth / 2 || bitmap.getHeight() < mScreenHeight / 2.0) {
+            mBitmap = BitmapUtils.zoomBitmap(bitmap, mScreenWidth, mScreenHeight);
+            bitmap.recycle();
+        } else {
+            mBitmap = bitmap;
+        }
         mMainHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -251,5 +260,12 @@ public final class ImageEditManager implements OnImageEditListener {
         if (mHandler != null) {
             mHandler.sendMessage(mHandler.obtainMessage(ImageEditHandler.MSG_RESET_ADJUST));
         }
+    }
+
+    /**
+     * 旋转
+     */
+    public void rotateBitmap() {
+        mBitmap = BitmapUtils.rotateBitmap(mBitmap);
     }
 }
