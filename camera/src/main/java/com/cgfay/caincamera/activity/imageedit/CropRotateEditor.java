@@ -64,9 +64,11 @@ public class CropRotateEditor extends BaseEditor
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_rotate_90:
+                rotateBitmap(90);
                 break;
 
             case R.id.btn_flip:
+                flipBitmap();
                 break;
 
             case R.id.btn_custom:
@@ -110,4 +112,42 @@ public class CropRotateEditor extends BaseEditor
     public RelativeLayout getLayoutCropRotate() {
         return mLayoutCropRotate;
     }
+
+    @Override
+    public void updateBitmapTexture() {
+        if (mWeakManager != null && mWeakManager.get() != null) {
+            mWeakManager.get().updateBitmapTexture();
+        }
+    }
+
+    /**
+     * 旋转图片
+     * @param rotate
+     */
+    private void rotateBitmap(int rotate) {
+        if (mWeakManager != null && mWeakManager.get() != null) {
+            mWeakManager.get().rotateBitmap(rotate);
+        }
+    }
+
+    /**
+     * 镜像翻转
+     */
+    private void flipBitmap() {
+        if (mWeakManager != null && mWeakManager.get() != null) {
+            mWeakManager.get().flipBitmap();
+        }
+    }
+
+    /**
+     * 裁剪图片
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     */
+    private void cropBitmap(int x, int y, int width, int height) {
+
+    }
+
 }

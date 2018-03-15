@@ -47,8 +47,6 @@ public class ImageEditThread extends HandlerThread {
 
     private OnImageEditListener mListener;
 
-    private Bitmap mBitmap;
-
     public ImageEditThread(String name, OnImageEditListener listener) {
         super(name);
         mListener = listener;
@@ -227,30 +225,27 @@ public class ImageEditThread extends HandlerThread {
      * @param bitmap
      */
     public void createBitmapTexture(Bitmap bitmap) {
-
         if (bitmap == null || bitmap.isRecycled()) {
             return;
         }
-
-        if (mBitmap != null && !mBitmap.isRecycled()) {
-            mBitmap.recycle();
-            mBitmap = null;
-        }
-
         // 销毁旧数据
         if (mTextureId != GlUtil.GL_NOT_INIT) {
             GLES30.glDeleteTextures(1, new int[]{mTextureId}, 0);
             mTextureId = GlUtil.GL_NOT_INIT;
         }
 
-        mBitmap = BitmapUtils.flipBitmap(bitmap, false, true);
+        // Y轴翻转主要是ARGB->RGBA
+        Bitmap result = BitmapUtils.flipBitmap(bitmap, false, true, false);
         // 当宽高发生变化时，需要重新创建离屏渲染Surface
-        if (mImageWidth != mBitmap.getWidth() || mImageHeight != mBitmap.getHeight()) {
-            initSurfaceAndFilter(mBitmap.getWidth(), mBitmap.getHeight());
+        if (mImageWidth != result.getWidth() || mImageHeight != result.getHeight()) {
+            initSurfaceAndFilter(result.getWidth(), result.getHeight());
         }
-
-        mTextureId = GlUtil.createTexture(mBitmap);
-
+        if (mTextureId != GlUtil.GL_NOT_INIT) {
+            mTextureId = GlUtil.createTextureWithOldTexture(mTextureId, result);
+        } else {
+            mTextureId = GlUtil.createTexture(result);
+        }
+        result.recycle();
         // Texture创建完成回调
         if (mListener != null) {
             mListener.onTextureCreated();

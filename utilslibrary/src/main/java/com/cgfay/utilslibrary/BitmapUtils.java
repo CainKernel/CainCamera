@@ -54,43 +54,6 @@ public class BitmapUtils {
     };
 
     /**
-     * 旋转图片
-     * @param bitmap
-     * @param rotation
-     * @return
-     */
-    public static Bitmap getRotatedBitmap(Bitmap bitmap, int rotation) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(rotation);
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                bitmap.getHeight(), matrix, false);
-    }
-
-    /**
-     * 镜像翻转图片
-     * @param bitmap
-     * @return
-     */
-    public static Bitmap flipBitmap(Bitmap bitmap) {
-        return flipBitmap(bitmap, true, false);
-    }
-
-    /**
-     * 翻转图片
-     * @param bitmap
-     * @param flipX
-     * @param flipY
-     * @return
-     */
-    public static Bitmap flipBitmap(Bitmap bitmap, boolean flipX, boolean flipY) {
-        Matrix matrix = new Matrix();
-        matrix.setScale(flipX ? -1 : 1, flipY ? -1 : 1);
-        matrix.postTranslate(bitmap.getWidth(), 0);
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                bitmap.getHeight(), matrix, false);
-    }
-
-    /**
      * 从Buffer中创建Bitmap
      * @param buffer
      * @param width
@@ -118,8 +81,7 @@ public class BitmapUtils {
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bitmap.copyPixelsFromBuffer(buffer);
         if (flipX || flipY) {
-            Bitmap result = flipBitmap(bitmap, flipX, flipY);
-            bitmap.recycle();
+            Bitmap result = flipBitmap(bitmap, flipX, flipY, true);
             return result;
         } else {
             return bitmap;
@@ -258,9 +220,13 @@ public class BitmapUtils {
      * @param bitmap
      * @param newWidth
      * @param newHeight
+     * @param isRecycled
      * @return
      */
-    public static Bitmap zoomBitmap(Bitmap bitmap, int newWidth, int newHeight) {
+    public static Bitmap zoomBitmap(Bitmap bitmap, int newWidth, int newHeight, boolean isRecycled) {
+        if (bitmap == null) {
+            return null;
+        }
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
         float scaleWidth = ((float) newWidth) / width;
@@ -271,7 +237,12 @@ public class BitmapUtils {
         } else {
             matrix.postScale(scaleHeight, scaleHeight);
         }
-        return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
+        Bitmap result = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
+        if (!bitmap.isRecycled() && isRecycled) {
+            bitmap.recycle();
+            bitmap = null;
+        }
+        return result;
     }
 
     /**
@@ -465,25 +436,101 @@ public class BitmapUtils {
     /**
      * 将Bitmap图片旋转90度
      * @param bitmap
+     * @param isRecycled
      * @return
      */
-    public static Bitmap rotateBitmap(Bitmap bitmap) {
-        return rotateBitmap(bitmap, 90);
+    public static Bitmap rotateBitmap(Bitmap bitmap, boolean isRecycled) {
+        return rotateBitmap(bitmap, 90, isRecycled);
     }
 
     /**
      * 将Bitmap图片旋转一定角度
      * @param bitmap
      * @param rotate
+     * @param isRecycled
      * @return
      */
-    public static Bitmap rotateBitmap(Bitmap bitmap, int rotate) {
+    public static Bitmap rotateBitmap(Bitmap bitmap, int rotate, boolean isRecycled) {
+        if (bitmap == null) {
+            return null;
+        }
         Matrix matrix = new Matrix();
         matrix.reset();
         matrix.postRotate(rotate);
         Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
                 bitmap.getHeight(), matrix, true);
+        if (!bitmap.isRecycled() && isRecycled) {
+            bitmap.recycle();
+            bitmap = null;
+        }
         return rotatedBitmap;
+    }
+
+    /**
+     * 镜像翻转图片
+     * @param bitmap
+     * @param isRecycled
+     * @return
+     */
+    public static Bitmap flipBitmap(Bitmap bitmap, boolean isRecycled) {
+        return flipBitmap(bitmap, true, false, isRecycled);
+    }
+
+    /**
+     * 翻转图片
+     * @param bitmap
+     * @param flipX
+     * @param flipY
+     * @param isRecycled
+     * @return
+     */
+    public static Bitmap flipBitmap(Bitmap bitmap, boolean flipX, boolean flipY, boolean isRecycled) {
+        if (bitmap == null) {
+            return null;
+        }
+        Matrix matrix = new Matrix();
+        matrix.setScale(flipX ? -1 : 1, flipY ? -1 : 1);
+        matrix.postTranslate(bitmap.getWidth(), 0);
+        Bitmap result = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
+                bitmap.getHeight(), matrix, false);
+        if (isRecycled && bitmap != null && !bitmap.isRecycled()) {
+            bitmap.recycle();
+            bitmap = null;
+        }
+        return result;
+    }
+
+    /**
+     * 裁剪
+     * @param bitmap
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     * @param isRecycled
+     * @return
+     */
+    public static Bitmap cropBitmap(Bitmap bitmap, int x, int y, int width, int height, boolean isRecycled) {
+
+        if (bitmap == null) {
+            return null;
+        }
+        int w = bitmap.getWidth();
+        int h = bitmap.getHeight();
+        if ((w - x) > width || (h - y) > height) {
+            if (!bitmap.isRecycled() && isRecycled) {
+                bitmap.recycle();
+                bitmap = null;
+            }
+            return null;
+        } else {
+            Bitmap result = Bitmap.createBitmap(bitmap, x, y, width, height, null, false);
+            if (!bitmap.isRecycled() && isRecycled) {
+                bitmap.recycle();
+                bitmap = null;
+            }
+            return result;
+        }
     }
 
     /**

@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import com.cgfay.cainfilter.camerarender.ParamsManager;
 import com.cgfay.cainfilter.type.GLFilterGroupType;
 import com.cgfay.cainfilter.type.GLFilterType;
 import com.cgfay.utilslibrary.BitmapUtils;
@@ -33,7 +34,8 @@ public final class ImageEditManager implements OnImageEditListener {
     private ImageEditHandler mHandler;
     private ImageEditThread mThread;
 
-    private Bitmap mBitmap;
+    private Bitmap mSourceBitmap;
+    private Bitmap mCurrentBitmap;
     private String mImagePath;
 
     private int mScreenWidth;
@@ -111,25 +113,32 @@ public final class ImageEditManager implements OnImageEditListener {
      */
     public void setImagePath(String path) {
         mImagePath = path;
-        if (mBitmap != null && !mBitmap.isRecycled()) {
-            mBitmap.recycle();
+        if (mSourceBitmap != null && !mSourceBitmap.isRecycled()) {
+            mSourceBitmap.recycle();
         }
         Bitmap bitmap = BitmapUtils.getBitmapFromFile(new File(path), mScreenWidth, mScreenHeight);
         if (bitmap.getWidth() < mScreenWidth / 2 || bitmap.getHeight() < mScreenHeight / 2.0) {
-            mBitmap = BitmapUtils.zoomBitmap(bitmap, mScreenWidth, mScreenHeight);
-            bitmap.recycle();
+            mSourceBitmap = BitmapUtils.zoomBitmap(bitmap, mScreenWidth, mScreenHeight, true);
         } else {
-            mBitmap = bitmap;
+            mSourceBitmap = bitmap;
         }
+        showImageBitmap(mSourceBitmap);
+        createBitmapTexture(mSourceBitmap);
+    }
+
+    /**
+     * 显示图片
+     * @param bitmap
+     */
+    public void showImageBitmap(final Bitmap bitmap) {
         mMainHandler.post(new Runnable() {
             @Override
             public void run() {
                 if (mWeakImageView != null && mWeakImageView.get() != null) {
-                    mWeakImageView.get().setImageBitmap(mBitmap);
+                    mWeakImageView.get().setImageBitmap(bitmap);
                 }
             }
         });
-        createBitmapTexture(mBitmap);
     }
 
     /**
@@ -141,6 +150,49 @@ public final class ImageEditManager implements OnImageEditListener {
             mHandler.sendMessage(mHandler
                     .obtainMessage(ImageEditHandler.MSG_CREATE_TEXTURE, bitmap));
         }
+    }
+
+    /**
+     * 更新修改后的图像纹理
+     */
+    public void updateBitmapTexture() {
+        if (mCurrentBitmap != null && !mCurrentBitmap.isRecycled()) {
+            createBitmapTexture(mCurrentBitmap);
+        } else {
+            createBitmapTexture(mSourceBitmap);
+        }
+    }
+
+    /**
+     * 更新当前的图片
+     */
+    public void updateImageBitmap() {
+        if (mWeakImageView != null && mWeakImageView.get() != null) {
+            mWeakImageView.get().setDrawingCacheEnabled(true);
+            Bitmap bitmap = Bitmap.createBitmap(mWeakImageView.get().getDrawingCache());
+            mWeakImageView.get().setDrawingCacheEnabled(false);
+            // TODO 将保存的图片缓存起来，用于实现编辑撤销回删功能
+            if (mCurrentBitmap != null) {
+                mCurrentBitmap.recycle();
+            }
+            mCurrentBitmap = bitmap;
+        }
+    }
+
+    /**
+     * 从ImageView中保存图片
+     */
+    public boolean saveImageFromImageView() {
+        if (mWeakImageView != null && mWeakImageView.get() != null) {
+            mWeakImageView.get().setDrawingCacheEnabled(true);
+            Bitmap bitmap = Bitmap.createBitmap(mWeakImageView.get().getDrawingCache());
+            mWeakImageView.get().setDrawingCacheEnabled(false);
+            String path = ParamsManager.AlbumPath + "CainCamera_" + System.currentTimeMillis() + ".jpg";
+            BitmapUtils.saveBitmap(mContext, path, bitmap);
+            bitmap.recycle();
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -263,9 +315,64 @@ public final class ImageEditManager implements OnImageEditListener {
     }
 
     /**
-     * 旋转
+     * 旋转图片
+     * @param rotate 0 ~ 360
      */
-    public void rotateBitmap() {
-        mBitmap = BitmapUtils.rotateBitmap(mBitmap);
+    public void rotateBitmap(final int rotate) {
+        if (mHandler != null) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mCurrentBitmap != null) {
+                        mCurrentBitmap = BitmapUtils.rotateBitmap(mCurrentBitmap, rotate, true);
+                    } else {
+                        mCurrentBitmap = BitmapUtils.rotateBitmap(mSourceBitmap, rotate,false);
+                    }
+                    showImageBitmap(mCurrentBitmap);
+                }
+            });
+        }
+    }
+
+    /**
+     * 镜像翻转
+     */
+    public void flipBitmap() {
+        if (mHandler != null) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mCurrentBitmap != null) {
+                        mCurrentBitmap = BitmapUtils.flipBitmap(mCurrentBitmap, true);
+                    } else {
+                        mCurrentBitmap = BitmapUtils.flipBitmap(mSourceBitmap, false);
+                    }
+                    showImageBitmap(mCurrentBitmap);
+                }
+            });
+        }
+    }
+
+    /**
+     * 裁剪图片
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     */
+    public void cropBitmap(final int x, final int y, final int width, final int height) {
+        if (mHandler != null) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mCurrentBitmap != null) {
+                        mCurrentBitmap = BitmapUtils.cropBitmap(mCurrentBitmap, x, y, width, height, true);
+                    } else {
+                        mCurrentBitmap = BitmapUtils.cropBitmap(mSourceBitmap, x, y, width, height, false);
+                    }
+                    showImageBitmap(mCurrentBitmap);
+                }
+            });
+        }
     }
 }

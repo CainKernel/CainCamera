@@ -336,10 +336,9 @@ public class ImageRenderActivity extends AppCompatActivity implements View.OnCli
 
         Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bmp.copyPixelsFromBuffer(buffer);
-        Bitmap bitmap = BitmapUtils.flipBitmap(bmp, false, true);
+        Bitmap bitmap = BitmapUtils.flipBitmap(bmp, false, true, true);
         BitmapUtils.saveBitmap(this, filename, bitmap);
         bitmap.recycle();
-        bmp.recycle();
         if (VERBOSE) {
             Log.d(TAG, "Saved " + width + "x" + height + " frame as '" + filename);
         }

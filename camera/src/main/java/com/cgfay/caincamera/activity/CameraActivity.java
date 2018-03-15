@@ -740,12 +740,13 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 BufferedOutputStream bos = null;
                 try {
                     bos = new BufferedOutputStream(new FileOutputStream(file));
-                    Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                    bmp.copyPixelsFromBuffer(buffer);
-                    bmp = BitmapUtils.getRotatedBitmap(bmp, 180);
-                    bmp = BitmapUtils.flipBitmap(bmp);
-                    bmp.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-                    bmp.recycle();
+                    Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                    bitmap.copyPixelsFromBuffer(buffer);
+                    bitmap = BitmapUtils.rotateBitmap(bitmap, 180, true);
+                    bitmap = BitmapUtils.flipBitmap(bitmap, true);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+                    bitmap.recycle();
+                    bitmap = null;
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } finally {

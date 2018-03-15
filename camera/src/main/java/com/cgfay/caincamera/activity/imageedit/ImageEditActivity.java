@@ -58,6 +58,8 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
     private Button mBtnBlur;            // 虚化
     private Button mBtnMatBlur;         // 抠图虚化
 
+    private Button mBtnSourceImage; // 原图
+
     private RelativeLayout mLayoutBottomOperation;
     private Button mBtnCancel;
     private Button mBtnApply;
@@ -294,28 +296,27 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      * 保存图片
      */
     private void saveImage() {
-        mImageView.setDrawingCacheEnabled(true);
-        Bitmap bitmap = Bitmap.createBitmap(mImageView.getDrawingCache());
-        mImageView.setDrawingCacheEnabled(false);
-        String path = ParamsManager.AlbumPath + "CainCamera_" + System.currentTimeMillis() + ".jpeg";
-        BitmapUtils.saveBitmap(this, path, bitmap);
-        Toast.makeText(this, path + " 保存成功", Toast.LENGTH_SHORT).show();
+        if (mEditManager != null && mEditManager.saveImageFromImageView()) {
+            Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
      * 显示一键美化视图
      */
     private void showBeautifyView() {
-        if (mBeautifyEditor == null) {
-            mBeautifyEditor = new BeautifyEditor(this, mEditManager);
-            mBeautifyEditor.setTextView(mShowValueTextView);
-        }
-        mLayoutBottom.removeAllViews();
-        mLayoutBottom.addView(mBeautifyEditor.getLayoutBeautify());
-        mLayoutNavigation.setVisibility(View.GONE);
-        mEditerShowing = true;
-        mLayoutBottomOperation.setVisibility(View.VISIBLE);
-        mCurrentEditor = mBeautifyEditor;
+//        if (mBeautifyEditor == null) {
+//            mBeautifyEditor = new BeautifyEditor(this, mEditManager);
+//            mBeautifyEditor.setTextView(mShowValueTextView);
+//        }
+//        mLayoutBottom.removeAllViews();
+//        mLayoutBottom.addView(mBeautifyEditor.getLayoutBeautify());
+//        mLayoutNavigation.setVisibility(View.GONE);
+//        mEditerShowing = true;
+//        mLayoutBottomOperation.setVisibility(View.VISIBLE);
+//        mCurrentEditor = mBeautifyEditor;
+
+        Toast.makeText(this, "一键美化功能暂未实现", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -407,48 +408,54 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      * 显示夜景增强视图
      */
     private void showEnhancementView() {
-        if (mEnhancementEditor == null) {
-            mEnhancementEditor = new EnhancementEditor(this, mEditManager);
-            mEnhancementEditor.setTextView(mShowValueTextView);
-        }
-        mLayoutBottom.removeAllViews();
-        mLayoutBottom.addView(mEnhancementEditor.getLayoutEnhancement());
-        mLayoutNavigation.setVisibility(View.GONE);
-        mEditerShowing = true;
-        mLayoutBottomOperation.setVisibility(View.VISIBLE);
-        mCurrentEditor = mEnhancementEditor;
+//        if (mEnhancementEditor == null) {
+//            mEnhancementEditor = new EnhancementEditor(this, mEditManager);
+//            mEnhancementEditor.setTextView(mShowValueTextView);
+//        }
+//        mLayoutBottom.removeAllViews();
+//        mLayoutBottom.addView(mEnhancementEditor.getLayoutEnhancement());
+//        mLayoutNavigation.setVisibility(View.GONE);
+//        mEditerShowing = true;
+//        mLayoutBottomOperation.setVisibility(View.VISIBLE);
+//        mCurrentEditor = mEnhancementEditor;
+
+        Toast.makeText(this, "夜景增强功能暂未实现", Toast.LENGTH_SHORT).show();
     }
 
     /**
      * 显示虚化视图
      */
     private void showBlurView() {
-        if (mBlurEditor == null) {
-            mBlurEditor = new BlurEditor(this, mEditManager);
-            mBlurEditor.setTextView(mShowValueTextView);
-        }
-        mLayoutBottom.removeAllViews();
-        mLayoutBottom.addView(mBlurEditor.getLayoutBlur());
-        mLayoutNavigation.setVisibility(View.GONE);
-        mEditerShowing = true;
-        mLayoutBottomOperation.setVisibility(View.VISIBLE);
-        mCurrentEditor = mBlurEditor;
+//        if (mBlurEditor == null) {
+//            mBlurEditor = new BlurEditor(this, mEditManager);
+//            mBlurEditor.setTextView(mShowValueTextView);
+//        }
+//        mLayoutBottom.removeAllViews();
+//        mLayoutBottom.addView(mBlurEditor.getLayoutBlur());
+//        mLayoutNavigation.setVisibility(View.GONE);
+//        mEditerShowing = true;
+//        mLayoutBottomOperation.setVisibility(View.VISIBLE);
+//        mCurrentEditor = mBlurEditor;
+
+        Toast.makeText(this, "虚化功能暂未实现", Toast.LENGTH_SHORT).show();
     }
 
     /**
      * 显示抠图虚化视图
      */
     private void showMatBlurView() {
-        if (mMatBlurEditor == null) {
-            mMatBlurEditor = new MatBlurEditor(this, mEditManager);
-            mMatBlurEditor.setTextView(mShowValueTextView);
-        }
-        mLayoutBottom.removeAllViews();
-        mLayoutBottom.addView(mMatBlurEditor.getLayoutMatblur());
-        mLayoutNavigation.setVisibility(View.GONE);
-        mEditerShowing = true;
-        mLayoutBottomOperation.setVisibility(View.VISIBLE);
-        mCurrentEditor = mMatBlurEditor;
+//        if (mMatBlurEditor == null) {
+//            mMatBlurEditor = new MatBlurEditor(this, mEditManager);
+//            mMatBlurEditor.setTextView(mShowValueTextView);
+//        }
+//        mLayoutBottom.removeAllViews();
+//        mLayoutBottom.addView(mMatBlurEditor.getLayoutMatblur());
+//        mLayoutNavigation.setVisibility(View.GONE);
+//        mEditerShowing = true;
+//        mLayoutBottomOperation.setVisibility(View.VISIBLE);
+//        mCurrentEditor = mMatBlurEditor;
+
+        Toast.makeText(this, "抠虚化功能暂未实现", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -484,6 +491,9 @@ public class ImageEditActivity extends AppCompatActivity implements View.OnClick
      */
     private void applyCurrentOperation() {
         resetBottomView();
+        if (mCurrentEditor != null) {
+            mCurrentEditor.updateBitmapTexture();
+        }
     }
 }
 

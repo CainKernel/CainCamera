@@ -50,4 +50,14 @@ public class BaseEditor {
     public void resetAllChanged() {
 
     }
+
+    /**
+     * 更新纹理
+     */
+    public void updateBitmapTexture() {
+        if (mWeakManager != null && mWeakManager.get() != null) {
+            mWeakManager.get().updateImageBitmap();
+            mWeakManager.get().updateBitmapTexture();
+        }
+    }
 }

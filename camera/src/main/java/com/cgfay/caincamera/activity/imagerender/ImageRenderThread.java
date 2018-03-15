@@ -228,8 +228,7 @@ public class ImageRenderThread extends HandlerThread {
         }
         // 重新创建Bitmap 和Texture
         Bitmap bitmap = BitmapUtils.getBitmapFromFile(new File(mImagePath), mScreenWidth, mScreenHeight);
-        mBitmap = BitmapUtils.flipBitmap(bitmap, false, true);
-        bitmap.recycle();
+        mBitmap = BitmapUtils.flipBitmap(bitmap, false, true, true);
         mImageWidth = mBitmap.getWidth();
         mImageHeight = mBitmap.getHeight();
         if (mImageFilter != null) {
