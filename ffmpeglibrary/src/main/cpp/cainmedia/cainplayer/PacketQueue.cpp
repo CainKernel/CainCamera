@@ -53,7 +53,7 @@ void PacketQueue::flush() {
 
 int PacketQueue::putPrivate(AVPacket *pkt) {
     MyAVPacketList *pkt1;
-    if (isAbort()) {
+    if (mAbortRequest) {
         return -1;
     }
     pkt1 = (MyAVPacketList *) av_malloc(sizeof(MyAVPacketList));

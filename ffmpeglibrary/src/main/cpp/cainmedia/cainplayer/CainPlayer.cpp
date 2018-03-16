@@ -398,7 +398,7 @@ int CainPlayer::openStream(int streamIndex) {
     // 设置罗数据的时钟基准
     av_codec_set_pkt_timebase(avctx, ic->streams[streamIndex]->time_base);
     // 查找解码器
-    codec = avcodec_find_encoder(avctx->codec_id);
+    codec = avcodec_find_decoder(avctx->codec_id);
     // 判断解码器是否存在
     if (!codec) {
         ALOGE("Fail to find Codec: %d", avctx->codec_id);
@@ -806,8 +806,8 @@ int CainPlayer::demux() {
         }
 
         if (!paused &&
-            (!audioStream || (audioDecoder->finished == audioQueue->serial && audioFrameQueue->nbRemaining() == 0)) &&
-            (!videoStream || (videoDecoder->finished == videoQueue->serial && videoFrameQueue->nbRemaining() == 0))) {
+            (!audioStream || (audioDecoder != NULL && audioDecoder->finished == audioQueue->serial && audioFrameQueue->nbRemaining() == 0)) &&
+            (!videoStream || (videoDecoder != NULL && videoDecoder->finished == videoQueue->serial && videoFrameQueue->nbRemaining() == 0))) {
             // 如果循环播放，则重新定位到开始位置
             if (looping) {
                 streamSeek(start_time != AV_NOPTS_VALUE ? start_time : 0, 0, 0);
