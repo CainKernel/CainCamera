@@ -115,21 +115,25 @@ add_library( cainplayer
              src/main/cpp/cainmedia/cainaudio/SLESContext.cpp
 
              #cainfilters
-             src/main/cpp/cainmedia/cainfilters/BaseImageFilter.cpp
+             src/main/cpp/cainmedia/cainfilters/GLImageFilter.cpp
+             src/main/cpp/cainmedia/cainfilters/YUV420PImageFilter.cpp
 
              # caingles
              src/main/cpp/cainmedia/caingles/EglCore.cpp
+             src/main/cpp/cainmedia/caingles/EglSurfaceBase.cpp
              src/main/cpp/cainmedia/caingles/GlUtils.cpp
              src/main/cpp/cainmedia/caingles/GlShaders.cpp
+             src/main/cpp/cainmedia/caingles/OffscreenSurface.cpp
+             src/main/cpp/cainmedia/caingles/WindowSurface.cpp
 
              # cainplayer
+             src/main/cpp/cainmedia/cainplayer/AudioDecoder.cpp
+             src/main/cpp/cainmedia/cainplayer/VideoDecoder.cpp
+             src/main/cpp/cainmedia/cainplayer/BaseDecoder.cpp
              src/main/cpp/cainmedia/cainplayer/CainPlayer.cpp
              src/main/cpp/cainmedia/cainplayer/CainPlayerController.cpp
-             src/main/cpp/cainmedia/cainplayer/Clock.cpp
-             src/main/cpp/cainmedia/cainplayer/Decoder.cpp
-             src/main/cpp/cainmedia/cainplayer/FrameQueue.cpp
+             src/main/cpp/cainmedia/cainplayer/Demuxer.cpp
              src/main/cpp/cainmedia/cainplayer/Mutex.cpp
-             src/main/cpp/cainmedia/cainplayer/PacketQueue.cpp
              src/main/cpp/cainmedia/cainplayer/Thread.cpp
              )
 

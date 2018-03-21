@@ -39,6 +39,9 @@ void ThreadWait(Thread *thread, int *status);
 // 解绑线程
 void ThreadDetach(Thread *thread);
 
+// 销毁线程
+void ThreadDestroy(Thread *thread);
+
 #ifdef __cplusplus
 };
 #endif

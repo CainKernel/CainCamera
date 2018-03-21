@@ -2,20 +2,12 @@
 // Created by cain on 2018/2/11.
 //
 
-#ifndef CAINCAMERA_BASEIMAGEFILTER_H
-#define CAINCAMERA_BASEIMAGEFILTER_H
+#ifndef CAINCAMERA_GLIMAGEFILTER_H
+#define CAINCAMERA_GLIMAGEFILTER_H
 
 #include "caingles/GlUtils.h"
 
-// Texture类型，输入的视频数据是yuv还是RGB类型
-typedef enum TextureType {
-    TYPE_YUV,
-    TYPE_RGB,
-    TYPE_RGBA,
-    TYPE_NONE
-} TextureType;
-
-class BaseImageFilter {
+class GLImageFilter {
 private:
     // 输入宽度
     int textureWidth;
@@ -25,7 +17,6 @@ private:
     int displayWidth;
     // 显示高度
     int displayHeight;
-    TextureType type;
 
 protected:
     // 顶点坐标
@@ -41,17 +32,15 @@ protected:
     ESMatrix *mvpMatrix;
 
     // 获取VertexShader
-    const char *getVertexShader(void);
+    virtual const char *getVertexShader(void);
     // 获取FragmentShader
-    const char *getFragmentShader(void);
+    virtual const char *getFragmentShader(void);
     // 初始化句柄
-    void initHandle(void);
+    virtual void initHandle(void);
     // 绑定数据
-    void bindValue(GLint texture, GLfloat vertices[], GLfloat textureCoords[]);
+    virtual void bindValue(GLint texture, GLfloat vertices[], GLfloat textureCoords[]);
     // 解除绑定
-    void unbindValue(void);
-    // 获取Texture类型
-    TextureType getTextureType();
+    virtual void unbindValue(void);
     // 实际绘制之前
     virtual void onDrawBegin(void);
     // 绘制之后
@@ -62,9 +51,9 @@ protected:
     void initCoordinates();
 
 public:
-    BaseImageFilter(void);
-    BaseImageFilter(const char *vertexShader, const char *fragmentShader);
-    ~BaseImageFilter();
+    GLImageFilter(void);
+    GLImageFilter(const char *vertexShader, const char *fragmentShader);
+    virtual ~GLImageFilter();
     // 输入大小发生变化
     virtual void onInputSizeChanged(int width, int height);
     // 界面大小发生变化
@@ -77,11 +66,9 @@ public:
     void initIdentityMatrix();
     // 设置总变换
     void setMVPMatrix(ESMatrix *matrix);
-    // 设置Texture的类型
-    void setTextureType(TextureType type);
 
 };
 
 
-#endif //CAINCAMERA_BASEIMAGEFILTER_H
+#endif //CAINCAMERA_GLIMAGEFILTER_H
 

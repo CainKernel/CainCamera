@@ -112,6 +112,18 @@ void ThreadDetach(Thread *thread) {
     pthread_detach(thread->id);
 }
 
+/**
+ * 销毁线程
+ * @param thread
+ */
+void ThreadDestroy(Thread * thread) {
+    if (thread) {
+        ThreadWait(thread, NULL);
+        free(thread);
+        thread = NULL;
+    }
+}
+
 #ifdef __cplusplus
 }
 #endif

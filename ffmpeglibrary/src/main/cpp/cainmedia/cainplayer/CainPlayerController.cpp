@@ -13,7 +13,7 @@ CainPlayer *player;
  * @param obj
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeInit(JNIEnv *env, jclass obj) {
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeInit(JNIEnv *env, jobject instance) {
     if (player) {
         delete player;
     }
@@ -27,7 +27,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeInit(JNIEnv *env, jclass obj) 
  * @param path
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_setNativeDataSource(JNIEnv *env, jclass obj,
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_setNativeDataSource(JNIEnv *env, jobject instance,
                                                                 jstring path) {
     if (player) {
         // 配置参数
@@ -44,7 +44,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_setNativeDataSource(JNIEnv *env, jcl
  * @param surface
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_setNativeSurface(JNIEnv *env, jclass obj,
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_setNativeSurface(JNIEnv *env, jobject instance,
                                                              jobject surface) {
     if (player) {
         player->setSurface(env, surface);
@@ -58,7 +58,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_setNativeSurface(JNIEnv *env, jclass
  * @return
  */
 JNIEXPORT jint
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_getNativeCurrentPosition(JNIEnv *env, jclass obj) {
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_getNativeCurrentPosition(JNIEnv *env, jobject instance) {
     if (player) {
         return player->getCurrentPosition();
     }
@@ -72,7 +72,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_getNativeCurrentPosition(JNIEnv *env
  * @return
  */
 JNIEXPORT jint
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_getNativeDuration(JNIEnv *env, jclass obj) {
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_getNativeDuration(JNIEnv *env, jobject instance) {
     if (player) {
         return player->getDuration();
     }
@@ -86,7 +86,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_getNativeDuration(JNIEnv *env, jclas
  * @return
  */
 JNIEXPORT jboolean
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_isNativeLooping(JNIEnv *env, jclass obj) {
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_isNativeLooping(JNIEnv *env, jobject instance) {
     if (player) {
         return player->isLooping();
     }
@@ -100,7 +100,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_isNativeLooping(JNIEnv *env, jclass 
  * @return
  */
 JNIEXPORT jboolean
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_isNativePlaying(JNIEnv *env, jclass obj) {
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_isNativePlaying(JNIEnv *env, jobject instance) {
     if (player) {
         return player->isPlaying();
     }
@@ -113,7 +113,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_isNativePlaying(JNIEnv *env, jclass 
  * @param obj
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativePause(JNIEnv *env, jclass obj) {
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativePause(JNIEnv *env, jobject instance) {
     if (player) {
         player->stop();
     }
@@ -125,7 +125,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativePause(JNIEnv *env, jclass obj)
  * @param obj
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeStart(JNIEnv *env, jclass obj) {
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeStart(JNIEnv *env, jobject instance) {
     if (player) {
         player->start();
     }
@@ -137,7 +137,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeStart(JNIEnv *env, jclass obj)
  * @param obj
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeStop(JNIEnv *env, jclass obj) {
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeStop(JNIEnv *env, jobject instance) {
     if (player) {
         player->stop();
     }
@@ -150,7 +150,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeStop(JNIEnv *env, jclass obj) 
  * @return
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativePrepare(JNIEnv *env, jclass obj) {
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativePrepare(JNIEnv *env, jobject instance) {
     if (player) {
         player->prepare();
     }
@@ -162,7 +162,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativePrepare(JNIEnv *env, jclass ob
  * @param obj
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeRelease(JNIEnv *env, jclass obj) {
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeRelease(JNIEnv *env, jobject instance) {
     if (player) {
         player->release();
     }
@@ -176,7 +176,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeRelease(JNIEnv *env, jclass ob
  * @param msec
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeSeekTo(JNIEnv *env, jclass obj, jint msec) {
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeSeekTo(JNIEnv *env, jobject instance, jint msec) {
     if (player) {
         player->seekTo(msec);
     }
@@ -189,7 +189,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeSeekTo(JNIEnv *env, jclass obj
  * @param loop
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeSetLooping(JNIEnv *env, jclass obj,
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeSetLooping(JNIEnv *env, jobject instance,
                                                              jboolean loop) {
     if (player) {
         player->setLooping(loop);
@@ -203,7 +203,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeSetLooping(JNIEnv *env, jclass
  * @param reverse
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeSetReverse(JNIEnv *env, jclass obj,
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeSetReverse(JNIEnv *env, jobject instance,
                                                              jboolean reverse) {
     if (player) {
         player->setReverse(reverse);
@@ -217,7 +217,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeSetReverse(JNIEnv *env, jclass
  * @param play
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeSetPlayAudio(JNIEnv *env, jclass obj,
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeSetPlayAudio(JNIEnv *env, jobject instance,
                                                                jboolean play) {
     if (player) {
         player->setPlayAudio(play);
@@ -231,9 +231,7 @@ JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeSetPlayAudio(JNIEnv *env, jcla
  * @param play
  */
 JNIEXPORT void
-JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeChangedSize(JNIEnv *env, jclass obj,
+JNICALL Java_com_cgfay_cainmedia_CainPlayer_nativeChangedSize(JNIEnv *env, jobject instance,
                                                               jint width, jint height) {
-    if (player) {
-        player->changedSize(width, height);
-    }
+
 }
