@@ -3,7 +3,8 @@ CainCamera是一个美颜类相机，主要用于学习如何实现实时美颜�
 静态图片的一键美化、特效、裁剪旋转、贴纸、文字、调节、涂鸦、马赛克、边框、夜景增强、虚化、抠图虚化等功能，
 视频编辑中的滤镜、添加音乐、混音、变声变速、添加字幕、视频剪辑、魔法涂鸦、嘻哈特效、MV特效等功能，
 以及各部分功能的一些优化实践。目前图片编辑与视频编辑功能仍在开发当中。
-
+# 本项目请使用NDK R16版本编译
+NDK R13 版本编译的时候由于ffmpeg使用了uchar.h，NDK R13，会报 “Error:(150, 11) fatal error: 'uchar.h' file not found” 的错误，遇到该错误时，请将NDK的编译工具链升级到最新版本，不用再提Issues了，这是NDK的Bug，谢谢。
 # CainCamera 截图
 ## 预览与录制
 ![预览与录制](https://github.com/CainKernel/CainCamera/blob/master/images/preview_and_record.png)
