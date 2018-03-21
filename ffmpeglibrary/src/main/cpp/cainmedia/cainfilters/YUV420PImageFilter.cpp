@@ -144,6 +144,69 @@ bool YUV420PImageFilter::drawFrame(void *bufY, void *bufU, void *bufV, GLfloat v
 }
 
 /**
+ * 将视频帧绘制到FBO
+ * @param bufY
+ * @param bufU
+ * @param bufV
+ * @return
+ */
+int YUV420PImageFilter::drawFrameBuffer(void *bufY, void *bufU, void *bufV) {
+    return drawFrameBuffer(bufY, bufU, bufV, vertexCoordinates, textureCoordinates);
+}
+
+/**
+ * 将视频帧绘制到FBO
+ * @param bufY
+ * @param bufU
+ * @param bufV
+ * @param vertices
+ * @param textureCoords
+ * @return
+ */
+int YUV420PImageFilter::drawFrameBuffer(void *bufY, void *bufU, void *bufV, GLfloat *vertices,
+                                        GLfloat *textureCoords) {
+    if (mFrameBuffers[0] == GL_NONE) {
+        return GL_NONE;
+    }
+    glViewport(0, 0, mFrameWidth, mFrameHeight);
+    glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffers[0]);
+    glUseProgram(programHandle);
+
+    glVertexAttribPointer(positionHandle, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(positionHandle);
+
+    glVertexAttribPointer(textureCoordsHandle, 2, GL_FLOAT, GL_FALSE, 0, textureCoords);
+    glEnableVertexAttribArray(textureCoordsHandle);
+
+    glUniform4fv(mvpMatrixHandle, 1, mvpMatrix->m);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, mTextureId[0]);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, videoWidth, videoHeight,
+                    GL_LUMINANCE, GL_UNSIGNED_BYTE, bufY);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, mTextureId[1]);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, videoWidth / 2, videoWidth / 2,
+                    GL_LUMINANCE, GL_UNSIGNED_BYTE, bufU);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, mTextureId[2]);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, videoWidth / 2, videoWidth / 2,
+                    GL_LUMINANCE, GL_UNSIGNED_BYTE, bufV);
+
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    glDisableVertexAttribArray(positionHandle);
+    glDisableVertexAttribArray(textureCoordsHandle);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glUseProgram(0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return mFrameBufferTextures[0];
+}
+
+/**
  * 计算viewport
  */
 void YUV420PImageFilter::viewport() {
@@ -254,4 +317,37 @@ void YUV420PImageFilter::initCoordinates() {
     // 3 top right
     textureCoordinates[6] = 1.0f;
     textureCoordinates[7] = 1.0f;
+}
+
+
+/**
+ * 初始化FBO
+ * @param width
+ * @param height
+ */
+void YUV420PImageFilter::initFrameBuffer(int width, int height) {
+    if (mFrameBuffers[0] != GL_NONE && (mFrameWidth != width || mFrameHeight != height)) {
+        destroyFrameBuffer();
+    }
+    if (mFrameBuffers[0] == GL_NONE) {
+        mFrameWidth = width;
+        mFrameHeight = height;
+        createFrameBuffer(mFrameBuffers, mFrameBufferTextures, width, height);
+    }
+}
+
+/**
+ * 销毁FBO
+ */
+void YUV420PImageFilter::destroyFrameBuffer() {
+    if (mFrameBufferTextures[0] != GL_NONE) {
+        glDeleteTextures(1, mFrameBufferTextures);
+        mFrameBufferTextures[0] = GL_NONE;
+    }
+    if (mFrameBuffers[0] != GL_NONE) {
+        glDeleteFramebuffers(1, mFrameBuffers);
+        mFrameBuffers[0] = GL_NONE;
+    }
+    mFrameWidth = -1;
+    mFrameHeight = -1;
 }

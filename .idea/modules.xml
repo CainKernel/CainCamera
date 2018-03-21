@@ -8,7 +8,6 @@
       <module fileurl="file://$PROJECT_DIR$/filterlibrary/filterlibrary.iml" filepath="$PROJECT_DIR$/filterlibrary/filterlibrary.iml" />
       <module fileurl="file://$PROJECT_DIR$/pushlibrary/pushlibrary.iml" filepath="$PROJECT_DIR$/pushlibrary/pushlibrary.iml" />
       <module fileurl="file://$PROJECT_DIR$/utilslibrary/utilslibrary.iml" filepath="$PROJECT_DIR$/utilslibrary/utilslibrary.iml" />
-      <module fileurl="file://$PROJECT_DIR$/videoeditor/videoeditor.iml" filepath="$PROJECT_DIR$/videoeditor/videoeditor.iml" />
       <module fileurl="file://$PROJECT_DIR$/videoplayer/videoplayer.iml" filepath="$PROJECT_DIR$/videoplayer/videoplayer.iml" />
     </modules>
   </component>

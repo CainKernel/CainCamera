@@ -21,10 +21,18 @@ public:
     bool drawFrame(void *bufY, void *bufU, void *bufV);
     // 绘制视频帧
     bool drawFrame(void *bufY, void *bufU, void *bufV, GLfloat vertices[], GLfloat textureCoords[]);
+    // 将视频帧绘制到FBO
+    int drawFrameBuffer(void *bufY, void *bufU, void *bufV);
+    // 将视频帧绘制到FBO
+    int drawFrameBuffer(void *bufY, void *bufU, void *bufV, GLfloat vertices[], GLfloat textureCoords[]);
     // 设置单位矩阵
     void initIdentityMatrix();
     // 设置总变换
     void setMVPMatrix(ESMatrix *matrix);
+    // 初始化FBO
+    void initFrameBuffer(int width, int height);
+    // 销毁FBO
+    void destroyFrameBuffer();
 
 private:
     const char *getVertexShader(void);
@@ -68,6 +76,11 @@ private:
     // 实际显示的高度
     int viewHeight;
 
+    // FBO
+    GLuint mFrameBuffers[1];
+    GLuint mFrameBufferTextures[1];
+    int mFrameWidth;
+    int mFrameHeight;
 };
 
 

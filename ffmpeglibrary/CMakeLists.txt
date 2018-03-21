@@ -109,6 +109,8 @@ add_library( cainplayer
              # common
              src/main/cpp/common/Handler.cpp
              src/main/cpp/common/MessageQueue.cpp
+             src/main/cpp/common/Mutex.cpp
+             src/main/cpp/common/Thread.cpp
 
              # cainaudio
              src/main/cpp/cainmedia/cainaudio/AudioOutput.cpp
@@ -126,6 +128,9 @@ add_library( cainplayer
              src/main/cpp/cainmedia/caingles/OffscreenSurface.cpp
              src/main/cpp/cainmedia/caingles/WindowSurface.cpp
 
+             # cainrender
+             src/main/cpp/cainmedia/cainrender/CainRender.cpp
+
              # cainplayer
              src/main/cpp/cainmedia/cainplayer/AudioDecoder.cpp
              src/main/cpp/cainmedia/cainplayer/VideoDecoder.cpp
@@ -133,8 +138,6 @@ add_library( cainplayer
              src/main/cpp/cainmedia/cainplayer/CainPlayer.cpp
              src/main/cpp/cainmedia/cainplayer/CainPlayerController.cpp
              src/main/cpp/cainmedia/cainplayer/Demuxer.cpp
-             src/main/cpp/cainmedia/cainplayer/Mutex.cpp
-             src/main/cpp/cainmedia/cainplayer/Thread.cpp
              )
 
 # 查找Android存在的库
