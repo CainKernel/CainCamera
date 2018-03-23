@@ -137,7 +137,11 @@ add_library( cainplayer
              src/main/cpp/cainmedia/cainplayer/BaseDecoder.cpp
              src/main/cpp/cainmedia/cainplayer/CainPlayer.cpp
              src/main/cpp/cainmedia/cainplayer/CainPlayerController.cpp
+             src/main/cpp/cainmedia/cainplayer/Clock.cpp
              src/main/cpp/cainmedia/cainplayer/Demuxer.cpp
+             src/main/cpp/cainmedia/cainplayer/FrameQueue.cpp
+             src/main/cpp/cainmedia/cainplayer/PacketQueue.cpp
+             src/main/cpp/cainmedia/cainplayer/Synchronizer.cpp
              )
 
 # 查找Android存在的库

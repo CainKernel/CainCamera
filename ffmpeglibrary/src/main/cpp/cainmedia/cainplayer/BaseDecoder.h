@@ -20,6 +20,8 @@ extern "C" {
 #include <vector>
 #include "Mutex.h"
 #include "Thread.h"
+#include "PacketQueue.h"
+#include "FrameQueue.h"
 
 class BaseDecoder {
 
@@ -34,6 +36,8 @@ public:
     void packetFlush();
     // 裸数据包入队
     void put(AVPacket *packet);
+    // 存放一个空的裸数据
+    void putNullPacket(int streamIndex);
     // 开始解码
     void start();
     // 暂停解码
@@ -54,18 +58,22 @@ private:
     static int decodeThread(void *arg);
 
 protected:
-    std::vector<AVPacket *> mPacketQueue;   // 裸数据队列
-    int mStreamIndex;                       // 媒体流索引
-    AVStream *mStream;                      // 媒体流
-    AVCodecContext *mCodecCtx;              // 解码上下文
-    AVCodec *mCodec;                        // 解码器
-    Mutex *mMutex;                          // 互斥锁
-    Cond  *mCondition;                      // 条件锁
-    Thread *mThread;                        // 解码线程
-    bool mPrepared;                         // 是否已经准备好
-    bool mOpenSuccess;                      // 媒体流是否成功打开
-    bool mAbortRequest;                     // 是否停止解码
-    bool mPaused;                           // 是否暂停解码
+    PacketQueue *mPacketQueue;  // 裸数据队列
+    FrameQueue *mFrameQueue;    // 帧队列
+    int mStreamIndex;           // 媒体流索引
+    AVStream *mStream;          // 媒体流
+    AVCodecContext *mCodecCtx;  // 解码上下文
+    AVCodec *mCodec;            // 解码器
+    Mutex *mMutex;              // 互斥锁
+    Cond  *mCondition;          // 条件锁
+    Thread *mThread;            // 解码线程
+    bool mPrepared;             // 是否已经准备好
+    bool mOpenSuccess;          // 媒体流是否成功打开
+    bool mAbortRequest;         // 是否停止解码
+    bool mPaused;               // 是否暂停解码
+    bool mPacketPending;        // 是否处于挂起状态
+    AVPacket packet;            // 裸数据包
+    AVPacket pkt_temp;          // 缓存的裸数据包
 
 };
 

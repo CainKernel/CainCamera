@@ -21,6 +21,7 @@ Demuxer::Demuxer(VideoDecoder *videoDecoder, AudioDecoder *audioDecoder) {
     mReadFinish = false;
     fileName = NULL;
     pFormatCtx = NULL;
+    mDuration = AV_NOPTS_VALUE;
     mStartTime = AV_NOPTS_VALUE;
     av_register_all();
     avformat_network_init();
@@ -143,6 +144,13 @@ void Demuxer::start() {
         mAbortRequest = false;
         mPaused = false;
     }
+    // 开始解码
+    if (mAudioDecoder != NULL) {
+        mAudioDecoder->start();
+    }
+    if (mVideoDecoder != NULL) {
+        mVideoDecoder->start();
+    }
 }
 
 /**
@@ -150,6 +158,13 @@ void Demuxer::start() {
  */
 void Demuxer::stop() {
     mAbortRequest = true;
+    // 停止解码
+    if (mAudioDecoder != NULL) {
+        mAudioDecoder->stop();
+    }
+    if (mVideoDecoder != NULL) {
+        mVideoDecoder->stop();
+    }
 }
 
 /**
@@ -157,6 +172,12 @@ void Demuxer::stop() {
  */
 void Demuxer::paused() {
     mPaused = true;
+    if (mAudioDecoder != NULL) {
+        mAudioDecoder->pause();
+    }
+    if (mVideoDecoder != NULL) {
+        mVideoDecoder->pause();
+    }
 }
 
 /**
@@ -175,6 +196,10 @@ int Demuxer::demuxThread(void *arg) {
  */
 void Demuxer::demux() {
     int ret = 0;
+    AVPacket pkt1, *pkt = &pkt1;
+    int64_t stream_start_time;
+    int64_t pkt_ts;
+    int pkt_in_play_range = 0;
 
     // 还没开始
     while (!mPrepared) {
@@ -195,6 +220,14 @@ void Demuxer::demux() {
             av_log(NULL, AV_LOG_WARNING, "%s: could not seek to position %0.3f\n",
                    pFormatCtx->filename, (double)timestamp / AV_TIME_BASE);
         }
+    }
+
+    // 计算视频帧率
+    if (mVideoDecoder != NULL) {
+        AVRational frame_rate =
+                av_guess_frame_rate(pFormatCtx,
+                                    pFormatCtx->streams[mVideoDecoder->getStreamIndex()], NULL);
+        mVideoDecoder->setFrameRate(frame_rate);
     }
 
     while (true) {
@@ -236,12 +269,18 @@ void Demuxer::demux() {
             continue;
         }
 
-        // 读取数据
-        AVPacket *pkt = (AVPacket *) malloc(sizeof(AVPacket));
+        // 读取裸数据包
         ret = av_read_frame(pFormatCtx, pkt);
         if (ret < 0) {
             // 判断是否读到文件结尾了
             if (((ret == AVERROR_EOF) || avio_feof(pFormatCtx->pb)) && !mReadFinish) {
+                // 在播放结束时入队一个空的裸数据包
+                if (mAudioDecoder != NULL) {
+                    mAudioDecoder->putNullPacket(mAudioDecoder->getStreamIndex());
+                }
+                if (mVideoDecoder != NULL) {
+                    mVideoDecoder->putNullPacket(mVideoDecoder->getStreamIndex());
+                }
                 mReadFinish = true;
             }
             // 如果是出错，则退出解复用线程
@@ -257,26 +296,23 @@ void Demuxer::demux() {
             mReadFinish = false;
         }
 
-        // 将裸数据包入队
-        if (mAudioDecoder != NULL && pkt->stream_index == mAudioDecoder->getStreamIndex()) {
+        // 判断裸数据包是否在播放范围内
+        stream_start_time = pFormatCtx->streams[pkt->stream_index]->start_time;
+        pkt_ts = pkt->pts == AV_NOPTS_VALUE ? pkt->dts : pkt->pts;
+        pkt_in_play_range = mDuration == AV_NOPTS_VALUE ||
+                            (pkt_ts - (stream_start_time != AV_NOPTS_VALUE ? stream_start_time : 0)) *
+                            av_q2d(pFormatCtx->streams[pkt->stream_index]->time_base) -
+                            (double)(mStartTime != AV_NOPTS_VALUE ? mStartTime : 0) / 1000000
+                            <= ((double)mDuration / 1000000);
+        // 将裸数据包入队或者舍弃
+        if (mAudioDecoder != NULL
+            && pkt->stream_index == mAudioDecoder->getStreamIndex() && pkt_in_play_range) {
             mAudioDecoder->put(pkt);
-        } else if (mVideoDecoder != NULL && pkt->stream_index == mVideoDecoder->getStreamIndex()) {
+        } else if (mVideoDecoder != NULL
+                   && pkt->stream_index == mVideoDecoder->getStreamIndex() && pkt_in_play_range) {
             mVideoDecoder->put(pkt);
         } else {
             av_packet_unref(pkt);
-            pkt = NULL;
-        }
-        // 判断队列中的数量是否超过最大值，则进入等待状态
-        bool aOver = (mAudioDecoder == NULL)
-                     || (mAudioDecoder != NULL && mAudioDecoder->packetSize() > MAX_PACKET_COUNT);
-        bool vOver = (mVideoDecoder == NULL)
-                     || (mVideoDecoder != NULL && mVideoDecoder->packetSize() > MAX_PACKET_COUNT);
-        if (aOver && vOver) {
-            // 进入等待状态
-            MutexLock(mMutex);
-            // 该锁需要在解码器消耗裸数据，再调用Demuxer的notify方法来解除
-            CondWait(mCondition, mMutex);
-            MutexUnlock(mMutex);
         }
     }
 
@@ -289,9 +325,6 @@ void Demuxer::demux() {
     if (mAudioDecoder != NULL) {
         mAudioDecoder->packetFlush();
     }
-
-    // TODO 发送数据通知解复用线程结束
-
 }
 
 /**

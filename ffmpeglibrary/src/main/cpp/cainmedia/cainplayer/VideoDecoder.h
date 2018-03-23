@@ -15,12 +15,13 @@ public:
     VideoDecoder();
     // 视频解码
     void decodeFrame() override;
-
-    // 设置AntiveWindow
-    void setNativeWindow(ANativeWindow *nativeWindow);
+    void setFrameRate(AVRational frame_rate);
 
 
 private:
+    int getVideoFrame(AVFrame * frame);
+    int decodeVideoFrame(AVFrame *frame);
+    AVRational mFrameRate;
 
 };
 

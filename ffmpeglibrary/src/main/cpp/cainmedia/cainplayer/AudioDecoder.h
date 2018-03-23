@@ -13,6 +13,12 @@ public:
     AudioDecoder();
 
     void decodeFrame() override;
+
+private:
+    int decodeAudioFrame(AVFrame *frame);
+
+    int next_pts;               // 下一帧的pts
+    AVRational next_pts_tb;     // 下一帧的时间基准
 };
 
 

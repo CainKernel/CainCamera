@@ -6,6 +6,8 @@
 #include "native_log.h"
 
 BaseDecoder::BaseDecoder() {
+    mPacketQueue = new PacketQueue();
+    mFrameQueue = new FrameQueue();
     mMutex = MutexCreate();
     mCondition = CondCreate();
     mStreamIndex = -1;
@@ -17,13 +19,24 @@ BaseDecoder::BaseDecoder() {
     mOpenSuccess = false;
     mAbortRequest = true;
     mPaused = false;
+    mPacketPending = false;
 }
 
 BaseDecoder::~BaseDecoder() {
-    packetFlush();
+    if (mPacketQueue != NULL) {
+        delete (mPacketQueue);
+        mPacketQueue = NULL;
+    }
+    if (mFrameQueue != NULL) {
+        delete (mFrameQueue);
+        mFrameQueue = NULL;
+    }
     ThreadDestroy(mThread);
     MutexDestroy(mMutex);
     CondDestroy(mCondition);
+    av_packet_unref(&packet);
+    av_packet_unref(&pkt_temp);
+    avcodec_free_context(&mCodecCtx);
     mMutex = NULL;
     mCondition = NULL;
     mThread = NULL;
@@ -82,15 +95,9 @@ int BaseDecoder::openStream() {
  * 刷出剩余裸数据
  */
 void BaseDecoder::packetFlush() {
-    MutexLock(mMutex);
-    while (mPacketQueue.size() > 0) {
-        AVPacket *pkt = mPacketQueue[0];
-        mPacketQueue.erase(mPacketQueue.begin());
-        av_packet_unref(pkt);
-        pkt = NULL;
+    if (mPacketQueue != NULL) {
+        mPacketQueue->flush();
     }
-    std::vector<AVPacket *>().swap(mPacketQueue);
-    MutexUnlock(mMutex);
 }
 
 /**
@@ -98,9 +105,22 @@ void BaseDecoder::packetFlush() {
  * @param packet
  */
 void BaseDecoder::put(AVPacket *packet) {
-    MutexLock(mMutex);
-    mPacketQueue.push_back(packet);
-    MutexUnlock(mMutex);
+    if (mPacketQueue != NULL) {
+        mPacketQueue->put(packet);
+    }
+}
+
+/**
+ * 入队一个空的裸数据包
+ * @param streamIndex
+ */
+void BaseDecoder::putNullPacket(int streamIndex) {
+    AVPacket pkt1, *pkt = &pkt1;
+    av_init_packet(pkt);
+    pkt->data = NULL;
+    pkt->size = 0;
+    pkt->stream_index = streamIndex;
+    put(pkt);
 }
 
 /**
@@ -128,6 +148,12 @@ void BaseDecoder::pause() {
  */
 void BaseDecoder::stop() {
     mAbortRequest = true;
+    if (mPacketQueue != NULL) {
+        mPacketQueue->setAbort(true);
+    }
+    if (mFrameQueue != NULL) {
+        mFrameQueue->setAbort(true);
+    }
 }
 
 /**
@@ -135,7 +161,10 @@ void BaseDecoder::stop() {
  * @return
  */
 int BaseDecoder::packetSize() {
-    return mPacketQueue.size();
+    if (mPacketQueue == NULL) {
+        return 0;
+    }
+    return mPacketQueue->size();
 }
 
 /**
@@ -150,9 +179,7 @@ int BaseDecoder::getStreamIndex() {
  * 通知解除条件锁
  */
 void BaseDecoder::notify() {
-    MutexLock(mMutex);
     CondSignal(mCondition);
-    MutexUnlock(mMutex);
 }
 
 /**

@@ -62,8 +62,8 @@ private:
     bool mOpenSuccess;  // 打开状态标志
     bool mSeekRequest;  // 定位标志
     bool mReadFinish;   // 读取结束标志
-
-    int64_t mStartTime;
+    int64_t mDuration;  // 间隔
+    int64_t mStartTime; // 开始时间
 
     Mutex *mMutex;
     Cond *mCondition;
