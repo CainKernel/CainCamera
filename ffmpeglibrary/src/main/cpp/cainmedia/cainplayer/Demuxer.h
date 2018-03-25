@@ -8,7 +8,7 @@
 #define MAX_PACKET_COUNT 200
 
 #ifdef __cplusplus
-extern "c" {
+extern "C" {
 #endif
 
 #include <libavformat/avformat.h>

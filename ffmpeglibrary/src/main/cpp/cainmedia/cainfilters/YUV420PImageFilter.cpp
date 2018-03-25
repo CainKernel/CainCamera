@@ -3,7 +3,7 @@
 //
 
 #include "YUV420PImageFilter.h"
-#include "GlShaders.h"
+#include "caingles/GlShaders.h"
 
 
 YUV420PImageFilter::YUV420PImageFilter() {
