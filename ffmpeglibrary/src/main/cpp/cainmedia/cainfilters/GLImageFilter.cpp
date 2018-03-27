@@ -3,13 +3,14 @@
 //
 
 #include "GLImageFilter.h"
+#include "caingles/GlShaders.h"
 
 const char* GLImageFilter::getVertexShader() {
-    return vertex_shader;
+    return GlShader_GetShader(VERTEX_DEFAULT);
 }
 
 const char* GLImageFilter::getFragmentShader() {
-    return fragment_shader;
+    return GlShader_GetShader(FRAGMENT_ABGR);
 }
 
 /**

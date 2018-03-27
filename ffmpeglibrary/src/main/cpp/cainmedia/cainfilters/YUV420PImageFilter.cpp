@@ -247,7 +247,7 @@ void YUV420PImageFilter::setMVPMatrix(ESMatrix *matrix) {
  * @return
  */
 const char *YUV420PImageFilter::getVertexShader(void) {
-    return vertex_shader;
+    return GlShader_GetShader(VERTEX_DEFAULT);
 }
 
 /**
@@ -255,7 +255,7 @@ const char *YUV420PImageFilter::getVertexShader(void) {
  * @return
  */
 const char *YUV420PImageFilter::getFragmentShader(void) {
-    return fragment_shader_yuv420p;
+    return GlShader_GetShader(FRAGMENT_I420);
 }
 
 /**
