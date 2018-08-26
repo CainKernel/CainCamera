@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragment.CameraPreviewFragment">
+
+    <!-- 预览视图 -->
+    <com.cgfay.cameralibrary.widget.AspectFrameLayout
+        android:id="@+id/layout_aspect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:layout_gravity="top">
+    </com.cgfay.cameralibrary.widget.AspectFrameLayout>
+
+    <!-- 顶部视图 -->
+    <include
+        layout="@layout/view_preview_top"/>
+
+    <!-- 滤镜/贴纸等页面 -->
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:clickable="true">
+    </FrameLayout>
+
+    <!-- 底部按钮 -->
+    <include
+        layout="@layout/view_preview_bottom"/>
+
+
+    <!-- fps 提示 -->
+    <TextView
+        android:id="@+id/tv_fps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginTop="@dimen/fps_margin_top"
+        android:layout_marginEnd="@dimen/fps_margin_end"
+        android:textColor="@android:color/holo_orange_dark" />
+
+    <!-- 对比按钮 -->
+    <Button
+        android:id="@+id/btn_compare"
+        android:layout_width="@dimen/compare_size"
+        android:layout_height="@dimen/compare_size"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="@dimen/compare_margin_end"
+        android:layout_marginBottom="@dimen/compare_margin_bottom"
+        android:background="@drawable/ic_camera_compare_normal"/>
+
+</FrameLayout>

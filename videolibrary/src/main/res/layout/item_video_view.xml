@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/dp1">
+        <ImageView
+            android:id="@+id/iv_video"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop" />
+        <ImageView
+            android:id="@+id/video_play"
+            android:layout_width="@dimen/dp60"
+            android:layout_height="@dimen/dp60"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:background="@drawable/ic_video_indicator"/>
+        <ImageView
+            android:id="@+id/selected_indicator"
+            android:layout_width="@dimen/selected_indicator_width"
+            android:layout_height="@dimen/selected_indicator_width"
+            android:padding="@dimen/selected_indicator_padding"
+            android:layout_gravity="end|top" />
+    </FrameLayout>
+</LinearLayout>

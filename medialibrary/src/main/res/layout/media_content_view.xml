@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/iv_thumbnail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop" />
+
+    <ImageView
+        android:id="@+id/video_indicator"
+        android:layout_width="@dimen/dp60"
+        android:layout_height="@dimen/dp60"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:background="@drawable/ic_media_video_indicator"/>
+
+    <TextView
+        android:id="@+id/video_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|bottom"
+        android:layout_marginBottom="@dimen/selected_indicator_padding"
+        android:layout_marginStart="@dimen/selected_indicator_padding"
+        android:textColor="@android:color/white"
+        android:textSize="12sp"
+        android:visibility="gone"/>
+
+    <ImageView
+        android:id="@+id/iv_preview"
+        android:layout_width="@dimen/dp20"
+        android:layout_height="@dimen/dp20"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="@dimen/selected_indicator_padding"
+        android:layout_marginBottom="@dimen/selected_indicator_padding"
+        android:background="@drawable/ic_media_thumbnail_preview"/>
+
+</merge>

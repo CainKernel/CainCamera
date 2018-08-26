@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical">
+
+    <Button
+        android:id="@+id/btn_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:textColor="@android:color/white"
+        android:text="@string/btn_horizontal"/>
+
+    <Button
+        android:id="@+id/btn_ratio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:textColor="@android:color/white"
+        android:text="@string/btn_ratio"/>
+
+    <Button
+        android:id="@+id/btn_rotate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:textColor="@android:color/white"
+        android:text="@string/btn_rotate"/>
+
+    <Button
+        android:id="@+id/btn_flip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:textColor="@android:color/white"
+        android:text="@string/btn_flip"/>
+
+    <Button
+        android:id="@+id/btn_vertical_perspective"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:textColor="@android:color/white"
+        android:text="@string/btn_vertical_perspective"/>
+
+    <Button
+        android:id="@+id/btn_horizontal_perspective"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:textColor="@android:color/white"
+        android:text="@string/btn_horizontal_perspective"/>
+
+    <Button
+        android:id="@+id/btn_stretch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:textColor="@android:color/white"
+        android:text="@string/btn_stretch"/>
+</LinearLayout>

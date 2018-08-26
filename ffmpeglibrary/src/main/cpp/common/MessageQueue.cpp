@@ -4,7 +4,7 @@
 
 #include "MessageQueue.h"
 #include "Handler.h"
-#include "native_log.h"
+#include "AndroidLog.h"
 
 Message::Message() {
     handler = NULL;
@@ -42,7 +42,7 @@ Message::Message(int what, int arg1, int arg2, void* obj) {
 int Message::execute() {
     if (MESSAGE_QUEUE_QUIT_FLAG == what) {
         return MESSAGE_QUEUE_QUIT_FLAG;
-    } else if (handler) {
+    } else if (handler != NULL) {
         handler->handleMessage(this);
         return 1;
     }

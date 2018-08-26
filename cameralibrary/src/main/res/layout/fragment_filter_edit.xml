@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_gravity="bottom">
+
+    <!-- 数值调整 -->
+    <LinearLayout
+        android:id="@+id/layout_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+        <!-- 数值 -->
+        <TextView
+            android:id="@+id/tv_type_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@android:color/white"
+            android:visibility="visible"/>
+
+        <!-- 值调整 -->
+        <SeekBar
+            android:id="@+id/value_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dp10"
+            android:layout_marginEnd="@dimen/dp10"
+            android:layout_marginBottom="@dimen/dp20"
+            android:visibility="visible"/>
+    </LinearLayout>
+
+    <!-- 类型选择 -->
+    <LinearLayout
+        android:id="@+id/layout_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:minHeight="@dimen/dp200"
+        android:gravity="bottom"
+        android:layout_gravity="bottom">
+
+        <!-- 标题栏 -->
+        <include
+            layout="@layout/view_preview_edit_title"/>
+
+        <!-- 分割线 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/white"/>
+
+        <!-- 内容栏 -->
+        <LinearLayout
+            android:id="@+id/layout_content"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp160"
+            android:orientation="vertical"
+            android:layout_gravity="center_horizontal"
+            android:gravity="top"
+            android:background="@color/effectEditBackground">
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

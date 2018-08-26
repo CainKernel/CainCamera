@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom">
+
+    <!-- 删除/撤销按钮 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="@dimen/dp100"
+            android:minHeight="@dimen/dp50"
+            android:gravity="center">
+            <Button
+                android:id="@+id/btn_delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:textColor="@color/white"
+                android:text="@string/delete"
+                android:visibility="gone"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="@dimen/dp100"
+            android:minHeight="@dimen/dp50"
+            android:gravity="center">
+            <Button
+                android:id="@+id/btn_undo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:textColor="@color/white"
+                android:text="@string/undo"
+                android:visibility="gone"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <com.cgfay.videolibrary.widget.IndicatorProgress
+        android:id="@+id/indicator_progress"
+        android:layout_width="match_parent"
+        android:layout_margin="@dimen/dp10"
+        android:layout_height="@dimen/dp40" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/list_effect"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible">
+    </android.support.v7.widget.RecyclerView>
+
+</LinearLayout>

@@ -43,8 +43,8 @@ add_library( ffmpeg_cmd
              src/main/cpp/ffmpeg/ffmpeg.c
              src/main/cpp/ffmpeg/ffmpeg_opt.c
              src/main/cpp/ffmpeg/ffmpeg_filter.c
-             src/main/cpp/ffmpeg_cmd/ffmpeg_cmd.c
-             src/main/cpp/ffmpeg_cmd/ffmpeg_cmd_wrapper.c )
+             src/main/cpp/ffmpeg_command/ffmpeg_cmd.c
+             src/main/cpp/ffmpeg_command/ffmpeg_cmd_wrapper.c )
 
 # 查找Android存在的库
 find_library( log-lib
@@ -63,21 +63,22 @@ target_link_libraries(
                        ${log-lib} )
 #-------------------------------- libffmpeg_cmd.so 编译 end ----------------------------------------
 
-#--------------------------------- libencoder.so 编译 start ----------------------------------------
+
+#--------------------------------- librecorder.so 编译 start ---------------------------------------
 
 # 添加头文件
 include_directories(src/main/cpp/common
                     src/main/cpp/ffmpeg/include
-                    src/main/cpp/encoder/include )
+                    src/main/cpp/cainrecorder )
 
 # 添加自身的jni库
-add_library( encoder
+add_library( recorder
 
              SHARED
 
-             src/main/cpp/encoder/cain_recorder.cpp
-             src/main/cpp/encoder/ffmpeg_encoder.cpp
-             src/main/cpp/encoder/cain_encoder_jni.cpp )
+             src/main/cpp/cainrecorder/recorder/CainEncoder.cpp
+             src/main/cpp/cainrecorder/recorder/CainRecorder.cpp
+             src/main/cpp/cainrecorder/RecorderController.cpp )
 
 # 查找Android存在的库
 find_library( log-lib
@@ -86,81 +87,179 @@ find_library( log-lib
 
 # 链接库文件
 target_link_libraries(
-                       encoder
+                       recorder
 
                        # ffmpeg库
                        ffmpeg
 
                        ${log-lib} )
 
-#---------------------------------- libencoder.so 编译 end -----------------------------------------
+#---------------------------------- librecorder.so 编译 end ----------------------------------------
 
-#-------------------------------- libcainplayer.so 编译 start --------------------------------------
-#添加头文件
-include_directories(src/main/cpp/common
-                    src/main/cpp/ffmpeg/include
-                    src/main/cpp/cainmedia )
-
-#添加自身的jni文件
-add_library( cainplayer
-
-             SHARED
-
-             # common
-             src/main/cpp/common/Handler.cpp
-             src/main/cpp/common/MessageQueue.cpp
-             src/main/cpp/common/Mutex.cpp
-             src/main/cpp/common/Thread.cpp
-
-             # cainaudio
-             src/main/cpp/cainmedia/cainaudio/AudioOutput.cpp
-             src/main/cpp/cainmedia/cainaudio/SLESContext.cpp
-
-             #cainfilters
-             src/main/cpp/cainmedia/cainfilters/GLImageFilter.cpp
-             src/main/cpp/cainmedia/cainfilters/YUV420PImageFilter.cpp
-
-             # caingles
-             src/main/cpp/cainmedia/caingles/EglCore.cpp
-             src/main/cpp/cainmedia/caingles/EglSurfaceBase.cpp
-             src/main/cpp/cainmedia/caingles/GlUtils.cpp
-             src/main/cpp/cainmedia/caingles/GlShaders.cpp
-             src/main/cpp/cainmedia/caingles/OffscreenSurface.cpp
-             src/main/cpp/cainmedia/caingles/WindowSurface.cpp
-
-             # cainrender
-             src/main/cpp/cainmedia/cainrender/CainRender.cpp
-
-             # cainplayer
-             src/main/cpp/cainmedia/cainplayer/AudioDecoder.cpp
-             src/main/cpp/cainmedia/cainplayer/VideoDecoder.cpp
-             src/main/cpp/cainmedia/cainplayer/BaseDecoder.cpp
-             src/main/cpp/cainmedia/cainplayer/CainPlayer.cpp
-             src/main/cpp/cainmedia/cainplayer/CainPlayerController.cpp
-             src/main/cpp/cainmedia/cainplayer/Clock.cpp
-             src/main/cpp/cainmedia/cainplayer/Demuxer.cpp
-             src/main/cpp/cainmedia/cainplayer/FrameQueue.cpp
-             src/main/cpp/cainmedia/cainplayer/PacketQueue.cpp
-             src/main/cpp/cainmedia/cainplayer/Synchronizer.cpp
-             )
 
 # 查找Android存在的库
 find_library( OpenSLES-lib OpenSLES )
 find_library( EGL-lib EGL )
 find_library( GLESv2-lib GLESv2 )
 
-# 链接库文件
-target_link_libraries(
-                       cainplayer
+#------------------------------------- common 加载 start -------------------------------------------
+# 添加头文件
+include_directories( src/main/cpp/common )
+
+# 添加源文件
+add_library( common
+
+             STATIC
+
+             # common
+             src/main/cpp/common/Handler.cpp
+             src/main/cpp/common/Looper.cpp
+             src/main/cpp/common/MessageQueue.cpp
+             src/main/cpp/common/Mutex.cpp
+             src/main/cpp/common/Thread.cpp )
+
+# 链接静态库
+target_link_libraries( common
+
+                       -landroid
+                       ${log-lib} )
+#-------------------------------------- common 加载 end --------------------------------------------
+
+#----------------------------------- cainfilter 加载 start -----------------------------------------
+# 添加头文件
+include_directories(src/main/cpp/common
+                    src/main/cpp/caingles
+                    src/main/cpp/cainfilter )
+
+# 添加源文件
+add_library( cainfilter
+
+             STATIC
+
+             # cainfilter
+             src/main/cpp/cainfilter/GLImageFilter.cpp
+             src/main/cpp/cainfilter/GLImageInputFilter.cpp
+
+             src/main/cpp/cainfilter/adjust/GLBrightnessImageFilter.cpp
+             src/main/cpp/cainfilter/adjust/GLContrastImageFilter.cpp
+             src/main/cpp/cainfilter/adjust/GLExposureImageFilter.cpp
+             src/main/cpp/cainfilter/adjust/GLHueImageFilter.cpp
+             src/main/cpp/cainfilter/adjust/GLSaturationImageFilter.cpp
+             src/main/cpp/cainfilter/adjust/GLSharpnessImageFilter.cpp
+
+             src/main/cpp/cainfilter/input/YUV420PImageInputFilter.cpp
+
+             # caingles
+             src/main/cpp/caingles/EglCore.cpp
+             src/main/cpp/caingles/EglSurfaceBase.cpp
+             src/main/cpp/caingles/GlShaders.cpp
+             src/main/cpp/caingles/GlUtils.cpp
+             src/main/cpp/caingles/OffscreenSurface.cpp
+             src/main/cpp/caingles/WindowSurface.cpp )
+
+# 链接静态库
+target_link_libraries( cainfilter
+
+                       common
+
+                       # Android自带的库
+                       -ljnigraphics
+                       -landroid
+                       ${log-lib}
+                       ${EGL-lib}
+                       ${GLESv2-lib} )
+
+#------------------------------------ cainfilter 加载 end ------------------------------------------
+
+
+#---------------------------------- cainsoundtouch 加载 end ----------------------------------------
+# 添加头文件
+include_directories( src/main/cpp/soundtouch/include
+                     src/main/cpp/soundtouch )
+# 添加源文件
+add_library( cainsoundtouch
+
+             STATIC
+
+             # library
+             src/main/cpp/soundtouch/SoundTouch/AAFilter.cpp
+             src/main/cpp/soundtouch/SoundTouch/BPMDetect.cpp
+             src/main/cpp/soundtouch/SoundTouch/cpu_detect_x86.cpp
+             src/main/cpp/soundtouch/SoundTouch/FIFOSampleBuffer.cpp
+             src/main/cpp/soundtouch/SoundTouch/FIRFilter.cpp
+             src/main/cpp/soundtouch/SoundTouch/InterpolateCubic.cpp
+             src/main/cpp/soundtouch/SoundTouch/InterpolateLinear.cpp
+             src/main/cpp/soundtouch/SoundTouch/InterpolateShannon.cpp
+             src/main/cpp/soundtouch/SoundTouch/mmx_optimized.cpp
+             src/main/cpp/soundtouch/SoundTouch/PeakFinder.cpp
+             src/main/cpp/soundtouch/SoundTouch/RateTransposer.cpp
+             src/main/cpp/soundtouch/SoundTouch/SoundTouch.cpp
+             src/main/cpp/soundtouch/SoundTouch/sse_optimized.cpp
+             src/main/cpp/soundtouch/SoundTouch/TDStretch.cpp
+
+             # wrapper
+             src/main/cpp/SoundTouch/SoundTouchWrapper.cpp )
+
+# 链接静态库
+target_link_libraries( cainsoundtouch
+
+                       common
+
+                       -landroid
+                       ${log-lib} )
+
+#---------------------------------- cainsoundtouch 加载 end ----------------------------------------
+
+
+#--------------------------------- libcainplayer.so 编译 start -------------------------------------
+# 添加头文件
+include_directories( src/main/cpp/common
+                     src/main/cpp/ffmpeg/include )
+
+# 添加源文件
+add_library( cainplayer
+
+             SHARED
+
+             # common
+             src/main/cpp/cainplayer/common/MediaJniCall.cpp
+             src/main/cpp/cainplayer/common/MediaQueue.cpp
+             src/main/cpp/cainplayer/common/MediaStatus.cpp
+             src/main/cpp/cainplayer/common/MediaStream.cpp
+
+             # decoder
+             src/main/cpp/cainplayer/decoder/AVAudioDecoder.cpp
+             src/main/cpp/cainplayer/decoder/AVDecoder.cpp
+             src/main/cpp/cainplayer/decoder/AVVideoDecoder.cpp
+
+             # output
+             src/main/cpp/cainplayer/output/AVAudioOutput.cpp
+             src/main/cpp/cainplayer/output/AVVideoOutput.cpp
+             src/main/cpp/cainplayer/output/VideoOutputLooper.cpp
+
+             # player
+             src/main/cpp/cainplayer/player/AVMediaPlayer.cpp
+             src/main/cpp/cainplayer/player/MediaPlayerHandler.cpp
+
+             # synchronize
+             src/main/cpp/cainplayer/synchronizer/AVSynchronizer.cpp
+
+             src/main/cpp/cainplayer/PlayerController.cpp )
+
+target_link_libraries( cainplayer
 
                        # 第三方库
                        ffmpeg
+                       cainfilter
+                       cainsoundtouch
+                       common
 
-                       # Android 自带的库
+                       # Android自带的库
                        -ljnigraphics
                        -landroid
                        ${log-lib}
                        ${OpenSLES-lib}
                        ${EGL-lib}
                        ${GLESv2-lib} )
-#--------------------------------- libcainplayer.so 编译 end ---------------------------------------
+
+#---------------------------------- libcainplayer.so 编译 end --------------------------------------

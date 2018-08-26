@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--拍照录制按钮宽高-->
+    <dimen name="bottom_gallery_layout_height">120dp</dimen>
+    <dimen name="record_width_height_normal">100dp</dimen>
+    <dimen name="record_width_height_small">50dp</dimen>
+    <dimen name="stickers_width_height">40dp</dimen>
+    <dimen name="filters_width_height">40dp</dimen>
+    <dimen name="bottom_indicator_height">40dp</dimen>
+    <dimen name="button_margin_horizontal">40dp</dimen>
+    <dimen name="bottom_layout_margin">10dp</dimen>
+    <!--删除、预览按钮的宽高-->
+    <dimen name="button_preview_width_height">35dp</dimen>
+    <!--删除、预览按钮的边距-->
+    <dimen name="button_preview_margin">10dp</dimen>
+
+    <!--顶部按钮的宽高-->
+    <dimen name="top_button_layout_height">50dp</dimen>
+    <dimen name="top_button_width_height">35dp</dimen>
+    <dimen name="top_button_margin">10dp</dimen>
+
+    <!-- 右上角fps显示margin位置 -->
+    <dimen name="fps_margin_top">70dp</dimen>
+    <dimen name="fps_margin_end">20dp</dimen>
+
+    <!-- 对比按钮 -->
+    <dimen name="compare_size">41dp</dimen>
+    <dimen name="compare_margin_end">20dp</dimen>
+    <dimen name="compare_margin_bottom">250dp</dimen>
+
+
+    <!-- 显示图片的size -->
+    <dimen name="preview_item_size">60dp</dimen>
+
+    <!--设置PopupView的尺寸-->
+    <dimen name="setting_image_size">20dp</dimen>
+    <dimen name="setting_padding">10dp</dimen>
+    <dimen name="setting_split_height">1dp</dimen>
+    <dimen name="setting_margin">10dp</dimen>
+    <dimen name="switch_min_width">60dp</dimen>
+
+
+
+    <!-- 相机设置页面参数 -->
+    <dimen name="setting_page_margin_top">20dp</dimen>
+    <dimen name="setting_page_margin_start">10dp</dimen>
+    <dimen name="setting_page_margin_end">10dp</dimen>
+
+</resources>

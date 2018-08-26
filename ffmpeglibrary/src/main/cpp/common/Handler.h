@@ -13,10 +13,11 @@ private:
 
 public:
     Handler(MessageQueue *queue);
-    ~Handler();
+    virtual ~Handler();
 
     int postMessage(Message *msg);
-    virtual void handleMessage(Message* msg){};;
+
+    virtual void handleMessage(Message* msg) {};
 };
 
 #endif //CAINCAMERA_HANDLER_H

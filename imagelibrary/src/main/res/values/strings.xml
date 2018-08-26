@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">ImageLibrary</string>
+
+    <string name="btn_crop">裁剪</string>
+    <string name="btn_filter">滤镜</string>
+    <string name="btn_toolbox">编辑工具箱</string>
+    <string name="btn_save">保存</string>
+
+    <string name="btn_internal">内置</string>
+    <string name="btn_customize">自定义</string>
+    <string name="btn_collection">收藏</string>
+    <string name="btn_setting">设置</string>
+    <string name="btn_add">添加</string>
+
+    <!-- 裁剪页面按钮 -->
+    <string name="btn_horizontal">水平</string>
+    <string name="btn_ratio">长宽比</string>
+    <string name="btn_rotate">旋转</string>
+    <string name="btn_flip">翻转</string>
+    <string name="btn_vertical_perspective">纵向透视</string>
+    <string name="btn_horizontal_perspective">横向透视</string>
+    <string name="btn_stretch">拉伸</string>
+
+    <!-- 编辑工具箱按钮 -->
+    <string name="btn_toolbox_back">返回</string>
+    <string name="btn_adjust">调整</string>
+    <string name="btn_effect">效果</string>
+    <string name="btn_texture">纹理</string>
+    <string name="btn_blur">虚化</string>
+    <string name="btn_curve">曲线</string>
+    <string name="btn_hue_saturation">色相/饱和度</string>
+    <string name="btn_tone_separation">色调分离</string>
+    <string name="btn_color_balance">色彩平衡</string>
+</resources>

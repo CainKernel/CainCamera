@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- popup页面字体选中颜色 -->
+    <color name="popup_text_normal">#333333</color>
+    <color name="popup_text_select">#DB7093</color>
+    <color name="popup_text_color">#333333</color>
+    <color name="popup_background">#55FFFFFF</color>
+
+    <!-- 快门颜色 -->
+    <color name="shutter_gray_dark">#EE2A2A2A</color>
+    <color name="shutter_gray_light">#AA696969</color>
+    <color name="shutter_blue">#3394EC</color>
+    <color name="shutter_green">#90EE90</color>
+
+    <!-- 特效选择页面背景颜色 -->
+    <color name="effectEditBackground">#ff9e9e9e</color>
+
+    <!-- 指示器颜色 -->
+    <color name="colorHorizontalIndicator">#FFCC00</color>
+
+</resources>

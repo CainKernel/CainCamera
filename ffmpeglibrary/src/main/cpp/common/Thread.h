@@ -14,9 +14,9 @@ extern "C" {
 
 // 线程优先级
 typedef enum {
-    SDL_THREAD_PRIORITY_LOW,
-    SDL_THREAD_PRIORITY_NORMAL,
-    SDL_THREAD_PRIORITY_HIGH
+    THREAD_PRIORITY_LOW,
+    THREAD_PRIORITY_NORMAL,
+    THREAD_PRIORITY_HIGH
 } ThreadPriority;
 
 // 线程结构

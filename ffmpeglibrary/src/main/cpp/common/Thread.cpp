@@ -1,15 +1,17 @@
 //
 // Created by Administrator on 2018/2/24.
 //
-#include <unistd.h>
-#include <malloc.h>
-#include "native_log.h"
+
+#include "AndroidLog.h"
 #include "Thread.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include <unistd.h>
+#include <malloc.h>
+#include <memory.h>
 #include <errno.h>
 #include <assert.h>
 
@@ -64,9 +66,9 @@ int ThreadSetPriority(ThreadPriority priority) {
         ALOGE("call pthread_getschedparam() failed!\n");
         return -1;
     }
-    if (priority == SDL_THREAD_PRIORITY_LOW) {
+    if (priority == THREAD_PRIORITY_LOW) {
         sched.sched_priority = sched_get_priority_min(policy);
-    } else if (priority == SDL_THREAD_PRIORITY_HIGH) {
+    } else if (priority == THREAD_PRIORITY_HIGH) {
         sched.sched_priority = sched_get_priority_max(policy);
     } else {
         int min_priority = sched_get_priority_min(policy);

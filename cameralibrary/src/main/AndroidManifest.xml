@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.cgfay.cameralibrary">
+
+    <application>
+        <activity
+            android:name=".activity.CameraActivity"
+            android:theme="@style/NoActionBarTheme" />
+        <activity android:name=".activity.CameraSettingActivity" />
+        <activity android:name=".activity.WatermarkActivity"></activity>
+    </application>
+
+</manifest>

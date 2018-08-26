@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/dp160"
+    android:layout_gravity="bottom">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/preview_makeup_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center">
+    </android.support.v7.widget.RecyclerView>
+
+</LinearLayout>

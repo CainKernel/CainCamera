@@ -1,0 +1,73 @@
+<resources>
+    <string name="app_name">CameraLibrary</string>
+
+    <!-- 合并提示 -->
+    <string name="combine_video_message">正在合并视频...</string>
+
+    <!--顶部设置文字-->
+    <string name="tv_flash">闪光灯</string>
+    <string name="tv_flash_front">柔光自拍</string>
+    <string name="tv_time_lapse">延时拍摄</string>
+    <string name="tv_luminous_compensation">夜拍补光</string>
+    <string name="tv_touch_take">触屏拍照</string>
+    <string name="tv_camera_setting">相机设置</string>
+
+    <!-- 滤镜页面按钮 -->
+    <string name="btn_preview_beauty">美颜</string>
+    <string name="btn_preview_makeup">美妆</string>
+    <string name="btn_preview_filter">滤镜</string>
+
+    <!-- 美颜 -->
+    <string-array name="preview_beauty">
+        <item>磨皮</item>
+        <item>肤色</item>
+        <item>瘦脸</item>
+        <item>削脸</item>
+        <item>小脸</item>
+        <item>下巴</item>
+        <item>法令纹</item>
+        <item>额头</item>
+        <item>大眼</item>
+        <item>眼距</item>
+        <item>眼角</item>
+        <item>卧蚕</item>
+        <item>眼袋</item>
+        <item>亮眼</item>
+        <item>瘦鼻</item>
+        <item>鼻翼</item>
+        <item>长鼻</item>
+        <item>嘴型</item>
+        <item>美牙</item>
+    </string-array>
+
+    <!-- 美妆 -->
+    <string-array name="preview_makeup">
+        <item>口红</item>
+        <item>腮红</item>
+        <item>阴影</item>
+        <item>眉毛</item>
+        <item>眼影</item>
+        <item>眼线</item>
+        <item>睫毛</item>
+        <item>双眼皮</item>
+        <item>瞳孔</item>
+    </string-array>
+
+    <string name="makeup_clear">一键清除</string>
+
+    <!-- 相机类型 -->
+    <string-array name="gallery_indicator">
+        <item>表情包</item>
+        <item>拍照</item>
+        <item>视频</item>
+    </string-array>
+
+
+    <!-- 相机设置页面 -->
+    <string name="select_watermark">选择水印</string>
+    <string name="show_face_points">显示人脸关键点</string>
+    <string name="hide_face_points">隐藏人脸关键点</string>
+    <string name="show_fps">显示fps</string>
+    <string name="hide_fps">隐藏fps</string>
+
+</resources>

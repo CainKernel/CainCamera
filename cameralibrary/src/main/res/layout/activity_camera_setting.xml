@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.CameraSettingActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 选择水印 -->
+        <RelativeLayout
+            android:id="@+id/layout_select_watermark"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/setting_page_margin_top">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:textSize="16sp"
+                android:text="@string/select_watermark"
+                android:layout_marginStart="@dimen/setting_page_margin_start"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/setting_page_margin_end"
+                android:background="@drawable/ic_settings_arrow_right"/>
+        </RelativeLayout>
+
+        <!-- 分割线 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginTop="@dimen/setting_page_margin_top"
+            android:background="@color/dimgray" />
+
+        <!-- 显示关键点 -->
+        <RelativeLayout
+            android:id="@+id/layout_show_face_points"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/setting_page_margin_top">
+            <TextView
+                android:id="@+id/tv_show_face_points"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:textSize="16sp"
+                android:text="@string/show_face_points"
+                android:layout_marginStart="@dimen/setting_page_margin_start"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/setting_page_margin_end"
+                android:background="@drawable/ic_settings_arrow_right"/>
+        </RelativeLayout>
+
+        <!-- 分割线 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginTop="@dimen/setting_page_margin_top"
+            android:background="@color/dimgray" />
+
+        <!-- 显示fps -->
+        <RelativeLayout
+            android:id="@+id/layout_show_fps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/setting_page_margin_top">
+            <TextView
+                android:id="@+id/tv_show_fps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:textSize="16sp"
+                android:text="@string/show_fps"
+                android:layout_marginStart="@dimen/setting_page_margin_start"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/setting_page_margin_end"
+                android:background="@drawable/ic_settings_arrow_right"/>
+        </RelativeLayout>
+
+        <!-- 分割线 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginTop="@dimen/setting_page_margin_top"
+            android:background="@color/dimgray" />
+    </LinearLayout>
+
+</ScrollView>

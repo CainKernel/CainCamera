@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="media_item_spacing">2dp</dimen>
+
+    <dimen name="album_title_margin_start">20dp</dimen>
+    <dimen name="album_item_height">40dp</dimen>
+    <dimen name="album_item_margin_start">20dp</dimen>
+    <dimen name="album_item_margin_end">30dp</dimen>
+    <dimen name="album_item_margin_top">10dp</dimen>
+    <dimen name="album_item_margin_bottom">10dp</dimen>
+</resources>

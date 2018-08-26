@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/video_window_background"
+    tools:context=".fragment.VideoEditFragment">
+
+    <!--顶部导航栏-->
+    <include
+        layout="@layout/view_video_title" />
+
+    <!--底部编辑栏-->
+    <RelativeLayout
+        android:id="@+id/layout_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp260"
+        android:layout_alignParentBottom="true">
+
+        <!-- 播放进度 -->
+        <include
+            layout="@layout/view_video_progress" />
+
+        <!-- 底部选择栏 -->
+        <include
+            layout="@layout/view_video_bottom_menu"/>
+
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="bottom"
+            android:layout_above="@id/layout_bottom_menu">
+        </FrameLayout>
+
+    </RelativeLayout>
+
+    <!--视频播放栏-->
+    <FrameLayout
+        android:id="@+id/layout_video_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:layout_below="@id/layout_title"
+        android:layout_above="@id/layout_bottom">
+
+        <android.opengl.GLSurfaceView
+            android:id="@+id/mediaView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"/>
+
+        <!-- 暂停播放按钮 -->
+        <Button
+            android:id="@+id/btn_play_indicator"
+            android:layout_width="@dimen/dp80"
+            android:layout_height="@dimen/dp80"
+            android:layout_gravity="center"
+            android:background="@drawable/ic_video_indicator" />
+    </FrameLayout>
+
+</RelativeLayout>

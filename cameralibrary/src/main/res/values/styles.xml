@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- No Action Bar theme. -->
+    <style name="NoActionBarTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/video_window_background</item>
+        <item name="colorPrimaryDark">@color/video_window_background</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+</resources>

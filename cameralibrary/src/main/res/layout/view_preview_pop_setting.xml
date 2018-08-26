@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/popup_background"
+        android:layout_margin="@dimen/setting_padding"
+        android:padding="@dimen/setting_padding">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- 触屏拍摄 -->
+            <LinearLayout
+                android:id="@+id/layout_touch_take"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <ImageView
+                    android:id="@+id/iv_touch_take"
+                    android:layout_width="@dimen/dp30"
+                    android:layout_height="@dimen/dp30"
+                    android:layout_margin="@dimen/dp5"
+                    android:background="@drawable/ic_camera_setting_more_light"/>
+                <TextView
+                    android:id="@+id/tv_touch_take"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/popup_text_color"
+                    android:text="触屏拍摄"/>
+            </LinearLayout>
+
+            <!-- 延时拍摄 -->
+            <LinearLayout
+                android:id="@+id/layout_time_lapse"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+                    <ImageView
+                        android:id="@+id/iv_time_lapse"
+                        android:layout_width="@dimen/dp30"
+                        android:layout_height="@dimen/dp30"
+                        android:layout_margin="@dimen/dp5"
+                        android:background="@drawable/ic_camera_setting_more_light"/>
+                    <TextView
+                        android:id="@+id/tv_time_lapse"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/popup_text_color"
+                        android:text="@string/tv_time_lapse"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 闪光灯/柔光自拍 -->
+            <LinearLayout
+                android:id="@+id/layout_flash"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+                    <ImageView
+                        android:id="@+id/iv_flash"
+                        android:layout_width="@dimen/dp30"
+                        android:layout_height="@dimen/dp30"
+                        android:layout_margin="@dimen/dp5"
+                        android:background="@drawable/ic_camera_flash_off"/>
+                    <TextView
+                        android:id="@+id/tv_flash"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/popup_text_color"
+                        android:text="@string/tv_flash"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 相机设置 -->
+            <LinearLayout
+                android:id="@+id/layout_camera_setting"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <ImageView
+                    android:id="@+id/iv_camera_setting"
+                    android:layout_width="@dimen/dp30"
+                    android:layout_height="@dimen/dp30"
+                    android:layout_margin="@dimen/dp5"
+                    android:background="@drawable/ic_camera_setting"/>
+                <TextView
+                    android:id="@+id/tv_camera_setting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/popup_text_color"
+                    android:text="@string/tv_camera_setting"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/setting_split_height"
+            android:layout_marginTop="@dimen/setting_margin"
+            android:background="@color/popup_text_color"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/setting_margin"
+            android:orientation="horizontal"
+            android:layout_gravity="center"
+            android:gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:textColor="@color/popup_text_color"
+                android:text="@string/tv_luminous_compensation"/>
+            <Switch
+                android:id="@+id/sw_luminous_compensation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:switchMinWidth="@dimen/switch_min_width" />
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
