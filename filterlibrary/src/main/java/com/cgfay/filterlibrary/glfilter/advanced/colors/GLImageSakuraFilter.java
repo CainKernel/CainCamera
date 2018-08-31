@@ -118,8 +118,8 @@ public class GLImageSakuraFilter extends GLImageFilter {
     }
 
     @Override
-    public void onDrawArraysBegin() {
-        super.onDrawArraysBegin();
+    public void onDrawFrameBegin() {
+        super.onDrawFrameBegin();
         GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
         GLES30.glBindTexture(getTextureType(), mCurveTexture);
         GLES30.glUniform1i(mCurveTextureHandle, 1);

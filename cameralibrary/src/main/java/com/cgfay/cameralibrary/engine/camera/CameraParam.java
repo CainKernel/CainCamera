@@ -169,6 +169,7 @@ public final class CameraParam {
         enableVignette = false;
         beauty = new Beauty();
         makeup = new Makeup();
+        facePoints = new FacePoints();
     }
 
     /**

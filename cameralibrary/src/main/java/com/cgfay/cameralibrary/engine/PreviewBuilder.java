@@ -2,6 +2,7 @@ package com.cgfay.cameralibrary.engine;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.hardware.Camera;
 import android.support.v4.app.Fragment;
 
 import com.cgfay.cameralibrary.activity.CameraActivity;
@@ -88,6 +89,9 @@ public final class PreviewBuilder {
      */
     public PreviewBuilder backCamera(boolean backCamera) {
         mCameraParam.backCamera = backCamera;
+        if (mCameraParam.backCamera) {
+            mCameraParam.cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+        }
         return this;
     }
 

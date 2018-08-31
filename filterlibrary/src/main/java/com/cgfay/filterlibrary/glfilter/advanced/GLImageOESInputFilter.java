@@ -5,7 +5,6 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 
 import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
-import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;
 
 /**
  * 外部纹理(OES纹理)输入
@@ -57,8 +56,8 @@ public class GLImageOESInputFilter extends GLImageFilter {
     }
 
     @Override
-    public void onDrawArraysBegin() {
-        super.onDrawArraysBegin();
+    public void onDrawFrameBegin() {
+        super.onDrawFrameBegin();
         GLES30.glUniformMatrix4fv(mTexMatrixHandle, 1, false, mTextureMatrix, 0);
     }
 

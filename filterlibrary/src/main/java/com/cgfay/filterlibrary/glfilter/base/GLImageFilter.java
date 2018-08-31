@@ -83,13 +83,11 @@ public class GLImageFilter {
     protected int mFrameHeight = -1;
 
     // FBO
-    protected int[] mFramebuffers;
-    protected int[] mFramebufferTextures;
+    protected int[] mFrameBuffers;
+    protected int[] mFrameBufferTextures;
 
     // 变换矩阵
     protected float[] mMVPMatrix = new float[16];
-    // 缩放矩阵
-    protected float[] mTexMatrix = new float[16];
 
     public GLImageFilter(Context context) {
         this(context, VERTEX_SHADER, FRAGMENT_SHADER_2D);
@@ -98,16 +96,38 @@ public class GLImageFilter {
     public GLImageFilter(Context context, String vertexShader, String fragmentShader) {
         mContext = context;
         mRunOnDraw = new LinkedList<>();
-
+        // 记录shader数据
         mVertexShader = vertexShader;
         mFragmentShader = fragmentShader;
-
-        mVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
-        mTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
-
+        // 初始化缓冲区
+        initBuffers();
+        // 初始化单位矩阵
         initIdentityMatrix();
         // 初始化程序句柄
         initProgramHandle();
+    }
+
+    /**
+     * 初始化缓冲区
+     */
+    protected void initBuffers() {
+        releaseBuffers();
+        mVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
+        mTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
+    }
+
+    /**
+     * 释放缓冲区
+     */
+    protected void releaseBuffers() {
+        if (mVertexBuffer != null) {
+            mVertexBuffer.clear();
+            mVertexBuffer = null;
+        }
+        if (mTextureBuffer != null) {
+            mTextureBuffer.clear();
+            mTextureBuffer = null;
+        }
     }
 
     /**
@@ -180,6 +200,8 @@ public class GLImageFilter {
         // 运行延时任务
         runPendingOnDrawTasks();
 
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
         // 绑定顶点坐标缓冲
         vertexBuffer.position(0);
         GLES30.glVertexAttribPointer(mPositionHandle, mCoordsPerVertex,
@@ -197,9 +219,9 @@ public class GLImageFilter {
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(getTextureType(), textureId);
         GLES30.glUniform1i(mInputTextureHandle, 0);
-        onDrawArraysBegin();
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
-        onDrawArraysAfter();
+        onDrawFrameBegin();
+        onDrawFrame();
+        onDrawFrameAfter();
         GLES30.glDisableVertexAttribArray(mPositionHandle);
         GLES30.glDisableVertexAttribArray(mTextureCoordinateHandle);
         GLES30.glBindTexture(getTextureType(), 0);
@@ -225,14 +247,14 @@ public class GLImageFilter {
      */
     public int drawFrameBuffer(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
         // 没有FBO、没初始化、输入纹理不合法、滤镜不可用时，直接返回
-        if (textureId == OpenGLUtils.GL_NOT_TEXTURE || mFramebuffers == null
+        if (textureId == OpenGLUtils.GL_NOT_TEXTURE || mFrameBuffers == null
                 || !mIsInitialized || !mFilterEnable) {
             return textureId;
         }
 
         // 绑定FBO
         GLES30.glViewport(0, 0, mFrameWidth, mFrameHeight);
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFramebuffers[0]);
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFrameBuffers[0]);
         // 使用当前的program
         GLES30.glUseProgram(mProgramHandle);
         // 运行延时任务，这个要放在glUseProgram之后，要不然某些设置项会不生效
@@ -255,16 +277,24 @@ public class GLImageFilter {
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(getTextureType(), textureId);
         GLES30.glUniform1i(mInputTextureHandle, 0);
-        onDrawArraysBegin();
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
-        onDrawArraysAfter();
+        onDrawFrameBegin();
+        onDrawFrame();
+        onDrawFrameAfter();
         GLES30.glDisableVertexAttribArray(mPositionHandle);
         GLES30.glDisableVertexAttribArray(mTextureCoordinateHandle);
         GLES30.glBindTexture(getTextureType(), 0);
 
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
-        return mFramebufferTextures[0];
+        return mFrameBufferTextures[0];
     }
+
+    /**
+     * 绘制图像
+     */
+    protected void onDrawFrame() {
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
+    }
+
 
     /**
      * 获取Texture类型
@@ -275,16 +305,16 @@ public class GLImageFilter {
     }
 
     /**
-     * 调用drawArrays之前，方便添加其他属性
+     * 调用glDrawArrays/glDrawElements之前，方便添加其他属性
      */
-    public void onDrawArraysBegin() {
+    public void onDrawFrameBegin() {
 
     }
 
     /**
-     * drawArrays调用之后，方便销毁其他属性
+     * glDrawArrays/glDrawElements调用之后，方便销毁其他属性
      */
-    public void onDrawArraysAfter() {
+    public void onDrawFrameAfter() {
 
     }
 
@@ -297,6 +327,7 @@ public class GLImageFilter {
             mProgramHandle = OpenGLUtils.GL_NOT_INIT;
         }
         destroyFrameBuffer();
+        releaseBuffers();
     }
 
     /**
@@ -308,15 +339,15 @@ public class GLImageFilter {
         if (!isInitialized()) {
             return;
         }
-        if (mFramebuffers != null && (mFrameWidth != width || mFrameHeight != height)) {
+        if (mFrameBuffers != null && (mFrameWidth != width || mFrameHeight != height)) {
             destroyFrameBuffer();
         }
-        if (mFramebuffers == null) {
+        if (mFrameBuffers == null) {
             mFrameWidth = width;
             mFrameHeight = height;
-            mFramebuffers = new int[1];
-            mFramebufferTextures = new int[1];
-            OpenGLUtils.createFrameBuffer(mFramebuffers, mFramebufferTextures, width, height);
+            mFrameBuffers = new int[1];
+            mFrameBufferTextures = new int[1];
+            OpenGLUtils.createFrameBuffer(mFrameBuffers, mFrameBufferTextures, width, height);
         }
     }
 
@@ -327,14 +358,14 @@ public class GLImageFilter {
         if (!mIsInitialized) {
             return;
         }
-        if (mFramebufferTextures != null) {
-            GLES30.glDeleteTextures(1, mFramebufferTextures, 0);
-            mFramebufferTextures = null;
+        if (mFrameBufferTextures != null) {
+            GLES30.glDeleteTextures(1, mFrameBufferTextures, 0);
+            mFrameBufferTextures = null;
         }
 
-        if (mFramebuffers != null) {
-            GLES30.glDeleteFramebuffers(1, mFramebuffers, 0);
-            mFramebuffers = null;
+        if (mFrameBuffers != null) {
+            GLES30.glDeleteFramebuffers(1, mFrameBuffers, 0);
+            mFrameBuffers = null;
         }
         mFrameWidth = -1;
         mFrameWidth = -1;
@@ -345,7 +376,6 @@ public class GLImageFilter {
      */
     public void initIdentityMatrix() {
         Matrix.setIdentityM(mMVPMatrix, 0);
-        Matrix.setIdentityM(mTexMatrix, 0);
     }
 
     /**

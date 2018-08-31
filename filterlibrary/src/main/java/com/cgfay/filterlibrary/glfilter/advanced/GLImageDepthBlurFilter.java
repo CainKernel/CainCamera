@@ -116,8 +116,8 @@ public class GLImageDepthBlurFilter extends GLImageFilter {
     }
 
     @Override
-    public void onDrawArraysBegin() {
-        super.onDrawArraysBegin();
+    public void onDrawFrameBegin() {
+        super.onDrawFrameBegin();
         if (mBlurTexture != OpenGLUtils.GL_NOT_TEXTURE) {
             GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
             GLES30.glBindTexture(getTextureType(), mBlurTexture);

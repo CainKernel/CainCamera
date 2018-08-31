@@ -15,7 +15,7 @@ import com.cgfay.filterlibrary.glfilter.advanced.makeup.GLImageMakeupFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.sticker.GLImageStickerFilter;
 import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
 import com.cgfay.filterlibrary.glfilter.model.IBeautify;
-import com.cgfay.filterlibrary.glfilter.model.IMakeup;
+import com.cgfay.filterlibrary.glfilter.model.IFacePoints;
 import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
 import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;
 
@@ -48,7 +48,7 @@ public final class RenderManager {
     // 彩妆滤镜
     private GLImageMakeupFilter mMakeupFilter;
     // 瘦脸滤镜
-    private GLImageFaceAdjustFilter mFaceAdjustFilter;
+    private GLImageFilter mFaceAdjustFilter;
     // 动态贴纸滤镜
     private GLImageStickerFilter mStickerFilter;
     // LUT滤镜
@@ -238,6 +238,12 @@ public final class RenderManager {
             }
             // 美型滤镜
             if (mFaceAdjustFilter != null) {
+                if (mFaceAdjustFilter instanceof IBeautify) {
+                    ((IBeautify) mFaceAdjustFilter).onBeauty(mCameraParam.beauty);
+                }
+                if (mFaceAdjustFilter instanceof IFacePoints) {
+                    ((IFacePoints) mFaceAdjustFilter).onFacePoints(mCameraParam.facePoints);
+                }
                 currentTexture = mFaceAdjustFilter.drawFrameBuffer(currentTexture);
             }
             // 动态贴纸滤镜

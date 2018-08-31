@@ -55,8 +55,8 @@ public class GLImageMosaicFilter extends GLImageFilter {
     }
 
     @Override
-    public void onDrawArraysBegin() {
-        super.onDrawArraysBegin();
+    public void onDrawFrameBegin() {
+        super.onDrawFrameBegin();
         GLES30.glUniform1f(mMosaicSizeLoc, mMosaicSize);
         GLES30.glUniform1f(mImageWidthFactorLoc, mImageWidthFactor);
         GLES30.glUniform1f(mImageHeightFactorLoc, mImageHeightFactor);

@@ -34,7 +34,7 @@ public class GLImageFacePointsFilter extends GLImageFilter {
             "}";
 
     // 关键点滤镜
-    private final float color[] = { 0.2f, 0.709803922f, 0.898039216f, 1.0f };
+    private final float color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
     private int mColorHandle;
 
@@ -110,7 +110,7 @@ public class GLImageFacePointsFilter extends GLImageFilter {
         GLES30.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
         // 绑定颜色
         GLES30.glUniform4fv(mColorHandle, 1, color, 0);
-        onDrawArraysBegin();
+        onDrawFrameBegin();
         // 逐个顶点绘制出来
         synchronized (this) {
             for (int i = 0; i < mPoints.size(); i++) {
@@ -125,7 +125,7 @@ public class GLImageFacePointsFilter extends GLImageFilter {
                 }
             }
         }
-        onDrawArraysAfter();
+        onDrawFrameAfter();
         GLES30.glDisableVertexAttribArray(mPositionHandle);
         return true;
     }
@@ -140,7 +140,7 @@ public class GLImageFacePointsFilter extends GLImageFilter {
     @Override
     public int drawFrameBuffer(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
         // 没有FBO、没初始化、输入纹理不合法、滤镜不可用时，直接返回
-        if (textureId == OpenGLUtils.GL_NOT_TEXTURE || mFramebuffers == null
+        if (textureId == OpenGLUtils.GL_NOT_TEXTURE || mFrameBuffers == null
                 || !mIsInitialized || !mFilterEnable) {
             return textureId;
         }
@@ -170,8 +170,8 @@ public class GLImageFacePointsFilter extends GLImageFilter {
      */
     public void setFacePoints(ArrayList<ArrayList> points) {
         synchronized (this) {
+            mPoints.clear();
             if (points.size() > 0) {
-                mPoints.clear();
                 mPoints.addAll(points);
             }
         }
