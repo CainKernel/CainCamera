@@ -2,12 +2,9 @@ package com.cgfay.videolibrary.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -19,9 +16,11 @@ import com.cgfay.videolibrary.adapter.VideoFilterAdapter;
 /**
  * 滤镜页面
  */
-public class VideoFilterFragment extends BaseVideoFilterFragment implements RecyclerView.OnItemTouchListener {
+public class VideoFilterFragment extends BaseVideoFilterFragment {
 
-    private GestureDetectorCompat mGestureDetector;
+    // 当前滤镜索引
+    private int mCurrentFilterIndex = 0;
+    private VideoFilterAdapter mFilterAdapter;
     private OnFilterSelectListener mListener;
 
     public VideoFilterFragment() {
@@ -46,50 +45,49 @@ public class VideoFilterFragment extends BaseVideoFilterFragment implements Recy
         mFilterLayoutManager = new LinearLayoutManager(getActivity());
         mFilterLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         mFilterListView.setLayoutManager(mFilterLayoutManager);
-        VideoFilterAdapter adapter = new VideoFilterAdapter(getActivity(), mGlFilterType, mFilterName);
-        mFilterListView.setAdapter(adapter);
-        mGestureDetector = new GestureDetectorCompat(mFilterListView.getContext(),
-                new ItemTouchHelperGestureListener());
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        mFilterListView.addOnItemTouchListener(this);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        mFilterListView.removeOnItemTouchListener(this);
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-        mGestureDetector.onTouchEvent(e);
-        return false;
-    }
-
-    @Override
-    public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-        mGestureDetector.onTouchEvent(e);
-    }
-
-    @Override
-    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
-    }
-
-    private class ItemTouchHelperGestureListener extends GestureDetector.SimpleOnGestureListener {
-        @Override
-        public boolean onSingleTapUp(MotionEvent e) {
-            if (mListener != null) {
-                View child = mFilterListView.findChildViewUnder(e.getX(), e.getY());
-                int position = mFilterListView.getChildAdapterPosition(child);
-                mListener.onFilterSelected(getFilterType(position));
+        mFilterAdapter = new VideoFilterAdapter(getActivity(), mGlFilterType, mFilterName);
+        mFilterListView.setAdapter(mFilterAdapter);
+        mFilterAdapter.setOnFilterChangeListener(new VideoFilterAdapter.OnFilterChangeListener() {
+            @Override
+            public void onFilterChanged(GLImageFilterType type) {
+                if (mListener != null) {
+                    mListener.onFilterSelected(type);
+                }
+                mCurrentFilterIndex = mFilterAdapter.getSelectedPosition();
             }
-            return super.onSingleTapUp(e);
+        });
+        if (mCurrentFilterIndex != mFilterAdapter.getSelectedPosition()) {
+            scrollToCurrentFilter(mCurrentFilterIndex);
         }
+    }
+
+    /**
+     * 滚动到选中的滤镜位置上
+     * @param index
+     */
+    public void scrollToCurrentFilter(int index) {
+        if (mFilterListView != null) {
+            int firstItem = mFilterLayoutManager.findFirstVisibleItemPosition();
+            int lastItem = mFilterLayoutManager.findLastVisibleItemPosition();
+            if (index <= firstItem) {
+                mFilterListView.scrollToPosition(index);
+            } else if (index <= lastItem) {
+                int top = mFilterListView.getChildAt(index - firstItem).getTop();
+                mFilterListView.scrollBy(0, top);
+            } else {
+                mFilterListView.scrollToPosition(index);
+            }
+            mFilterAdapter.scrollToCurrentFilter(index);
+        }
+        mCurrentFilterIndex = index;
+    }
+
+    /**
+     * 获取当前滤镜索引
+     * @return
+     */
+    public int getCurrentFilterIndex() {
+        return mFilterAdapter != null ? mFilterAdapter.getSelectedPosition() : 0;
     }
 
     /**

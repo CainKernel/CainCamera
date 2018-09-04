@@ -210,6 +210,7 @@ public class MediaScanActivity extends AppCompatActivity implements AlbumScanner
             boolean isVideo = mediaItem.isVideo();
             MediaScanParam.getInstance().mediaSelectedListener.onSelected(uriList, pathList, isVideo);
         }
+        finish();
     }
 
     // 记录跳转到预览页面时的位置
