@@ -107,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 })
                 .startPreview();
-        MainActivity.this.finish();
     }
 
     /**
