@@ -121,7 +121,6 @@ public class VideoEditFragment extends Fragment
     // 画面预览
     private GLSurfaceView mGLSurfaceView;
     // 进度条
-    private RelativeLayout mLayoutProgress;
     private SeekBar mPlayProgressBar;
     private TextView mCurrentPositionView;
     private TextView mDurationView;
@@ -215,7 +214,6 @@ public class VideoEditFragment extends Fragment
         mBtnNext.setOnClickListener(this);
 
         // 进度条
-        mLayoutProgress = (RelativeLayout) view.findViewById(R.id.layout_progress);
         mPlayProgressBar = (SeekBar) view.findViewById(R.id.play_progress);
         mPlayProgressBar.setOnSeekBarChangeListener(this);
         mCurrentPositionView = (TextView) view.findViewById(R.id.tv_current);
@@ -763,7 +761,6 @@ public class VideoEditFragment extends Fragment
      * 重置底部视图
      */
     private void resetBottomView() {
-        mLayoutProgress.setVisibility(View.VISIBLE);
         mBtnCut.setBackgroundColor(Color.TRANSPARENT);
         mBtnMusic.setBackgroundColor(Color.TRANSPARENT);
         mBtnFilters.setBackgroundColor(Color.TRANSPARENT);
@@ -809,7 +806,6 @@ public class VideoEditFragment extends Fragment
 
         } else if (index == FRAGMENT_EFFECT) {
             mBtnEffect.setBackgroundColor(Color.YELLOW);
-            mLayoutProgress.setVisibility(View.GONE);
             if (mVideoEffectFragment == null) {
                 mVideoEffectFragment = new VideoEffectFragment();
                 mVideoEffectFragment.addOnItemLongPressedListener(mEffectItemLongPressedListener);
@@ -821,7 +817,6 @@ public class VideoEditFragment extends Fragment
             }
         } else if (index == FRAGMENT_FONT) {
             mBtnFont.setBackgroundColor(Color.YELLOW);
-            mLayoutProgress.setVisibility(View.GONE);
             if (mVideoSubtitleFragment == null) {
                 mVideoSubtitleFragment = new VideoSubtitleFragment();
                 ft.add(R.id.fragment_container, mVideoSubtitleFragment);

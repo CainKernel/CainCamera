@@ -1,49 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/video_window_background"
     tools:context=".fragment.VideoEditFragment">
 
-    <!--顶部导航栏-->
-    <include
-        layout="@layout/view_video_title" />
-
-    <!--底部编辑栏-->
-    <RelativeLayout
-        android:id="@+id/layout_bottom"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/dp260"
-        android:layout_alignParentBottom="true">
-
-        <!-- 播放进度 -->
-        <include
-            layout="@layout/view_video_progress" />
-
-        <!-- 底部选择栏 -->
-        <include
-            layout="@layout/view_video_bottom_menu"/>
-
-        <FrameLayout
-            android:id="@+id/fragment_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="bottom"
-            android:layout_above="@id/layout_bottom_menu">
-        </FrameLayout>
-
-    </RelativeLayout>
-
     <!--视频播放栏-->
     <FrameLayout
         android:id="@+id/layout_video_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:layout_below="@id/layout_title"
-        android:layout_above="@id/layout_bottom">
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center">
 
         <android.opengl.GLSurfaceView
             android:id="@+id/mediaView"
@@ -60,4 +29,42 @@
             android:background="@drawable/ic_video_indicator" />
     </FrameLayout>
 
-</RelativeLayout>
+    <!--顶部导航栏-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="@dimen/dp20">
+        <include
+            layout="@layout/view_video_progress" />
+
+        <include
+            layout="@layout/view_video_title" />
+    </LinearLayout>
+
+    <!--底部编辑栏-->
+    <LinearLayout
+        android:id="@+id/layout_bottom"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/dp200"
+        android:layout_gravity="bottom"
+        android:gravity="bottom"
+        android:paddingBottom="@dimen/dp30"
+        android:background="@color/video_edit_background">
+
+        <!-- 内容栏 -->
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="bottom">
+        </FrameLayout>
+
+        <!-- 底部选择栏 -->
+        <include
+            layout="@layout/view_video_bottom_menu"/>
+    </LinearLayout>
+
+</FrameLayout>

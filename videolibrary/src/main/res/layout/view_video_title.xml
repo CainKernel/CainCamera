@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/dp40"
     android:layout_margin="@dimen/dp10"
-    android:layout_alignParentTop="true">
+    android:layout_gravity="top">
 
     <Button
         android:id="@+id/btn_back"

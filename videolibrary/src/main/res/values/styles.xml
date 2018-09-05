@@ -1,0 +1,10 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="VideoTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/video_window_background</item>
+        <item name="colorPrimaryDark">@color/video_window_background</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+</resources>
