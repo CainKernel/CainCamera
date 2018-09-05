@@ -97,7 +97,7 @@ public class MediaScanner implements LoaderManager.LoaderCallbacks<Cursor> {
      * @param target
      * @param enableCapture
      */
-    public void reScaneAlbum(@Nullable AlbumItem target, boolean enableCapture) {
+    public void reScanAlbum(@Nullable AlbumItem target, boolean enableCapture) {
         Bundle bundle = new Bundle();
         bundle.putParcelable(ALBUM_ARGS, target);
         bundle.putBoolean(CAPTURE_ENABLE_ARGS, enableCapture);

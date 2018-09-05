@@ -888,12 +888,11 @@ public class VideoEditFragment extends Fragment
             if (mStartMusicSelectListener != null) {
                 mStartMusicSelectListener.onOpenMusicSelectPage();
             }
-        }
-
-        @Override
-        public void onMusicPlayRegion(int startPosition, int finishPosition) {
+            if (mVideoPlayer != null) {
+                mVideoPlayer.pause();
+            }
             if (mAudioPlayer != null) {
-                mAudioPlayer.loopRegion(startPosition, finishPosition);
+                mAudioPlayer.pause();
             }
         }
 

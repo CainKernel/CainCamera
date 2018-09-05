@@ -4,13 +4,6 @@
     android:layout_height="wrap_content"
     android:layout_gravity="bottom">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:minHeight="@dimen/dp40"
-        android:background="@color/dimgray">
-    </LinearLayout>
-
     <!-- 声音处理 -->
     <LinearLayout
         android:layout_width="match_parent"

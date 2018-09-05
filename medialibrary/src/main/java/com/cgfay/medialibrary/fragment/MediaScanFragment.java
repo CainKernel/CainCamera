@@ -96,7 +96,7 @@ public class MediaScanFragment extends Fragment implements MediaScanner.MediaSca
      */
     public void updateAlbum(AlbumItem item) {
         if (mMediaScanner != null) {
-            mMediaScanner.reScaneAlbum(item, MediaScanParam.getInstance().showCapture);
+            mMediaScanner.reScanAlbum(item, MediaScanParam.getInstance().showCapture);
         }
     }
 

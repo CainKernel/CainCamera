@@ -19,7 +19,7 @@ import com.cgfay.videolibrary.R;
 public class VideoMusicFragment extends BaseVideoPageFragment {
 
     private TextView mSourceVoiceView;
-    private TextView mMusiceVoiceView;
+    private TextView mMusicVoiceView;
     private SeekBar mVoiceProgress;
 
     private TextView mMusicTitleView;
@@ -30,9 +30,6 @@ public class VideoMusicFragment extends BaseVideoPageFragment {
     private OnMusicEditListener mMusicEditListener;
 
     private Music mMusic;
-
-    // 最大时长, 也就是视频的长度
-    private int mMaxDuraion;
 
     public VideoMusicFragment() {
 
@@ -82,7 +79,7 @@ public class VideoMusicFragment extends BaseVideoPageFragment {
 
     private void initView(View view) {
         mSourceVoiceView = (TextView) view.findViewById(R.id.tv_source_voice);
-        mMusiceVoiceView = (TextView) view.findViewById(R.id.tv_music_voice);
+        mMusicVoiceView = (TextView) view.findViewById(R.id.tv_music_voice);
         mVoiceProgress = (SeekBar) view.findViewById(R.id.voice_progress);
         mVoiceProgress.setMax(100);
         mVoiceProgress.setProgress(100);
@@ -99,7 +96,7 @@ public class VideoMusicFragment extends BaseVideoPageFragment {
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             if (fromUser) {
                 mSourceVoiceView.setText(getText(R.string.source_voice) + "\n" + mVoiceProgress.getProgress() + "%");
-                mMusiceVoiceView.setText(getText(R.string.music_voice) + "\n" + (100 - mVoiceProgress.getProgress()) + "%");
+                mMusicVoiceView.setText(getText(R.string.music_voice) + "\n" + (100 - mVoiceProgress.getProgress()) + "%");
                 if (mMusicEditListener != null) {
                     mMusicEditListener.onMusicVoiceChange(mVoiceProgress.getProgress(), 100 - mVoiceProgress.getProgress());
                 }
@@ -109,13 +106,13 @@ public class VideoMusicFragment extends BaseVideoPageFragment {
         @Override
         public void onStartTrackingTouch(SeekBar seekBar) {
             mSourceVoiceView.setText(getText(R.string.source_voice) + "\n" + mVoiceProgress.getProgress() + "%");
-            mMusiceVoiceView.setText(getText(R.string.music_voice) + "\n" + (100 - mVoiceProgress.getProgress()) + "%");
+            mMusicVoiceView.setText(getText(R.string.music_voice) + "\n" + (100 - mVoiceProgress.getProgress()) + "%");
         }
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
             mSourceVoiceView.setText(getText(R.string.source_voice));
-            mMusiceVoiceView.setText(getText(R.string.music_voice));
+            mMusicVoiceView.setText(getText(R.string.music_voice));
         }
     };
 
@@ -148,14 +145,9 @@ public class VideoMusicFragment extends BaseVideoPageFragment {
         if (mMusicTitleView != null) {
             mMusicTitleView.setText(mMusic.getName());
         }
-    }
-
-    /**
-     * 设置最大时长
-     * @param maxDuration
-     */
-    public void setMaxDuration(int maxDuration) {
-        mMaxDuraion = maxDuration;
+        if (mMusic != null && mLayoutDelete != null) {
+            mLayoutDelete.setVisibility(View.VISIBLE);
+        }
     }
 
     /**
@@ -172,9 +164,6 @@ public class VideoMusicFragment extends BaseVideoPageFragment {
     public interface OnMusicEditListener {
         // 点击选择音乐
         void onMusicSelect();
-
-        // 设置音乐区间
-        void onMusicPlayRegion(int startPosition, int finishPosition);
 
         // 改变音乐声音
         void onMusicVoiceChange(int sourcePercent, int musicPercent);
