@@ -82,7 +82,8 @@ public class MediaScanActivity extends AppCompatActivity implements AlbumScanner
             @Override
             public void onClick(View v) {
                 // flip arrow and show album select page
-                showAlbumSelectPage(!mShowAlbumSelected);
+                mShowAlbumSelected = !mShowAlbumSelected;
+                showAlbumSelectPage(mShowAlbumSelected);
             }
         });
     }
@@ -149,8 +150,7 @@ public class MediaScanActivity extends AppCompatActivity implements AlbumScanner
     private void showAlbumSelectPage(boolean show) {
         mAlbumArrow.setPivotX(mAlbumArrow.getWidth() / 2);
         mAlbumArrow.setPivotY(mAlbumArrow.getHeight() / 2);
-        mShowAlbumSelected = show;
-        if (mShowAlbumSelected) {
+        if (show) {
             mAlbumArrow.setRotation(180);
             mLayoutAlbumSelect.setVisibility(View.VISIBLE);
         } else {
