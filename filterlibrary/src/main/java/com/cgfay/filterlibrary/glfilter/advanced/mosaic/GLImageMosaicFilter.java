@@ -1,4 +1,4 @@
-package com.cgfay.filterlibrary.glfilter.advanced;
+package com.cgfay.filterlibrary.glfilter.advanced.mosaic;
 
 import android.content.Context;
 import android.opengl.GLES30;
@@ -6,7 +6,7 @@ import android.opengl.GLES30;
 import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
 
 /**
- * 马赛克滤镜
+ * 方形马赛克滤镜
  */
 public class GLImageMosaicFilter extends GLImageFilter {
 
