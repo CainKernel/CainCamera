@@ -3,6 +3,7 @@ package com.cgfay.filterlibrary.glfilter.advanced.beauty;
 import android.content.Context;
 
 import com.cgfay.filterlibrary.glfilter.advanced.GLImageGaussianBlurFilter;
+import com.cgfay.filterlibrary.glfilter.advanced.adjust.GLImageSharpnessFilter;
 import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
 import com.cgfay.filterlibrary.glfilter.model.Beauty;
 import com.cgfay.filterlibrary.glfilter.model.IBeautify;
@@ -23,8 +24,10 @@ public class GLImageRealTimeBeautyFilter extends GLImageFilter implements IBeaut
     private GLImageBeautyHighPassFilter mHighPassFilter;
     // 高通滤波做高斯模糊处理，保留边沿细节
     private GLImageGaussianBlurFilter mHighPassBlurFilter;
-    // 磨皮程度调节绿金
+    // 磨皮程度调节滤镜
     private GLImageBeautyAdjustFilter mBeautyAdjustFilter;
+    // 添加锐化调节
+    private GLImageSharpnessFilter mSharpenessFilter;
 
     // 缩放
     private float mBlurScale = 0.35f;
@@ -44,6 +47,8 @@ public class GLImageRealTimeBeautyFilter extends GLImageFilter implements IBeaut
         mHighPassFilter = new GLImageBeautyHighPassFilter(mContext);
         mHighPassBlurFilter = new GLImageGaussianBlurFilter(mContext);
         mBeautyAdjustFilter = new GLImageBeautyAdjustFilter(mContext);
+        mSharpenessFilter = new GLImageSharpnessFilter(mContext);
+        mSharpenessFilter.setSharpness(0.35f);
     }
 
     @Override
@@ -64,6 +69,9 @@ public class GLImageRealTimeBeautyFilter extends GLImageFilter implements IBeaut
         if (mBeautyAdjustFilter != null) {
             mBeautyAdjustFilter.onInputSizeChanged(width, height);
         }
+        if (mSharpenessFilter != null) {
+            mSharpenessFilter.onInputSizeChanged(width, height);
+        }
     }
 
     @Override
@@ -83,6 +91,9 @@ public class GLImageRealTimeBeautyFilter extends GLImageFilter implements IBeaut
         }
         if (mBeautyAdjustFilter != null) {
             mBeautyAdjustFilter.onDisplaySizeChanged(width, height);
+        }
+        if (mSharpenessFilter != null) {
+            mSharpenessFilter.onDisplaySizeChanged(width, height);
         }
     }
 
@@ -114,7 +125,11 @@ public class GLImageRealTimeBeautyFilter extends GLImageFilter implements IBeaut
         // 调节
         if (mBeautyAdjustFilter != null) {
             mBeautyAdjustFilter.setBlurTexture(blurTexture, highPassBlurTexture);
-            return mBeautyAdjustFilter.drawFrame(sourceTexture, vertexBuffer, textureBuffer);
+            currentTexture = mBeautyAdjustFilter.drawFrameBuffer(sourceTexture, vertexBuffer, textureBuffer);
+        }
+        // 锐化
+        if (mSharpenessFilter != null) {
+            return mSharpenessFilter.drawFrame(currentTexture, vertexBuffer, textureBuffer);
         }
         return false;
     }
@@ -151,6 +166,10 @@ public class GLImageRealTimeBeautyFilter extends GLImageFilter implements IBeaut
             mBeautyAdjustFilter.setBlurTexture(blurTexture, highPassBlurTexture);
             currentTexture = mBeautyAdjustFilter.drawFrameBuffer(currentTexture, vertexBuffer, textureBuffer);
         }
+        // 锐度变换
+        if (mSharpenessFilter != null) {
+            currentTexture = mSharpenessFilter.drawFrameBuffer(currentTexture, vertexBuffer, textureBuffer);
+        }
         return currentTexture;
     }
 
@@ -172,6 +191,9 @@ public class GLImageRealTimeBeautyFilter extends GLImageFilter implements IBeaut
         if (mBeautyAdjustFilter != null) {
             mBeautyAdjustFilter.initFrameBuffer(width, height);
         }
+        if (mSharpenessFilter != null) {
+            mSharpenessFilter.initFrameBuffer(width, height);
+        }
     }
 
     @Override
@@ -191,6 +213,9 @@ public class GLImageRealTimeBeautyFilter extends GLImageFilter implements IBeaut
         }
         if (mBeautyAdjustFilter != null) {
             mBeautyAdjustFilter.destroyFrameBuffer();
+        }
+        if (mSharpenessFilter != null) {
+            mSharpenessFilter.destroyFrameBuffer();
         }
     }
 
@@ -216,6 +241,10 @@ public class GLImageRealTimeBeautyFilter extends GLImageFilter implements IBeaut
         if (mBeautyAdjustFilter != null) {
             mBeautyAdjustFilter.release();
             mBeautyAdjustFilter = null;
+        }
+        if (mSharpenessFilter != null) {
+            mSharpenessFilter.release();
+            mSharpenessFilter = null;
         }
     }
 
