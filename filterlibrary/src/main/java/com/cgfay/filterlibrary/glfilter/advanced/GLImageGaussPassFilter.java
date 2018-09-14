@@ -12,57 +12,45 @@ class GLImageGaussPassFilter extends GLImageFilter {
             "attribute vec4 aPosition;\n" +
             "attribute vec4 aTextureCoord;\n" +
             "\n" +
-            "const int GAUSSIAN_SAMPLES = 9;\n" +
+            "// 高斯算子左右偏移值，当偏移值为2时，高斯算子为3 x 3\n" +
+            "const int SHIFT_SIZE = 2;\n" +
             "\n" +
-            "uniform float texelWidthOffset;\n" +
-            "uniform float texelHeightOffset;\n" +
+            "uniform highp float texelWidthOffset;\n" +
+            "uniform highp float texelHeightOffset;\n" +
             "\n" +
             "varying vec2 textureCoordinate;\n" +
-            "varying vec2 blurCoordinates[GAUSSIAN_SAMPLES];\n" +
+            "varying vec4 blurShiftCoordinates[SHIFT_SIZE];\n" +
             "\n" +
-            "void main()\n" +
-            "{\n" +
-            "	gl_Position = uMVPMatrix * aPosition;\n" +
-            "	textureCoordinate = aTextureCoord.xy;\n" +
-            "	\n" +
-            "	// Calculate the positions for the blur\n" +
-            "	int multiplier = 0;\n" +
-            "	vec2 blurStep;\n" +
-            "   vec2 singleStepOffset = vec2(texelHeightOffset, texelWidthOffset);\n" +
-            "    \n" +
-            "	for (int i = 0; i < GAUSSIAN_SAMPLES; i++)\n" +
-            "   {\n" +
-            "		multiplier = (i - ((GAUSSIAN_SAMPLES - 1) / 2));\n" +
-            "       // Blur in x (horizontal)\n" +
-            "       blurStep = float(multiplier) * singleStepOffset;\n" +
-            "		blurCoordinates[i] = aTextureCoord.xy + blurStep;\n" +
-            "	}\n" +
-            "}\n";
+            "void main() {\n" +
+            "    gl_Position = uMVPMatrix * aPosition;\n" +
+            "    textureCoordinate = aTextureCoord.xy;\n" +
+            "    // 偏移步距\n" +
+            "    vec2 singleStepOffset = vec2(texelWidthOffset, texelHeightOffset);\n" +
+            "    // 记录偏移坐标\n" +
+            "    for (int i = 0; i < SHIFT_SIZE; i++) {\n" +
+            "        blurShiftCoordinates[i] = vec4(textureCoordinate.xy - float(i + 1) * singleStepOffset,\n" +
+            "                                       textureCoordinate.xy + float(i + 1) * singleStepOffset);\n" +
+            "    }\n" +
+            "}";
 
     private static final String FRAGMENT_SHADER = "" +
+            "precision mediump float;\n" +
+            "varying vec2 textureCoordinate;\n" +
             "uniform sampler2D inputTexture;\n" +
-            "\n" +
-            "const lowp int GAUSSIAN_SAMPLES = 9;\n" +
-            "\n" +
-            "varying highp vec2 textureCoordinate;\n" +
-            "varying highp vec2 blurCoordinates[GAUSSIAN_SAMPLES];\n" +
-            "\n" +
-            "void main()\n" +
-            "{\n" +
-            "	lowp vec3 sum = vec3(0.0);\n" +
-            "   lowp vec4 fragColor=texture2D(inputTexture,textureCoordinate);\n" +
-            "	\n" +
-            "    sum += texture2D(inputTexture, blurCoordinates[0]).rgb * 0.05;\n" +
-            "    sum += texture2D(inputTexture, blurCoordinates[1]).rgb * 0.09;\n" +
-            "    sum += texture2D(inputTexture, blurCoordinates[2]).rgb * 0.12;\n" +
-            "    sum += texture2D(inputTexture, blurCoordinates[3]).rgb * 0.15;\n" +
-            "    sum += texture2D(inputTexture, blurCoordinates[4]).rgb * 0.18;\n" +
-            "    sum += texture2D(inputTexture, blurCoordinates[5]).rgb * 0.15;\n" +
-            "    sum += texture2D(inputTexture, blurCoordinates[6]).rgb * 0.12;\n" +
-            "    sum += texture2D(inputTexture, blurCoordinates[7]).rgb * 0.09;\n" +
-            "    sum += texture2D(inputTexture, blurCoordinates[8]).rgb * 0.05;\n" +
-            "\n" +
-            "	gl_FragColor = vec4(sum, fragColor.a);\n" +
+            "// 高斯算子左右偏移值，当偏移值为2时，高斯算子为3 x 3\n" +
+            "const int SHIFT_SIZE = 2;\n" +
+            "varying vec4 blurShiftCoordinates[SHIFT_SIZE];\n" +
+            "void main() {\n" +
+            "    // 计算当前坐标的颜色值\n" +
+            "    vec4 currentColor = texture2D(inputTexture, textureCoordinate);\n" +
+            "    mediump vec3 sum = currentColor.rgb;\n" +
+            "    // 计算偏移坐标的颜色值总和\n" +
+            "    for (int i = 0; i < SHIFT_SIZE; i++) {\n" +
+            "        sum += texture2D(inputTexture, blurShiftCoordinates[i].xy).rgb;\n" +
+            "        sum += texture2D(inputTexture, blurShiftCoordinates[i].zw).rgb;\n" +
+            "    }\n" +
+            "    // 求出平均值\n" +
+            "    gl_FragColor = vec4(sum * 1.0 / float(2 * SHIFT_SIZE + 1), currentColor.a);\n" +
             "}";
 
     protected float mBlurSize = 1f;
