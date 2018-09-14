@@ -9,6 +9,7 @@ import com.cgfay.filterlibrary.glfilter.advanced.GLImageDepthBlurFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.GLImageOESInputFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.GLImageVignetteFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.beauty.GLImageBeautyFilter;
+import com.cgfay.filterlibrary.glfilter.advanced.beauty.GLImageRealTimeBeautyFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.face.GLImageFaceAdjustFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.face.GLImageFacePointsFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.makeup.GLImageMakeupFilter;
@@ -177,7 +178,7 @@ public final class RenderManager {
         // 相机输入流
         mInputFilter = new GLImageOESInputFilter(context);
         // 美颜滤镜
-        mBeautyFilter = new GLImageBeautyFilter(context);
+        mBeautyFilter = new GLImageRealTimeBeautyFilter(context);
         // 彩妆滤镜
         mMakeupFilter = new GLImageMakeupFilter(context);
         // 美型滤镜
