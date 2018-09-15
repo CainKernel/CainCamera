@@ -44,6 +44,13 @@ public class Beauty {
     public float teethBeautyIntensity;
 
     public Beauty() {
+        reset();
+    }
+
+    /**
+     * 重置为默认参数
+     */
+    public void reset() {
         beautyIntensity = 1.0f;
         complexionIntensity = 0.5f;
         faceLift = 0.0f;

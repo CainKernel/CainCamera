@@ -40,6 +40,8 @@
     <dimen name="switch_min_width">60dp</dimen>
 
 
+    <!-- 特效页面参数 -->
+    <dimen name="preview_effect_reset_margin">20dp</dimen>
 
     <!-- 相机设置页面参数 -->
     <dimen name="setting_page_margin_top">20dp</dimen>

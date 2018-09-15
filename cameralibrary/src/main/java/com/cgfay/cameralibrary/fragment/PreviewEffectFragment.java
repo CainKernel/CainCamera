@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -22,6 +23,7 @@ import com.cgfay.cameralibrary.R;
 import com.cgfay.cameralibrary.adapter.PreviewBeautyAdapter;
 import com.cgfay.cameralibrary.adapter.PreviewFilterAdapter;
 import com.cgfay.cameralibrary.adapter.PreviewMakeupAdapter;
+import com.cgfay.cameralibrary.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.engine.render.PreviewRenderer;
 import com.cgfay.filterlibrary.glfilter.GLImageFilterManager;
 import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
@@ -59,10 +61,11 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
     private LinearLayout mLayoutContent;
 
     // 美颜列表
-    private LinearLayout mLayoutBeauty;
+    private RelativeLayout mLayoutBeauty;
     private RecyclerView mBeautyRecyclerView;
     private LinearLayoutManager mBeautyLayoutManager;
     private PreviewBeautyAdapter mBeautyAdapter;
+    private Button mBtnReset;
 
     // 美妆列表
     private LinearLayout mLayoutMakeup;
@@ -82,11 +85,15 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
     private LayoutInflater mInflater;
     private Activity mActivity;
 
+    // 相机参数
+    private CameraParam mCameraParam;
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         mActivity = getActivity();
         mInflater = LayoutInflater.from(mActivity);
+        mCameraParam = CameraParam.getInstance();
     }
 
     @Nullable
@@ -165,11 +172,7 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (fromUser) {
             if (mTitleButtonIndex == 0) { // 美颜
-                if (mBeautyAdapter.getSelectedPosition() == 0) {    // 磨皮
-                    PreviewRenderer.getInstance().setBeautyIntensity(progress / 100.0f);
-                } else if (mBeautyAdapter.getSelectedPosition() == 1) { // 美肤
-                    PreviewRenderer.getInstance().setComplexionIntensity(progress / 100.0f);
-                }
+                processBeautyParam(mBeautyAdapter.getSelectedPosition(), progress);
             } else if (mTitleButtonIndex == 1) { // 彩妆
 
             } else if (mTitleButtonIndex == 2) { // 滤镜
@@ -219,8 +222,8 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
      * 处理景深/液化
      */
     private void processDepthBlur() {
-        PreviewRenderer.getInstance().enableDepthBlur(!PreviewRenderer.getInstance().enableDepthBlur());
-        mBtnLiquefaction.setBackgroundResource(PreviewRenderer.getInstance().enableDepthBlur()
+        mCameraParam.enableDepthBlur = !mCameraParam.enableDepthBlur;
+        mBtnLiquefaction.setBackgroundResource(mCameraParam.enableDepthBlur
                 ? R.drawable.ic_camera_blur_selected
                 : R.drawable.ic_camera_blur_normal);
     }
@@ -229,8 +232,8 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
      * 处理暗角
      */
     private void processVignette() {
-        PreviewRenderer.getInstance().enableVignette(!PreviewRenderer.getInstance().enableVignette());
-        mBtnVignette.setBackgroundResource(PreviewRenderer.getInstance().enableVignette()
+        mCameraParam.enableVignette = !mCameraParam.enableVignette;
+        mBtnVignette.setBackgroundResource(mCameraParam.enableVignette
                 ? R.drawable.ic_camera_vignette_selected
                 : R.drawable.ic_camera_vignette_normal);
     }
@@ -242,7 +245,7 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
     private void showBeautyLayout() {
         mLayoutProgress.setVisibility(View.VISIBLE);
         if (mLayoutBeauty == null) {
-            mLayoutBeauty = (LinearLayout) mInflater.inflate(R.layout.view_preview_beauty, null);
+            mLayoutBeauty = (RelativeLayout) mInflater.inflate(R.layout.view_preview_beauty, null);
             mBeautyRecyclerView = (RecyclerView) mLayoutBeauty.findViewById(R.id.preview_beauty_list);
             mBeautyLayoutManager = new LinearLayoutManager(mActivity);
             mBeautyLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
@@ -252,25 +255,112 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
             mBeautyAdapter.addOnBeautySelectedListener(new PreviewBeautyAdapter.OnBeautySelectedListener() {
                 @Override
                 public void onBeautySelected(int position, String beautyName) {
-                    Log.d(TAG, "onBeautySelected: position = " + position + ", name = " + beautyName);
-                    processBeautyParam(position);
+                    setSeekBarBeautyParam(position);
+                }
+            });
+            mBtnReset = (Button) mLayoutBeauty.findViewById(R.id.btn_beauty_reset);
+            mBtnReset.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mCameraParam.beauty.reset();
+                    setSeekBarBeautyParam(mBeautyAdapter.getSelectedPosition());
                 }
             });
         }
-        processBeautyParam(mBeautyAdapter.getSelectedPosition());
+        setSeekBarBeautyParam(mBeautyAdapter.getSelectedPosition());
 
         mLayoutContent.removeAllViews();
         mLayoutContent.addView(mLayoutBeauty);
     }
 
     /**
-     * 处理美颜参数
+     * 设置Seekbar对应的美颜参数值
      */
-    private void processBeautyParam(int position) {
-        if (position == 0) { // 磨皮
-            mValueSeekBar.setProgress((int)(PreviewRenderer.getInstance().getBeautyIntensity() * 100));
-        } else if (position == 1) { // 肤色
-            mValueSeekBar.setProgress((int) (PreviewRenderer.getInstance().getComplexionIntensity() * 100));
+    private void setSeekBarBeautyParam(int position) {
+        if (position == 0) {            // 磨皮
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.beautyIntensity * 100));
+        } else if (position == 1) {     // 肤色
+            mValueSeekBar.setProgress((int) (mCameraParam.beauty.complexionIntensity * 100));
+        } else if (position == 2) {     // 瘦脸
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.faceLift * 100));
+        } else if (position == 3) {     // 削脸
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.faceShave * 100));
+        } else if (position == 4) {     // 小脸
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.faceNarrow * 100));
+        } else if (position == 5) {     // 下巴
+            mValueSeekBar.setProgress((int)((1.0f + mCameraParam.beauty.chinIntensity) * 50));
+        } else if (position == 6) {     // 法令纹
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.nasolabialFoldsIntensity * 100));
+        } else if (position == 7) {     // 额头
+            mValueSeekBar.setProgress((int)((1.0f + mCameraParam.beauty.foreheadIntensity) * 50));
+        } else if (position == 8) {     // 大眼
+            mValueSeekBar.setProgress((int)((1.0f + mCameraParam.beauty.eyeEnlargeIntensity) * 50));
+        } else if (position == 9) {     // 眼距
+            mValueSeekBar.setProgress((int)((1.0f + mCameraParam.beauty.eyeDistanceIntensity) * 50));
+        } else if (position == 10) {    // 眼角
+            mValueSeekBar.setProgress((int)((1.0f + mCameraParam.beauty.eyeCornerIntensity) * 50));
+        } else if (position == 11) {    // 卧蚕
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.eyeFurrowsIntensity * 100));
+        } else if (position == 12) {    // 眼袋
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.eyeBagsIntensity * 100));
+        } else if (position == 13) {    // 亮眼
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.eyeBrightIntensity * 100));
+        } else if (position == 14) {    // 瘦鼻
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.noseThinIntensity * 100));
+        } else if (position == 15) {    // 鼻翼
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.alaeIntensity * 100));
+        } else if (position == 16) {    // 长鼻
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.proboscisIntensity * 100));
+        } else if (position == 17) {    // 嘴型
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.mouthEnlargeIntensity * 100));
+        } else if (position == 18) {    // 美牙
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.teethBeautyIntensity * 100));
+        }
+    }
+
+    /**
+     * 处理美颜参数
+     * @param progress
+     */
+    private void processBeautyParam(int position, int progress) {
+        if (position == 0) {            // 磨皮
+            mCameraParam.beauty.beautyIntensity = progress / 100.0f;
+        } else if (position == 1) {     // 肤色
+            mCameraParam.beauty.complexionIntensity = progress / 100.0f;
+        } else if (position == 2) {     // 瘦脸
+            mCameraParam.beauty.faceLift = progress / 100.0f;
+        } else if (position == 3) {     // 削脸
+            mCameraParam.beauty.faceShave = progress / 100.0f;
+        } else if (position == 4) {     // 小脸
+            mCameraParam.beauty.faceNarrow = progress / 100.0f;
+        } else if (position == 5) {     // 下巴
+            mCameraParam.beauty.chinIntensity = (progress - 50.0f) / 50.0f;
+        } else if (position == 6) {     // 法令纹
+            mCameraParam.beauty.nasolabialFoldsIntensity = progress / 100.0f;
+        } else if (position == 7) {     // 额头
+            mCameraParam.beauty.foreheadIntensity = (progress - 50.0f) / 50.0f;
+        } else if (position == 8) {     // 大眼
+            mCameraParam.beauty.eyeEnlargeIntensity = (progress - 50.0f) / 50.0f;
+        } else if (position == 9) {     // 眼距
+            mCameraParam.beauty.eyeDistanceIntensity = (progress - 50.0f) / 50.0f;
+        } else if (position == 10) {    // 眼角
+            mCameraParam.beauty.eyeCornerIntensity = (progress - 50.0f) / 50.0f;
+        } else if (position == 11) {    // 卧蚕
+            mCameraParam.beauty.eyeFurrowsIntensity = progress / 100.0f;
+        } else if (position == 12) {    // 眼袋
+            mCameraParam.beauty.eyeBagsIntensity = progress / 100.0f;
+        } else if (position == 13) {    // 亮眼
+            mCameraParam.beauty.eyeBrightIntensity = progress / 100.0f;
+        } else if (position == 14) {    // 瘦鼻
+            mCameraParam.beauty.noseThinIntensity = progress / 100.0f;
+        } else if (position == 15) {    // 鼻翼
+            mCameraParam.beauty.alaeIntensity = progress / 100.0f;
+        } else if (position == 16) {    // 长鼻
+            mCameraParam.beauty.proboscisIntensity = progress / 100.0f;
+        } else if (position == 17) {    // 嘴型
+            mCameraParam.beauty.mouthEnlargeIntensity = progress / 100.0f;
+        } else if (position == 18) {    // 美牙
+            mCameraParam.beauty.teethBeautyIntensity = progress / 100.0f;
         }
     }
 
@@ -306,12 +396,12 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
         if (mLayoutFilter == null) {
             mLayoutFilter = (LinearLayout) mInflater.inflate(R.layout.view_preview_filter, null);
             mBtnLiquefaction = (Button) mLayoutFilter.findViewById(R.id.btn_liquefaction);
-            mBtnLiquefaction.setBackgroundResource(PreviewRenderer.getInstance().enableDepthBlur()
+            mBtnLiquefaction.setBackgroundResource(mCameraParam.enableDepthBlur
                     ? R.drawable.ic_camera_blur_selected
                     : R.drawable.ic_camera_blur_normal);
             mBtnLiquefaction.setOnClickListener(this);
             mBtnVignette = (Button) mLayoutFilter.findViewById(R.id.btn_vignette);
-            mBtnVignette.setBackgroundResource(PreviewRenderer.getInstance().enableVignette()
+            mBtnVignette.setBackgroundResource(mCameraParam.enableVignette
                     ? R.drawable.ic_camera_vignette_selected
                     : R.drawable.ic_camera_vignette_normal);
             mBtnVignette.setOnClickListener(this);

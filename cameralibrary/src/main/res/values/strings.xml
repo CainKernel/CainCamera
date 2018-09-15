@@ -63,6 +63,9 @@
     </string-array>
 
 
+    <!-- 特效页面参数 -->
+    <string name="preview_beauty_reset">恢复默认</string>
+
     <!-- 相机设置页面 -->
     <string name="select_watermark">选择水印</string>
     <string name="show_face_points">显示人脸关键点</string>
