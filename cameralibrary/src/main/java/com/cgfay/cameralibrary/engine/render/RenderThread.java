@@ -326,11 +326,11 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
      */
     void openCamera() {
         releaseCamera();
-        CameraEngine.openCamera(mContext);
-        CameraEngine.setPreviewSurface(mSurfaceTexture);
+        CameraEngine.getInstance().openCamera(mContext);
+        CameraEngine.getInstance().setPreviewSurface(mSurfaceTexture);
         calculateImageSize();
         mPreviewBuffer = new byte[mTextureWidth * mTextureHeight * 3/ 2];
-        CameraEngine.setPreviewCallbackWithBuffer(this, mPreviewBuffer);
+        CameraEngine.getInstance().setPreviewCallbackWithBuffer(this, mPreviewBuffer);
         // 相机打开回调
         if (mCameraParam.cameraCallback != null) {
             mCameraParam.cameraCallback.onCameraOpened();
@@ -355,7 +355,7 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
      * 开始预览
      */
     private void startPreview() {
-        CameraEngine.startPreview();
+        CameraEngine.getInstance().startPreview();
         isPreviewing = true;
     }
 
@@ -364,6 +364,6 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
      */
     private void releaseCamera() {
         isPreviewing = false;
-        CameraEngine.releaseCamera();
+        CameraEngine.getInstance().releaseCamera();
     }
 }

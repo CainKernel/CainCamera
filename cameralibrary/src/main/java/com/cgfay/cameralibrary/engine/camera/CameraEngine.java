@@ -18,17 +18,25 @@ import java.util.List;
 
 /**
  * 相机引擎
- * 备注：这里遇到一个问题 —— 单例对象会导致某些手机的帧率大幅度降低
- * 没测试出来是怎么回事
  * Created by cain on 2017/7/9.
  */
 
 public class CameraEngine {
 
-    // 相机对象
-    private static Camera mCamera;
+    private static class CameraEngineHolder {
+        public static CameraEngine instance = new CameraEngine();
+    }
 
-    public static void openCamera(Context context) {
+    private CameraEngine() {}
+
+    public static CameraEngine getInstance() {
+        return CameraEngineHolder.instance;
+    }
+
+    // 相机对象
+    private Camera mCamera;
+
+    public void openCamera(Context context) {
         openCamera(context, CameraParam.DESIRED_PREVIEW_FPS);
     }
 
@@ -36,30 +44,14 @@ public class CameraEngine {
      * 根据ID打开相机
      * @param expectFps
      */
-    public static void openCamera(Context context, int expectFps) {
-        if (mCamera != null) {
-            throw new RuntimeException("camera already initialized!");
-        }
-        CameraParam cameraParam = CameraParam.getInstance();
-        mCamera = Camera.open(cameraParam.cameraId);
-        if (mCamera == null) {
-            throw new RuntimeException("Unable to open camera");
-        }
-        Camera.Parameters parameters = mCamera.getParameters();
-        cameraParam.supportFlash = checkSupportFlashLight(parameters);
-        cameraParam.previewFps = chooseFixedPreviewFps(parameters, expectFps * 1000);
-        parameters.setRecordingHint(true);
-        mCamera.setParameters(parameters);
+    public void openCamera(Context context, int expectFps) {
         int width = CameraParam.DEFAULT_16_9_WIDTH;
         int height = CameraParam.DEFAULT_16_9_HEIGHT;
-        if (cameraParam.currentRatio == CameraParam.Ratio_4_3) {
+        if (CameraParam.getInstance().currentRatio == CameraParam.Ratio_4_3) {
             width = CameraParam.DEFAULT_4_3_WIDTH;
             height = CameraParam.DEFAULT_4_3_HEIGHT;
         }
-        setPreviewSize(mCamera, width, height);
-        setPictureSize(mCamera, width, height);
-        calculateCameraPreviewOrientation((Activity) context);
-        mCamera.setDisplayOrientation(cameraParam.orientation);
+        openCamera(context, CameraParam.getInstance().cameraId, expectFps, width, height);
     }
 
     /**
@@ -70,7 +62,7 @@ public class CameraEngine {
      * @param expectWidth
      * @param expectHeight
      */
-    public static void openCamera(Context context, int cameraID, int expectFps, int expectWidth, int expectHeight) {
+    public void openCamera(Context context, int cameraID, int expectFps, int expectWidth, int expectHeight) {
         if (mCamera != null) {
             throw new RuntimeException("camera already initialized!");
         }
@@ -96,7 +88,7 @@ public class CameraEngine {
      * @param holder
      * 部分手机预览会失效，慎用
      */
-    public static void startPreview(SurfaceHolder holder) {
+    public void startPreview(SurfaceHolder holder) {
         if (mCamera == null) {
             throw new IllegalStateException("Camera must be set when start preview");
         }
@@ -113,7 +105,7 @@ public class CameraEngine {
      * @param texture
      * 部分手机预览会失效，慎用
      */
-    public static void startPreview(SurfaceTexture texture) {
+    public void startPreview(SurfaceTexture texture) {
         if (mCamera == null) {
             throw new IllegalStateException("Camera must be set when start preview");
         }
@@ -131,7 +123,7 @@ public class CameraEngine {
      * 设置预览Surface
      * @param holder
      */
-    public static void setPreviewSurface(SurfaceHolder holder) {
+    public void setPreviewSurface(SurfaceHolder holder) {
         if (mCamera == null) {
             throw new IllegalStateException("Camera must be set when start preview");
         }
@@ -146,7 +138,7 @@ public class CameraEngine {
      * 设置预览Surface
      * @param texture
      */
-    public static void setPreviewSurface(SurfaceTexture texture) {
+    public void setPreviewSurface(SurfaceTexture texture) {
         if (mCamera == null) {
             throw new IllegalStateException("Camera must be set when start preview");
         }
@@ -160,7 +152,7 @@ public class CameraEngine {
     /**
      * 开始预览
      */
-    public static void startPreview() {
+    public void startPreview() {
         if (mCamera == null) {
             throw new IllegalStateException("Camera must be set when start preview");
         }
@@ -170,7 +162,7 @@ public class CameraEngine {
     /**
      * 停止预览
      */
-    public static void stopPreview() {
+    public void stopPreview() {
         if (mCamera != null) {
             mCamera.stopPreview();
         }
@@ -179,7 +171,7 @@ public class CameraEngine {
     /**
      * 释放相机
      */
-    public static void releaseCamera() {
+    public void releaseCamera() {
         if (mCamera != null) {
             mCamera.setPreviewCallback(null);
             mCamera.setPreviewCallbackWithBuffer(null);
@@ -196,7 +188,7 @@ public class CameraEngine {
      * @param callback
      * @param previewBuffer
      */
-    public static void setPreviewCallbackWithBuffer(Camera.PreviewCallback callback, byte[] previewBuffer) {
+    public void setPreviewCallbackWithBuffer(Camera.PreviewCallback callback, byte[] previewBuffer) {
         if (mCamera != null) {
             mCamera.setPreviewCallbackWithBuffer(callback);
             mCamera.addCallbackBuffer(previewBuffer);
@@ -207,7 +199,7 @@ public class CameraEngine {
      * 添加预览回调
      * @param callback
      */
-    public static void setPreviewCallback(Camera.PreviewCallback callback) {
+    public void setPreviewCallback(Camera.PreviewCallback callback) {
         if (mCamera != null) {
             mCamera.setPreviewCallback(callback);
         }
@@ -217,7 +209,7 @@ public class CameraEngine {
     /**
      * 拍照
      */
-    public static void takePicture(Camera.ShutterCallback shutterCallback,
+    public void takePicture(Camera.ShutterCallback shutterCallback,
                                    Camera.PictureCallback rawCallback,
                                    Camera.PictureCallback pictureCallback) {
         if (mCamera != null) {
@@ -231,7 +223,7 @@ public class CameraEngine {
      * @param expectWidth
      * @param expectHeight
      */
-    public static void setPreviewSize(Camera camera, int expectWidth, int expectHeight) {
+    private void setPreviewSize(Camera camera, int expectWidth, int expectHeight) {
         Camera.Parameters parameters = camera.getParameters();
         Camera.Size size = calculatePerfectSize(parameters.getSupportedPreviewSizes(),
                 expectWidth, expectHeight, CalculateType.Lower);
@@ -247,7 +239,7 @@ public class CameraEngine {
      * @param expectWidth
      * @param expectHeight
      */
-    public static void setPreviewSize(Camera camera, int expectWidth, int expectHeight, float ratio) {
+    private void setPreviewSize(Camera camera, int expectWidth, int expectHeight, float ratio) {
         Camera.Parameters parameters = camera.getParameters();
         Camera.Size size = calculatePerfectSize(parameters.getSupportedPreviewSizes(),
                 expectWidth, expectHeight, CalculateType.Lower);
@@ -261,7 +253,7 @@ public class CameraEngine {
      * @param expectWidth
      * @param expectHeight
      */
-    private static void setPictureSize(Camera camera, int expectWidth, int expectHeight) {
+    private void setPictureSize(Camera camera, int expectWidth, int expectHeight) {
         Camera.Parameters parameters = camera.getParameters();
         Camera.Size size = calculatePerfectSize(parameters.getSupportedPictureSizes(),
                 expectWidth, expectHeight, CalculateType.Max);
@@ -277,7 +269,7 @@ public class CameraEngine {
      * 这里Nexus5X的相机简直没法吐槽，后置摄像头倒置了，切换摄像头之后就出现问题了。
      * @param activity
      */
-    public static int calculateCameraPreviewOrientation(Activity activity) {
+    private int calculateCameraPreviewOrientation(Activity activity) {
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(CameraParam.getInstance().cameraId, info);
         int rotation = activity.getWindowManager().getDefaultDisplay()
@@ -316,7 +308,7 @@ public class CameraEngine {
      * 这里Nexus5X的相机简直没法吐槽，后置摄像头倒置了，切换摄像头之后就出现问题了。
      * @param activity
      */
-    public static int calculateCameraPreviewOrientation(Activity activity, int cameraId) {
+    private int calculateCameraPreviewOrientation(Activity activity, int cameraId) {
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(cameraId, info);
         int rotation = activity.getWindowManager().getDefaultDisplay()
@@ -349,11 +341,27 @@ public class CameraEngine {
     }
 
     /**
+     * 设置打开闪光灯
+     * @param on
+     */
+    public  void setFlashLight(boolean on) {
+        if (mCamera != null) {
+            Camera.Parameters parameters = mCamera.getParameters();
+            if (on) {
+                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+            } else {
+                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+            }
+            mCamera.setParameters(parameters);
+        }
+    }
+
+    /**
      * 设置对焦区域
      * @param rect      已经调整好的区域
      * @param callback  自动对焦回调
      */
-    public static void setFocusArea(Rect rect, Camera.AutoFocusCallback callback) {
+    public void setFocusArea(Rect rect, Camera.AutoFocusCallback callback) {
         if (mCamera != null) {
             Camera.Parameters parameters = mCamera.getParameters(); // 先获取当前相机的参数配置对象
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO); // 设置聚焦模式
@@ -373,7 +381,7 @@ public class CameraEngine {
      * 设置对焦
      * @param rect
      */
-    public static void setFocusArea(Rect rect) {
+    public void setFocusArea(Rect rect) {
         if (mCamera != null) {
             final String focusMode = mCamera.getParameters().getFocusMode();
             Camera.Parameters parameters = mCamera.getParameters(); // 先获取当前相机的参数配置对象
@@ -453,22 +461,6 @@ public class CameraEngine {
     }
 
     /**
-     * 设置打开闪光灯
-     * @param on
-     */
-    public static void setFlashLight(boolean on) {
-        if (mCamera != null) {
-            Camera.Parameters parameters = mCamera.getParameters();
-            if (on) {
-                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-            } else {
-                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-            }
-            mCamera.setParameters(parameters);
-        }
-    }
-
-    /**
      * 检查摄像头(前置/后置)是否支持闪光灯
      * @param camera   摄像头
      * @return
@@ -508,7 +500,7 @@ public class CameraEngine {
      * 获取相机对象
      * @return
      */
-    public static Camera getCamera() {
+    public  Camera getCamera() {
         return mCamera;
     }
 

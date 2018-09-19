@@ -616,11 +616,11 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             }
 
             // 判断是否支持对焦模式
-            if (CameraEngine.getCamera() != null) {
-                List<String> focusModes = CameraEngine.getCamera()
+            if (CameraEngine.getInstance().getCamera() != null) {
+                List<String> focusModes = CameraEngine.getInstance().getCamera()
                         .getParameters().getSupportedFocusModes();
                 if (focusModes != null && focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-                    CameraEngine.setFocusArea(CameraEngine.getFocusArea((int)x, (int)y,
+                    CameraEngine.getInstance().setFocusArea(CameraEngine.getFocusArea((int)x, (int)y,
                             mCameraSurfaceView.getWidth(), mCameraSurfaceView.getHeight(), FocusSize));
                     mMainHandler.post(new Runnable() {
                         @Override
@@ -645,7 +645,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
 
         @Override
         public void flashStateChanged(boolean flashOn) {
-            CameraEngine.setFlashLight(flashOn);
+            CameraEngine.getInstance().setFlashLight(flashOn);
         }
 
         @Override
