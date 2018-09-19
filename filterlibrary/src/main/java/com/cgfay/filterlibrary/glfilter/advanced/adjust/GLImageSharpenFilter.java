@@ -10,7 +10,7 @@ import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
  * Created by cain.huang on 2017/8/8.
  */
 
-public class GLImageSharpnessFilter extends GLImageFilter {
+public class GLImageSharpenFilter extends GLImageFilter {
 
     private static final String VERTEX_SHADER = "" +
             "uniform mat4 uMVPMatrix;                                       \n" +
@@ -83,11 +83,11 @@ public class GLImageSharpnessFilter extends GLImageFilter {
     private int mImageWidthFactorHandle;
     private int mImageHeightFactorHandle;
 
-    public GLImageSharpnessFilter(Context context) {
+    public GLImageSharpenFilter(Context context) {
         this(context, VERTEX_SHADER, FRAGMENT_SHADER);
     }
 
-    public GLImageSharpnessFilter(Context context, String vertexShader, String fragmentShader) {
+    public GLImageSharpenFilter(Context context, String vertexShader, String fragmentShader) {
         super(context, vertexShader, fragmentShader);
     }
 

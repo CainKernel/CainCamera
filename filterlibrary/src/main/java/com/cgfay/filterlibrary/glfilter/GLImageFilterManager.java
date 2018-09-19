@@ -8,7 +8,7 @@ import com.cgfay.filterlibrary.glfilter.advanced.adjust.GLImageExposureFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.adjust.GLImageHueFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.adjust.GLImageMirrorFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.adjust.GLImageSaturationFilter;
-import com.cgfay.filterlibrary.glfilter.advanced.adjust.GLImageSharpnessFilter;
+import com.cgfay.filterlibrary.glfilter.advanced.adjust.GLImageSharpenFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.beauty.GLImageBeautyFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.colors.GLImageAmaroFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.colors.GLImageAnitqueFilter;
@@ -133,7 +133,7 @@ public final class GLImageFilterManager {
                 return new GLImageHueFilter(context);
             // 锐度
             case SHARPNESS:
-                return new GLImageSharpnessFilter(context);
+                return new GLImageSharpenFilter(context);
 
             // TODO 贴纸滤镜需要人脸关键点计算得到
             case STICKER:
