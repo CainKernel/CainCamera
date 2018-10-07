@@ -30,7 +30,7 @@ public class GLImageRealTimeBeautyFilter extends GLImageFilter implements IBeaut
     private GLImageSharpenFilter mSharpenFilter;
 
     // 缩放
-    private float mBlurScale = 0.35f;
+    private float mBlurScale = 0.5f;
 
     public GLImageRealTimeBeautyFilter(Context context) {
         this(context, null, null);

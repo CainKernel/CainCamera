@@ -733,8 +733,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         public void onCameraOpened() {
             // 相机打开之后准备检测器
             prepareTracker();
-            // 打开相机之后，检测重新开始，因此第一次检测完成还没开始
-            mFirstTrackFinish = false;
         }
 
         @Override
@@ -742,12 +740,11 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             if (mBtnShutter != null && !mBtnShutter.isEnableOpened()) {
                 mBtnShutter.setEnableOpened(true);
             }
-            // 这里解决第一次打开时较慢的情况
-            if (!mFirstTrackFinish) {
-                requestRender();
-            }
+            // 人脸检测
             FaceTracker.getInstance().trackFace(data,
                     mCameraParam.previewWidth, mCameraParam.previewHeight);
+            // 请求刷新
+            requestRender();
         }
 
 
@@ -799,12 +796,10 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                     mDebugFacePoints.addAll(debugFacePoints);
                 }
             }
-            mFirstTrackFinish = true;
+            // 检测完成需要请求刷新
             requestRender();
         }
     };
-    // 第一次检测完成，Face++第一次检测返回延时太长，导致画面没有刷新
-    private volatile boolean mFirstTrackFinish = false;
 
     private ArrayList<ArrayList> mDebugFacePoints = new ArrayList<ArrayList>();
 

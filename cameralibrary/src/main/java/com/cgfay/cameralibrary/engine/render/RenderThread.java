@@ -109,6 +109,10 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
         if (mPreviewBuffer != null) {
             camera.addCallbackBuffer(mPreviewBuffer);
         }
+        // 计算fps
+        if (mRenderHandler != null && mCameraParam.showFps) {
+            mRenderHandler.sendEmptyMessage(RenderHandler.MSG_CALCULATE_FPS);
+        }
         if (VERBOSE) {
             Log.d("onPreviewFrame", "update time = " + (System.currentTimeMillis() - time));
             time = System.currentTimeMillis();
@@ -224,11 +228,6 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
             HardcodeEncoder.getInstance().frameAvailable();
             HardcodeEncoder.getInstance()
                     .drawRecorderFrame(mCurrentTexture, mSurfaceTexture.getTimestamp());
-        }
-
-        // 计算fps
-        if (mRenderHandler != null && mCameraParam.showFps) {
-            mRenderHandler.sendEmptyMessage(RenderHandler.MSG_CALCULATE_FPS);
         }
     }
 
