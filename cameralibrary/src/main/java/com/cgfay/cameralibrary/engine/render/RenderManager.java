@@ -8,7 +8,6 @@ import com.cgfay.filterlibrary.glfilter.GLImageFilterManager;
 import com.cgfay.filterlibrary.glfilter.advanced.GLImageDepthBlurFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.GLImageOESInputFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.GLImageVignetteFilter;
-import com.cgfay.filterlibrary.glfilter.advanced.beauty.GLImageBeautyFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.beauty.GLImageRealTimeBeautyFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.face.GLImageFaceAdjustFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.face.GLImageFacePointsFilter;
@@ -16,9 +15,9 @@ import com.cgfay.filterlibrary.glfilter.advanced.makeup.GLImageMakeupFilter;
 import com.cgfay.filterlibrary.glfilter.advanced.sticker.GLImageStickerFilter;
 import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
 import com.cgfay.filterlibrary.glfilter.model.IBeautify;
-import com.cgfay.filterlibrary.glfilter.model.IFacePoints;
 import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
 import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;
+import com.cgfay.landmarklibrary.LandmarkEngine;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -242,9 +241,6 @@ public final class RenderManager {
                 if (mFaceAdjustFilter instanceof IBeautify) {
                     ((IBeautify) mFaceAdjustFilter).onBeauty(mCameraParam.beauty);
                 }
-                if (mFaceAdjustFilter instanceof IFacePoints) {
-                    ((IFacePoints) mFaceAdjustFilter).onFacePoints(mCameraParam.facePoints);
-                }
                 currentTexture = mFaceAdjustFilter.drawFrameBuffer(currentTexture);
             }
             // 动态贴纸滤镜
@@ -284,9 +280,7 @@ public final class RenderManager {
      */
     public void drawFacePoint(int mCurrentTexture) {
         if (mFacePointsFilter != null) {
-            if (mCameraParam.facePointsListener != null
-                    && mCameraParam.facePointsListener.showFacePoints()) {
-                mFacePointsFilter.setFacePoints(mCameraParam.facePointsListener.getDebugFacePoints());
+            if (mCameraParam.drawFacePoints && LandmarkEngine.getInstance().hasFace()) {
                 mFacePointsFilter.drawFrame(mCurrentTexture);
             }
         }

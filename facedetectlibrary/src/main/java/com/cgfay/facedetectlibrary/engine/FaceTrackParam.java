@@ -60,7 +60,7 @@ public final class FaceTrackParam {
         enable106Points = true;
         isBackCamera = false;
         enableFaceProperty = false;
-        enableMultiFace = false;
+        enableMultiFace = true;
         minFaceSize = 200;
         detectInterval = 25;
         trackMode = Facepp.FaceppConfig.DETECTION_MODE_TRACKING_ROBUST;

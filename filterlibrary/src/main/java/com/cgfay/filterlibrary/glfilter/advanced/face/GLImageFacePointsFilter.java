@@ -4,12 +4,14 @@ import android.content.Context;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
 import android.text.TextUtils;
+import android.util.SparseArray;
 
 import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
+import com.cgfay.landmarklibrary.LandmarkEngine;
+import com.cgfay.landmarklibrary.OneFace;
 
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
 
 /**
  * 人脸关键点调试滤镜
@@ -41,8 +43,9 @@ public class GLImageFacePointsFilter extends GLImageFilter {
     private final float[] mViewMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
 
-    // 存放顶点
-    private final ArrayList<ArrayList> mPoints;
+    private int mPointCount = 106;
+    private float[] mPoints;
+    private FloatBuffer mPointVertexBuffer;
 
     public GLImageFacePointsFilter(Context context) {
         this(context, VertexShader, FragmentShader);
@@ -50,7 +53,8 @@ public class GLImageFacePointsFilter extends GLImageFilter {
 
     public GLImageFacePointsFilter(Context context, String vertexShader, String fragmentShader) {
         super(context, vertexShader, fragmentShader);
-        mPoints = new ArrayList<ArrayList>();
+        mPoints = new float[mPointCount * 2];
+        mPointVertexBuffer = OpenGLUtils.createFloatBuffer(mPoints);
     }
 
     @Override
@@ -113,21 +117,40 @@ public class GLImageFacePointsFilter extends GLImageFilter {
         onDrawFrameBegin();
         // 逐个顶点绘制出来
         synchronized (this) {
-            for (int i = 0; i < mPoints.size(); i++) {
-                ArrayList<FloatBuffer> triangleVBList = mPoints.get(i);
-                for (int j = 0; j < triangleVBList.size(); j++) {
-                    FloatBuffer fb = triangleVBList.get(j);
-                    if (fb != null) {
-                        GLES30.glVertexAttribPointer(mPositionHandle, 3,
-                                GLES30.GL_FLOAT, false, 0, fb);
-                        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, 1);
-                    }
+            SparseArray<OneFace> faceArrays = LandmarkEngine.getInstance().getFaceArrays();
+            for (int i = 0; i < faceArrays.size(); i++) {
+                if (faceArrays.get(i).vertexPoints != null) {
+                    copyPoints(faceArrays.get(i).vertexPoints);
+                    mPointVertexBuffer.clear();
+                    mPointVertexBuffer.put(mPoints, 0, mPoints.length);
+                    mPointVertexBuffer.position(0);
+                    GLES30.glVertexAttribPointer(mPositionHandle, 2,
+                            GLES30.GL_FLOAT, false, 8, mPointVertexBuffer);
+                    GLES30.glDrawArrays(GLES30.GL_POINTS, 0, mPointCount);
                 }
             }
         }
         onDrawFrameAfter();
         GLES30.glDisableVertexAttribArray(mPositionHandle);
         return true;
+    }
+
+    /**
+     * 复制顶点坐标
+     * @param vertexPoints
+     */
+    private void copyPoints(float[] vertexPoints) {
+        if (vertexPoints == null) {
+            return;
+        }
+        for (int i = 0; i < vertexPoints.length && i < mPoints.length; i++) {
+            mPoints[i] = vertexPoints[i];
+        }
+        if (vertexPoints.length < mPoints.length) {
+            for (int i = vertexPoints.length; i < mPoints.length; i++) {
+                mPoints[i] = -2;
+            }
+        }
     }
 
     /**
@@ -156,24 +179,5 @@ public class GLImageFacePointsFilter extends GLImageFilter {
     @Override
     public void destroyFrameBuffer() {
         // do nothing
-    }
-
-    @Override
-    public void release() {
-        super.release();
-        mPoints.clear();
-    }
-
-    /**
-     * 设置顶点数据
-     * @param points
-     */
-    public void setFacePoints(ArrayList<ArrayList> points) {
-        synchronized (this) {
-            mPoints.clear();
-            if (points.size() > 0) {
-                mPoints.addAll(points);
-            }
-        }
     }
 }

@@ -2,11 +2,10 @@ package com.cgfay.cameralibrary.engine.render;
 
 import android.content.Context;
 
-import com.cgfay.cameralibrary.engine.listener.OnCaptureListener;
-import com.cgfay.cameralibrary.engine.listener.OnFpsListener;
 import com.cgfay.cameralibrary.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.engine.listener.OnCameraCallback;
-import com.cgfay.filterlibrary.glfilter.advanced.face.OnFacePointsListener;
+import com.cgfay.cameralibrary.engine.listener.OnCaptureListener;
+import com.cgfay.cameralibrary.engine.listener.OnFpsListener;
 
 /**
  * 渲染引擎Builder
@@ -37,16 +36,6 @@ public final class RenderBuilder {
      */
     public RenderBuilder setFpsCallback(OnFpsListener callback) {
         mCameraParam.fpsCallback = callback;
-        return this;
-    }
-
-    /**
-     * 设置人脸关键点回调
-     * @param listener
-     * @return
-     */
-    public RenderBuilder setFacePointsListener(OnFacePointsListener listener) {
-        mCameraParam.facePointsListener = listener;
         return this;
     }
 

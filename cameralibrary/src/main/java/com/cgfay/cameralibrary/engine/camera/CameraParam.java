@@ -2,20 +2,15 @@ package com.cgfay.cameralibrary.engine.camera;
 
 import android.hardware.Camera;
 
+import com.cgfay.cameralibrary.engine.listener.OnCameraCallback;
 import com.cgfay.cameralibrary.engine.listener.OnCaptureListener;
 import com.cgfay.cameralibrary.engine.listener.OnFpsListener;
-import com.cgfay.cameralibrary.engine.listener.OnCameraCallback;
 import com.cgfay.cameralibrary.engine.model.AspectRatio;
 import com.cgfay.cameralibrary.engine.model.GalleryType;
 import com.cgfay.cameralibrary.listener.OnGallerySelectedListener;
 import com.cgfay.cameralibrary.listener.OnPreviewCaptureListener;
-import com.cgfay.filterlibrary.glfilter.advanced.face.OnFacePointsListener;
 import com.cgfay.filterlibrary.glfilter.model.Beauty;
-import com.cgfay.filterlibrary.glfilter.model.FacePoints;
 import com.cgfay.filterlibrary.glfilter.model.Makeup;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 相机配置参数
@@ -102,8 +97,6 @@ public final class CameraParam {
     public OnCameraCallback cameraCallback;
     // 截屏回调
     public OnCaptureListener captureCallback;
-    // 人脸关键点回调
-    public OnFacePointsListener facePointsListener;
     // fps回调
     public OnFpsListener fpsCallback;
     // 是否显示对比效果
@@ -119,8 +112,6 @@ public final class CameraParam {
     public Beauty beauty;
     // 彩妆参数
     public Makeup makeup;
-    // 人脸关键点
-    public FacePoints facePoints;
 
     private static final CameraParam mInstance = new CameraParam();
 
@@ -161,7 +152,6 @@ public final class CameraParam {
         captureListener = null;
         cameraCallback = null;
         captureCallback = null;
-        facePointsListener = null;
         fpsCallback = null;
         showCompare = false;
         isTakePicture = false;
@@ -169,7 +159,6 @@ public final class CameraParam {
         enableVignette = false;
         beauty = new Beauty();
         makeup = new Makeup();
-        facePoints = new FacePoints();
     }
 
     /**

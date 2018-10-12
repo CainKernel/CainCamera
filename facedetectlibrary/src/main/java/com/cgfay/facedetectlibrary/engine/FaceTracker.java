@@ -1,24 +1,22 @@
 package com.cgfay.facedetectlibrary.engine;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.cgfay.facedetectlibrary.R;
-import com.cgfay.facedetectlibrary.bean.FaceInfo;
 import com.cgfay.facedetectlibrary.listener.FaceTrackerCallback;
 import com.cgfay.facedetectlibrary.utils.ConUtil;
 import com.cgfay.facedetectlibrary.utils.FaceppConstraints;
 import com.cgfay.facedetectlibrary.utils.SensorEventUtil;
+import com.cgfay.landmarklibrary.LandmarkEngine;
+import com.cgfay.landmarklibrary.LandmarkUtils;
+import com.cgfay.landmarklibrary.OneFace;
 import com.megvii.facepp.sdk.Facepp;
 import com.megvii.licensemanager.sdk.LicenseManager;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
 
 /**
  * 人脸检测器
@@ -409,8 +407,9 @@ public final class FaceTracker {
         private synchronized void internalTrackFace(byte[] data, int width, int height) {
             FaceTrackParam faceTrackParam = FaceTrackParam.getInstance();
             if (!faceTrackParam.canFaceTrack || facepp == null) {
+                LandmarkEngine.getInstance().setFaceSize(0);
                 if (faceTrackParam.trackerCallback != null) {
-                    faceTrackParam.trackerCallback.onTrackingFinish(false, null);
+                    faceTrackParam.trackerCallback.onTrackingFinish();
                 }
                 return;
             }
@@ -446,106 +445,111 @@ public final class FaceTracker {
                 Log.d("onFaceTracking", "track time = " + algorithmTime);
             }
 
-            // 调试用的人脸关键点
-            ArrayList<ArrayList> debugPoints = new ArrayList<ArrayList>();
             // 计算人脸关键点
-            if (faces != null) {
-                ArrayList<FaceInfo> faceInfoArray = new ArrayList<>();
-                if (faces.length > 0) {
-                    for (int index = 0; index < faces.length; index++) {
-                        FaceInfo faceInfo = new FaceInfo();
-                        if (faceTrackParam.enable106Points) {
-                            facepp.getLandmark(faces[index], Facepp.FPP_GET_LANDMARK106);
-                        } else {
-                            facepp.getLandmark(faces[index], Facepp.FPP_GET_LANDMARK81);
-                        }
-                        if (faceTrackParam.enable3DPose) {
-                            facepp.get3DPose(faces[index]);
-                        }
-                        Facepp.Face face = faces[index];
-
-                        // 是否检测性别年龄属性
-                        if (faceTrackParam.enableFaceProperty) {
-                            facepp.getAgeGender(face);
-                            faceInfo.gender = face.female > face.male ? FaceInfo.GENDER_WOMAN
-                                    : FaceInfo.GENDER_MAN;
-                            faceInfo.age = Math.max(face.age, 1);
-                        }
-
-                        // 姿态角和置信度
-                        faceInfo.pitch = face.pitch;
-                        faceInfo.yaw = face.yaw;
-                        faceInfo.roll = face.roll;
-                        faceInfo.confidence = face.confidence;
-
-                        // 预览状态下，宽高交换
-                        if (faceTrackParam.previewTrack) {
-                            if (orientation == 1 || orientation == 2) {
-                                int temp = width;
-                                width = height;
-                                height = temp;
-                            }
-                        }
-
-                        // 获取一个人的关键点坐标
-                        ArrayList<FloatBuffer> onePoints = new ArrayList<FloatBuffer>();
-                        float[] vertexPoints = new float[face.points.length * 2];
-                        float[] texturePoints = new float[face.points.length * 2];
-                        float[] cartesianPoints = new float[face.points.length * 2];
-                        for (int i = 0; i < face.points.length; i++) {
-                            float x = (face.points[i].x / height) * 2 - 1;
-                            float y = 1 - (face.points[i].y / width) * 2;
-                            if (faceTrackParam.previewTrack && faceTrackParam.isBackCamera) {
-                                x = -x;
-                            }
-                            float[] point = new float[] {x, y};
-                            if (orientation == 1) {
-                                point = new float[] {-y, x};
-                            } else if (orientation == 2) {
-                                point = new float[] {y, -x};
-                            } else if (orientation == 3) {
-                                point = new float[] {-x, -y};
-                            }
-                            // 调试的顶点坐标
-                            onePoints.add(createFloatBuffer(point));
-                            // 顶点坐标
-                            vertexPoints[2 * i] = -point[0];
-                            vertexPoints[2 * i + 1] = point[1];
-                            // 纹理坐标
-                            texturePoints[2 * i] = (1 + vertexPoints[2 * i]) / 2.0f;
-                            texturePoints[2 * i + 1] = (1 + vertexPoints[2 * i + 1]) / 2.0f;
-                            // 笛卡尔坐标
-                            cartesianPoints[2 * i] = texturePoints[2 * i] * height;
-                            cartesianPoints[2 * i + 1] = texturePoints[2 * i + 1] * width;
-                        }
-                        faceInfo.vertexPoints = vertexPoints;
-                        faceInfo.texturePoints = texturePoints;
-                        faceInfo.cartesianPoint = cartesianPoints;
-                        faceInfoArray.add(faceInfo);
-                        debugPoints.add(onePoints);
+            if (faces != null && faces.length > 0) {
+                for (int index = 0; index < faces.length; index++) {
+                    // 关键点个数
+                    if (faceTrackParam.enable106Points) {
+                        facepp.getLandmark(faces[index], Facepp.FPP_GET_LANDMARK106);
+                    } else {
+                        facepp.getLandmark(faces[index], Facepp.FPP_GET_LANDMARK81);
                     }
+                    // 获取姿态角信息
+                    if (faceTrackParam.enable3DPose) {
+                        facepp.get3DPose(faces[index]);
+                    }
+                    Facepp.Face face = faces[index];
+
+                    OneFace oneFace = LandmarkEngine.getInstance().getOneFace(index);
+                    // 是否检测性别年龄属性
+                    if (faceTrackParam.enableFaceProperty) {
+                        facepp.getAgeGender(face);
+                        oneFace.gender = face.female > face.male ? OneFace.GENDER_WOMAN
+                                : OneFace.GENDER_MAN;
+                        oneFace.age = Math.max(face.age, 1);
+                    } else {
+                        oneFace.gender = -1;
+                        oneFace.age = -1;
+                    }
+
+                    // 姿态角和置信度
+                    oneFace.pitch = face.pitch;
+                    oneFace.yaw = face.yaw;
+                    oneFace.roll = face.roll;
+                    oneFace.confidence = face.confidence;
+
+                    // 预览状态下，宽高交换
+                    if (faceTrackParam.previewTrack) {
+                        if (orientation == 1 || orientation == 2) {
+                            int temp = width;
+                            width = height;
+                            height = temp;
+                        }
+                    }
+
+                    // 获取一个人的关键点坐标
+                    if (oneFace.vertexPoints == null || oneFace.vertexPoints.length != face.points.length * 2) {
+                        oneFace.vertexPoints = new float[face.points.length * 2];
+                        oneFace.texturePoints = new float[face.points.length * 2];
+                    }
+                    for (int i = 0; i < face.points.length; i++) {
+                        // orientation = 0、3 表示竖屏，1、2 表示横屏
+                        float x = (face.points[i].x / height) * 2 - 1;
+                        float y = (face.points[i].y / width) * 2 - 1;
+                        float[] point = new float[] {-x, -y};
+                        if (orientation == 1) {
+                            if (faceTrackParam.previewTrack && faceTrackParam.isBackCamera) {
+                                point[0] = y;
+                                point[1] = -x;
+                            } else {
+                                point[0] = -y;
+                                point[1] = x;
+                            }
+                        } else if (orientation == 2) {
+                            if (faceTrackParam.previewTrack && faceTrackParam.isBackCamera) {
+                                point[0] = -y;
+                                point[1] = x;
+                            } else {
+                                point[0] = y;
+                                point[1] = -x;
+                            }
+                        } else if (orientation == 3) {
+                            point[0] = x;
+                            point[1] = y;
+                        }
+                        // 顶点坐标
+                        if (faceTrackParam.previewTrack) {
+                            if (faceTrackParam.isBackCamera) {
+                                oneFace.vertexPoints[2 * i] = point[0];
+                            } else {
+                                oneFace.vertexPoints[2 * i] = -point[0];
+                            }
+                        } else { // 非预览状态下，左右不需要翻转
+                            oneFace.vertexPoints[2 * i] = point[0];
+                        }
+                        oneFace.vertexPoints[2 * i + 1] = point[1];
+                        // 纹理坐标
+                        if (faceTrackParam.previewTrack) {
+                            if (faceTrackParam.isBackCamera) {
+                                oneFace.vertexPoints[2 * i] = (1 + point[0]) / 2.0f;
+                            } else {
+                                oneFace.texturePoints[2 * i] = (1 - point[0]) / 2.0f;
+                            }
+                        } else { // 非预览状态下，左右不需要翻转
+                            oneFace.vertexPoints[2 * i] = (1 + point[0]) / 2.0f;
+                        }
+                        oneFace.texturePoints[2 * i + 1] = (1 + point[1]) / 2.0f;
+                    }
+                    // 插入人脸对象
+                    LandmarkEngine.getInstance().putOneFace(index, oneFace);
                 }
-                // 添加到点计算工具中
-                FacePointsEngine.newInstance().addFacePoints(faceInfoArray);
             }
+            // 设置人脸个数
+            LandmarkEngine.getInstance().setFaceSize(faces!= null ? faces.length : 0);
             // 检测完成回调
             if (faceTrackParam.trackerCallback != null) {
-                faceTrackParam.trackerCallback.onTrackingFinish(faces != null && faces.length > 0, debugPoints);
+                faceTrackParam.trackerCallback.onTrackingFinish();
             }
-        }
-
-        /**
-         * 创建顶点缓冲
-         * @param coords
-         * @return
-         */
-        private FloatBuffer createFloatBuffer(float[] coords) {
-            ByteBuffer bb = ByteBuffer.allocateDirect(coords.length * 4);
-            bb.order(ByteOrder.nativeOrder());
-            FloatBuffer fb = bb.asFloatBuffer();
-            fb.put(coords);
-            fb.position(0);
-            return fb;
         }
     }
 

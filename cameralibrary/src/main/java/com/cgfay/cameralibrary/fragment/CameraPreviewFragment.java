@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,36 +21,36 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.cgfay.cameralibrary.R;
+import com.cgfay.cameralibrary.engine.camera.CameraEngine;
 import com.cgfay.cameralibrary.engine.camera.CameraParam;
+import com.cgfay.cameralibrary.engine.listener.OnCameraCallback;
 import com.cgfay.cameralibrary.engine.listener.OnCaptureListener;
 import com.cgfay.cameralibrary.engine.listener.OnFpsListener;
-import com.cgfay.cameralibrary.engine.listener.OnCameraCallback;
 import com.cgfay.cameralibrary.engine.listener.OnRecordListener;
 import com.cgfay.cameralibrary.engine.model.AspectRatio;
 import com.cgfay.cameralibrary.engine.model.GalleryType;
 import com.cgfay.cameralibrary.engine.recorder.PreviewRecorder;
 import com.cgfay.cameralibrary.engine.render.PreviewRenderer;
 import com.cgfay.cameralibrary.listener.OnPageOperationListener;
-import com.cgfay.cameralibrary.engine.camera.CameraEngine;
 import com.cgfay.cameralibrary.utils.PathConstraints;
 import com.cgfay.cameralibrary.widget.AspectFrameLayout;
+import com.cgfay.cameralibrary.widget.CainSurfaceView;
 import com.cgfay.cameralibrary.widget.HorizontalIndicatorView;
 import com.cgfay.cameralibrary.widget.PopupSettingView;
 import com.cgfay.cameralibrary.widget.RatioImageView;
 import com.cgfay.cameralibrary.widget.ShutterButton;
-import com.cgfay.facedetectlibrary.engine.FacePointsEngine;
 import com.cgfay.facedetectlibrary.engine.FaceTracker;
 import com.cgfay.facedetectlibrary.listener.FaceTrackerCallback;
 import com.cgfay.filterlibrary.glfilter.GLImageFilterManager;
-import com.cgfay.filterlibrary.glfilter.advanced.face.OnFacePointsListener;
 import com.cgfay.filterlibrary.multimedia.VideoCombiner;
-import com.cgfay.cameralibrary.widget.CainSurfaceView;
+import com.cgfay.landmarklibrary.LandmarkEngine;
 import com.cgfay.utilslibrary.fragment.PermissionConfirmDialogFragment;
 import com.cgfay.utilslibrary.fragment.PermissionErrorDialogFragment;
 import com.cgfay.utilslibrary.utils.BitmapUtils;
@@ -169,7 +170,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                 .setCameraCallback(mCameraCallback)
                 .setCaptureFrameCallback(mCaptureCallback)
                 .setFpsCallback(mFpsListener)
-                .setFacePointsListener(mFacePointsListener)
                 .initRenderer(mActivity);
     }
 
@@ -309,6 +309,8 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         releaseFaceTracker();
         // 关掉渲染引擎
         PreviewRenderer.getInstance().destroyRenderer();
+        // 清理关键点
+        LandmarkEngine.getInstance().clearAll();
         super.onDestroy();
     }
 
@@ -789,33 +791,11 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
      */
     private FaceTrackerCallback mFaceTrackerCallback = new FaceTrackerCallback() {
         @Override
-        public void onTrackingFinish(boolean hasFaces, ArrayList<ArrayList> debugFacePoints) {
-            synchronized (this) {
-                mDebugFacePoints.clear();
-                if (debugFacePoints != null && debugFacePoints.size() > 0) {
-                    mDebugFacePoints.addAll(debugFacePoints);
-                }
-            }
+        public void onTrackingFinish() {
             // 检测完成需要请求刷新
             requestRender();
         }
     };
-
-    private ArrayList<ArrayList> mDebugFacePoints = new ArrayList<ArrayList>();
-
-    // ------------------------------------- 人脸关键点调试回调 --------------------------------------
-    private OnFacePointsListener mFacePointsListener = new OnFacePointsListener() {
-        @Override
-        public boolean showFacePoints() {
-            return mCameraParam.drawFacePoints;
-        }
-
-        @Override
-        public ArrayList<ArrayList> getDebugFacePoints() {
-            return mDebugFacePoints;
-        }
-    };
-
 
     // ------------------------------------ 录制回调 -------------------------------------------
     private ShutterButton.OnShutterListener mShutterListener = new ShutterButton.OnShutterListener() {
