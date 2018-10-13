@@ -12,12 +12,16 @@ public final class FaceLandmark {
     // 左眉毛
     public static int leftEyebrowRightCorner = 37;      // 左眉毛右边角
     public static int leftEyebrowLeftCorner = 33;       // 左眉毛左边角
+    public static int leftEyebrowLeftTopCorner = 34;    // 左眉毛左顶角
+    public static int leftEyebrowRightTopCorner = 36;   // 左眉毛右顶角
     public static int leftEyebrowUpperMiddle = 35;      // 左眉毛上中心
     public static int leftEyebrowLowerMiddle = 65;      // 左眉毛下中心
 
     // 右眉毛
     public static int rightEyebrowRightCorner = 38;     // 右眉毛右边角
     public static int rightEyebrowLeftCorner = 42;      // 右眉毛左上角
+    public static int rightEyebrowLeftTopCorner = 39;   // 右眉毛左顶角
+    public static int rightEyebrowRightTopCorner = 41;  // 右眉毛右顶角
     public static int rightEyebrowUpperMiddle = 40;     // 右眉毛上中心
     public static int rightEyebrowLowerMiddle = 70;     // 右眉毛下中心
 

@@ -1,6 +1,5 @@
 package com.cgfay.landmarklibrary;
 
-import android.media.FaceDetector;
 import android.util.SparseArray;
 
 /**
@@ -138,23 +137,41 @@ public final class LandmarkEngine {
         vertexPoints[FaceLandmark.rightEyebrowCenter * 2] = point[0];
         vertexPoints[FaceLandmark.rightEyebrowCenter * 2 + 1] = point[1];
 
-        // TODO 额头左侧
-        vertexPoints[FaceLandmark.leftHead * 2] = -2;
-        vertexPoints[FaceLandmark.leftHead * 2 + 1] = -2;
-
         // 额头中心
-        FacePointsUtils.getCenter(point,
-                vertexPoints[FaceLandmark.noseLeft * 2],
-                vertexPoints[FaceLandmark.noseLeft * 2 + 1],
-                vertexPoints[FaceLandmark.noseRight * 2],
-                vertexPoints[FaceLandmark.noseRight * 2 + 1]
-        );
-        vertexPoints[FaceLandmark.headCenter * 2] = vertexPoints[FaceLandmark.eyeCenter * 2] * 2.0f - point[0];
-        vertexPoints[FaceLandmark.headCenter * 2 + 1] = vertexPoints[FaceLandmark.eyeCenter * 2 + 1] * 2.0f - point[1];
+        vertexPoints[FaceLandmark.headCenter * 2] = vertexPoints[FaceLandmark.eyeCenter * 2] * 2.0f - vertexPoints[FaceLandmark.noseLowerMiddle * 2];
+        vertexPoints[FaceLandmark.headCenter * 2 + 1] = vertexPoints[FaceLandmark.eyeCenter * 2 + 1] * 2.0f - vertexPoints[FaceLandmark.noseLowerMiddle * 2 + 1];
 
-        // TODO 额头右侧
-        vertexPoints[FaceLandmark.rightHead * 2] = -2;
-        vertexPoints[FaceLandmark.rightHead * 2 + 1] = -2;
+        // 额头左侧，备注：侧脸时这个点不太准确，后续优化
+        FacePointsUtils.getCenter(point,
+                vertexPoints[FaceLandmark.leftEyebrowLeftTopCorner * 2],
+                vertexPoints[FaceLandmark.leftEyebrowLeftTopCorner * 2 + 1],
+                vertexPoints[FaceLandmark.leftEyebrowRightCorner * 2],
+                vertexPoints[FaceLandmark.leftEyebrowRightCorner * 2 + 1]
+        );
+        vertexPoints[FaceLandmark.leftHead * 2] = point[0];
+        FacePointsUtils.getCenter(point,
+                vertexPoints[FaceLandmark.headCenter * 2],
+                vertexPoints[FaceLandmark.headCenter * 2 + 1],
+                vertexPoints[FaceLandmark.leftEyebrowRightTopCorner * 2],
+                vertexPoints[FaceLandmark.leftEyebrowRightTopCorner * 2 + 1]
+        );
+        vertexPoints[FaceLandmark.leftHead * 2 + 1] = point[1];
+
+        // 额头右侧，备注：侧脸时这个点不太准确，后续优化
+        FacePointsUtils.getCenter(point,
+                vertexPoints[FaceLandmark.rightEyebrowRightTopCorner * 2],
+                vertexPoints[FaceLandmark.rightEyebrowRightTopCorner * 2 + 1],
+                vertexPoints[FaceLandmark.rightEyebrowRightCorner * 2],
+                vertexPoints[FaceLandmark.rightEyebrowRightCorner * 2 + 1]
+        );
+        vertexPoints[FaceLandmark.rightHead * 2] = point[0];
+        FacePointsUtils.getCenter(point,
+                vertexPoints[FaceLandmark.headCenter * 2],
+                vertexPoints[FaceLandmark.headCenter * 2 + 1],
+                vertexPoints[FaceLandmark.rightEyebrowLeftTopCorner * 2],
+                vertexPoints[FaceLandmark.rightEyebrowLeftTopCorner * 2 + 1]
+        );
+        vertexPoints[FaceLandmark.rightHead * 2 + 1] = point[1];
 
         // 左脸颊中心
         FacePointsUtils.getCenter(point,
