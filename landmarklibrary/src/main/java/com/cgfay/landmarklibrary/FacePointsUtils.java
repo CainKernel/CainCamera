@@ -1,4 +1,4 @@
-package com.cgfay.facedetectlibrary.utils;
+package com.cgfay.landmarklibrary;
 
 import android.graphics.PointF;
 
@@ -80,4 +80,16 @@ public class FacePointsUtils {
         return point;
     }
 
+    /**
+     * 计算中心点
+     * @param result
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     */
+    public static void getCenter(float[] result, float x1, float y1, float x2, float y2) {
+        result[0] = (x1 + x2) / 2.0f;
+        result[1] = (y1 + y2) / 2.0f;
+    }
 }

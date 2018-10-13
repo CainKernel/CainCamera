@@ -1,5 +1,6 @@
 package com.cgfay.landmarklibrary;
 
+import android.media.FaceDetector;
 import android.util.SparseArray;
 
 /**
@@ -90,5 +91,89 @@ public final class LandmarkEngine {
         synchronized (mSyncFence) {
             mFaceArrays.clear();
         }
+    }
+
+    /**
+     * 计算额外顶点，新增8个额外顶点坐标
+     * @param vertexPoints
+     * @param index
+     */
+    public void calculateExtraPoints(float[] vertexPoints, int index) {
+        if (vertexPoints == null || mFaceArrays.get(index) == null
+                || mFaceArrays.get(index).vertexPoints.length + 8 * 2 > vertexPoints.length) {
+            return;
+        }
+        OneFace oneFace = mFaceArrays.get(index);
+        // 复制关键点的数据
+        System.arraycopy(oneFace.vertexPoints, 0, vertexPoints, 0, oneFace.vertexPoints.length);
+        // 新增的人脸关键点
+        float[] point = new float[2];
+        // 嘴唇中心
+        FacePointsUtils.getCenter(point,
+                vertexPoints[FaceLandmark.mouthUpperLipBottom * 2],
+                vertexPoints[FaceLandmark.mouthUpperLipBottom * 2 + 1],
+                vertexPoints[FaceLandmark.mouthLowerLipTop * 2],
+                vertexPoints[FaceLandmark.mouthLowerLipTop * 2 + 1]
+        );
+        vertexPoints[FaceLandmark.mouthCenter * 2] = point[0];
+        vertexPoints[FaceLandmark.mouthCenter * 2 + 1] = point[1];
+
+        // 左眉心
+        FacePointsUtils.getCenter(point,
+                vertexPoints[FaceLandmark.leftEyebrowUpperMiddle * 2],
+                vertexPoints[FaceLandmark.leftEyebrowUpperMiddle * 2 + 1],
+                vertexPoints[FaceLandmark.leftEyebrowLowerMiddle * 2],
+                vertexPoints[FaceLandmark.leftEyebrowLowerMiddle * 2 + 1]
+        );
+        vertexPoints[FaceLandmark.leftEyebrowCenter * 2] = point[0];
+        vertexPoints[FaceLandmark.leftEyebrowCenter * 2 + 1] = point[1];
+
+        // 右眉心
+        FacePointsUtils.getCenter(point,
+                vertexPoints[FaceLandmark.rightEyebrowUpperMiddle * 2],
+                vertexPoints[FaceLandmark.rightEyebrowUpperMiddle * 2 + 1],
+                vertexPoints[FaceLandmark.rightEyebrowLowerMiddle * 2],
+                vertexPoints[FaceLandmark.rightEyebrowLowerMiddle * 2 + 1]
+        );
+        vertexPoints[FaceLandmark.rightEyebrowCenter * 2] = point[0];
+        vertexPoints[FaceLandmark.rightEyebrowCenter * 2 + 1] = point[1];
+
+        // TODO 额头左侧
+        vertexPoints[FaceLandmark.leftHead * 2] = -2;
+        vertexPoints[FaceLandmark.leftHead * 2 + 1] = -2;
+
+        // 额头中心
+        FacePointsUtils.getCenter(point,
+                vertexPoints[FaceLandmark.noseLeft * 2],
+                vertexPoints[FaceLandmark.noseLeft * 2 + 1],
+                vertexPoints[FaceLandmark.noseRight * 2],
+                vertexPoints[FaceLandmark.noseRight * 2 + 1]
+        );
+        vertexPoints[FaceLandmark.headCenter * 2] = vertexPoints[FaceLandmark.eyeCenter * 2] * 2.0f - point[0];
+        vertexPoints[FaceLandmark.headCenter * 2 + 1] = vertexPoints[FaceLandmark.eyeCenter * 2 + 1] * 2.0f - point[1];
+
+        // TODO 额头右侧
+        vertexPoints[FaceLandmark.rightHead * 2] = -2;
+        vertexPoints[FaceLandmark.rightHead * 2 + 1] = -2;
+
+        // 左脸颊中心
+        FacePointsUtils.getCenter(point,
+                vertexPoints[FaceLandmark.leftCheekEdgeCenter * 2],
+                vertexPoints[FaceLandmark.leftCheekEdgeCenter * 2 + 1],
+                vertexPoints[FaceLandmark.noseLeft * 2],
+                vertexPoints[FaceLandmark.noseLeft * 2 + 1]
+        );
+        vertexPoints[FaceLandmark.leftCheekCenter * 2] = point[0];
+        vertexPoints[FaceLandmark.leftCheekCenter * 2 + 1] = point[1];
+
+        // 右脸颊中心
+        FacePointsUtils.getCenter(point,
+                vertexPoints[FaceLandmark.rightCheekEdgeCenter * 2],
+                vertexPoints[FaceLandmark.rightCheekEdgeCenter * 2 + 1],
+                vertexPoints[FaceLandmark.noseRight * 2],
+                vertexPoints[FaceLandmark.noseRight * 2 + 1]
+        );
+        vertexPoints[FaceLandmark.rightCheekCenter * 2] = point[0];
+        vertexPoints[FaceLandmark.rightCheekCenter * 2 + 1] = point[1];
     }
 }

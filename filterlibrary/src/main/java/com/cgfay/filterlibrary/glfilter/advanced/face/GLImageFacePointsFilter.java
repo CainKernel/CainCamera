@@ -43,7 +43,7 @@ public class GLImageFacePointsFilter extends GLImageFilter {
     private final float[] mViewMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
 
-    private int mPointCount = 106;
+    private int mPointCount = 114;
     private float[] mPoints;
     private FloatBuffer mPointVertexBuffer;
 
@@ -120,7 +120,7 @@ public class GLImageFacePointsFilter extends GLImageFilter {
             SparseArray<OneFace> faceArrays = LandmarkEngine.getInstance().getFaceArrays();
             for (int i = 0; i < faceArrays.size(); i++) {
                 if (faceArrays.get(i).vertexPoints != null) {
-                    copyPoints(faceArrays.get(i).vertexPoints);
+                    LandmarkEngine.getInstance().calculateExtraPoints(mPoints, i);
                     mPointVertexBuffer.clear();
                     mPointVertexBuffer.put(mPoints, 0, mPoints.length);
                     mPointVertexBuffer.position(0);
@@ -133,24 +133,6 @@ public class GLImageFacePointsFilter extends GLImageFilter {
         onDrawFrameAfter();
         GLES30.glDisableVertexAttribArray(mPositionHandle);
         return true;
-    }
-
-    /**
-     * 复制顶点坐标
-     * @param vertexPoints
-     */
-    private void copyPoints(float[] vertexPoints) {
-        if (vertexPoints == null) {
-            return;
-        }
-        for (int i = 0; i < vertexPoints.length && i < mPoints.length; i++) {
-            mPoints[i] = vertexPoints[i];
-        }
-        if (vertexPoints.length < mPoints.length) {
-            for (int i = vertexPoints.length; i < mPoints.length; i++) {
-                mPoints[i] = -2;
-            }
-        }
     }
 
     /**

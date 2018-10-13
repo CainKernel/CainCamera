@@ -1,7 +1,7 @@
 package com.cgfay.landmarklibrary;
 
 /**
- * 关键点标识
+ * 关键点索引（106个关键点 + 扩展8个关键点）
  * Created by cain on 2017/11/10.
  */
 
@@ -43,6 +43,10 @@ public final class FaceLandmark {
     public static int noseRight = 83;       // 鼻子右边
     public static int noseLowerMiddle = 49; // 两鼻孔中心
 
+    // 脸边沿
+    public static int leftCheekEdgeCenter = 4;        // 左脸颊边沿中心
+    public static int rightCheekEdgeCenter = 28;      // 右脸颊边沿中心
+
     // 嘴巴
     public static int mouthLeftCorner = 84;        // 嘴唇左边
     public static int mouthRightCorner = 90;       // 嘴唇右边
@@ -55,4 +59,14 @@ public final class FaceLandmark {
     public static int chinLeft = 14;        // 下巴左边
     public static int chinRight = 18;       // 下巴右边
     public static int chinCenter = 16;      // 下巴中心
+
+    // 扩展的关键点(8个)
+    public static int mouthCenter = 106;        // 嘴巴中心
+    public static int leftEyebrowCenter = 107;  // 左眉心
+    public static int rightEyebrowCenter = 108; // 右眉心
+    public static int leftHead = 109;           // 额头左侧
+    public static int headCenter = 110;         // 额头中心
+    public static int rightHead = 111;          // 额头右侧
+    public static int leftCheekCenter = 112;    // 左脸颊中心
+    public static int rightCheekCenter = 113;   // 右脸颊中心
 }

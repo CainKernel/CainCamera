@@ -1,7 +1,6 @@
 package com.cgfay.facedetectlibrary.engine;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
@@ -13,7 +12,6 @@ import com.cgfay.facedetectlibrary.utils.ConUtil;
 import com.cgfay.facedetectlibrary.utils.FaceppConstraints;
 import com.cgfay.facedetectlibrary.utils.SensorEventUtil;
 import com.cgfay.landmarklibrary.LandmarkEngine;
-import com.cgfay.landmarklibrary.LandmarkUtils;
 import com.cgfay.landmarklibrary.OneFace;
 import com.megvii.facepp.sdk.Facepp;
 import com.megvii.licensemanager.sdk.LicenseManager;
@@ -490,7 +488,6 @@ public final class FaceTracker {
                     // 获取一个人的关键点坐标
                     if (oneFace.vertexPoints == null || oneFace.vertexPoints.length != face.points.length * 2) {
                         oneFace.vertexPoints = new float[face.points.length * 2];
-                        oneFace.texturePoints = new float[face.points.length * 2];
                     }
                     for (int i = 0; i < face.points.length; i++) {
                         // orientation = 0、3 表示竖屏，1、2 表示横屏
@@ -528,17 +525,6 @@ public final class FaceTracker {
                             oneFace.vertexPoints[2 * i] = point[0];
                         }
                         oneFace.vertexPoints[2 * i + 1] = point[1];
-                        // 纹理坐标
-                        if (faceTrackParam.previewTrack) {
-                            if (faceTrackParam.isBackCamera) {
-                                oneFace.vertexPoints[2 * i] = (1 + point[0]) / 2.0f;
-                            } else {
-                                oneFace.texturePoints[2 * i] = (1 - point[0]) / 2.0f;
-                            }
-                        } else { // 非预览状态下，左右不需要翻转
-                            oneFace.vertexPoints[2 * i] = (1 + point[0]) / 2.0f;
-                        }
-                        oneFace.texturePoints[2 * i + 1] = (1 + point[1]) / 2.0f;
                     }
                     // 插入人脸对象
                     LandmarkEngine.getInstance().putOneFace(index, oneFace);

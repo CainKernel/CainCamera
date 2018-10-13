@@ -23,8 +23,6 @@ public class OneFace {
     public int gender;
     // 顶点坐标
     public float[] vertexPoints;
-    // 纹理坐标
-    public float[] texturePoints;
 
     @Override
     protected OneFace clone() {
@@ -36,7 +34,6 @@ public class OneFace {
         copy.age = this.age;
         copy.gender = this.gender;
         copy.vertexPoints = this.vertexPoints.clone();
-        copy.texturePoints = this.texturePoints.clone();
         return copy;
     }
 
