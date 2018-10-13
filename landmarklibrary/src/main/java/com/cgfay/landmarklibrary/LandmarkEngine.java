@@ -141,36 +141,24 @@ public final class LandmarkEngine {
         vertexPoints[FaceLandmark.headCenter * 2] = vertexPoints[FaceLandmark.eyeCenter * 2] * 2.0f - vertexPoints[FaceLandmark.noseLowerMiddle * 2];
         vertexPoints[FaceLandmark.headCenter * 2 + 1] = vertexPoints[FaceLandmark.eyeCenter * 2 + 1] * 2.0f - vertexPoints[FaceLandmark.noseLowerMiddle * 2 + 1];
 
-        // 额头左侧，备注：侧脸时这个点不太准确，后续优化
+        // 额头左侧，备注：这个点不太准确，后续优化
         FacePointsUtils.getCenter(point,
                 vertexPoints[FaceLandmark.leftEyebrowLeftTopCorner * 2],
                 vertexPoints[FaceLandmark.leftEyebrowLeftTopCorner * 2 + 1],
-                vertexPoints[FaceLandmark.leftEyebrowRightCorner * 2],
-                vertexPoints[FaceLandmark.leftEyebrowRightCorner * 2 + 1]
+                vertexPoints[FaceLandmark.headCenter * 2],
+                vertexPoints[FaceLandmark.headCenter * 2 + 1]
         );
         vertexPoints[FaceLandmark.leftHead * 2] = point[0];
-        FacePointsUtils.getCenter(point,
-                vertexPoints[FaceLandmark.headCenter * 2],
-                vertexPoints[FaceLandmark.headCenter * 2 + 1],
-                vertexPoints[FaceLandmark.leftEyebrowRightTopCorner * 2],
-                vertexPoints[FaceLandmark.leftEyebrowRightTopCorner * 2 + 1]
-        );
         vertexPoints[FaceLandmark.leftHead * 2 + 1] = point[1];
 
-        // 额头右侧，备注：侧脸时这个点不太准确，后续优化
+        // 额头右侧，备注：这个点不太准确，后续优化
         FacePointsUtils.getCenter(point,
                 vertexPoints[FaceLandmark.rightEyebrowRightTopCorner * 2],
                 vertexPoints[FaceLandmark.rightEyebrowRightTopCorner * 2 + 1],
-                vertexPoints[FaceLandmark.rightEyebrowRightCorner * 2],
-                vertexPoints[FaceLandmark.rightEyebrowRightCorner * 2 + 1]
+                vertexPoints[FaceLandmark.headCenter * 2],
+                vertexPoints[FaceLandmark.headCenter * 2 + 1]
         );
         vertexPoints[FaceLandmark.rightHead * 2] = point[0];
-        FacePointsUtils.getCenter(point,
-                vertexPoints[FaceLandmark.headCenter * 2],
-                vertexPoints[FaceLandmark.headCenter * 2 + 1],
-                vertexPoints[FaceLandmark.rightEyebrowLeftTopCorner * 2],
-                vertexPoints[FaceLandmark.rightEyebrowLeftTopCorner * 2 + 1]
-        );
         vertexPoints[FaceLandmark.rightHead * 2 + 1] = point[1];
 
         // 左脸颊中心
