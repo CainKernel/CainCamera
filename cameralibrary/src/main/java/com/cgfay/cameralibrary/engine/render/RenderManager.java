@@ -212,7 +212,7 @@ public final class RenderManager {
             // 景深
             if (mFilterArrays.get(RenderIndex.DepthBlurIndex) != null) {
                 mFilterArrays.get(RenderIndex.DepthBlurIndex).setFilterEnable(mCameraParam.enableDepthBlur);
-                currentTexture = mFilterArrays.get(RenderIndex.ColorIndex).drawFrameBuffer(currentTexture);
+                currentTexture = mFilterArrays.get(RenderIndex.DepthBlurIndex).drawFrameBuffer(currentTexture);
             }
 
             // 暗角
