@@ -1,6 +1,7 @@
 package com.cgfay.cameralibrary.engine.render;
 
 import android.content.Context;
+import android.util.SparseArray;
 
 import com.cgfay.cameralibrary.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.engine.model.ScaleType;
@@ -40,27 +41,8 @@ public final class RenderManager {
         return RenderManagerHolder.instance;
     }
 
-
-    // 相机输入流滤镜
-    private GLImageOESInputFilter mInputFilter;
-    // 美颜滤镜
-    private GLImageFilter mBeautyFilter;
-    // 彩妆滤镜
-    private GLImageMakeupFilter mMakeupFilter;
-    // 瘦脸滤镜
-    private GLImageFilter mFaceAdjustFilter;
-    // 动态贴纸滤镜
-    private GLImageStickerFilter mStickerFilter;
-    // LUT滤镜
-    private GLImageFilter mColorFilter;
-    // 景深滤镜
-    private GLImageDepthBlurFilter mDepthBlurFilter;
-    // 暗角滤镜
-    private GLImageVignetteFilter mVignetteFilter;
-    // 显示输出
-    private GLImageFilter mDisplayFilter;
-    // 人脸关键点调试
-    private GLImageFacePointsFilter mFacePointsFilter;
+    // 滤镜列表
+    private SparseArray<GLImageFilter> mFilterArrays = new SparseArray<GLImageFilter>();
 
     // 坐标缓冲
     private ScaleType mScaleType = ScaleType.CENTER_CROP;
@@ -95,46 +77,12 @@ public final class RenderManager {
      * 释放滤镜
      */
     private void releaseFilters() {
-        if (mInputFilter != null) {
-            mInputFilter.release();
-            mInputFilter = null;
+        for (int i = 0; i < mFilterArrays.size(); i++) {
+            if (mFilterArrays.get(i) != null) {
+                mFilterArrays.get(i).release();
+            }
         }
-        if (mBeautyFilter != null) {
-            mBeautyFilter.release();
-            mBeautyFilter = null;
-        }
-        if (mMakeupFilter != null) {
-            mMakeupFilter.release();
-            mMakeupFilter = null;
-        }
-        if (mFaceAdjustFilter != null) {
-            mFaceAdjustFilter.release();
-            mFaceAdjustFilter = null;
-        }
-        if (mStickerFilter != null) {
-            mStickerFilter.release();
-            mStickerFilter = null;
-        }
-        if (mColorFilter != null) {
-            mColorFilter.release();
-            mColorFilter = null;
-        }
-        if (mDepthBlurFilter != null) {
-            mDepthBlurFilter.release();
-            mDepthBlurFilter = null;
-        }
-        if (mVignetteFilter != null) {
-            mVignetteFilter.release();
-            mVignetteFilter = null;
-        }
-        if (mDisplayFilter != null) {
-            mDisplayFilter.release();
-            mDisplayFilter = null;
-        }
-        if (mFacePointsFilter != null) {
-            mFacePointsFilter.release();
-            mFacePointsFilter = null;
-        }
+        mFilterArrays.clear();
     }
 
     /**
@@ -174,24 +122,26 @@ public final class RenderManager {
      */
     private void initFilters(Context context) {
         releaseFilters();
-        // 相机输入流
-        mInputFilter = new GLImageOESInputFilter(context);
+        // 相机输入滤镜
+        mFilterArrays.put(RenderIndex.CameraIndex, new GLImageOESInputFilter(context));
         // 美颜滤镜
-        mBeautyFilter = new GLImageRealTimeBeautyFilter(context);
+        mFilterArrays.put(RenderIndex.BeautyIndex, new GLImageRealTimeBeautyFilter(context));
         // 彩妆滤镜
-        mMakeupFilter = new GLImageMakeupFilter(context);
+        mFilterArrays.put(RenderIndex.MakeupIndex, new GLImageMakeupFilter(context));
         // 美型滤镜
-        mFaceAdjustFilter = new GLImageFaceAdjustFilter(context);
+        mFilterArrays.put(RenderIndex.FaceAdjustIndex, new GLImageFaceAdjustFilter(context));
         // 动态贴纸滤镜
-        mStickerFilter = new GLImageStickerFilter(context);
+        mFilterArrays.put(RenderIndex.StickerIndex, new GLImageStickerFilter(context));
+        // LUT滤镜
+//        mFilterArrays.put(RenderIndex.ColorIndex, new GLImageFilter(context));
         // 景深滤镜
-        mDepthBlurFilter = new GLImageDepthBlurFilter(context);
+        mFilterArrays.put(RenderIndex.DepthBlurIndex, new GLImageDepthBlurFilter(context));
         // 暗角滤镜
-        mVignetteFilter = new GLImageVignetteFilter(context);
+        mFilterArrays.put(RenderIndex.VignetteIndex, new GLImageVignetteFilter(context));
         // 显示输出
-        mDisplayFilter = new GLImageFilter(context);
+        mFilterArrays.put(RenderIndex.DisplayIndex, new GLImageFilter(context));
         // 人脸关键点调试
-        mFacePointsFilter = new GLImageFacePointsFilter(context);
+        mFilterArrays.put(RenderIndex.FacePointIndex, new GLImageFacePointsFilter(context));
     }
 
     /**
@@ -200,14 +150,15 @@ public final class RenderManager {
      * @param type
      */
     public void changeFilter(Context context, GLImageFilterType type) {
-        if (mColorFilter != null) {
-            mColorFilter.release();
-            mColorFilter = null;
+        // TODO 有机会这里改成LUT滤镜，剔除旧的滤镜
+        if (mFilterArrays.get(RenderIndex.ColorIndex) != null) {
+            mFilterArrays.get(RenderIndex.ColorIndex).release();
         }
-        mColorFilter = GLImageFilterManager.getFilter(context, type);
-        mColorFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-        mColorFilter.initFrameBuffer(mTextureWidth, mTextureHeight);
-        mColorFilter.onDisplaySizeChanged(mViewWidth, mViewHeight);
+        GLImageFilter filter = GLImageFilterManager.getFilter(context, type);
+        filter.onInputSizeChanged(mTextureWidth, mTextureHeight);
+        filter.initFrameBuffer(mTextureWidth, mTextureHeight);
+        filter.onDisplaySizeChanged(mViewWidth, mViewHeight);
+        mFilterArrays.put(RenderIndex.ColorIndex, filter);
     }
 
     /**
@@ -218,58 +169,61 @@ public final class RenderManager {
      */
     public int drawFrame(int inputTexture, float[] mMatrix) {
         int currentTexture = inputTexture;
-        if (mInputFilter != null) {
-            mInputFilter.setTextureTransformMatirx(mMatrix);
-            currentTexture = mInputFilter.drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
+        if (mFilterArrays.get(RenderIndex.CameraIndex) == null
+                || mFilterArrays.get(RenderIndex.DisplayIndex) == null) {
+            return currentTexture;
         }
+        if (mFilterArrays.get(RenderIndex.CameraIndex) instanceof GLImageOESInputFilter) {
+            ((GLImageOESInputFilter)mFilterArrays.get(RenderIndex.CameraIndex)).setTextureTransformMatirx(mMatrix);
+        }
+        currentTexture = mFilterArrays.get(RenderIndex.CameraIndex)
+                .drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
         // 如果处于对比状态，不做处理
         if (!mCameraParam.showCompare) {
             // 美颜滤镜
-            if (mBeautyFilter != null) {
-                if (mBeautyFilter instanceof IBeautify
+            if (mFilterArrays.get(RenderIndex.BeautyIndex) != null) {
+                if (mFilterArrays.get(RenderIndex.BeautyIndex) instanceof IBeautify
                         && mCameraParam.beauty != null) {
-                    ((IBeautify) mBeautyFilter).onBeauty(mCameraParam.beauty);
+                    ((IBeautify) mFilterArrays.get(RenderIndex.BeautyIndex)).onBeauty(mCameraParam.beauty);
                 }
-                currentTexture = mBeautyFilter.drawFrameBuffer(currentTexture);
+                currentTexture = mFilterArrays.get(RenderIndex.BeautyIndex).drawFrameBuffer(currentTexture);
             }
             // 彩妆滤镜
-            if (mMakeupFilter != null) {
-                currentTexture = mMakeupFilter.drawFrameBuffer(currentTexture);
+            if (mFilterArrays.get(RenderIndex.MakeupIndex) != null) {
+                currentTexture = mFilterArrays.get(RenderIndex.MakeupIndex).drawFrameBuffer(currentTexture);
             }
             // 美型滤镜
-            if (mFaceAdjustFilter != null) {
-                if (mFaceAdjustFilter instanceof IBeautify) {
-                    ((IBeautify) mFaceAdjustFilter).onBeauty(mCameraParam.beauty);
+            if (mFilterArrays.get(RenderIndex.FaceAdjustIndex) != null) {
+                if (mFilterArrays.get(RenderIndex.FaceAdjustIndex) instanceof IBeautify) {
+                    ((IBeautify) mFilterArrays.get(RenderIndex.FaceAdjustIndex)).onBeauty(mCameraParam.beauty);
                 }
-                currentTexture = mFaceAdjustFilter.drawFrameBuffer(currentTexture);
+                currentTexture = mFilterArrays.get(RenderIndex.FaceAdjustIndex).drawFrameBuffer(currentTexture);
             }
             // 动态贴纸滤镜
-            if (mStickerFilter != null) {
-                currentTexture = mStickerFilter.drawFrameBuffer(currentTexture);
+            if (mFilterArrays.get(RenderIndex.StickerIndex) != null) {
+                currentTexture = mFilterArrays.get(RenderIndex.StickerIndex).drawFrameBuffer(currentTexture);
             }
 
             // 绘制LUT滤镜
-            if (mColorFilter != null) {
-                currentTexture = mColorFilter.drawFrameBuffer(currentTexture);
+            if (mFilterArrays.get(RenderIndex.ColorIndex) != null) {
+                currentTexture = mFilterArrays.get(RenderIndex.ColorIndex).drawFrameBuffer(currentTexture);
             }
 
             // 景深
-            if (mDepthBlurFilter != null) {
-                mDepthBlurFilter.setFilterEnable(mCameraParam.enableDepthBlur);
-                currentTexture = mDepthBlurFilter.drawFrameBuffer(currentTexture);
+            if (mFilterArrays.get(RenderIndex.DepthBlurIndex) != null) {
+                mFilterArrays.get(RenderIndex.DepthBlurIndex).setFilterEnable(mCameraParam.enableDepthBlur);
+                currentTexture = mFilterArrays.get(RenderIndex.ColorIndex).drawFrameBuffer(currentTexture);
             }
 
             // 暗角
-            if (mVignetteFilter != null) {
-                mVignetteFilter.setFilterEnable(mCameraParam.enableVignette);
-                currentTexture = mVignetteFilter.drawFrameBuffer(currentTexture);
+            if (mFilterArrays.get(RenderIndex.VignetteIndex) != null) {
+                mFilterArrays.get(RenderIndex.VignetteIndex).setFilterEnable(mCameraParam.enableVignette);
+                currentTexture = mFilterArrays.get(RenderIndex.VignetteIndex).drawFrameBuffer(currentTexture);
             }
         }
 
         // 显示输出，需要调整视口大小
-        if (mDisplayFilter != null) {
-            mDisplayFilter.drawFrame(currentTexture);
-        }
+        mFilterArrays.get(RenderIndex.DisplayIndex).drawFrame(currentTexture);
 
         return currentTexture;
     }
@@ -279,9 +233,9 @@ public final class RenderManager {
      * @param mCurrentTexture
      */
     public void drawFacePoint(int mCurrentTexture) {
-        if (mFacePointsFilter != null) {
+        if (mFilterArrays.get(RenderIndex.FacePointIndex) != null) {
             if (mCameraParam.drawFacePoints && LandmarkEngine.getInstance().hasFace()) {
-                mFacePointsFilter.drawFrame(mCurrentTexture);
+                mFilterArrays.get(RenderIndex.FacePointIndex).drawFrame(mCurrentTexture);
             }
         }
     }
@@ -312,53 +266,12 @@ public final class RenderManager {
      * 调整滤镜
      */
     private void onFilterChanged() {
-        if (mInputFilter != null) {
-            mInputFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-            mInputFilter.initFrameBuffer(mTextureWidth, mTextureHeight);
-            mInputFilter.onDisplaySizeChanged(mViewWidth, mViewHeight);
-        }
-        if (mBeautyFilter != null) {
-            mBeautyFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-            mBeautyFilter.initFrameBuffer(mTextureWidth, mTextureHeight);
-            mBeautyFilter.onDisplaySizeChanged(mViewWidth, mViewHeight);
-        }
-        if (mMakeupFilter != null) {
-            mMakeupFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-            mMakeupFilter.initFrameBuffer(mTextureWidth, mTextureHeight);
-            mMakeupFilter.onDisplaySizeChanged(mViewWidth, mViewHeight);
-        }
-        if (mFaceAdjustFilter != null) {
-            mFaceAdjustFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-            mFaceAdjustFilter.initFrameBuffer(mTextureWidth, mTextureHeight);
-            mFaceAdjustFilter.onDisplaySizeChanged(mViewWidth, mViewHeight);
-        }
-        if (mStickerFilter != null) {
-            mStickerFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-            mStickerFilter.initFrameBuffer(mTextureWidth, mTextureHeight);
-            mStickerFilter.onDisplaySizeChanged(mViewWidth, mViewHeight);
-        }
-        if (mColorFilter != null) {
-            mColorFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-            mColorFilter.initFrameBuffer(mTextureWidth, mTextureHeight);
-            mColorFilter.onDisplaySizeChanged(mViewWidth, mViewHeight);
-        }
-        if (mDepthBlurFilter != null) {
-            mDepthBlurFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-            mDepthBlurFilter.initFrameBuffer(mTextureWidth, mTextureHeight);
-            mDepthBlurFilter.onDisplaySizeChanged(mTextureWidth, mTextureHeight);
-        }
-        if (mVignetteFilter != null) {
-            mVignetteFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-            mVignetteFilter.initFrameBuffer(mTextureWidth, mTextureHeight);
-            mVignetteFilter.onDisplaySizeChanged(mViewWidth, mViewHeight);
-        }
-        if (mDisplayFilter != null) {
-            mDisplayFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-            mDisplayFilter.onDisplaySizeChanged(mViewWidth, mViewHeight);
-        }
-        if (mFacePointsFilter != null) {
-            mFacePointsFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-            mFacePointsFilter.onDisplaySizeChanged(mViewWidth, mViewHeight);
+        for (int i = 0; i < mFilterArrays.size(); i++) {
+            if (mFilterArrays.get(i) != null) {
+                mFilterArrays.get(i).onInputSizeChanged(mTextureWidth, mTextureHeight);
+                mFilterArrays.get(i).initFrameBuffer(mTextureWidth, mTextureHeight);
+                mFilterArrays.get(i).onDisplaySizeChanged(mViewWidth, mViewHeight);
+            }
         }
     }
 
