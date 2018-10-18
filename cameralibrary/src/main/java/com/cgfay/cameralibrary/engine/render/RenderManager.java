@@ -133,7 +133,7 @@ public final class RenderManager {
         // 动态贴纸滤镜
         mFilterArrays.put(RenderIndex.StickerIndex, new GLImageStickerFilter(context));
         // LUT滤镜
-//        mFilterArrays.put(RenderIndex.ColorIndex, new GLImageFilter(context));
+        mFilterArrays.put(RenderIndex.ColorIndex, null);
         // 景深滤镜
         mFilterArrays.put(RenderIndex.DepthBlurIndex, new GLImageDepthBlurFilter(context));
         // 暗角滤镜
