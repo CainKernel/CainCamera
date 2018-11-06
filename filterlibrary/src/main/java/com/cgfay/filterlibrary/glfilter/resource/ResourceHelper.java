@@ -45,6 +45,7 @@ public final class ResourceHelper extends ResourceBaseHelper {
 
         // 添加资源列表，如果可以是Assets文件夹下的，也可以是绝对路径下的zip包
         mResourceList.add(new ResourceData("none", "assets://resource/none.zip", ResourceType.NONE, "none", "assets://thumbs/resources/none.png"));
+        mResourceList.add(new ResourceData("cat", "assets://resource/cat.zip", ResourceType.STICKER, "cat", "assets://thumbs/resources/cat.png"));
 
         // 解压所有资源
         decompressResource(context, mResourceList);
