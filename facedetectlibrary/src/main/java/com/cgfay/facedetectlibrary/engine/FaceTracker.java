@@ -475,7 +475,12 @@ public final class FaceTracker {
                     oneFace.yaw = face.yaw;
                     oneFace.roll = face.roll;
                     if (faceTrackParam.previewTrack) {
-                        oneFace.roll = (float) (Math.PI / 2.0f - face.roll);
+
+                        if (faceTrackParam.isBackCamera) {
+                            oneFace.roll = (float) (Math.PI / 2.0f + oneFace.roll);
+                        } else {
+                            oneFace.roll = (float) (Math.PI / 2.0f - face.roll);
+                        }
                     }
                     oneFace.confidence = face.confidence;
 
