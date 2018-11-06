@@ -1,7 +1,6 @@
 package com.cgfay.videolibrary.adapter;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,12 +11,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.support.v7.widget.RecyclerView;
 
-import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
+import com.cgfay.filterlibrary.glfilter.resource.bean.ResourceData;
 import com.cgfay.utilslibrary.utils.BitmapUtils;
 import com.cgfay.videolibrary.R;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,21 +22,13 @@ import java.util.List;
  */
 public class VideoFilterAdapter extends RecyclerView.Adapter<VideoFilterAdapter.ImageHolder> {
 
-    private static final String TAG = "VideoFilterAdapter";
-
     private Context mContext;
     private int mSelected = 0;
-    // 滤镜类型
-    private List<GLImageFilterType> mFilterTypeList;
-    // 滤镜名称
-    private List<String> mFilterNameList;
+    private List<ResourceData> mFilterDataList;
 
-    public VideoFilterAdapter(Context context,
-                              List<GLImageFilterType> glFilterTypes,
-                              List<String> filterNames) {
+    public VideoFilterAdapter(Context context, List<ResourceData> filterDataList) {
         mContext = context;
-        mFilterTypeList = glFilterTypes;
-        mFilterNameList = filterNames;
+        mFilterDataList = filterDataList;
     }
 
     @NonNull
@@ -56,10 +45,13 @@ public class VideoFilterAdapter extends RecyclerView.Adapter<VideoFilterAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ImageHolder holder, final int position) {
-        GLImageFilterType filterType = mFilterTypeList.get(position);
-        String path = "thumbs/" + filterType.name().toLowerCase() + ".jpg";
-        holder.filterImage.setImageBitmap(BitmapUtils.getImageFromAssetsFile(mContext, path));
-        holder.filterName.setText(mFilterNameList.get(position));
+        if (mFilterDataList.get(position).thumbPath.startsWith("assets://")) {
+            holder.filterImage.setImageBitmap(BitmapUtils.getImageFromAssetsFile(mContext,
+                    mFilterDataList.get(position).thumbPath.substring("assets://".length())));
+        } else {
+            holder.filterImage.setImageBitmap(BitmapUtils.getBitmapFromFile(mFilterDataList.get(position).thumbPath));
+        }
+        holder.filterName.setText(mFilterDataList.get(position).name);
         if (position == mSelected) {
             holder.filterPanel.setBackgroundResource(R.drawable.ic_video_effect_selected);
         } else {
@@ -76,7 +68,7 @@ public class VideoFilterAdapter extends RecyclerView.Adapter<VideoFilterAdapter.
                 notifyItemChanged(lastSelected, 0);
                 notifyItemChanged(position, 0);
                 if (mFilterChangeListener != null) {
-                    mFilterChangeListener.onFilterChanged(mFilterTypeList.get(position));
+                    mFilterChangeListener.onFilterChanged(mFilterDataList.get(position));
                 }
             }
         });
@@ -84,7 +76,7 @@ public class VideoFilterAdapter extends RecyclerView.Adapter<VideoFilterAdapter.
 
     @Override
     public int getItemCount() {
-        return (mFilterTypeList == null) ? 0 : mFilterTypeList.size();
+        return (mFilterDataList == null) ? 0 : mFilterDataList.size();
     }
 
     class ImageHolder extends RecyclerView.ViewHolder {
@@ -106,7 +98,7 @@ public class VideoFilterAdapter extends RecyclerView.Adapter<VideoFilterAdapter.
      * 滤镜改变监听器
      */
     public interface OnFilterChangeListener {
-        void onFilterChanged(GLImageFilterType type);
+        void onFilterChanged(ResourceData resourceData);
     }
 
     private OnFilterChangeListener mFilterChangeListener;

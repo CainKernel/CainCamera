@@ -9,9 +9,9 @@ import android.view.WindowManager;
 
 import com.cgfay.cameralibrary.R;
 import com.cgfay.cameralibrary.engine.camera.CameraParam;
+import com.cgfay.cameralibrary.engine.model.GalleryType;
 import com.cgfay.cameralibrary.fragment.CameraPreviewFragment;
 import com.cgfay.cameralibrary.listener.OnPageOperationListener;
-import com.cgfay.cameralibrary.engine.model.GalleryType;
 import com.cgfay.facedetectlibrary.engine.FaceTracker;
 
 /**
@@ -40,6 +40,9 @@ public class CameraActivity extends AppCompatActivity implements OnPageOperation
         faceTrackerRequestNetwork();
     }
 
+    /**
+     * 人脸检测SDK验证，可以替换成自己的SDK
+     */
     private void faceTrackerRequestNetwork() {
         new Thread(new Runnable() {
             @Override

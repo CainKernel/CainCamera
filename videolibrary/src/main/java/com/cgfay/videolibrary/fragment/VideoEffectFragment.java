@@ -13,8 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.cgfay.filterlibrary.glfilter.GLImageFilterManager;
-import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
 import com.cgfay.videolibrary.R;
 import com.cgfay.videolibrary.adapter.VideoFilterAdapter;
 import com.cgfay.videolibrary.widget.IndicatorProgress;
@@ -45,8 +43,6 @@ public class VideoEffectFragment extends BaseVideoFilterFragment implements Recy
 
     @Override
     protected void initFilters() {
-//        mGlFilterType.addAll(GLImageFilterManager.getEffectTypes());
-//        mFilterName.addAll(GLImageFilterManager.getEffectNames());
     }
 
     @Nullable
@@ -71,7 +67,7 @@ public class VideoEffectFragment extends BaseVideoFilterFragment implements Recy
         mFilterLayoutManager = new LinearLayoutManager(getActivity());
         mFilterLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         mFilterListView.setLayoutManager(mFilterLayoutManager);
-        VideoFilterAdapter adapter = new VideoFilterAdapter(getActivity(), mGlFilterType, mFilterName);
+        VideoFilterAdapter adapter = new VideoFilterAdapter(getActivity(), mFilterDataList);
         mFilterListView.setAdapter(adapter);
         mGestureDetector = new GestureDetectorCompat(mFilterListView.getContext(),
                 new ItemTouchHelperGestureListener());

@@ -25,22 +25,22 @@ public class GLImageDrawElementsFilter extends GLImageFilter {
         super(context, vertexShader, fragmentShader);
     }
 
-    @Override
-    protected void initBuffers() {
-        mVertexBuffer = OpenGLUtils.createFloatBuffer(Vertices);
-        mTextureBuffer = OpenGLUtils.createFloatBuffer(Textures);
-        mIndexBuffer = OpenGLUtils.createShortBuffer(Indices);
-        mIndexSize = mIndexBuffer.capacity();
-    }
-
-    @Override
-    protected void releaseBuffers() {
-        super.releaseBuffers();
-        if (mIndexBuffer != null) {
-            mIndexBuffer.clear();
-            mIndexBuffer = null;
-        }
-    }
+//    @Override
+//    protected void initBuffers() {
+//        mVertexBuffer = OpenGLUtils.createFloatBuffer(Vertices);
+//        mTextureBuffer = OpenGLUtils.createFloatBuffer(Textures);
+//        mIndexBuffer = OpenGLUtils.createShortBuffer(Indices);
+//        mIndexSize = mIndexBuffer.capacity();
+//    }
+//
+//    @Override
+//    protected void releaseBuffers() {
+//        super.releaseBuffers();
+//        if (mIndexBuffer != null) {
+//            mIndexBuffer.clear();
+//            mIndexBuffer = null;
+//        }
+//    }
 
     @Override
     protected void onDrawFrame() {

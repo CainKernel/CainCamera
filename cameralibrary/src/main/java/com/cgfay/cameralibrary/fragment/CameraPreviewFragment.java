@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,7 +20,6 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -48,7 +46,9 @@ import com.cgfay.cameralibrary.widget.RatioImageView;
 import com.cgfay.cameralibrary.widget.ShutterButton;
 import com.cgfay.facedetectlibrary.engine.FaceTracker;
 import com.cgfay.facedetectlibrary.listener.FaceTrackerCallback;
-import com.cgfay.filterlibrary.glfilter.GLImageFilterManager;
+import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
+import com.cgfay.filterlibrary.glfilter.resource.FilterHelper;
+import com.cgfay.filterlibrary.glfilter.resource.ResourceJsonCodec;
 import com.cgfay.filterlibrary.multimedia.VideoCombiner;
 import com.cgfay.landmarklibrary.LandmarkEngine;
 import com.cgfay.utilslibrary.fragment.PermissionConfirmDialogFragment;
@@ -58,6 +58,7 @@ import com.cgfay.utilslibrary.utils.BrightnessUtils;
 import com.cgfay.utilslibrary.utils.PermissionUtils;
 import com.cgfay.utilslibrary.utils.StringUtils;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -137,8 +138,8 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private Activity mActivity;
     // 页面跳转监听器
     private OnPageOperationListener mPageListener;
-    // 贴纸页面
-    private PreviewStickerFragment mStickerFragment;
+    // 贴纸资源页面
+    private PreviewResourceFragment mResourcesFragment;
     // 滤镜页面
     private PreviewEffectFragment mEffectFragment;
 
@@ -329,7 +330,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             hideEffectView();
             return true;
         } else if (isShowingStickers) {
-            isShowingStickers = false;
             hideStickerView();
             return true;
         }
@@ -428,11 +428,11 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private void showStickers() {
         isShowingStickers = true;
         FragmentTransaction ft = getChildFragmentManager().beginTransaction();
-        if (mStickerFragment == null) {
-            mStickerFragment = new PreviewStickerFragment();
-            ft.add(R.id.fragment_container, mStickerFragment);
+        if (mResourcesFragment == null) {
+            mResourcesFragment = new PreviewResourceFragment();
+            ft.add(R.id.fragment_container, mResourcesFragment);
         } else {
-            ft.show(mStickerFragment);
+            ft.show(mResourcesFragment);
         }
         ft.commit();
         hideBottomLayout();
@@ -462,9 +462,9 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private void hideStickerView() {
         if (isShowingStickers) {
             isShowingStickers = false;
-            if (mStickerFragment != null) {
+            if (mResourcesFragment != null) {
                 FragmentTransaction ft = getChildFragmentManager().beginTransaction();
-                ft.hide(mStickerFragment);
+                ft.hide(mResourcesFragment);
                 ft.commit();
             }
         }
@@ -553,9 +553,8 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                 mFilterIndex = mEffectFragment.getCurrentFilterIndex();
             }
             mFilterIndex++;
-            mFilterIndex = mFilterIndex % GLImageFilterManager.getFilterTypes().size();
-            PreviewRenderer.getInstance()
-                    .changeFilterType(GLImageFilterManager.getFilterTypes().get(mFilterIndex));
+            mFilterIndex = mFilterIndex % FilterHelper.getFilterList().size();
+            changeDynamicColor(mFilterIndex);
             if (mEffectFragment != null) {
                 mEffectFragment.scrollToCurrentFilter(mFilterIndex);
             }
@@ -568,11 +567,10 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             }
             mFilterIndex--;
             if (mFilterIndex < 0) {
-                int count = GLImageFilterManager.getFilterTypes().size();
+                int count = FilterHelper.getFilterList().size();
                 mFilterIndex = count > 0 ? count - 1 : 0;
             }
-            PreviewRenderer.getInstance()
-                    .changeFilterType(GLImageFilterManager.getFilterTypes().get(mFilterIndex));
+            changeDynamicColor(mFilterIndex);
 
             if (mEffectFragment != null) {
                 mEffectFragment.scrollToCurrentFilter(mFilterIndex);
@@ -594,6 +592,22 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         }
 
     };
+
+    /**
+     * 切换滤镜
+     * @param filterIndex
+     */
+    private void changeDynamicColor(int filterIndex) {
+        String folderPath = FilterHelper.getFilterDirectory(mActivity) + File.separator +
+                FilterHelper.getFilterList().get(filterIndex).unzipFolder;
+        DynamicColor color = null;
+        try {
+            color = ResourceJsonCodec.decodeFilterData(folderPath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        PreviewRenderer.getInstance().changeDynamicFilter(color);
+    }
 
     /**
      * 单双击回调监听
@@ -718,7 +732,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             mMainHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    String filePath = PathConstraints.getMediaPath();
+                    String filePath = PathConstraints.getImageCachePath(mActivity);
                     BitmapUtils.saveBitmap(filePath, buffer, width, height);
                     if (mPageListener != null) {
                         mPageListener.onOpenImageEditPage(filePath);
@@ -829,7 +843,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             // 开始录制
             PreviewRecorder.getInstance()
                     .setRecordType(mCameraParam.mGalleryType == GalleryType.VIDEO ? PreviewRecorder.RecordType.Video : PreviewRecorder.RecordType.Gif)
-                    .setOutputPath(PathConstraints.getVideoPath())
+                    .setOutputPath(PathConstraints.getVideoCachePath(mActivity))
                     .enableAudio(enableAudio)
                     .setRecordSize(width, height)
                     .setOnRecordListener(mRecordListener)
@@ -948,7 +962,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             mNeedToWaitStop = false;
             // 销毁录制线程
             PreviewRecorder.getInstance().destroyRecorder();
-            combinePath = PathConstraints.getVideoPath();
+            combinePath = PathConstraints.getVideoCachePath(mActivity);
             PreviewRecorder.getInstance().combineVideo(combinePath, mCombineListener);
         }
     }

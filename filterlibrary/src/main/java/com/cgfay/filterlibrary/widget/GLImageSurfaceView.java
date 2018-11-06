@@ -9,11 +9,18 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
 
-import com.cgfay.filterlibrary.glfilter.GLImageFilterManager;
 import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
 import com.cgfay.filterlibrary.glfilter.base.GLImageInputFilter;
-import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
+import com.cgfay.filterlibrary.glfilter.color.GLImageDynamicColorFilter;
+import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
+import com.cgfay.filterlibrary.glfilter.resource.FilterHelper;
+import com.cgfay.filterlibrary.glfilter.resource.ResourceJsonCodec;
+import com.cgfay.filterlibrary.glfilter.resource.bean.ResourceData;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
+import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;
+
+import java.io.File;
+import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -31,6 +38,8 @@ public class GLImageSurfaceView extends GLSurfaceView implements GLSurfaceView.R
     protected GLImageFilter mColorFilter;
     // 显示输出
     protected GLImageFilter mDisplayFilter;
+    private FloatBuffer mVertexBuffer;
+    private FloatBuffer mTextureBuffer;
 
     // 输入纹理大小
     protected int mTextureWidth;
@@ -42,8 +51,8 @@ public class GLImageSurfaceView extends GLSurfaceView implements GLSurfaceView.R
     // 输入图片
     private Bitmap mBitmap;
 
-    // 记录当前滤镜类型，用于暂停重新渲染的结果
-    protected GLImageFilterType mFilterType = GLImageFilterType.NONE;
+    // 记录当前滤镜数据
+    private ResourceData mResourceData;
 
     // UI线程Handler，主要用于更新UI等
     protected Handler mMainHandler;
@@ -58,6 +67,8 @@ public class GLImageSurfaceView extends GLSurfaceView implements GLSurfaceView.R
         setRenderer(this);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         mMainHandler = new Handler(Looper.getMainLooper());
+        mVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
+        mTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
     }
 
     @Override
@@ -102,8 +113,8 @@ public class GLImageSurfaceView extends GLSurfaceView implements GLSurfaceView.R
         } else {
             mInputFilter.initProgramHandle();
         }
-        if (mColorFilter == null && mFilterType != GLImageFilterType.NONE) {
-            mColorFilter = GLImageFilterManager.getFilter(getContext(), mFilterType);
+        if (mColorFilter == null && mResourceData != null) {
+            createColorFilter(mResourceData);
         } else if (mColorFilter != null) {
             mColorFilter.initProgramHandle();
         }
@@ -152,20 +163,20 @@ public class GLImageSurfaceView extends GLSurfaceView implements GLSurfaceView.R
         }
         int currentTexture = mInputTexture;
         if (mInputFilter != null) {
-            currentTexture = mInputFilter.drawFrameBuffer(currentTexture);
+            currentTexture = mInputFilter.drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
         }
         if (mColorFilter != null) {
-            currentTexture = mColorFilter.drawFrameBuffer(currentTexture);
+            currentTexture = mColorFilter.drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
         }
-        mDisplayFilter.drawFrame(currentTexture);
+        mDisplayFilter.drawFrame(currentTexture, mVertexBuffer, mTextureBuffer);
     }
 
     /**
      * 设置滤镜
-     * @param type
+     * @param resourceData
      */
-    public void setFilter(final GLImageFilterType type) {
-        mFilterType = type;
+    public void setFilter(final ResourceData resourceData) {
+        mResourceData = resourceData;
         queueEvent(new Runnable() {
             @Override
             public void run() {
@@ -173,11 +184,25 @@ public class GLImageSurfaceView extends GLSurfaceView implements GLSurfaceView.R
                     mColorFilter.release();
                     mColorFilter = null;
                 }
-                mColorFilter = GLImageFilterManager.getFilter(getContext(), type);
+                createColorFilter(resourceData);
                 onFilterSizeChanged();
                 requestRender();
             }
         });
+    }
+
+    /**
+     * 创建颜色滤镜
+     * @param resourceData
+     */
+    private void createColorFilter(ResourceData resourceData) {
+        String folderPath = FilterHelper.getFilterDirectory(getContext()) + File.separator + resourceData.unzipFolder;
+        try {
+            DynamicColor dynamicColor = ResourceJsonCodec.decodeFilterData(folderPath);
+            mColorFilter = new GLImageDynamicColorFilter(getContext(), dynamicColor);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

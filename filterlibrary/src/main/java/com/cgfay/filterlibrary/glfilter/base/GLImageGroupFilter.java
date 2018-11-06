@@ -3,8 +3,6 @@ package com.cgfay.filterlibrary.glfilter.base;
 import android.content.Context;
 import android.opengl.GLES30;
 
-import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
-
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/resource_root"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <FrameLayout
+        android:id="@+id/resource_panel"
+        android:layout_gravity="center"
+        android:layout_width="@dimen/preview_item_size"
+        android:layout_height="@dimen/preview_item_size"
+        android:padding="@dimen/dp2">
+        <ImageView
+            android:id="@+id/resource_thumb"
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"/>
+    </FrameLayout>
+</LinearLayout>

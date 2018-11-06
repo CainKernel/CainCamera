@@ -4,7 +4,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.SurfaceHolder;
 
-import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
+import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
+import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 
 import java.lang.ref.WeakReference;
 
@@ -23,8 +24,6 @@ class RenderHandler extends Handler {
     public static final int MSG_SURFACE_DESTROYED = 0x003;
     // 渲染
     public static final int MSG_RENDER = 0x004;
-    // 改变滤镜
-    public static final int MSG_FILTER_TYPE = 0x005;
     // 开始录制
     public static final int MSG_START_RECORDING = 0x006;
     // 停止录制
@@ -39,6 +38,10 @@ class RenderHandler extends Handler {
     public static final int MSG_TAKE_PICTURE = 0x012;
     // 计算fps
     public static final int MSG_CALCULATE_FPS = 0x013;
+    // 切换动态滤镜
+    public static final int MSG_CHANGE_DYNAMIC_COLOR = 0x14;
+    // 切换动态动态资源
+    public static final int MSG_CHANGE_DYNAMIC_RESOURCE = 0x15;
 
     private WeakReference<RenderThread> mWeakRenderThread;
 
@@ -73,11 +76,6 @@ class RenderHandler extends Handler {
             // 帧可用（考虑同步的问题）
             case MSG_RENDER:
                 thread.drawFrame();
-                break;
-
-            // 切换滤镜
-            case MSG_FILTER_TYPE:
-                thread.changeFilter((GLImageFilterType) msg.obj);
                 break;
 
             // 开始录制
@@ -115,6 +113,22 @@ class RenderHandler extends Handler {
                 thread.calculateFps();
                 break;
 
+            // 切换动态滤镜
+            case MSG_CHANGE_DYNAMIC_COLOR: {
+                thread.changeDynamicFilter((DynamicColor) msg.obj);
+                break;
+            }
+
+            // 切换动态贴纸
+            case MSG_CHANGE_DYNAMIC_RESOURCE:
+                if (msg.obj == null) {
+                    thread.changeDynamicResource((DynamicSticker) null);
+                } else if (msg.obj instanceof DynamicColor) {
+                    thread.changeDynamicResource((DynamicColor) msg.obj);
+                } else if (msg.obj instanceof DynamicSticker) {
+                    thread.changeDynamicResource((DynamicSticker) msg.obj);
+                }
+                break;
             default:
                 throw new IllegalStateException("Can not handle message what is: " + msg.what);
         }

@@ -9,9 +9,12 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -19,6 +22,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +40,127 @@ public class FileUtils {
 
     private FileUtils() {}
 
+    /**
+     * 解码得到文件名
+     * @param path
+     * @return
+     */
+    public static String extractFileName(String path) {
+        int index = path.lastIndexOf("/");
+        return index < 0 ? path : path.substring(index + 1, path.length());
+    }
+
+    /**
+     * 解码得到文件夹名
+     * @param folderPath
+     * @return
+     */
+    public static String extractFileFolder(String folderPath) {
+        int length = folderPath.length();
+        int index = folderPath.lastIndexOf('/');
+        if ((index == -1) || (folderPath.charAt(length - 1) == '/')) {
+            return folderPath;
+        }
+        if ((folderPath.indexOf('/') == index) &&
+                (folderPath.charAt(0) == '/')) {
+            return folderPath.substring(0, index + 1);
+        }
+        return folderPath.substring(0, index);
+    }
+
+    /**
+     * 从Stream中获取String
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
+    public static String convertToString(InputStream inputStream)
+            throws IOException {
+        BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+        StringBuilder localStringBuilder = new StringBuilder();
+        String str;
+        while ((str = localBufferedReader.readLine()) != null) {
+            localStringBuilder.append(str).append("\n");
+        }
+        return localStringBuilder.toString();
+    }
+
+    /**
+     * 将多行字符串写入文件
+     * @param folderPath    文件夹路径
+     * @param name          文件名
+     * @param stringList    字符串列表
+     * @throws IOException
+     */
+    public static void writeToFile(String folderPath, String name, List<String> stringList)
+            throws IOException {
+        BufferedOutputStream outputStream = null;
+        try {
+            File file = createFile(folderPath, name);
+            if (null == file) {
+                throw new Exception("create file failed");
+            }
+            outputStream = new BufferedOutputStream(new FileOutputStream(file));
+            for (int i = 0; i < stringList.size(); i++) {
+                outputStream.write(((String) stringList.get(i)).getBytes());
+                outputStream.write("\n".getBytes());
+            }
+        } catch (Exception localException) {
+            Log.e(TAG, "writeLinesToFile failed!", localException);
+        } finally {
+            safetyClose(outputStream);
+        }
+    }
+
+    /**
+     * 从文件中读入每个的字符串
+     * @param filePath
+     * @return
+     * @throws IOException
+     */
+    public static List<String> readLinesFromFile(String filePath) throws IOException {
+        List<String> stringList = new ArrayList<String>();
+        File localFile = new File(filePath);
+        if (!localFile.exists()) {
+            return stringList;
+        }
+        BufferedReader bufferedReader = null;
+        try {
+            bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(localFile)));
+            String strLine;
+            while ((strLine = bufferedReader.readLine()) != null) {
+                stringList.add(strLine);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "readLinesFromFile failed!", e);
+        } finally {
+            safetyClose(bufferedReader);
+        }
+        return stringList;
+    }
+
+    /**
+     * 关闭Reader
+     * @param closeable
+     * @return
+     */
+    public static boolean safetyClose(Closeable closeable) {
+        if (null != closeable) {
+            try {
+                closeable.close();
+            } catch (IOException var2) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 复制文件或文件夹
+     * @param oldPath
+     * @param newPath
+     */
     public static void copyFileOrFolder(String oldPath, String newPath) {
         File oldFile = new File(oldPath);
         if (oldFile.isFile()) {
@@ -90,39 +215,97 @@ public class FileUtils {
     }
 
     /**
+     * 创建 .nomedia 文件
+     * @param path
+     */
+    public static void createNoMediaFile(String path) {
+        File file = FileUtils.createFile(path, ".nomedia");
+        try {
+            if (file != null) {
+                file.createNewFile();
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "createNoMediaFile:  failed to create nomedia file");
+        }
+    }
+
+    /**
+     * 创建文件
+     * @param folderPath
+     * @param name
+     * @return
+     */
+    public static File createFile(String folderPath, String name) {
+        if ((folderPath == null) || (name == null)) {
+            return null;
+        }
+        if (!makeDirectory(folderPath)) {
+            Log.e(TAG, "create parent directory failed, " + folderPath);
+            return null;
+        }
+        String str = folderPath + "/" + name;
+        return new File(str);
+    }
+
+    /**
+     * 创建目录/文件
+     * @param path
+     * @return
+     */
+    public static boolean makeDirectory(String path) {
+        File file = new File(path);
+        return file.exists() ? file.isDirectory():file.mkdirs();
+    }
+
+    /**
      * 删除文件
      * @param fileName
      */
-    public static void deleteFile(String fileName) {
-        File file = new File(fileName);
-        if (file != null) {
-            file.delete();
+    public static boolean deleteFile(String fileName) {
+        if (TextUtils.isEmpty(fileName)) {
+            return false;
         }
+        return deleteFile(new File(fileName));
+    }
+
+    /**
+     * 删除文件
+     * @param file
+     * @return
+     */
+    public static boolean deleteFile(File file) {
+        boolean result = true;
+        if (null != file) {
+            result = file.delete();
+        }
+        return result;
     }
 
     /**
      * 删除目录
      * @param path
      */
-    public static void deleteDir(File path) {
+    public static boolean deleteDir(File path) {
         if (path != null && path.exists() && path.isDirectory()) {
             for (File file : path.listFiles()) {
                 if (file.isDirectory())
                     deleteDir(file);
                 file.delete();
             }
-            path.delete();
+            return path.delete();
         }
+        return false;
     }
 
     /**
      * 删除目录
      * @param path
      */
-    public static void deleteDir(String path) {
+    public static boolean deleteDir(String path) {
         if (path != null && path.length() > 0) {
-            deleteDir(new File(path));
+            return deleteDir(new File(path));
         }
+        return false;
     }
 
     /**

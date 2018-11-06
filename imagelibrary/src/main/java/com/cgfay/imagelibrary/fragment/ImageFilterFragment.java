@@ -16,8 +16,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 
-import com.cgfay.filterlibrary.glfilter.GLImageFilterManager;
-import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
+import com.cgfay.filterlibrary.glfilter.resource.FilterHelper;
+import com.cgfay.filterlibrary.glfilter.resource.bean.ResourceData;
 import com.cgfay.filterlibrary.widget.GLImageSurfaceView;
 import com.cgfay.imagelibrary.R;
 import com.cgfay.imagelibrary.adapter.ImageFilterAdapter;
@@ -42,8 +42,6 @@ public class ImageFilterFragment extends Fragment implements View.OnClickListene
     private GLImageSurfaceView mCainImageView;
     private RecyclerView mFiltersView;
     private LinearLayoutManager mLayoutManager;
-    private List<GLImageFilterType> mFilterTypes = new ArrayList<>();
-    private List<String> mFilterNames = new ArrayList<>();
 
     private Activity mActivity;
 
@@ -58,8 +56,6 @@ public class ImageFilterFragment extends Fragment implements View.OnClickListene
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mFilterTypes.addAll(GLImageFilterManager.getFilterTypes());
-        mFilterNames.addAll(GLImageFilterManager.getFilterNames());
     }
 
     @Nullable
@@ -166,13 +162,13 @@ public class ImageFilterFragment extends Fragment implements View.OnClickListene
             mLayoutManager = new LinearLayoutManager(getActivity());
             mLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
             mFiltersView.setLayoutManager(mLayoutManager);
-            ImageFilterAdapter adapter = new ImageFilterAdapter(mActivity, mFilterTypes, mFilterNames);
+            ImageFilterAdapter adapter = new ImageFilterAdapter(mActivity, FilterHelper.getFilterList());
             mFiltersView.setAdapter(adapter);
             adapter.addOnFilterChangeListener(new ImageFilterAdapter.OnFilterChangeListener() {
                 @Override
-                public void onFilterChanged(final GLImageFilterType type) {
+                public void onFilterChanged(final ResourceData resourceData) {
                     if (mCainImageView != null) {
-                        mCainImageView.setFilter(type);
+                        mCainImageView.setFilter(resourceData);
                     }
                 }
             });

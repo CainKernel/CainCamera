@@ -1,5 +1,6 @@
 package com.cgfay.cameralibrary.utils;
 
+import android.content.Context;
 import android.os.Environment;
 
 import java.io.File;
@@ -12,24 +13,20 @@ public class PathConstraints {
 
     private PathConstraints() {}
 
-    // 存储根目录
-    private static final String StoragePath = Environment.getExternalStorageDirectory().getPath();
-
-    // 默认相册位置
-    public static final String AlbumPath = StoragePath + "/DCIM/Camera/";
-
-    // 图片存放地址
-    private static final String MediaPath = StoragePath + "/CainCamera/";
-
-    // 是否允许录音(用户自行设置，默认开启)
-    public static boolean canRecordingAudio = true;
-
     /**
-     * 获取图片输出路径
+     * 获取图片缓存绝对路径
+     * @param context
      * @return
      */
-    public static String getMediaPath() {
-        String path = PathConstraints.MediaPath + "CainCamera_" + System.currentTimeMillis() + ".jpeg";
+    public static String getImageCachePath(Context context) {
+        String directoryPath;
+        // 判断外部存储是否可用，如果不可用则使用内部存储路径
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            directoryPath = context.getExternalCacheDir().getAbsolutePath();
+        } else { // 使用内部存储缓存目录
+            directoryPath = context.getCacheDir().getAbsolutePath();
+        }
+        String path = directoryPath + File.separator + "CainCamera_" + System.currentTimeMillis() + ".jpeg";
         File file = new File(path);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
@@ -38,11 +35,19 @@ public class PathConstraints {
     }
 
     /**
-     * 获取视频输出路径
+     * 获取视频缓存绝对路径
+     * @param context
      * @return
      */
-    public static String getVideoPath() {
-        String path = PathConstraints.MediaPath + "CainCamera_" + System.currentTimeMillis() + ".mp4";
+    public static String getVideoCachePath(Context context) {
+        String directoryPath;
+        // 判断外部存储是否可用，如果不可用则使用内部存储路径
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            directoryPath = context.getExternalCacheDir().getAbsolutePath();
+        } else { // 使用内部存储缓存目录
+            directoryPath = context.getCacheDir().getAbsolutePath();
+        }
+        String path = directoryPath + File.separator + "CainCamera_" + System.currentTimeMillis() + ".mp4";
         File file = new File(path);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();

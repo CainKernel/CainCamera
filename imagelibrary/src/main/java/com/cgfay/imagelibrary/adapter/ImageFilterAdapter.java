@@ -11,7 +11,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
+import com.cgfay.filterlibrary.glfilter.resource.bean.ResourceData;
 import com.cgfay.imagelibrary.R;
 import com.cgfay.utilslibrary.utils.BitmapUtils;
 
@@ -25,17 +25,11 @@ public class ImageFilterAdapter extends RecyclerView.Adapter<ImageFilterAdapter.
     private Context mContext;
     // 滤镜选中索引
     private int mSelected = 0;
-    // 滤镜类型
-    private List<GLImageFilterType> mFilterTypeList;
-    // 滤镜名称
-    private List<String> mFilterNameList;
+    private List<ResourceData> mFilterDataList;
 
-    public ImageFilterAdapter(Context context,
-                                List<GLImageFilterType> glFilterTypes,
-                                List<String> filterNames) {
+    public ImageFilterAdapter(Context context, List<ResourceData> filterDataList) {
         mContext = context;
-        mFilterTypeList = glFilterTypes;
-        mFilterNameList = filterNames;
+        mFilterDataList = filterDataList;
     }
 
     @Override
@@ -57,10 +51,14 @@ public class ImageFilterAdapter extends RecyclerView.Adapter<ImageFilterAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ImageHolder holder, final int position) {
-        GLImageFilterType filterType = mFilterTypeList.get(position);
-        String path = "thumbs/" + filterType.name().toLowerCase() + ".jpg";
-        holder.filterImage.setImageBitmap(BitmapUtils.getImageFromAssetsFile(mContext, path));
-        holder.filterName.setText(mFilterNameList.get(position));
+        ResourceData resourceData = mFilterDataList.get(position);
+        if (resourceData.thumbPath.startsWith("assets://")) {
+            holder.filterImage.setImageBitmap(BitmapUtils.getImageFromAssetsFile(mContext,
+                    resourceData.thumbPath.substring("assets://".length())));
+        } else {
+
+        }
+        holder.filterName.setText(mFilterDataList.get(position).name);
         if (position == mSelected) {
             holder.filterPanel.setBackgroundResource(R.drawable.image_filter_select_background);
         } else {
@@ -77,7 +75,7 @@ public class ImageFilterAdapter extends RecyclerView.Adapter<ImageFilterAdapter.
                 notifyItemChanged(lastSelected, 0);
                 notifyItemChanged(position, 0);
                 if (mFilterChangeListener != null) {
-                    mFilterChangeListener.onFilterChanged(mFilterTypeList.get(position));
+                    mFilterChangeListener.onFilterChanged(mFilterDataList.get(position));
                 }
             }
         });
@@ -85,7 +83,7 @@ public class ImageFilterAdapter extends RecyclerView.Adapter<ImageFilterAdapter.
 
     @Override
     public int getItemCount() {
-        return (mFilterTypeList == null) ? 0 : mFilterTypeList.size();
+        return (mFilterDataList == null) ? 0 : mFilterDataList.size();
     }
 
     class ImageHolder extends RecyclerView.ViewHolder {
@@ -104,7 +102,7 @@ public class ImageFilterAdapter extends RecyclerView.Adapter<ImageFilterAdapter.
     }
 
     public interface OnFilterChangeListener {
-        void onFilterChanged(GLImageFilterType type);
+        void onFilterChanged(ResourceData resourceData);
     }
 
     private OnFilterChangeListener mFilterChangeListener;

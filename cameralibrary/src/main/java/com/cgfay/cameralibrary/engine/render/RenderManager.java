@@ -5,23 +5,21 @@ import android.util.SparseArray;
 
 import com.cgfay.cameralibrary.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.engine.model.ScaleType;
-import com.cgfay.filterlibrary.glfilter.GLImageFilterManager;
-import com.cgfay.filterlibrary.glfilter.advanced.GLImageDepthBlurFilter;
-import com.cgfay.filterlibrary.glfilter.advanced.GLImageOESInputFilter;
-import com.cgfay.filterlibrary.glfilter.advanced.GLImageVignetteFilter;
-import com.cgfay.filterlibrary.glfilter.advanced.beauty.GLImageRealTimeBeautyFilter;
-import com.cgfay.filterlibrary.glfilter.advanced.face.GLImageFaceAdjustFilter;
-import com.cgfay.filterlibrary.glfilter.advanced.face.GLImageFacePointsFilter;
-import com.cgfay.filterlibrary.glfilter.advanced.makeup.GLImageMakeupFilter;
-import com.cgfay.filterlibrary.glfilter.advanced.sticker.GLImageStickerFilter;
+import com.cgfay.filterlibrary.glfilter.base.GLImageDepthBlurFilter;
 import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
-import com.cgfay.filterlibrary.glfilter.model.IBeautify;
-import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
+import com.cgfay.filterlibrary.glfilter.base.GLImageOESInputFilter;
+import com.cgfay.filterlibrary.glfilter.base.GLImageVignetteFilter;
+import com.cgfay.filterlibrary.glfilter.beauty.GLImageBeautyFilter;
+import com.cgfay.filterlibrary.glfilter.beauty.bean.IBeautify;
+import com.cgfay.filterlibrary.glfilter.faceadjust.GLImageFacePointsFilter;
+import com.cgfay.filterlibrary.glfilter.color.GLImageDynamicColorFilter;
+import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
+import com.cgfay.filterlibrary.glfilter.stickers.GLImageDynamicStickerFilter;
+import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
+import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;
 import com.cgfay.landmarklibrary.LandmarkEngine;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 /**
@@ -48,6 +46,9 @@ public final class RenderManager {
     private ScaleType mScaleType = ScaleType.CENTER_CROP;
     private FloatBuffer mVertexBuffer;
     private FloatBuffer mTextureBuffer;
+    // 用于显示裁剪的纹理顶点缓冲
+    private FloatBuffer mDisplayVertexBuffer;
+    private FloatBuffer mDisplayTextureBuffer;
 
     // 视图宽高
     private int mViewWidth, mViewHeight;
@@ -56,6 +57,8 @@ public final class RenderManager {
 
     // 相机参数
     private CameraParam mCameraParam;
+    // 上下文
+    private Context mContext;
 
     /**
      * 初始化
@@ -63,6 +66,7 @@ public final class RenderManager {
     public void init(Context context) {
         initBuffers();
         initFilters(context);
+        mContext = context;
     }
 
     /**
@@ -71,6 +75,7 @@ public final class RenderManager {
     public void release() {
         releaseBuffers();
         releaseFilters();
+        mContext = null;
     }
 
     /**
@@ -97,6 +102,14 @@ public final class RenderManager {
             mTextureBuffer.clear();
             mTextureBuffer = null;
         }
+        if (mDisplayVertexBuffer != null) {
+            mDisplayVertexBuffer.clear();
+            mDisplayVertexBuffer = null;
+        }
+        if (mDisplayTextureBuffer != null) {
+            mDisplayTextureBuffer.clear();
+            mDisplayTextureBuffer = null;
+        }
     }
 
     /**
@@ -104,16 +117,10 @@ public final class RenderManager {
      */
     private void initBuffers() {
         releaseBuffers();
-        mVertexBuffer = ByteBuffer
-                .allocateDirect(TextureRotationUtils.CubeVertices.length * 4)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
-        mVertexBuffer.put(TextureRotationUtils.CubeVertices).position(0);
-        mTextureBuffer = ByteBuffer
-                .allocateDirect(TextureRotationUtils.TextureVertices.length * 4)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
-        mTextureBuffer.put(TextureRotationUtils.TextureVertices).position(0);
+        mDisplayVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
+        mDisplayTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
+        mVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
+        mTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
     }
 
     /**
@@ -125,15 +132,15 @@ public final class RenderManager {
         // 相机输入滤镜
         mFilterArrays.put(RenderIndex.CameraIndex, new GLImageOESInputFilter(context));
         // 美颜滤镜
-        mFilterArrays.put(RenderIndex.BeautyIndex, new GLImageRealTimeBeautyFilter(context));
+        mFilterArrays.put(RenderIndex.BeautyIndex, new GLImageBeautyFilter(context));
         // 彩妆滤镜
-        mFilterArrays.put(RenderIndex.MakeupIndex, new GLImageMakeupFilter(context));
+        mFilterArrays.put(RenderIndex.MakeupIndex, null);
         // 美型滤镜
-        mFilterArrays.put(RenderIndex.FaceAdjustIndex, new GLImageFaceAdjustFilter(context));
-        // 动态贴纸滤镜
-        mFilterArrays.put(RenderIndex.StickerIndex, new GLImageStickerFilter(context));
-        // LUT滤镜
-        mFilterArrays.put(RenderIndex.ColorIndex, null);
+        mFilterArrays.put(RenderIndex.FaceAdjustIndex, null);
+        // LUT/颜色滤镜
+        mFilterArrays.put(RenderIndex.FilterIndex, null);
+        // 贴纸资源滤镜
+        mFilterArrays.put(RenderIndex.ResourceIndex, null);
         // 景深滤镜
         mFilterArrays.put(RenderIndex.DepthBlurIndex, new GLImageDepthBlurFilter(context));
         // 暗角滤镜
@@ -145,20 +152,62 @@ public final class RenderManager {
     }
 
     /**
-     * 切换滤镜
-     * @param context
-     * @param type
+     * 切换动态滤镜
+     * @param color
      */
-    public void changeFilter(Context context, GLImageFilterType type) {
-        // TODO 有机会这里改成LUT滤镜，剔除旧的滤镜
-        if (mFilterArrays.get(RenderIndex.ColorIndex) != null) {
-            mFilterArrays.get(RenderIndex.ColorIndex).release();
+    public synchronized void changeDynamicFilter(DynamicColor color) {
+        if (mFilterArrays.get(RenderIndex.FilterIndex) != null) {
+            mFilterArrays.get(RenderIndex.FilterIndex).release();
+            mFilterArrays.put(RenderIndex.FilterIndex, null);
         }
-        GLImageFilter filter = GLImageFilterManager.getFilter(context, type);
+        if (color == null) {
+            return;
+        }
+        GLImageDynamicColorFilter filter = new GLImageDynamicColorFilter(mContext, color);
         filter.onInputSizeChanged(mTextureWidth, mTextureHeight);
         filter.initFrameBuffer(mTextureWidth, mTextureHeight);
         filter.onDisplaySizeChanged(mViewWidth, mViewHeight);
-        mFilterArrays.put(RenderIndex.ColorIndex, filter);
+        mFilterArrays.put(RenderIndex.FilterIndex, filter);
+    }
+
+    /**
+     * 切换动态资源
+     * @param color
+     */
+    public synchronized void changeDynamicResource(DynamicColor color) {
+        if (mFilterArrays.get(RenderIndex.ResourceIndex) != null) {
+            mFilterArrays.get(RenderIndex.ResourceIndex).release();
+            mFilterArrays.put(RenderIndex.ResourceIndex, null);
+        }
+        if (color == null) {
+            return;
+        }
+        GLImageDynamicColorFilter filter = new GLImageDynamicColorFilter(mContext, color);
+        filter.onInputSizeChanged(mTextureWidth, mTextureHeight);
+        filter.initFrameBuffer(mTextureWidth, mTextureHeight);
+        filter.onDisplaySizeChanged(mViewWidth, mViewHeight);
+        mFilterArrays.put(RenderIndex.ResourceIndex, filter);
+    }
+
+    /**
+     * 切换动态资源
+     * @param sticker
+     */
+    public synchronized void changeDynamicResource(DynamicSticker sticker) {
+        // 释放旧滤镜
+        if (mFilterArrays.get(RenderIndex.ResourceIndex) != null) {
+            mFilterArrays.get(RenderIndex.ResourceIndex).release();
+            mFilterArrays.put(RenderIndex.ResourceIndex, null);
+        }
+        if (sticker == null) {
+            return;
+        }
+        GLImageDynamicStickerFilter filter = new GLImageDynamicStickerFilter(mContext, sticker);
+        // 设置输入输入大小，初始化fbo等
+        filter.onInputSizeChanged(mTextureWidth, mTextureHeight);
+        filter.initFrameBuffer(mTextureWidth, mTextureHeight);
+        filter.onDisplaySizeChanged(mViewWidth, mViewHeight);
+        mFilterArrays.put(RenderIndex.ResourceIndex, filter);
     }
 
     /**
@@ -174,7 +223,7 @@ public final class RenderManager {
             return currentTexture;
         }
         if (mFilterArrays.get(RenderIndex.CameraIndex) instanceof GLImageOESInputFilter) {
-            ((GLImageOESInputFilter)mFilterArrays.get(RenderIndex.CameraIndex)).setTextureTransformMatirx(mMatrix);
+            ((GLImageOESInputFilter)mFilterArrays.get(RenderIndex.CameraIndex)).setTextureTransformMatrix(mMatrix);
         }
         currentTexture = mFilterArrays.get(RenderIndex.CameraIndex)
                 .drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
@@ -186,44 +235,47 @@ public final class RenderManager {
                         && mCameraParam.beauty != null) {
                     ((IBeautify) mFilterArrays.get(RenderIndex.BeautyIndex)).onBeauty(mCameraParam.beauty);
                 }
-                currentTexture = mFilterArrays.get(RenderIndex.BeautyIndex).drawFrameBuffer(currentTexture);
+                currentTexture = mFilterArrays.get(RenderIndex.BeautyIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
+
             // 彩妆滤镜
             if (mFilterArrays.get(RenderIndex.MakeupIndex) != null) {
-                currentTexture = mFilterArrays.get(RenderIndex.MakeupIndex).drawFrameBuffer(currentTexture);
+                currentTexture = mFilterArrays.get(RenderIndex.MakeupIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
+
             // 美型滤镜
             if (mFilterArrays.get(RenderIndex.FaceAdjustIndex) != null) {
                 if (mFilterArrays.get(RenderIndex.FaceAdjustIndex) instanceof IBeautify) {
                     ((IBeautify) mFilterArrays.get(RenderIndex.FaceAdjustIndex)).onBeauty(mCameraParam.beauty);
                 }
-                currentTexture = mFilterArrays.get(RenderIndex.FaceAdjustIndex).drawFrameBuffer(currentTexture);
-            }
-            // 动态贴纸滤镜
-            if (mFilterArrays.get(RenderIndex.StickerIndex) != null) {
-                currentTexture = mFilterArrays.get(RenderIndex.StickerIndex).drawFrameBuffer(currentTexture);
+                currentTexture = mFilterArrays.get(RenderIndex.FaceAdjustIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
 
             // 绘制LUT滤镜
-            if (mFilterArrays.get(RenderIndex.ColorIndex) != null) {
-                currentTexture = mFilterArrays.get(RenderIndex.ColorIndex).drawFrameBuffer(currentTexture);
+            if (mFilterArrays.get(RenderIndex.FilterIndex) != null) {
+                currentTexture = mFilterArrays.get(RenderIndex.FilterIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
+            }
+
+            // 动态贴纸滤镜
+            if (mFilterArrays.get(RenderIndex.ResourceIndex) != null) {
+                currentTexture = mFilterArrays.get(RenderIndex.ResourceIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
 
             // 景深
             if (mFilterArrays.get(RenderIndex.DepthBlurIndex) != null) {
                 mFilterArrays.get(RenderIndex.DepthBlurIndex).setFilterEnable(mCameraParam.enableDepthBlur);
-                currentTexture = mFilterArrays.get(RenderIndex.DepthBlurIndex).drawFrameBuffer(currentTexture);
+                currentTexture = mFilterArrays.get(RenderIndex.DepthBlurIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
 
             // 暗角
             if (mFilterArrays.get(RenderIndex.VignetteIndex) != null) {
                 mFilterArrays.get(RenderIndex.VignetteIndex).setFilterEnable(mCameraParam.enableVignette);
-                currentTexture = mFilterArrays.get(RenderIndex.VignetteIndex).drawFrameBuffer(currentTexture);
+                currentTexture = mFilterArrays.get(RenderIndex.VignetteIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
         }
 
         // 显示输出，需要调整视口大小
-        mFilterArrays.get(RenderIndex.DisplayIndex).drawFrame(currentTexture);
+        mFilterArrays.get(RenderIndex.DisplayIndex).drawFrame(currentTexture, mDisplayVertexBuffer, mDisplayTextureBuffer);
 
         return currentTexture;
     }
@@ -235,7 +287,7 @@ public final class RenderManager {
     public void drawFacePoint(int mCurrentTexture) {
         if (mFilterArrays.get(RenderIndex.FacePointIndex) != null) {
             if (mCameraParam.drawFacePoints && LandmarkEngine.getInstance().hasFace()) {
-                mFilterArrays.get(RenderIndex.FacePointIndex).drawFrame(mCurrentTexture);
+                mFilterArrays.get(RenderIndex.FacePointIndex).drawFrame(mCurrentTexture, mDisplayVertexBuffer, mDisplayTextureBuffer);
             }
         }
     }
@@ -269,7 +321,10 @@ public final class RenderManager {
         for (int i = 0; i < mFilterArrays.size(); i++) {
             if (mFilterArrays.get(i) != null) {
                 mFilterArrays.get(i).onInputSizeChanged(mTextureWidth, mTextureHeight);
-                mFilterArrays.get(i).initFrameBuffer(mTextureWidth, mTextureHeight);
+                // 到显示之前都需要创建FBO，这里限定是防止创建多余的FBO，节省GPU资源
+                if (i < RenderIndex.DisplayIndex) {
+                    mFilterArrays.get(i).initFrameBuffer(mTextureWidth, mTextureHeight);
+                }
                 mFilterArrays.get(i).onDisplaySizeChanged(mViewWidth, mViewHeight);
             }
         }
@@ -315,10 +370,10 @@ public final class RenderManager {
             textureCoord = textureVertices;
         }
         // 更新VertexBuffer 和 TextureBuffer
-        mVertexBuffer.clear();
-        mVertexBuffer.put(vertexCoord).position(0);
-        mTextureBuffer.clear();
-        mTextureBuffer.put(textureCoord).position(0);
+        mDisplayVertexBuffer.clear();
+        mDisplayVertexBuffer.put(vertexCoord).position(0);
+        mDisplayTextureBuffer.clear();
+        mDisplayTextureBuffer.put(textureCoord).position(0);
     }
 
     /**

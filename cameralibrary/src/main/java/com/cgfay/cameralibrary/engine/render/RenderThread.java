@@ -13,7 +13,8 @@ import com.cgfay.cameralibrary.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.engine.recorder.HardcodeEncoder;
 import com.cgfay.filterlibrary.gles.EglCore;
 import com.cgfay.filterlibrary.gles.WindowSurface;
-import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
+import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
+import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 
 import java.nio.ByteBuffer;
@@ -270,12 +271,32 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
     }
 
     /**
-     * 更新filter
-     * @param type Filter类型
+     * 切换动态滤镜
+     * @param color
      */
-    void changeFilter(GLImageFilterType type) {
+    void changeDynamicFilter(DynamicColor color) {
         synchronized (mSynOperation) {
-            mRenderManager.changeFilter(mContext, type);
+            mRenderManager.changeDynamicFilter(color);
+        }
+    }
+
+    /**
+     * 切换动态资源
+     * @param color
+     */
+    void changeDynamicResource(DynamicColor color) {
+        synchronized (mSynOperation) {
+            mRenderManager.changeDynamicResource(color);
+        }
+    }
+
+    /**
+     * 切换动态资源
+     * @param sticker
+     */
+    void changeDynamicResource(DynamicSticker sticker) {
+        synchronized (mSynOperation) {
+            mRenderManager.changeDynamicResource(sticker);
         }
     }
 

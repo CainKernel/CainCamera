@@ -3,18 +3,17 @@ package com.cgfay.videolibrary.fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
+import com.cgfay.filterlibrary.glfilter.resource.bean.ResourceData;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 滤镜特效基类
  */
 public abstract class BaseVideoFilterFragment extends BaseVideoPageFragment {
 
-    protected ArrayList<GLImageFilterType> mGlFilterType = new ArrayList<>();
-    protected ArrayList<String> mFilterName = new ArrayList<>();
-
+    protected List<ResourceData> mFilterDataList;
     protected RecyclerView mFilterListView;
     protected LinearLayoutManager mFilterLayoutManager;
 
@@ -28,15 +27,15 @@ public abstract class BaseVideoFilterFragment extends BaseVideoPageFragment {
     protected abstract void initFilters();
 
     /**
-     * 获取滤镜类型
+     * 获取滤镜数据
      * @param position
      * @return
      */
-    public GLImageFilterType getFilterType(int position) {
-        if (mGlFilterType.size() <= position) {
-            return GLImageFilterType.NONE;
+    public ResourceData getFilterData(int position) {
+        if (mFilterDataList.size() <= position) {
+            return null;
         }
-        return mGlFilterType.get(position);
+        return mFilterDataList.get(position);
     }
 
 }

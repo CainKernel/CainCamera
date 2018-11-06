@@ -12,6 +12,13 @@ import android.util.Log;
 
 import com.cgfay.utilslibrary.utils.BitmapUtils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -42,6 +49,68 @@ public class OpenGLUtils {
 
     private OpenGLUtils() {
 
+    }
+
+    /**
+     * 从文件路径中读取shader字符串
+     * @param filePath
+     * @return
+     */
+    public static String getShaderFromFile(String filePath) {
+        if (TextUtils.isEmpty(filePath)) {
+            return null;
+        }
+        File file = new File(filePath);
+        if (file.isDirectory()) {
+            return null;
+        }
+        InputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return getShaderStringFromStream(inputStream);
+    }
+
+    /**
+     * 从Assets文件夹中读取shader字符串
+     * @param context
+     * @param path      shader相对路径
+     * @return
+     */
+    public static String getShaderFromAssets(Context context, String path) {
+        InputStream inputStream = null;
+        try {
+            inputStream = context.getResources().getAssets().open(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return getShaderStringFromStream(inputStream);
+    }
+
+    /**
+     * 从输入流中读取shader字符创
+     * @param inputStream
+     * @return
+     */
+    private static String getShaderStringFromStream(InputStream inputStream) {
+        if (inputStream == null) {
+            return null;
+        }
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuilder builder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                builder.append(line).append("\n");
+            }
+            reader.close();
+            return builder.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -179,24 +248,26 @@ public class OpenGLUtils {
      */
     public static void createFrameBuffer(int[] frameBuffer, int[] frameBufferTexture,
                                          int width, int height) {
-        GLES30.glGenFramebuffers(1, frameBuffer, 0);
-        GLES30.glGenTextures(1, frameBufferTexture, 0);
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, frameBufferTexture[0]);
-        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, width, height, 0,
-                GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, null);
-        GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
-                GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
-                GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
-        GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
-                GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
-                GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, frameBuffer[0]);
-        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
-                GLES30.GL_TEXTURE_2D, frameBufferTexture[0], 0);
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+        GLES30.glGenFramebuffers(frameBuffer.length, frameBuffer, 0);
+        GLES30.glGenTextures(frameBufferTexture.length, frameBufferTexture, 0);
+        for (int i = 0; i < frameBufferTexture.length; i++) {
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, frameBufferTexture[i]);
+            GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, width, height, 0,
+                    GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, null);
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                    GLES30.GL_TEXTURE_MAG_FILTER, GLES30.GL_LINEAR);
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                    GLES30.GL_TEXTURE_MIN_FILTER, GLES30.GL_LINEAR);
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                    GLES30.GL_TEXTURE_WRAP_S, GLES30.GL_CLAMP_TO_EDGE);
+            GLES30.glTexParameterf(GLES30.GL_TEXTURE_2D,
+                    GLES30.GL_TEXTURE_WRAP_T, GLES30.GL_CLAMP_TO_EDGE);
+            GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, frameBuffer[i]);
+            GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
+                    GLES30.GL_TEXTURE_2D, frameBufferTexture[i], 0);
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
+            GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+        }
         checkGlError("createFrameBuffer");
     }
 
@@ -280,11 +351,24 @@ public class OpenGLUtils {
      * @return
      */
     public static int createTexture(byte[] bytes, int width, int height) {
-        if(bytes.length != width * height * 4) {
+        return createTexture(bytes, width, height, OpenGLUtils.GL_NOT_TEXTURE);
+    }
+
+    /**
+     * 创建纹理
+     * @param bytes
+     * @param width
+     * @param height
+     * @param texture
+     * @return
+     */
+    public static int createTexture(byte[] bytes, int width, int height, int texture) {
+        if (bytes.length != width * height * 4) {
             throw new RuntimeException("Illegal byte array");
         }
-        return createTexture(ByteBuffer.wrap(bytes), width, height);
+        return createTexture(ByteBuffer.wrap(bytes), width, height, texture);
     }
+
 
     /**
      * 创建Texture
@@ -338,7 +422,7 @@ public class OpenGLUtils {
             throw new RuntimeException("Illegal byte array");
         }
         int result[] = new int[1];
-        if (texture == GL_NOT_INIT) {
+        if (texture == GL_NOT_TEXTURE) {
             return createTexture(byteBuffer, width, height);
         } else {
             GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, texture);
@@ -425,6 +509,45 @@ public class OpenGLUtils {
     public static int createOESTexture() {
         return createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
     }
+
+    /**
+     * 删除纹理
+     * @param texture
+     */
+    public static void deleteTexture(int texture) {
+        int[] textures = new int[1];
+        textures[0] = texture;
+        GLES30.glDeleteTextures(1, textures, 0);
+    }
+
+    /**
+     * 绑定纹理
+     * @param location  句柄
+     * @param texture   纹理id
+     * @param index     索引
+     */
+    public static void bindTexture(int location, int texture, int index) {
+        bindTexture(location, texture, index, GLES30.GL_TEXTURE_2D);
+    }
+
+    /**
+     * 绑定纹理
+     * @param location  句柄
+     * @param texture   纹理值
+     * @param index     绑定的位置
+     * @param textureType 纹理类型
+     */
+    public static void bindTexture(int location, int texture, int index, int textureType) {
+        // 最多支持绑定32个纹理
+        if (index > 31) {
+            throw new IllegalArgumentException("index must be no more than 31!");
+        }
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0 + index);
+        GLES30.glBindTexture(textureType, texture);
+        GLES30.glUniform1i(location, index);
+    }
+
+
 
     /**
      * 获取出错信息

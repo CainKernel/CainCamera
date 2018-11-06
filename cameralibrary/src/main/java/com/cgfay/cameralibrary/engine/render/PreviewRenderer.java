@@ -6,7 +6,8 @@ import android.view.SurfaceView;
 
 import com.cgfay.cameralibrary.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.engine.listener.OnCameraCallback;
-import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
+import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
+import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 
 import java.lang.ref.WeakReference;
 
@@ -146,18 +147,46 @@ public final class PreviewRenderer {
     }
 
     /**
-     * 改变Filter类型
+     * 切换滤镜
+     * @param color
      */
-    public void changeFilterType(GLImageFilterType type) {
+    public void changeDynamicFilter(DynamicColor color) {
         if (mRenderHandler == null) {
             return;
         }
         synchronized (mSynOperation) {
             mRenderHandler.sendMessage(mRenderHandler
-                    .obtainMessage(RenderHandler.MSG_FILTER_TYPE, type));
+                    .obtainMessage(RenderHandler.MSG_CHANGE_DYNAMIC_COLOR, color));
         }
     }
 
+    /**
+     * 切换动态资源
+     * @param color
+     */
+    public void changeDynamicResource(DynamicColor color) {
+        if (mRenderHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(RenderHandler.MSG_CHANGE_DYNAMIC_RESOURCE, color));
+        }
+    }
+
+    /**
+     * 切换动态资源
+     * @param sticker
+     */
+    public void changeDynamicResource(DynamicSticker sticker) {
+        if (mRenderHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(RenderHandler.MSG_CHANGE_DYNAMIC_RESOURCE, sticker));
+        }
+    }
 
     /**
      * 开始录制

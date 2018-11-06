@@ -12,6 +12,8 @@ import android.util.Log;
 import com.cgfay.filterlibrary.gles.EglCore;
 import com.cgfay.filterlibrary.gles.WindowSurface;
 import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
+import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
+import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;
 import com.cgfay.filterlibrary.multimedia.MediaAudioEncoder;
 import com.cgfay.filterlibrary.multimedia.MediaEncoder;
 import com.cgfay.filterlibrary.multimedia.MediaMuxerWrapper;
@@ -20,6 +22,7 @@ import com.cgfay.filterlibrary.multimedia.MediaVideoEncoder;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.FloatBuffer;
 
 /**
  * 硬编码录制器
@@ -243,6 +246,8 @@ public final class HardcodeEncoder {
         private WindowSurface mRecordWindowSurface;
         // 录制的Filter
         private GLImageFilter mRecordFilter;
+        private FloatBuffer mVertexBuffer;
+        private FloatBuffer mTextureBuffer;
         // 复用器管理器
         private MediaMuxerWrapper mMuxerManager;
 
@@ -270,6 +275,8 @@ public final class HardcodeEncoder {
         public void run() {
             Looper.prepare();
             synchronized (mReadyFence) {
+                mVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
+                mTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
                 mHandler = new RecordHandler(this);
                 mReady = true;
                 mReadyFence.notify();
@@ -504,7 +511,7 @@ public final class HardcodeEncoder {
         private void drawRecordingFrame(int textureId) {
             if (mRecordFilter != null) {
                 GLES30.glViewport(0, 0, mVideoWidth, mVideoHeight);
-                mRecordFilter.drawFrame(textureId);
+                mRecordFilter.drawFrame(textureId, mVertexBuffer, mTextureBuffer);
             }
         }
 
@@ -531,6 +538,14 @@ public final class HardcodeEncoder {
             if (mRecordWindowSurface != null) {
                 mRecordWindowSurface.release();
                 mRecordWindowSurface = null;
+            }
+            if (mVertexBuffer != null) {
+                mVertexBuffer.clear();
+                mVertexBuffer = null;
+            }
+            if (mTextureBuffer != null) {
+                mTextureBuffer.clear();
+                mTextureBuffer = null;
             }
         }
 

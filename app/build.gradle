@@ -43,6 +43,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation project(':cameralibrary')
+    implementation project(':filterlibrary')
     implementation project(':imagelibrary')
     implementation project(':medialibrary')
     implementation project(':utilslibrary')

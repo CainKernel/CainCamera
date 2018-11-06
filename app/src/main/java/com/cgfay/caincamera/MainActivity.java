@@ -14,6 +14,8 @@ import com.cgfay.cameralibrary.listener.OnGallerySelectedListener;
 import com.cgfay.cameralibrary.listener.OnPreviewCaptureListener;
 import com.cgfay.cameralibrary.engine.model.AspectRatio;
 import com.cgfay.cameralibrary.engine.model.GalleryType;
+import com.cgfay.filterlibrary.glfilter.resource.FilterHelper;
+import com.cgfay.filterlibrary.glfilter.resource.ResourceHelper;
 import com.cgfay.imagelibrary.activity.ImageEditActivity;
 import com.cgfay.medialibrary.engine.MediaScanEngine;
 import com.cgfay.medialibrary.listener.OnCaptureListener;
@@ -37,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         checkPermissions();
         initView();
+        initResources();
     }
 
     private void checkPermissions() {
@@ -76,6 +79,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             }
         }
+    }
+
+    /**
+     * 初始化动态贴纸、滤镜等资源
+     */
+    private void initResources() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ResourceHelper.initAssetsResource(MainActivity.this);
+                FilterHelper.initAssetsFilter(MainActivity.this);
+            }
+        }).start();
     }
 
     /**

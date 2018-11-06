@@ -25,8 +25,16 @@ import com.cgfay.cameralibrary.adapter.PreviewFilterAdapter;
 import com.cgfay.cameralibrary.adapter.PreviewMakeupAdapter;
 import com.cgfay.cameralibrary.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.engine.render.PreviewRenderer;
-import com.cgfay.filterlibrary.glfilter.GLImageFilterManager;
-import com.cgfay.filterlibrary.glfilter.utils.GLImageFilterType;
+import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
+import com.cgfay.filterlibrary.glfilter.resource.FilterHelper;
+import com.cgfay.filterlibrary.glfilter.resource.ResourceHelper;
+import com.cgfay.filterlibrary.glfilter.resource.ResourceJsonCodec;
+import com.cgfay.filterlibrary.glfilter.resource.bean.ResourceData;
+
+import org.json.JSONException;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * 特效选择页面
@@ -410,13 +418,23 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
             mFilterLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
             mFilterRecyclerView.setLayoutManager(mFilterLayoutManager);
             mFilterAdapter = new PreviewFilterAdapter(mActivity,
-                    GLImageFilterManager.getFilterTypes(),
-                    GLImageFilterManager.getFilterNames());
+                    FilterHelper.getFilterList());
             mFilterRecyclerView.setAdapter(mFilterAdapter);
             mFilterAdapter.setOnFilterChangeListener(new PreviewFilterAdapter.OnFilterChangeListener() {
                 @Override
-                public void onFilterChanged(GLImageFilterType type) {
-                    PreviewRenderer.getInstance().changeFilterType(type);
+                public void onFilterChanged(ResourceData resourceData) {
+                    if (!resourceData.name.equals("none")) {
+                        String folderPath = FilterHelper.getFilterDirectory(mActivity) + File.separator + resourceData.unzipFolder;
+                        DynamicColor color = null;
+                        try {
+                            color = ResourceJsonCodec.decodeFilterData(folderPath);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        PreviewRenderer.getInstance().changeDynamicFilter(color);
+                    } else {
+                        PreviewRenderer.getInstance().changeDynamicFilter(null);
+                    }
                     mCurrentFilterIndex = mFilterAdapter.getSelectedPosition();
                 }
             });

@@ -3,14 +3,12 @@ package com.cgfay.filterlibrary.glfilter.base;
 import android.content.Context;
 import android.graphics.PointF;
 import android.opengl.GLES30;
-import android.opengl.Matrix;
 import android.text.TextUtils;
 
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;
 
 import java.nio.FloatBuffer;
-import java.util.Arrays;
 import java.util.LinkedList;
 
 /**
@@ -21,12 +19,11 @@ import java.util.LinkedList;
 public class GLImageFilter {
 
     protected static final String VERTEX_SHADER = "" +
-            "uniform mat4 uMVPMatrix;                                   \n" +
             "attribute vec4 aPosition;                                  \n" +
             "attribute vec4 aTextureCoord;                              \n" +
             "varying vec2 textureCoordinate;                            \n" +
             "void main() {                                              \n" +
-            "    gl_Position = uMVPMatrix * aPosition;                  \n" +
+            "    gl_Position = aPosition;                               \n" +
             "    textureCoordinate = aTextureCoord.xy;                  \n" +
             "}                                                          \n";
 
@@ -38,6 +35,8 @@ public class GLImageFilter {
             "    gl_FragColor = texture2D(inputTexture, textureCoordinate); \n" +
             "}                                                          \n";
 
+
+    protected String TAG = getClass().getSimpleName();
 
     protected Context mContext;
     // 当前时钟
@@ -54,10 +53,6 @@ public class GLImageFilter {
     // 滤镜是否可用，默认可用
     protected boolean mFilterEnable = true;
 
-    // 顶点坐标缓冲
-    protected FloatBuffer mVertexBuffer;
-    // 纹理坐标缓冲
-    protected FloatBuffer mTextureBuffer;
     // 每个顶点坐标有几个参数
     protected int mCoordsPerVertex = TextureRotationUtils.CoordsPerVertex;
     // 顶点坐标数量
@@ -65,7 +60,6 @@ public class GLImageFilter {
 
     // 句柄
     protected int mProgramHandle;
-    protected int mMVPMatrixHandle;
     protected int mPositionHandle;
     protected int mTextureCoordinateHandle;
     protected int mInputTextureHandle;
@@ -86,9 +80,6 @@ public class GLImageFilter {
     protected int[] mFrameBuffers;
     protected int[] mFrameBufferTextures;
 
-    // 变换矩阵
-    protected float[] mMVPMatrix = new float[16];
-
     public GLImageFilter(Context context) {
         this(context, VERTEX_SHADER, FRAGMENT_SHADER_2D);
     }
@@ -99,35 +90,8 @@ public class GLImageFilter {
         // 记录shader数据
         mVertexShader = vertexShader;
         mFragmentShader = fragmentShader;
-        // 初始化缓冲区
-        initBuffers();
-        // 初始化单位矩阵
-        initIdentityMatrix();
         // 初始化程序句柄
         initProgramHandle();
-    }
-
-    /**
-     * 初始化缓冲区
-     */
-    protected void initBuffers() {
-        releaseBuffers();
-        mVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
-        mTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
-    }
-
-    /**
-     * 释放缓冲区
-     */
-    protected void releaseBuffers() {
-        if (mVertexBuffer != null) {
-            mVertexBuffer.clear();
-            mVertexBuffer = null;
-        }
-        if (mTextureBuffer != null) {
-            mTextureBuffer.clear();
-            mTextureBuffer = null;
-        }
     }
 
     /**
@@ -139,13 +103,11 @@ public class GLImageFilter {
             mProgramHandle = OpenGLUtils.createProgram(mVertexShader, mFragmentShader);
             mPositionHandle = GLES30.glGetAttribLocation(mProgramHandle, "aPosition");
             mTextureCoordinateHandle = GLES30.glGetAttribLocation(mProgramHandle, "aTextureCoord");
-            mMVPMatrixHandle = GLES30.glGetUniformLocation(mProgramHandle, "uMVPMatrix");
             mInputTextureHandle = GLES30.glGetUniformLocation(mProgramHandle, "inputTexture");
             mIsInitialized = true;
         } else {
             mPositionHandle = OpenGLUtils.GL_NOT_INIT;
             mTextureCoordinateHandle = OpenGLUtils.GL_NOT_INIT;
-            mMVPMatrixHandle = OpenGLUtils.GL_NOT_INIT;
             mInputTextureHandle = OpenGLUtils.GL_NOT_TEXTURE;
             mIsInitialized = false;
         }
@@ -174,14 +136,6 @@ public class GLImageFilter {
     /**
      * 绘制Frame
      * @param textureId
-     */
-    public boolean drawFrame(int textureId) {
-        return drawFrame(textureId, mVertexBuffer, mTextureBuffer);
-    }
-
-    /**
-     * 绘制Frame
-     * @param textureId
      * @param vertexBuffer
      * @param textureBuffer
      */
@@ -202,40 +156,10 @@ public class GLImageFilter {
 
         GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        // 绑定顶点坐标缓冲
-        vertexBuffer.position(0);
-        GLES30.glVertexAttribPointer(mPositionHandle, mCoordsPerVertex,
-                GLES30.GL_FLOAT, false, 0, vertexBuffer);
-        GLES30.glEnableVertexAttribArray(mPositionHandle);
-
-        // 绑定纹理坐标缓冲
-        textureBuffer.position(0);
-        GLES30.glVertexAttribPointer(mTextureCoordinateHandle, 2,
-                GLES30.GL_FLOAT, false, 0, textureBuffer);
-        GLES30.glEnableVertexAttribArray(mTextureCoordinateHandle);
-        // 绑定总变换矩阵
-        GLES30.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-        // 绑定纹理
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
-        GLES30.glBindTexture(getTextureType(), textureId);
-        GLES30.glUniform1i(mInputTextureHandle, 0);
-        onDrawFrameBegin();
-        onDrawFrame();
-        onDrawFrameAfter();
-        GLES30.glDisableVertexAttribArray(mPositionHandle);
-        GLES30.glDisableVertexAttribArray(mTextureCoordinateHandle);
-        GLES30.glBindTexture(getTextureType(), 0);
+        // 绘制纹理
+        onDrawTexture(textureId, vertexBuffer, textureBuffer);
 
         return true;
-    }
-
-    /**
-     * 绘制到FBO
-     * @param textureId
-     * @return FBO绑定的Texture
-     */
-    public int drawFrameBuffer(int textureId) {
-        return drawFrameBuffer(textureId, mVertexBuffer, mTextureBuffer);
     }
 
     /**
@@ -260,19 +184,30 @@ public class GLImageFilter {
         // 运行延时任务，这个要放在glUseProgram之后，要不然某些设置项会不生效
         runPendingOnDrawTasks();
 
+        // 绘制纹理
+        onDrawTexture(textureId, vertexBuffer, textureBuffer);
+
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+        return mFrameBufferTextures[0];
+    }
+
+    /**
+     * 绘制
+     * @param textureId
+     * @param vertexBuffer
+     * @param textureBuffer
+     */
+    protected void onDrawTexture(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
         // 绑定顶点坐标缓冲
         vertexBuffer.position(0);
         GLES30.glVertexAttribPointer(mPositionHandle, mCoordsPerVertex,
                 GLES30.GL_FLOAT, false, 0, vertexBuffer);
         GLES30.glEnableVertexAttribArray(mPositionHandle);
-
         // 绑定纹理坐标缓冲
         textureBuffer.position(0);
         GLES30.glVertexAttribPointer(mTextureCoordinateHandle, 2,
                 GLES30.GL_FLOAT, false, 0, textureBuffer);
         GLES30.glEnableVertexAttribArray(mTextureCoordinateHandle);
-        // 绑定总变换矩阵
-        GLES30.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
         // 绑定纹理
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glBindTexture(getTextureType(), textureId);
@@ -280,28 +215,12 @@ public class GLImageFilter {
         onDrawFrameBegin();
         onDrawFrame();
         onDrawFrameAfter();
+        // 解绑
         GLES30.glDisableVertexAttribArray(mPositionHandle);
         GLES30.glDisableVertexAttribArray(mTextureCoordinateHandle);
         GLES30.glBindTexture(getTextureType(), 0);
 
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
-        return mFrameBufferTextures[0];
-    }
-
-    /**
-     * 绘制图像
-     */
-    protected void onDrawFrame() {
-        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
-    }
-
-
-    /**
-     * 获取Texture类型
-     * GLES30.TEXTURE_2D / GLES11Ext.GL_TEXTURE_EXTERNAL_OES等
-     */
-    public int getTextureType() {
-        return GLES30.GL_TEXTURE_2D;
+        GLES30.glUseProgram(0);
     }
 
     /**
@@ -312,10 +231,29 @@ public class GLImageFilter {
     }
 
     /**
+     * 绘制图像
+     */
+    protected void onDrawFrame() {
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, mVertexCount);
+    }
+
+    /**
      * glDrawArrays/glDrawElements调用之后，方便销毁其他属性
      */
     public void onDrawFrameAfter() {
 
+    }
+
+    protected void onUnbindTextureValue() {
+
+    }
+
+    /**
+     * 获取Texture类型
+     * GLES30.TEXTURE_2D / GLES11Ext.GL_TEXTURE_EXTERNAL_OES等
+     */
+    public int getTextureType() {
+        return GLES30.GL_TEXTURE_2D;
     }
 
     /**
@@ -327,7 +265,6 @@ public class GLImageFilter {
             mProgramHandle = OpenGLUtils.GL_NOT_INIT;
         }
         destroyFrameBuffer();
-        releaseBuffers();
     }
 
     /**
@@ -369,23 +306,6 @@ public class GLImageFilter {
         }
         mFrameWidth = -1;
         mFrameWidth = -1;
-    }
-
-    /**
-     * 初始化单位矩阵
-     */
-    public void initIdentityMatrix() {
-        Matrix.setIdentityM(mMVPMatrix, 0);
-    }
-
-    /**
-     * 设置变换矩阵
-     * @param matrix
-     */
-    public void setMVPMatrix(float[] matrix) {
-        if (!Arrays.equals(mMVPMatrix, matrix)) {
-            mMVPMatrix = matrix;
-        }
     }
 
     /**
