@@ -4,7 +4,12 @@ CainCamera是一个美颜类相机，主要用于学习如何实现实时美颜�
 # CainCamera截图
 ## 动态贴纸与动态滤镜功能
 ![贴纸和滤镜](https://github.com/CainKernel/CainCamera/blob/master/screenshot/sticker_and_filter.jpg)
+
 ![动态滤镜](https://github.com/CainKernel/CainCamera/blob/master/screenshot/dynamic_filter.jpg)
+
+## 彩妆功能
+* 备注：由于缺乏素材，这里只展示彩妆功能是如何通过遮罩来实现。
+![动态彩妆](https://github.com/CainKernel/CainCamera/blob/master/screenshot/makeup.jpg)
 
 # CainCamera 参考项目：
 [grafika](https://github.com/google/grafika)

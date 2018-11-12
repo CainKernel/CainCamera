@@ -93,16 +93,18 @@ public class GLImageFacePointsFilter extends GLImageFilter {
         onDrawFrameBegin();
         // 逐个顶点绘制出来
         synchronized (this) {
-            SparseArray<OneFace> faceArrays = LandmarkEngine.getInstance().getFaceArrays();
-            for (int i = 0; i < faceArrays.size(); i++) {
-                if (faceArrays.get(i).vertexPoints != null) {
-                    LandmarkEngine.getInstance().calculateExtraPoints(mPoints, i);
-                    mPointVertexBuffer.clear();
-                    mPointVertexBuffer.put(mPoints, 0, mPoints.length);
-                    mPointVertexBuffer.position(0);
-                    GLES30.glVertexAttribPointer(mPositionHandle, 2,
-                            GLES30.GL_FLOAT, false, 8, mPointVertexBuffer);
-                    GLES30.glDrawArrays(GLES30.GL_POINTS, 0, mPointCount);
+            if (LandmarkEngine.getInstance().getFaceSize() > 0) {
+                SparseArray<OneFace> faceArrays = LandmarkEngine.getInstance().getFaceArrays();
+                for (int i = 0; i < faceArrays.size(); i++) {
+                    if (faceArrays.get(i).vertexPoints != null) {
+                        LandmarkEngine.getInstance().calculateExtraPoints(mPoints, i);
+                        mPointVertexBuffer.clear();
+                        mPointVertexBuffer.put(mPoints, 0, mPoints.length);
+                        mPointVertexBuffer.position(0);
+                        GLES30.glVertexAttribPointer(mPositionHandle, 2,
+                                GLES30.GL_FLOAT, false, 8, mPointVertexBuffer);
+                        GLES30.glDrawArrays(GLES30.GL_POINTS, 0, mPointCount);
+                    }
                 }
             }
         }

@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * 滤镜数据助手
  */
-public class FilterHelper extends ResourceBaseHelper {
+public final class FilterHelper extends ResourceBaseHelper {
     // 滤镜存储路径
     private static final String FilterDirectory = "Filter";
     // 滤镜列表
@@ -39,29 +39,29 @@ public class FilterHelper extends ResourceBaseHelper {
         // 清空旧数据
         mFilterList.clear();
         // 添加滤镜数据
-        mFilterList.add(new ResourceData("none", "assets://filter/none.zip", ResourceType.NONE, "none", "assets://thumbs/filters/source.png"));
-        mFilterList.add(new ResourceData("amaro", "assets://filter/amaro.zip", ResourceType.FILTER, "amaro", "assets://thumbs/filters/amaro.png"));
-        mFilterList.add(new ResourceData("anitque", "assets://filter/anitque.zip", ResourceType.FILTER, "anitque", "assets://thumbs/filters/anitque.png"));
-        mFilterList.add(new ResourceData("blackcat", "assets://filter/blackcat.zip", ResourceType.FILTER, "blackcat", "assets://thumbs/filters/blackcat.png"));
-        mFilterList.add(new ResourceData("blackwhite", "assets://filter/blackwhite.zip", ResourceType.FILTER, "blackwhite", "assets://thumbs/filters/blackwhite.png"));
-        mFilterList.add(new ResourceData("brooklyn", "assets://filter/brooklyn.zip", ResourceType.FILTER, "brooklyn", "assets://thumbs/filters/brooklyn.png"));
-        mFilterList.add(new ResourceData("calm", "assets://filter/calm.zip", ResourceType.FILTER, "calm", "assets://thumbs/filters/calm.png"));
-        mFilterList.add(new ResourceData("cool", "assets://filter/cool.zip", ResourceType.FILTER, "cool", "assets://thumbs/filters/cool.png"));
-        mFilterList.add(new ResourceData("earlybird", "assets://filter/earlybird.zip", ResourceType.FILTER, "earlybird", "assets://thumbs/filters/earlybird.png"));
-        mFilterList.add(new ResourceData("emerald", "assets://filter/emerald.zip", ResourceType.FILTER, "emerald", "assets://thumbs/filters/emerald.png"));
-        mFilterList.add(new ResourceData("fairytale", "assets://filter/fairytale.zip", ResourceType.FILTER, "fairytale", "assets://thumbs/filters/fairytale.png"));
-        mFilterList.add(new ResourceData("freud", "assets://filter/freud.zip", ResourceType.FILTER, "freud", "assets://thumbs/filters/freud.png"));
-        mFilterList.add(new ResourceData("healthy", "assets://filter/healthy.zip", ResourceType.FILTER, "healthy", "assets://thumbs/filters/healthy.png"));
-        mFilterList.add(new ResourceData("hefe", "assets://filter/hefe.zip", ResourceType.FILTER, "hefe", "assets://thumbs/filters/hefe.png"));
-        mFilterList.add(new ResourceData("hudson", "assets://filter/hudson.zip", ResourceType.FILTER, "hudson", "assets://thumbs/filters/hudson.png"));
-        mFilterList.add(new ResourceData("kevin", "assets://filter/kevin.zip", ResourceType.FILTER, "kevin", "assets://thumbs/filters/kevin.png"));
-        mFilterList.add(new ResourceData("latte", "assets://filter/latte.zip", ResourceType.FILTER, "latte", "assets://thumbs/filters/latte.png"));
-        mFilterList.add(new ResourceData("lomo", "assets://filter/lomo.zip", ResourceType.FILTER, "lomo", "assets://thumbs/filters/lomo.png"));
-        mFilterList.add(new ResourceData("romance", "assets://filter/romance.zip", ResourceType.FILTER, "romance", "assets://thumbs/filters/romance.png"));
-        mFilterList.add(new ResourceData("sakura", "assets://filter/sakura.zip", ResourceType.FILTER, "sakura", "assets://thumbs/filters/sakura.png"));
-        mFilterList.add(new ResourceData("sketch", "assets://filter/sketch.zip", ResourceType.FILTER, "sketch", "assets://thumbs/filters/sketch.png"));
-        mFilterList.add(new ResourceData("sunset", "assets://filter/sunset.zip", ResourceType.FILTER, "sunset", "assets://thumbs/filters/sunset.png"));
-        mFilterList.add(new ResourceData("whitecat", "assets://filter/whitecat.zip", ResourceType.FILTER, "whitecat", "assets://thumbs/filters/whitecat.png"));
+        mFilterList.add(new ResourceData("none", "assets://filter/none.zip", ResourceType.NONE, "none", "assets://thumbs/filter/source.png"));
+        mFilterList.add(new ResourceData("amaro", "assets://filter/amaro.zip", ResourceType.FILTER, "amaro", "assets://thumbs/filter/amaro.png"));
+        mFilterList.add(new ResourceData("anitque", "assets://filter/anitque.zip", ResourceType.FILTER, "anitque", "assets://thumbs/filter/anitque.png"));
+        mFilterList.add(new ResourceData("blackcat", "assets://filter/blackcat.zip", ResourceType.FILTER, "blackcat", "assets://thumbs/filter/blackcat.png"));
+        mFilterList.add(new ResourceData("blackwhite", "assets://filter/blackwhite.zip", ResourceType.FILTER, "blackwhite", "assets://thumbs/filter/blackwhite.png"));
+        mFilterList.add(new ResourceData("brooklyn", "assets://filter/brooklyn.zip", ResourceType.FILTER, "brooklyn", "assets://thumbs/filter/brooklyn.png"));
+        mFilterList.add(new ResourceData("calm", "assets://filter/calm.zip", ResourceType.FILTER, "calm", "assets://thumbs/filter/calm.png"));
+        mFilterList.add(new ResourceData("cool", "assets://filter/cool.zip", ResourceType.FILTER, "cool", "assets://thumbs/filter/cool.png"));
+        mFilterList.add(new ResourceData("earlybird", "assets://filter/earlybird.zip", ResourceType.FILTER, "earlybird", "assets://thumbs/filter/earlybird.png"));
+        mFilterList.add(new ResourceData("emerald", "assets://filter/emerald.zip", ResourceType.FILTER, "emerald", "assets://thumbs/filter/emerald.png"));
+        mFilterList.add(new ResourceData("fairytale", "assets://filter/fairytale.zip", ResourceType.FILTER, "fairytale", "assets://thumbs/filter/fairytale.png"));
+        mFilterList.add(new ResourceData("freud", "assets://filter/freud.zip", ResourceType.FILTER, "freud", "assets://thumbs/filter/freud.png"));
+        mFilterList.add(new ResourceData("healthy", "assets://filter/healthy.zip", ResourceType.FILTER, "healthy", "assets://thumbs/filter/healthy.png"));
+        mFilterList.add(new ResourceData("hefe", "assets://filter/hefe.zip", ResourceType.FILTER, "hefe", "assets://thumbs/filter/hefe.png"));
+        mFilterList.add(new ResourceData("hudson", "assets://filter/hudson.zip", ResourceType.FILTER, "hudson", "assets://thumbs/filter/hudson.png"));
+        mFilterList.add(new ResourceData("kevin", "assets://filter/kevin.zip", ResourceType.FILTER, "kevin", "assets://thumbs/filter/kevin.png"));
+        mFilterList.add(new ResourceData("latte", "assets://filter/latte.zip", ResourceType.FILTER, "latte", "assets://thumbs/filter/latte.png"));
+        mFilterList.add(new ResourceData("lomo", "assets://filter/lomo.zip", ResourceType.FILTER, "lomo", "assets://thumbs/filter/lomo.png"));
+        mFilterList.add(new ResourceData("romance", "assets://filter/romance.zip", ResourceType.FILTER, "romance", "assets://thumbs/filter/romance.png"));
+        mFilterList.add(new ResourceData("sakura", "assets://filter/sakura.zip", ResourceType.FILTER, "sakura", "assets://thumbs/filter/sakura.png"));
+        mFilterList.add(new ResourceData("sketch", "assets://filter/sketch.zip", ResourceType.FILTER, "sketch", "assets://thumbs/filter/sketch.png"));
+        mFilterList.add(new ResourceData("sunset", "assets://filter/sunset.zip", ResourceType.FILTER, "sunset", "assets://thumbs/filter/sunset.png"));
+        mFilterList.add(new ResourceData("whitecat", "assets://filter/whitecat.zip", ResourceType.FILTER, "whitecat", "assets://thumbs/filter/whitecat.png"));
 
         decompressResource(context, mFilterList);
     }

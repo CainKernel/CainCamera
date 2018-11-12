@@ -7,6 +7,7 @@ import android.view.SurfaceView;
 import com.cgfay.cameralibrary.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.engine.listener.OnCameraCallback;
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
+import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 
 import java.lang.ref.WeakReference;
@@ -157,6 +158,20 @@ public final class PreviewRenderer {
         synchronized (mSynOperation) {
             mRenderHandler.sendMessage(mRenderHandler
                     .obtainMessage(RenderHandler.MSG_CHANGE_DYNAMIC_COLOR, color));
+        }
+    }
+
+    /**
+     * 切换彩妆
+     * @param makeup
+     */
+    public void changeDynamicMakeup(DynamicMakeup makeup) {
+        if (mRenderHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(RenderHandler.MSG_CHANGE_DYNAMIC_MAKEUP, makeup));
         }
     }
 

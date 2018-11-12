@@ -17,7 +17,7 @@ public class GLImage3x3TextureSamplingFilter extends GLImageFilter {
 
     public GLImage3x3TextureSamplingFilter(Context context) {
         this(context, OpenGLUtils.getShaderFromAssets(context, "shader/base/vertex_3x3_texture_sampling.glsl"),
-                FRAGMENT_SHADER_2D);
+                FRAGMENT_SHADER);
     }
 
     public GLImage3x3TextureSamplingFilter(Context context, String vertexShader, String fragmentShader) {

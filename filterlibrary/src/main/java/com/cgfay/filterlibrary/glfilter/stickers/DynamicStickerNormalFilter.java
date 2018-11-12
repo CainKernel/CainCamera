@@ -131,7 +131,7 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
         // 2、将贴纸逐个绘制到FBO中
         if (mStickerLoaderList.size() > 0 && LandmarkEngine.getInstance().hasFace()) {
             // 逐个人脸绘制
-            int faceCount = Math.min(LandmarkEngine.getInstance().getFaceArrays().size(), mStickerLoaderList.get(0).getMaxCount());
+            int faceCount = Math.min(LandmarkEngine.getInstance().getFaceSize(), mStickerLoaderList.get(0).getMaxCount());
             for (int faceIndex = 0; faceIndex < faceCount; faceIndex++) {
                 OneFace oneFace = LandmarkEngine.getInstance().getOneFace(faceIndex);
                 // 如果置信度大于0.5，表示这是一个正常的人脸，绘制贴纸

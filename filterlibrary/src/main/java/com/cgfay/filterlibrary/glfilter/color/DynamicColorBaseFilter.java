@@ -1,9 +1,7 @@
 package com.cgfay.filterlibrary.glfilter.color;
 
 import android.content.Context;
-import android.opengl.GLES30;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.cgfay.filterlibrary.glfilter.base.GLImageAudioFilter;
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColorData;
@@ -21,7 +19,7 @@ public class DynamicColorBaseFilter extends GLImageAudioFilter {
     public DynamicColorBaseFilter(Context context, DynamicColorData dynamicColorData, String unzipPath) {
         super(context, (dynamicColorData == null || TextUtils.isEmpty(dynamicColorData.vertexShader)) ? VERTEX_SHADER
                         : getShaderString(context, unzipPath, dynamicColorData.vertexShader),
-                (dynamicColorData == null || TextUtils.isEmpty(dynamicColorData.fragmentShader)) ? FRAGMENT_SHADER_2D
+                (dynamicColorData == null || TextUtils.isEmpty(dynamicColorData.fragmentShader)) ? FRAGMENT_SHADER
                         : getShaderString(context, unzipPath, dynamicColorData.fragmentShader));
         mDynamicColorData = dynamicColorData;
         mDynamicColorLoader = new DynamicColorLoader(this, mDynamicColorData, unzipPath);

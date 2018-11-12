@@ -14,6 +14,8 @@ import com.cgfay.filterlibrary.glfilter.beauty.bean.IBeautify;
 import com.cgfay.filterlibrary.glfilter.faceadjust.GLImageFacePointsFilter;
 import com.cgfay.filterlibrary.glfilter.color.GLImageDynamicColorFilter;
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
+import com.cgfay.filterlibrary.glfilter.makeup.GLImageMakeupFilter;
+import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
 import com.cgfay.filterlibrary.glfilter.stickers.GLImageDynamicStickerFilter;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
@@ -134,7 +136,7 @@ public final class RenderManager {
         // 美颜滤镜
         mFilterArrays.put(RenderIndex.BeautyIndex, new GLImageBeautyFilter(context));
         // 彩妆滤镜
-        mFilterArrays.put(RenderIndex.MakeupIndex, null);
+        mFilterArrays.put(RenderIndex.MakeupIndex, new GLImageMakeupFilter(context, null));
         // 美型滤镜
         mFilterArrays.put(RenderIndex.FaceAdjustIndex, null);
         // LUT/颜色滤镜
@@ -168,6 +170,22 @@ public final class RenderManager {
         filter.initFrameBuffer(mTextureWidth, mTextureHeight);
         filter.onDisplaySizeChanged(mViewWidth, mViewHeight);
         mFilterArrays.put(RenderIndex.FilterIndex, filter);
+    }
+
+    /**
+     * 切换动态滤镜
+     * @param dynamicMakeup
+     */
+    public synchronized void changeDynamicMakeup(DynamicMakeup dynamicMakeup) {
+        if (mFilterArrays.get(RenderIndex.MakeupIndex) != null) {
+            ((GLImageMakeupFilter)mFilterArrays.get(RenderIndex.MakeupIndex)).changeMakeupData(dynamicMakeup);
+        } else {
+            GLImageMakeupFilter filter = new GLImageMakeupFilter(mContext, dynamicMakeup);
+            filter.onInputSizeChanged(mTextureWidth, mTextureHeight);
+            filter.initFrameBuffer(mTextureWidth, mTextureHeight);
+            filter.onDisplaySizeChanged(mViewWidth, mViewHeight);
+            mFilterArrays.put(RenderIndex.MakeupIndex, filter);
+        }
     }
 
     /**

@@ -26,7 +26,9 @@ import com.cgfay.cameralibrary.adapter.PreviewMakeupAdapter;
 import com.cgfay.cameralibrary.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.engine.render.PreviewRenderer;
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
+import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
 import com.cgfay.filterlibrary.glfilter.resource.FilterHelper;
+import com.cgfay.filterlibrary.glfilter.resource.MakeupHelper;
 import com.cgfay.filterlibrary.glfilter.resource.ResourceHelper;
 import com.cgfay.filterlibrary.glfilter.resource.ResourceJsonCodec;
 import com.cgfay.filterlibrary.glfilter.resource.bean.ResourceData;
@@ -388,7 +390,19 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
             mMakeupAdapter.addOnMakeupSelectedListener(new PreviewMakeupAdapter.OnMakeupSelectedListener() {
                 @Override
                 public void onMakeupSelected(int position, String makeupName) {
-                    Log.d(TAG, "onMakeupSelected: position = " + position + ", name = " + makeupName);
+                    if (position == 0) {
+                        String folderPath = MakeupHelper.getMakeupDirectory(mActivity) + File.separator +
+                                MakeupHelper.getMakeupList().get(1).unzipFolder;
+                        DynamicMakeup makeup = null;
+                        try {
+                            makeup = ResourceJsonCodec.decodeMakeupData(folderPath);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        PreviewRenderer.getInstance().changeDynamicMakeup(makeup);
+                    } else {
+                        PreviewRenderer.getInstance().changeDynamicMakeup(null);
+                    }
                 }
             });
         }

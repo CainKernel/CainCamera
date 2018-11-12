@@ -30,10 +30,10 @@ public class TextureRotationUtils {
     };
 
     public static final float TextureVertices_180[] = {
-            1.0f, 1.0f,
-            0.0f, 1.0f,
-            1.0f, 0.0f,
-            0.0f, 0.0f,
+            1.0f, 1.0f, // right top
+            0.0f, 1.0f, // left top
+            1.0f, 0.0f, // right bottom
+            0.0f, 0.0f, // left bottom
     };
 
     public static final float TextureVertices_270[] = {
@@ -42,6 +42,15 @@ public class TextureRotationUtils {
             1.0f, 1.0f,
             0.0f, 0.0f,
     };
+
+    /**
+     * 索引，glDrawElements使用
+     */
+    public static final short[] Indices = {
+            0, 1, 2,
+            2, 1, 3,
+    };
+
 
     private TextureRotationUtils() {}
 

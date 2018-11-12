@@ -12,9 +12,9 @@ import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 
 public class GLImage512LookupTableFilter extends GLImageFilter {
 
-    private float intensity;
-    private int mIntensityLoc;
-    private int mCurveTextureLoc;
+    private float mStrength;
+    private int mStrengthHandle;
+    private int mLookupTableTextureHandle;
 
     private int mCurveTexture = OpenGLUtils.GL_NOT_INIT;
 
@@ -30,16 +30,16 @@ public class GLImage512LookupTableFilter extends GLImageFilter {
     @Override
     public void initProgramHandle() {
         super.initProgramHandle();
-        mIntensityLoc = GLES30.glGetUniformLocation(mProgramHandle, "intensity");
-        mCurveTextureLoc = GLES30.glGetUniformLocation(mProgramHandle, "curveTexture");
-        setIntensity(1.0f);
+        mStrengthHandle = GLES30.glGetUniformLocation(mProgramHandle, "strength");
+        mLookupTableTextureHandle = GLES30.glGetUniformLocation(mProgramHandle, "curveTexture");
+        setStrength(1.0f);
     }
 
     @Override
     public void onDrawFrameBegin() {
         super.onDrawFrameBegin();
-        OpenGLUtils.bindTexture(mCurveTextureLoc, mCurveTexture, 1);
-        GLES30.glUniform1f(mIntensityLoc, intensity);
+        OpenGLUtils.bindTexture(mLookupTableTextureHandle, mCurveTexture, 1);
+        GLES30.glUniform1f(mStrengthHandle, mStrength);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class GLImage512LookupTableFilter extends GLImageFilter {
      *  设置变化值，0.0f ~ 1.0f
      * @param value
      */
-    public void setIntensity(float value) {
+    public void setStrength(float value) {
         float opacity;
         if (value <= 0) {
             opacity = 0.0f;
@@ -61,7 +61,7 @@ public class GLImage512LookupTableFilter extends GLImageFilter {
         } else {
             opacity = value;
         }
-        intensity = opacity;
-        setFloat(mIntensityLoc, intensity);
+        mStrength = opacity;
+        setFloat(mStrengthHandle, mStrength);
     }
 }

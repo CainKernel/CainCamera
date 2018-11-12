@@ -2,6 +2,12 @@ package com.cgfay.filterlibrary.glfilter.resource;
 
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColorData;
+import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
+import com.cgfay.filterlibrary.glfilter.makeup.bean.MakeupBaseData;
+import com.cgfay.filterlibrary.glfilter.makeup.bean.MakeupLipstickData;
+import com.cgfay.filterlibrary.glfilter.makeup.bean.MakeupMaterialData;
+import com.cgfay.filterlibrary.glfilter.makeup.bean.MakeupNormaData;
+import com.cgfay.filterlibrary.glfilter.makeup.bean.MakeupType;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicStickerData;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicStickerFrameData;
@@ -17,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * json解码器
@@ -141,4 +148,62 @@ public class ResourceJsonCodec {
         return dynamicColor;
     }
 
+    /**
+     * 解码彩妆数据列表，可以是一组彩妆数据，也可能是某个部位的彩妆数据列表
+     * @param folderPath json文件所在文件夹路径
+     * @return
+     */
+    public static DynamicMakeup decodeMakeupData(String folderPath)
+            throws IOException, JSONException {
+        File file = new File(folderPath, "json");
+        String makeupJson = FileUtils.convertToString(new FileInputStream(file));
+
+        DynamicMakeup dynamicMakeup = new DynamicMakeup();
+        dynamicMakeup.unzipPath = folderPath;
+        if (dynamicMakeup.makeupList == null) {
+            dynamicMakeup.makeupList = new ArrayList<>();
+        }
+
+        JSONObject jsonObject = new JSONObject(makeupJson);
+        JSONArray makeupList = jsonObject.getJSONArray("makeupList");
+        for (int makeupIndex = 0; makeupIndex < makeupList.length(); makeupIndex++) {
+            JSONObject jsonData = makeupList.getJSONObject(makeupIndex);
+            String type = jsonData.getString("type");
+
+            MakeupBaseData makeupData;
+            if (type.equalsIgnoreCase("lipstick")) { // 唇彩素材
+                makeupData = new MakeupLipstickData();
+                ((MakeupLipstickData) makeupData).lookupTable = jsonData.getString("lookupTable");
+            } else { // 其他彩妆素材
+                makeupData = new MakeupNormaData();
+                JSONObject jsonMaterial = jsonData.getJSONObject("material");
+
+                MakeupMaterialData materialData = new MakeupMaterialData();
+                materialData.name = jsonMaterial.getString("name");
+                materialData.width = jsonMaterial.getInt("width");
+                materialData.height = jsonMaterial.getInt("height");
+                // 提取素材纹理坐标
+                JSONArray textureVertices = jsonData.getJSONArray("textureVertices");
+                materialData.textureVertices = new float[textureVertices.length()];
+                for (int i = 0; i < textureVertices.length(); i++) {
+                    materialData.textureVertices[i] = textureVertices.getLong(i);
+                }
+                // 提取素材索引数据
+                JSONArray indices = jsonData.getJSONArray("indices");
+                materialData.indices = new short[indices.length()];
+                for (int i = 0; i < indices.length(); i++) {
+                    materialData.indices[i] = (short) indices.getInt(i);
+                }
+                ((MakeupNormaData) makeupData).materialData = materialData;
+            }
+            makeupData.makeupType = MakeupType.getType(type);
+            makeupData.name = jsonData.getString("name");
+            makeupData.id = jsonData.getString("id");
+            makeupData.strength = jsonData.getLong("strength");
+
+            dynamicMakeup.makeupList.add(makeupData);
+        }
+
+        return dynamicMakeup;
+    }
 }

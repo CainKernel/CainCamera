@@ -5,6 +5,7 @@ import android.os.Message;
 import android.view.SurfaceHolder;
 
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
+import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 
 import java.lang.ref.WeakReference;
@@ -40,8 +41,10 @@ class RenderHandler extends Handler {
     public static final int MSG_CALCULATE_FPS = 0x013;
     // 切换动态滤镜
     public static final int MSG_CHANGE_DYNAMIC_COLOR = 0x14;
+    // 切换动态彩妆
+    public static final int MSG_CHANGE_DYNAMIC_MAKEUP = 0x15;
     // 切换动态动态资源
-    public static final int MSG_CHANGE_DYNAMIC_RESOURCE = 0x15;
+    public static final int MSG_CHANGE_DYNAMIC_RESOURCE = 0x16;
 
     private WeakReference<RenderThread> mWeakRenderThread;
 
@@ -116,6 +119,16 @@ class RenderHandler extends Handler {
             // 切换动态滤镜
             case MSG_CHANGE_DYNAMIC_COLOR: {
                 thread.changeDynamicFilter((DynamicColor) msg.obj);
+                break;
+            }
+
+            // 切换动态彩妆
+            case MSG_CHANGE_DYNAMIC_MAKEUP: {
+                if (msg.obj == null) {
+                    thread.changeDynamicMakeup((DynamicMakeup) null);
+                } else {
+                    thread.changeDynamicMakeup((DynamicMakeup) msg.obj);
+                }
                 break;
             }
 

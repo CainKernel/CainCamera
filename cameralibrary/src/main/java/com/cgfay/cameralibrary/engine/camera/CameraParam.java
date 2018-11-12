@@ -10,7 +10,6 @@ import com.cgfay.cameralibrary.engine.model.GalleryType;
 import com.cgfay.cameralibrary.listener.OnGallerySelectedListener;
 import com.cgfay.cameralibrary.listener.OnPreviewCaptureListener;
 import com.cgfay.filterlibrary.glfilter.beauty.bean.BeautyParam;
-import com.cgfay.filterlibrary.glfilter.makeup.bean.MakeupParam;
 
 /**
  * 相机配置参数
@@ -110,8 +109,6 @@ public final class CameraParam {
     public boolean enableVignette;
     // 美颜参数
     public BeautyParam beauty;
-    // 彩妆参数
-    public MakeupParam makeup;
 
     private static final CameraParam mInstance = new CameraParam();
 
@@ -158,7 +155,6 @@ public final class CameraParam {
         enableDepthBlur = false;
         enableVignette = false;
         beauty = new BeautyParam();
-        makeup = new MakeupParam();
     }
 
     /**

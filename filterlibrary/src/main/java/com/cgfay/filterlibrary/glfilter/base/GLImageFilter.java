@@ -27,7 +27,7 @@ public class GLImageFilter {
             "    textureCoordinate = aTextureCoord.xy;                  \n" +
             "}                                                          \n";
 
-    protected static final String FRAGMENT_SHADER_2D = "" +
+    protected static final String FRAGMENT_SHADER = "" +
             "precision mediump float;                                   \n" +
             "varying vec2 textureCoordinate;                            \n" +
             "uniform sampler2D inputTexture;                                \n" +
@@ -81,7 +81,7 @@ public class GLImageFilter {
     protected int[] mFrameBufferTextures;
 
     public GLImageFilter(Context context) {
-        this(context, VERTEX_SHADER, FRAGMENT_SHADER_2D);
+        this(context, VERTEX_SHADER, FRAGMENT_SHADER);
     }
 
     public GLImageFilter(Context context, String vertexShader, String fragmentShader) {

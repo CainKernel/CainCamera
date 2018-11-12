@@ -76,6 +76,14 @@ public final class LandmarkEngine {
     }
 
     /**
+     * 获取人脸个数
+     * @return
+     */
+    public int getFaceSize() {
+        return mFaceArrays.size();
+    }
+
+    /**
      * 获取人脸列表
      * @return
      */
@@ -98,7 +106,7 @@ public final class LandmarkEngine {
      * @param index
      */
     public void calculateExtraPoints(float[] vertexPoints, int index) {
-        if (vertexPoints == null || mFaceArrays.get(index) == null
+        if (vertexPoints == null || index >= mFaceArrays.size() || mFaceArrays.get(index) == null
                 || mFaceArrays.get(index).vertexPoints.length + 8 * 2 > vertexPoints.length) {
             return;
         }
@@ -180,5 +188,60 @@ public final class LandmarkEngine {
         );
         vertexPoints[FaceLandmark.rightCheekCenter * 2] = point[0];
         vertexPoints[FaceLandmark.rightCheekCenter * 2 + 1] = point[1];
+    }
+
+    /**
+     * 阴影(修容)顶点坐标，修容用的是整个人脸的顶点坐标
+     * @param vetexPoints
+     * @param faceIndex
+     */
+    public void getShadowVertices(float[] vetexPoints, int faceIndex) {
+
+    }
+
+    /**
+     * 取得脸颊(腮红)顶点坐标
+     * @param vertexPoints
+     * @param faceIndex
+     */
+    public void getBlushVertices(float[] vertexPoints, int faceIndex) {
+
+    }
+
+    /**
+     * 取得眉毛顶点坐标
+     * @param vertexPoints
+     * @param faceIndex
+     */
+    public void getEyeBrowVertices(float[] vertexPoints, int faceIndex) {
+
+    }
+
+    /**
+     * 取得眼睛(眼影、眼线等)顶点坐标
+     * @param vertexPoints
+     * @param faceIndex
+     */
+    public void getEyeVertices(float[] vertexPoints, int faceIndex) {
+
+    }
+
+    /**
+     * 取得嘴唇(唇彩)顶点坐标
+     * @param vertexPoints  存放嘴唇顶点坐标
+     * @param faceIndex     人脸索引
+     */
+    public void getLipsVertices(float[] vertexPoints, int faceIndex) {
+        // 嘴唇一共20个顶点，大小必须为40
+        if (vertexPoints == null || vertexPoints.length != 40
+                || faceIndex >= mFaceArrays.size() || mFaceArrays.get(faceIndex) == null) {
+            return;
+        }
+        // 复制84 ~ 103共20个顶点坐标
+        for (int i = 0; i < 20; i++) {
+            // 顶点坐标
+            vertexPoints[i * 2] = mFaceArrays.get(faceIndex).vertexPoints[(84 + i) * 2];
+            vertexPoints[i * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[(84 + i) * 2 + 1];
+        }
     }
 }

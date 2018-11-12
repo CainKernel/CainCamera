@@ -15,6 +15,7 @@ import com.cgfay.cameralibrary.listener.OnPreviewCaptureListener;
 import com.cgfay.cameralibrary.engine.model.AspectRatio;
 import com.cgfay.cameralibrary.engine.model.GalleryType;
 import com.cgfay.filterlibrary.glfilter.resource.FilterHelper;
+import com.cgfay.filterlibrary.glfilter.resource.MakeupHelper;
 import com.cgfay.filterlibrary.glfilter.resource.ResourceHelper;
 import com.cgfay.imagelibrary.activity.ImageEditActivity;
 import com.cgfay.medialibrary.engine.MediaScanEngine;
@@ -90,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void run() {
                 ResourceHelper.initAssetsResource(MainActivity.this);
                 FilterHelper.initAssetsFilter(MainActivity.this);
+                MakeupHelper.initAssetsMakeup(MainActivity.this);
             }
         }).start();
     }

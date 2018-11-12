@@ -28,7 +28,7 @@ public class DynamicColorLoader {
     private String mFolderPath;
     // 动态滤镜数据
     private DynamicColorData mColorData;
-    // 资源索引加载器
+    // 资源加载器
     private ResourceDataCodec mResourceCodec;
     // 动态滤镜
     private final WeakReference<DynamicColorBaseFilter> mWeakFilter;
