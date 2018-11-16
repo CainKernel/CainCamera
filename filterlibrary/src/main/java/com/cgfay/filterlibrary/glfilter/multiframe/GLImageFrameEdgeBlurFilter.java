@@ -12,7 +12,7 @@ import java.nio.FloatBuffer;
 /**
  * 边框模糊滤镜，跟FaceU的边框滤镜效果一致
  */
-public class GLImageFrameBlurFilter extends GLImageFilter {
+public class GLImageFrameEdgeBlurFilter extends GLImageFilter {
 
     private int mBlurTextureHandle;
     private int mBlurOffsetXHandle;
@@ -26,12 +26,12 @@ public class GLImageFrameBlurFilter extends GLImageFilter {
     private float mBlurScale = 0.5f;
     private int mBlurTexture;
 
-    public GLImageFrameBlurFilter(Context context) {
+    public GLImageFrameEdgeBlurFilter(Context context) {
         this(context, VERTEX_SHADER, OpenGLUtils.getShaderFromAssets(context,
                 "shader/multiframe/fragment_frame_blur.glsl"));
     }
 
-    public GLImageFrameBlurFilter(Context context, String vertexShader, String fragmentShader) {
+    public GLImageFrameEdgeBlurFilter(Context context, String vertexShader, String fragmentShader) {
         super(context, vertexShader, fragmentShader);
         mGaussianBlurFilter = new GLImageGaussianBlurFilter(mContext);
         mBlurTexture = OpenGLUtils.GL_NOT_TEXTURE;

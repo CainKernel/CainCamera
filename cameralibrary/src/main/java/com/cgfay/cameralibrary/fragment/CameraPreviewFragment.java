@@ -687,6 +687,10 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             mCameraParam.touchTake = touchTake;
         }
 
+        @Override
+        public void changeEdgeBlur(boolean enable) {
+            PreviewRenderer.getInstance().changeEdgeBlurFilter(enable);
+        }
     };
 
     // ------------------------------------- 长宽比改变回调 --------------------------------------

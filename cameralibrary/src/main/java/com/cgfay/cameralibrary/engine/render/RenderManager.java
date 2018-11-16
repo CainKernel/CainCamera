@@ -11,11 +11,13 @@ import com.cgfay.filterlibrary.glfilter.base.GLImageOESInputFilter;
 import com.cgfay.filterlibrary.glfilter.base.GLImageVignetteFilter;
 import com.cgfay.filterlibrary.glfilter.beauty.GLImageBeautyFilter;
 import com.cgfay.filterlibrary.glfilter.beauty.bean.IBeautify;
-import com.cgfay.filterlibrary.glfilter.faceadjust.GLImageFacePointsFilter;
+import com.cgfay.filterlibrary.glfilter.face.GLImageFaceReshapeFilter;
+import com.cgfay.filterlibrary.glfilter.face.GLImageFacePointsFilter;
 import com.cgfay.filterlibrary.glfilter.color.GLImageDynamicColorFilter;
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
 import com.cgfay.filterlibrary.glfilter.makeup.GLImageMakeupFilter;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
+import com.cgfay.filterlibrary.glfilter.multiframe.GLImageFrameEdgeBlurFilter;
 import com.cgfay.filterlibrary.glfilter.stickers.GLImageDynamicStickerFilter;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
@@ -138,7 +140,7 @@ public final class RenderManager {
         // 彩妆滤镜
         mFilterArrays.put(RenderIndex.MakeupIndex, new GLImageMakeupFilter(context, null));
         // 美型滤镜
-        mFilterArrays.put(RenderIndex.FaceAdjustIndex, null);
+        mFilterArrays.put(RenderIndex.FaceAdjustIndex, new GLImageFaceReshapeFilter(context));
         // LUT/颜色滤镜
         mFilterArrays.put(RenderIndex.FilterIndex, null);
         // 贴纸资源滤镜
@@ -151,6 +153,26 @@ public final class RenderManager {
         mFilterArrays.put(RenderIndex.DisplayIndex, new GLImageFilter(context));
         // 人脸关键点调试
         mFilterArrays.put(RenderIndex.FacePointIndex, new GLImageFacePointsFilter(context));
+    }
+
+    /**
+     * 是否切换边框模糊
+     * @param enableEdgeBlur
+     */
+    public synchronized void changeEdgeBlurFilter(boolean enableEdgeBlur) {
+        if (enableEdgeBlur) {
+            mFilterArrays.get(RenderIndex.DisplayIndex).release();
+            GLImageFrameEdgeBlurFilter filter = new GLImageFrameEdgeBlurFilter(mContext);
+            filter.onInputSizeChanged(mTextureWidth, mTextureHeight);
+            filter.onDisplaySizeChanged(mViewWidth, mViewHeight);
+            mFilterArrays.put(RenderIndex.DisplayIndex, filter);
+        } else {
+            mFilterArrays.get(RenderIndex.DisplayIndex).release();
+            GLImageFilter filter = new GLImageFilter(mContext);
+            filter.onInputSizeChanged(mTextureWidth, mTextureHeight);
+            filter.onDisplaySizeChanged(mViewWidth, mViewHeight);
+            mFilterArrays.put(RenderIndex.DisplayIndex, filter);
+        }
     }
 
     /**
@@ -269,12 +291,12 @@ public final class RenderManager {
                 currentTexture = mFilterArrays.get(RenderIndex.FaceAdjustIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
 
-            // 绘制LUT滤镜
+            // 绘制颜色滤镜
             if (mFilterArrays.get(RenderIndex.FilterIndex) != null) {
                 currentTexture = mFilterArrays.get(RenderIndex.FilterIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }
 
-            // 动态贴纸滤镜
+            // 资源滤镜，可以是贴纸、滤镜甚至是彩妆类型
             if (mFilterArrays.get(RenderIndex.ResourceIndex) != null) {
                 currentTexture = mFilterArrays.get(RenderIndex.ResourceIndex).drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
             }

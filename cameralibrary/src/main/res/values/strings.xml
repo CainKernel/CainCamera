@@ -9,6 +9,7 @@
     <string name="tv_flash_front">柔光自拍</string>
     <string name="tv_time_lapse">延时拍摄</string>
     <string name="tv_luminous_compensation">夜拍补光</string>
+    <string name="tv_edge_blur">边框模糊</string>
     <string name="tv_touch_take">触屏拍照</string>
     <string name="tv_camera_setting">相机设置</string>
 

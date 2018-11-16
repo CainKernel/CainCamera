@@ -148,6 +148,20 @@ public final class PreviewRenderer {
     }
 
     /**
+     * 切换边框模糊功能
+     * @param enableEdgeBlur
+     */
+    public void changeEdgeBlurFilter(boolean enableEdgeBlur) {
+        if (mRenderHandler == null) {
+            return;
+        }
+        synchronized (mSynOperation) {
+            mRenderHandler.sendMessage(mRenderHandler
+                    .obtainMessage(RenderHandler.MSG_CHANGE_EDGE_BLUR, enableEdgeBlur));
+        }
+    }
+
+    /**
      * 切换滤镜
      * @param color
      */

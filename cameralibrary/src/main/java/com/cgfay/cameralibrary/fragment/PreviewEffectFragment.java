@@ -304,7 +304,7 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
         } else if (position == 7) {     // 额头
             mValueSeekBar.setProgress((int)((1.0f + mCameraParam.beauty.foreheadIntensity) * 50));
         } else if (position == 8) {     // 大眼
-            mValueSeekBar.setProgress((int)((1.0f + mCameraParam.beauty.eyeEnlargeIntensity) * 50));
+            mValueSeekBar.setProgress((int)(mCameraParam.beauty.eyeEnlargeIntensity * 100));
         } else if (position == 9) {     // 眼距
             mValueSeekBar.setProgress((int)((1.0f + mCameraParam.beauty.eyeDistanceIntensity) * 50));
         } else if (position == 10) {    // 眼角
@@ -350,7 +350,7 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
         } else if (position == 7) {     // 额头
             mCameraParam.beauty.foreheadIntensity = (progress - 50.0f) / 50.0f;
         } else if (position == 8) {     // 大眼
-            mCameraParam.beauty.eyeEnlargeIntensity = (progress - 50.0f) / 50.0f;
+            mCameraParam.beauty.eyeEnlargeIntensity = progress / 100.0f;
         } else if (position == 9) {     // 眼距
             mCameraParam.beauty.eyeDistanceIntensity = (progress - 50.0f) / 50.0f;
         } else if (position == 10) {    // 眼角

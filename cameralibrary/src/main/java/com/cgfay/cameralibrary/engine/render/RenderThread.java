@@ -272,6 +272,16 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
     }
 
     /**
+     * 切换边框模糊
+     * @param enableEdgeBlur
+     */
+    void changeEdgeBlurFilter(boolean enableEdgeBlur) {
+        synchronized (mSynOperation) {
+            mRenderManager.changeEdgeBlurFilter(enableEdgeBlur);
+        }
+    }
+
+    /**
      * 切换动态滤镜
      * @param color
      */

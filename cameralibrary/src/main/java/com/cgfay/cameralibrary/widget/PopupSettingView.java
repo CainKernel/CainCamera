@@ -36,6 +36,7 @@ public class PopupSettingView extends BasePopupWindow
     private LinearLayout mLayoutCameraSetting;
     // 自动保存
     private Switch mLuminousCompensation;
+    private Switch mEdgeBlur;
 
     // 是否允许切换闪光灯状态，没有闪关灯时不允许切换，默认不允许
     private boolean mEnableChangeFlash = false;
@@ -78,6 +79,7 @@ public class PopupSettingView extends BasePopupWindow
         mTextTimeLapse = (TextView) contentView.findViewById(R.id.tv_time_lapse);
 
         mLuminousCompensation = (Switch) contentView.findViewById(R.id.sw_luminous_compensation);
+        mEdgeBlur = (Switch) contentView.findViewById(R.id.sw_edge_blur);
 
         mLayoutFlash.setOnClickListener(this);
         mLayoutTouchTake.setOnClickListener(this);
@@ -85,6 +87,7 @@ public class PopupSettingView extends BasePopupWindow
         mLayoutTimeLapse.setOnClickListener(this);
 
         mLuminousCompensation.setOnCheckedChangeListener(this);
+        mEdgeBlur.setOnCheckedChangeListener(this);
 
         updateFlashUI();
         updateTouchTakenUI();
@@ -188,11 +191,15 @@ public class PopupSettingView extends BasePopupWindow
         int i = buttonView.getId();
         if (i == R.id.sw_luminous_compensation) {
             processLuminousCompensation(isChecked);
+        } else if (i == R.id.sw_edge_blur) {
+            if (mListener != null) {
+                mListener.changeEdgeBlur(isChecked);
+            }
         }
     }
 
     /**
-     * 处理自动保存
+     * 处理夜光补偿
      * @param enable
      */
     private void processLuminousCompensation(boolean enable) {
@@ -244,5 +251,8 @@ public class PopupSettingView extends BasePopupWindow
 
         // 夜光补偿状态变更
         void luminousCompensationChanged(boolean enable);
+
+        // 是否是能边框模糊
+        void changeEdgeBlur(boolean enable);
     }
 }

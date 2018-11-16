@@ -443,6 +443,11 @@ public final class FaceTracker {
                 Log.d("onFaceTracking", "track time = " + algorithmTime);
             }
 
+            // 设置旋转方向
+            LandmarkEngine.getInstance().setOrientation(orientation);
+            // 设置是否需要翻转
+            LandmarkEngine.getInstance().setNeedFlip(faceTrackParam.previewTrack && faceTrackParam.isBackCamera);
+
             // 计算人脸关键点
             if (faces != null && faces.length > 0) {
                 for (int index = 0; index < faces.length; index++) {

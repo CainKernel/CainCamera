@@ -1,8 +1,7 @@
-package com.cgfay.filterlibrary.glfilter.faceadjust;
+package com.cgfay.filterlibrary.glfilter.face;
 
 import android.content.Context;
 import android.opengl.GLES30;
-import android.opengl.Matrix;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
@@ -97,7 +96,7 @@ public class GLImageFacePointsFilter extends GLImageFilter {
                 SparseArray<OneFace> faceArrays = LandmarkEngine.getInstance().getFaceArrays();
                 for (int i = 0; i < faceArrays.size(); i++) {
                     if (faceArrays.get(i).vertexPoints != null) {
-                        LandmarkEngine.getInstance().calculateExtraPoints(mPoints, i);
+                        LandmarkEngine.getInstance().calculateExtraFacePoints(mPoints, i);
                         mPointVertexBuffer.clear();
                         mPointVertexBuffer.put(mPoints, 0, mPoints.length);
                         mPointVertexBuffer.position(0);

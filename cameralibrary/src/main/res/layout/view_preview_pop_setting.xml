@@ -146,6 +146,29 @@
                 android:switchMinWidth="@dimen/switch_min_width" />
         </RelativeLayout>
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/setting_margin"
+            android:orientation="horizontal"
+            android:layout_gravity="center"
+            android:gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:textColor="@color/popup_text_color"
+                android:text="@string/tv_edge_blur"/>
+            <Switch
+                android:id="@+id/sw_edge_blur"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:switchMinWidth="@dimen/switch_min_width" />
+        </RelativeLayout>
+
     </LinearLayout>
 
 </LinearLayout>

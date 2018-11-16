@@ -20,7 +20,7 @@ public class BeautyParam {
     public float nasolabialFoldsIntensity;
     // 额头 -1.0f ~ 1.0f
     public float foreheadIntensity;
-    // 大眼 -1.0f ~ 1.0f
+    // 大眼 0.0f ~ 1.0f
     public float eyeEnlargeIntensity;
     // 眼距 -1.0f ~ 1.0f
     public float eyeDistanceIntensity;
@@ -51,7 +51,7 @@ public class BeautyParam {
      * 重置为默认参数
      */
     public void reset() {
-        beautyIntensity = 1.0f;
+        beautyIntensity = 0.5f;
         complexionIntensity = 0.5f;
         faceLift = 0.0f;
         faceShave = 0.0f;

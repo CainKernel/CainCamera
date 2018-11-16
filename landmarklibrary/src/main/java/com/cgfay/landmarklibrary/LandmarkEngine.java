@@ -25,6 +25,26 @@ public final class LandmarkEngine {
     // 由于人脸数据个数有限，图像中的人脸个数小于千级，而且人脸索引是连续的，用SparseArray比Hashmap性能要更好
     private final SparseArray<OneFace> mFaceArrays;
 
+    // 手机当前的方向，0表示正屏幕，3表示倒过来，1表示左屏幕，2表示右屏幕
+    private float mOrientation;
+    private boolean mNeedFlip;
+
+    /**
+     * 设置旋转角度
+     * @param orientation
+     */
+    public void setOrientation(int orientation) {
+        mOrientation = orientation;
+    }
+
+    /**
+     * 设置是否需要翻转
+     * @param flip
+     */
+    public void setNeedFlip(boolean flip) {
+        mNeedFlip = flip;
+    }
+
     /**
      * 设置人脸数
      * @param size
@@ -101,11 +121,11 @@ public final class LandmarkEngine {
     }
 
     /**
-     * 计算额外顶点，新增8个额外顶点坐标
+     * 计算额外人脸顶点，新增8个额外顶点坐标
      * @param vertexPoints
      * @param index
      */
-    public void calculateExtraPoints(float[] vertexPoints, int index) {
+    public void calculateExtraFacePoints(float[] vertexPoints, int index) {
         if (vertexPoints == null || index >= mFaceArrays.size() || mFaceArrays.get(index) == null
                 || mFaceArrays.get(index).vertexPoints.length + 8 * 2 > vertexPoints.length) {
             return;
@@ -188,6 +208,93 @@ public final class LandmarkEngine {
         );
         vertexPoints[FaceLandmark.rightCheekCenter * 2] = point[0];
         vertexPoints[FaceLandmark.rightCheekCenter * 2 + 1] = point[1];
+    }
+
+    /**
+     * 计算
+     * @param vertexPoints
+     */
+    private void calculateImageEdgePoints(float[] vertexPoints) {
+        if (vertexPoints == null || vertexPoints.length < 122 * 2) {
+            return;
+        }
+
+        if (mOrientation == 0) {
+            vertexPoints[114 * 2] = 0;
+            vertexPoints[114 * 2 + 1] = 1;
+            vertexPoints[115 * 2] = 1;
+            vertexPoints[115 * 2 + 1] = 1;
+            vertexPoints[116 * 2] = 1;
+            vertexPoints[116 * 2 + 1] = 0;
+            vertexPoints[117 * 2] = 1;
+            vertexPoints[117 * 2 + 1] = -1;
+        } else if (mOrientation == 1) {
+            vertexPoints[114 * 2] = 1;
+            vertexPoints[114 * 2 + 1] = 0;
+            vertexPoints[115 * 2] = 1;
+            vertexPoints[115 * 2 + 1] = -1;
+            vertexPoints[116 * 2] = 0;
+            vertexPoints[116 * 2 + 1] = -1;
+            vertexPoints[117 * 2] = -1;
+            vertexPoints[117 * 2 + 1] = -1;
+        } else if (mOrientation == 2) {
+            vertexPoints[114 * 2] = -1;
+            vertexPoints[114 * 2 + 1] = 0;
+            vertexPoints[115 * 2] = -1;
+            vertexPoints[115 * 2 + 1] = 1;
+            vertexPoints[116 * 2] = 0;
+            vertexPoints[116 * 2 + 1] = 1;
+            vertexPoints[117 * 2] = 1;
+            vertexPoints[117 * 2 + 1] = 1;
+        } else if (mOrientation == 3) {
+            vertexPoints[114 * 2] = 0;
+            vertexPoints[114 * 2 + 1] = -1;
+            vertexPoints[115 * 2] = -1;
+            vertexPoints[115 * 2 + 1] = -1;
+            vertexPoints[116 * 2] = -1;
+            vertexPoints[116 * 2 + 1] = 0;
+            vertexPoints[117 * 2] = -1;
+            vertexPoints[117 * 2 + 1] = 1;
+        }
+        // 118 ~ 121 与 114 ~ 117 的顶点坐标恰好反过来
+        vertexPoints[118 * 2] = -vertexPoints[114 * 2];
+        vertexPoints[118 * 2 + 1] = -vertexPoints[114 * 2 + 1];
+        vertexPoints[119 * 2] = -vertexPoints[115 * 2];
+        vertexPoints[119 * 2 + 1] = -vertexPoints[115 * 2 + 1];
+        vertexPoints[120 * 2] = -vertexPoints[116 * 2];
+        vertexPoints[120 * 2 + 1] = -vertexPoints[116 * 2 + 1];
+        vertexPoints[121 * 2] = -vertexPoints[117 * 2];
+        vertexPoints[121 * 2 + 1] = -vertexPoints[117 * 2 + 1];
+
+        // 是否需要做翻转处理，前置摄像头预览时，关键点是做了翻转处理的，因此图像边沿的关键点也要做翻转能处理
+        if (mNeedFlip) {
+            for (int i = 0; i < 8; i++) {
+                vertexPoints[(114 + i) * 2] = -vertexPoints[(114 + i) * 2];
+                vertexPoints[(114 + i) * 2 + 1] = -vertexPoints[(114 + i) * 2 + 1];
+            }
+        }
+
+    }
+
+    /**
+     * 获取用于美型处理的坐标
+     * @param vertexPoints  顶点坐标，一共122个顶点
+     * @param texturePoints 纹理坐标，一共122个顶点
+     * @param faceIndex     人脸索引
+     */
+    public void updateFaceAdjustPoints(float[] vertexPoints, float[] texturePoints, int faceIndex) {
+        if (vertexPoints == null || vertexPoints.length != 122 * 2
+                || texturePoints == null || texturePoints.length != 122 * 2) {
+            return;
+        }
+        // 计算额外的人脸顶点坐标
+        calculateExtraFacePoints(vertexPoints, faceIndex);
+        // 计算图像边沿顶点坐标
+        calculateImageEdgePoints(vertexPoints);
+        // 计算纹理坐标
+        for (int i = 0; i < vertexPoints.length; i++) {
+            texturePoints[i] = vertexPoints[i] * 0.5f + 0.5f;
+        }
     }
 
     /**

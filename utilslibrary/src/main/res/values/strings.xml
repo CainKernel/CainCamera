@@ -8,15 +8,4 @@
     <string name="request_storage_permission">需要存储权限</string>
     <string name="request_sound_permission">需要录音权限</string>
 
-    <!--顶部设置文字-->
-    <string name="tv_flash">闪光灯</string>
-    <string name="tv_flash_front">柔光自拍</string>
-    <string name="tv_time_lapse">延时拍摄</string>
-    <string name="tv_luminous_compensation">夜拍补光</string>
-    <string name="tv_touch_take">触屏拍照</string>
-    <string name="tv_camera_setting">相机设置</string>
-
-    <!-- 滤镜 -->
-    <string name="btn_preview_filter">滤镜</string>
-
 </resources>

@@ -39,12 +39,14 @@ class RenderHandler extends Handler {
     public static final int MSG_TAKE_PICTURE = 0x012;
     // 计算fps
     public static final int MSG_CALCULATE_FPS = 0x013;
+    // 切换边框模糊功能
+    public static final int MSG_CHANGE_EDGE_BLUR = 0x14;
     // 切换动态滤镜
-    public static final int MSG_CHANGE_DYNAMIC_COLOR = 0x14;
+    public static final int MSG_CHANGE_DYNAMIC_COLOR = 0x15;
     // 切换动态彩妆
-    public static final int MSG_CHANGE_DYNAMIC_MAKEUP = 0x15;
+    public static final int MSG_CHANGE_DYNAMIC_MAKEUP = 0x16;
     // 切换动态动态资源
-    public static final int MSG_CHANGE_DYNAMIC_RESOURCE = 0x16;
+    public static final int MSG_CHANGE_DYNAMIC_RESOURCE = 0x17;
 
     private WeakReference<RenderThread> mWeakRenderThread;
 
@@ -114,6 +116,11 @@ class RenderHandler extends Handler {
             // 计算fps
             case MSG_CALCULATE_FPS:
                 thread.calculateFps();
+                break;
+
+            // 切换边框模糊
+            case MSG_CHANGE_EDGE_BLUR:
+                thread.changeEdgeBlurFilter((boolean)msg.obj);
                 break;
 
             // 切换动态滤镜
