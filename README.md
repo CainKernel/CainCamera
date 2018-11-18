@@ -37,6 +37,18 @@ CainCamera是一个集美颜相机、图片编辑、短视频编辑等功能的�
 
 [AudioVideoRecordingSample](https://github.com/saki4510t/AudioVideoRecordingSample)
 
+# 《Android 美颜类相机开发汇总》
+[第一章 Android OpenGLES 相机预览](https://www.jianshu.com/p/dabc6be45d2e)
+
+[第二章 Android OpenGLES 录制视频](https://www.jianshu.com/p/d5fe577170cd)
+
+[第三章 Android OpenGLES 给相机添加滤镜](https://www.jianshu.com/p/f7629254f7f0)
+
+[第四章 Android OpenGLES 动态贴纸实现](https://www.jianshu.com/p/122bedf3a17e)
+
+[第五章 Android OpenGLES 美颜定制实现](https://www.jianshu.com/p/3334a3af331f)
+
+[第六章 Android OpenGLES 美妆定制实现](https://www.jianshu.com/p/bc0d0db2893b)
 
 # 个人联系方式
 
