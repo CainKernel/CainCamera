@@ -28,6 +28,13 @@ CainCamera是一个集美颜相机、图片编辑、短视频编辑等功能的�
 * 备注：由于缺乏素材，这里只展示彩妆功能是如何通过遮罩来实现。
 ![动态彩妆](https://github.com/CainKernel/CainCamera/blob/master/screenshot/makeup.jpg)
 
+## 媒体库遍历
+![媒体库遍历](https://github.com/CainKernel/CainCamera/blob/master/screenshot/media_scan.jpg)
+
+## 图片编辑页面
+* 备注：图片编辑功能暂时没有时间实现所有的功能
+![图片编辑页面](https://github.com/CainKernel/CainCamera/blob/master/screenshot/image_edit.jpg)
+
 # CainCamera 参考项目：
 [grafika](https://github.com/google/grafika)
 
