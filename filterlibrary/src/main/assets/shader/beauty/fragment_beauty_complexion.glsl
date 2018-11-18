@@ -1,4 +1,5 @@
 // 美肤滤镜
+precision mediump float;
 varying highp vec2 textureCoordinate;
 
 uniform sampler2D inputTexture; // 图像texture

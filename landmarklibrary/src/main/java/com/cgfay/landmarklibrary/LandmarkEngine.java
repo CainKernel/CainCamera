@@ -325,12 +325,63 @@ public final class LandmarkEngine {
     }
 
     /**
-     * 取得眼睛(眼影、眼线等)顶点坐标
+     * 取得眼睛(眼影、眼线等)顶点坐标，可参考assets目录下的 眼睛遮罩标注.jpg
      * @param vertexPoints
      * @param faceIndex
      */
-    public void getEyeVertices(float[] vertexPoints, int faceIndex) {
+    public synchronized void getEyeVertices(float[] vertexPoints, int faceIndex) {
+        if (vertexPoints == null || vertexPoints.length < 80
+                || faceIndex >= mFaceArrays.size() || mFaceArrays.get(faceIndex) == null) {
+            return;
+        }
 
+        // 关键点0 ~ 3，index = 0 ~ 3 4个
+        for (int i = 0; i < 4; i++) {
+            vertexPoints[i * 2] = mFaceArrays.get(faceIndex).vertexPoints[i * 2];
+            vertexPoints[i * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[i * 2 + 1];
+        }
+
+        // 关键点29 ~ 33，index = 4 ~ 8 5个
+        for (int i = 29; i < 34; i++) {
+            vertexPoints[(i - 29 + 4) * 2] = mFaceArrays.get(faceIndex).vertexPoints[i * 2];
+            vertexPoints[(i - 29 + 4) * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[i * 2 + 1];
+        }
+
+        // 关键点42 ~ 44，index = 9 ~ 11 3个
+        for (int i = 42; i < 45; i++) {
+            vertexPoints[(i - 42 + 9) * 2] = mFaceArrays.get(faceIndex).vertexPoints[i * 2];
+            vertexPoints[(i - 42 + 9) * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[i * 2 +  1];
+        }
+
+        // 关键点52 ~ 73，index = 12 ~ 33 22个
+        for (int i = 52; i < 74; i++) {
+            vertexPoints[(i - 52 + 12) * 2] = mFaceArrays.get(faceIndex).vertexPoints[i * 2];
+            vertexPoints[(i - 52 + 12) * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[i * 2 + 1];
+        }
+
+        // 右眼上中心
+        vertexPoints[34 * 2] = mFaceArrays.get(faceIndex).vertexPoints[75 * 2];
+        vertexPoints[34 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[75 * 2 + 1];
+
+        // 右眼下中心
+        vertexPoints[35 * 2] = mFaceArrays.get(faceIndex).vertexPoints[76 * 2];
+        vertexPoints[35 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[76 * 2 + 1];
+
+        // 关键点78
+        vertexPoints[36 * 2] = mFaceArrays.get(faceIndex).vertexPoints[78 * 2];
+        vertexPoints[36 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[78 * 2 + 1];
+
+        // 关键点79
+        vertexPoints[37 * 2] = mFaceArrays.get(faceIndex).vertexPoints[79 * 2];
+        vertexPoints[37 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[79 * 2 + 1];
+
+        // 左眉毛下方中心点
+        vertexPoints[38 * 2] = (mFaceArrays.get(faceIndex).vertexPoints[3 * 2] + mFaceArrays.get(faceIndex).vertexPoints[44 * 2]) * 0.5f;
+        vertexPoints[38 * 2 + 1] = (mFaceArrays.get(faceIndex).vertexPoints[3 * 2 + 1] + mFaceArrays.get(faceIndex).vertexPoints[44 * 2 + 1]) * 0.5f;
+
+        // 右眉毛下方中心点
+        vertexPoints[39 * 2] = (mFaceArrays.get(faceIndex).vertexPoints[29 * 2] + mFaceArrays.get(faceIndex).vertexPoints[44 * 2]) * 0.5f;
+        vertexPoints[39 * 2 + 1] = (mFaceArrays.get(faceIndex).vertexPoints[29 * 2 + 1] + mFaceArrays.get(faceIndex).vertexPoints[44 * 2 + 1]) * 0.5f;
     }
 
     /**
@@ -338,9 +389,9 @@ public final class LandmarkEngine {
      * @param vertexPoints  存放嘴唇顶点坐标
      * @param faceIndex     人脸索引
      */
-    public void getLipsVertices(float[] vertexPoints, int faceIndex) {
+    public synchronized void getLipsVertices(float[] vertexPoints, int faceIndex) {
         // 嘴唇一共20个顶点，大小必须为40
-        if (vertexPoints == null || vertexPoints.length != 40
+        if (vertexPoints == null || vertexPoints.length < 40
                 || faceIndex >= mFaceArrays.size() || mFaceArrays.get(faceIndex) == null) {
             return;
         }
@@ -349,6 +400,52 @@ public final class LandmarkEngine {
             // 顶点坐标
             vertexPoints[i * 2] = mFaceArrays.get(faceIndex).vertexPoints[(84 + i) * 2];
             vertexPoints[i * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[(84 + i) * 2 + 1];
+        }
+    }
+
+    /**
+     * 取得亮眼需要的顶点坐标
+     * @param vertexPoints
+     * @param faceIndex
+     */
+    public synchronized void getBrightEyeVertices(float[] vertexPoints, int faceIndex) {
+        if (vertexPoints == null || vertexPoints.length < 32
+                || faceIndex >= mFaceArrays.size() || mFaceArrays.get(faceIndex) == null) {
+            return;
+        }
+        // 眼睛边沿部分 index = 0 ~ 11
+        for (int i = 52; i < 64; i++) {
+            vertexPoints[(i - 52) * 2] = mFaceArrays.get(faceIndex).vertexPoints[i * 2];
+            vertexPoints[(i - 52) * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[i * 2 + 1];
+        }
+
+        vertexPoints[12 * 2] = mFaceArrays.get(faceIndex).vertexPoints[72 * 2];
+        vertexPoints[12 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[72 * 2 + 1];
+
+        vertexPoints[13 * 2] = mFaceArrays.get(faceIndex).vertexPoints[73 * 2];
+        vertexPoints[13 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[73 * 2 + 1];
+
+        vertexPoints[14 * 2] = mFaceArrays.get(faceIndex).vertexPoints[75 * 2];
+        vertexPoints[14 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[75 * 2 + 1];
+
+        vertexPoints[15 * 2] = mFaceArrays.get(faceIndex).vertexPoints[76 * 2];
+        vertexPoints[15 * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[76 * 2 + 1];
+
+    }
+
+    /**
+     * 取得美牙需要的顶点坐标，嘴巴周围12个顶点
+     * @param vertexPoints
+     * @param faceIndex
+     */
+    public synchronized void getBeautyTeethVertices(float[] vertexPoints, int faceIndex) {
+        if (vertexPoints == null || vertexPoints.length < 24
+                || faceIndex >= mFaceArrays.size() || mFaceArrays.get(faceIndex) == null) {
+            return;
+        }
+        for (int i = 84; i < 96; i++) {
+            vertexPoints[(i - 84) * 2] = mFaceArrays.get(faceIndex).vertexPoints[i * 2];
+            vertexPoints[(i - 84) * 2 + 1] = mFaceArrays.get(faceIndex).vertexPoints[i * 2 + 1];
         }
     }
 }

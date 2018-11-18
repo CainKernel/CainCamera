@@ -34,6 +34,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mBtnCamera;
     private Button mBtnEdit;
 
+    private boolean mPreviewOnClick;
+    private boolean mMediaScanOnClick;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +68,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBtnCamera.setOnClickListener(this);
         mBtnEdit = (Button) findViewById(R.id.btn_edit);
         mBtnEdit.setOnClickListener(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mPreviewOnClick = false;
+        mMediaScanOnClick = false;
     }
 
     @Override
@@ -100,6 +110,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 打开预览页面
      */
     private void previewCamera() {
+        if (mPreviewOnClick) {
+            return;
+        }
+        mPreviewOnClick = true;
         PreviewEngine.from(this)
                 .setCameraRatio(AspectRatio.Ratio_16_9)
                 .showFacePoints(false)
@@ -131,6 +145,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 扫描媒体库
      */
     private void scanMedia(boolean enableGif) {
+        if (mMediaScanOnClick) {
+            return;
+        }
+        mMediaScanOnClick = true;
         MediaScanEngine.from(this)
                 .setMimeTypes(MimeType.ofAll())
                 .ImageLoader(new GlideMediaLoader())

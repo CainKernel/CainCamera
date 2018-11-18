@@ -26,8 +26,8 @@ public class GLImageBeautyFilter extends GLImageFilter implements IBeautify {
     private GLImageGaussianBlurFilter mHighPassBlurFilter;
     // 磨皮程度调节滤镜
     private GLImageBeautyAdjustFilter mBeautyAdjustFilter;
-    // 添加锐化调节
-    private GLImageSharpenFilter mSharpenFilter;
+    // 人脸美化处理
+    private GLImageBeautyFaceFilter mBeautyFaceFilter;
 
     // 缩放
     private float mBlurScale = 0.5f;
@@ -47,8 +47,7 @@ public class GLImageBeautyFilter extends GLImageFilter implements IBeautify {
         mHighPassFilter = new GLImageBeautyHighPassFilter(mContext);
         mHighPassBlurFilter = new GLImageGaussianBlurFilter(mContext);
         mBeautyAdjustFilter = new GLImageBeautyAdjustFilter(mContext);
-        mSharpenFilter = new GLImageSharpenFilter(mContext);
-        mSharpenFilter.setSharpness(0.35f);
+        mBeautyFaceFilter = new GLImageBeautyFaceFilter(mContext);
     }
 
     @Override
@@ -69,8 +68,8 @@ public class GLImageBeautyFilter extends GLImageFilter implements IBeautify {
         if (mBeautyAdjustFilter != null) {
             mBeautyAdjustFilter.onInputSizeChanged(width, height);
         }
-        if (mSharpenFilter != null) {
-            mSharpenFilter.onInputSizeChanged(width, height);
+        if (mBeautyFaceFilter != null) {
+            mBeautyFaceFilter.onInputSizeChanged(width, height);
         }
     }
 
@@ -92,8 +91,8 @@ public class GLImageBeautyFilter extends GLImageFilter implements IBeautify {
         if (mBeautyAdjustFilter != null) {
             mBeautyAdjustFilter.onDisplaySizeChanged(width, height);
         }
-        if (mSharpenFilter != null) {
-            mSharpenFilter.onDisplaySizeChanged(width, height);
+        if (mBeautyFaceFilter != null) {
+            mBeautyFaceFilter.onDisplaySizeChanged(width, height);
         }
     }
 
@@ -128,8 +127,8 @@ public class GLImageBeautyFilter extends GLImageFilter implements IBeautify {
             currentTexture = mBeautyAdjustFilter.drawFrameBuffer(sourceTexture, vertexBuffer, textureBuffer);
         }
         // 锐化
-        if (mSharpenFilter != null) {
-            return mSharpenFilter.drawFrame(currentTexture, vertexBuffer, textureBuffer);
+        if (mBeautyFaceFilter != null) {
+            return mBeautyFaceFilter.drawFrame(currentTexture, vertexBuffer, textureBuffer);
         }
         return false;
     }
@@ -167,8 +166,8 @@ public class GLImageBeautyFilter extends GLImageFilter implements IBeautify {
             currentTexture = mBeautyAdjustFilter.drawFrameBuffer(currentTexture, vertexBuffer, textureBuffer);
         }
         // 锐度变换
-        if (mSharpenFilter != null) {
-            currentTexture = mSharpenFilter.drawFrameBuffer(currentTexture, vertexBuffer, textureBuffer);
+        if (mBeautyFaceFilter != null) {
+            currentTexture = mBeautyFaceFilter.drawFrameBuffer(currentTexture, vertexBuffer, textureBuffer);
         }
         return currentTexture;
     }
@@ -191,8 +190,8 @@ public class GLImageBeautyFilter extends GLImageFilter implements IBeautify {
         if (mBeautyAdjustFilter != null) {
             mBeautyAdjustFilter.initFrameBuffer(width, height);
         }
-        if (mSharpenFilter != null) {
-            mSharpenFilter.initFrameBuffer(width, height);
+        if (mBeautyFaceFilter != null) {
+            mBeautyFaceFilter.initFrameBuffer(width, height);
         }
     }
 
@@ -214,8 +213,8 @@ public class GLImageBeautyFilter extends GLImageFilter implements IBeautify {
         if (mBeautyAdjustFilter != null) {
             mBeautyAdjustFilter.destroyFrameBuffer();
         }
-        if (mSharpenFilter != null) {
-            mSharpenFilter.destroyFrameBuffer();
+        if (mBeautyFaceFilter != null) {
+            mBeautyFaceFilter.destroyFrameBuffer();
         }
     }
 
@@ -242,9 +241,9 @@ public class GLImageBeautyFilter extends GLImageFilter implements IBeautify {
             mBeautyAdjustFilter.release();
             mBeautyAdjustFilter = null;
         }
-        if (mSharpenFilter != null) {
-            mSharpenFilter.release();
-            mSharpenFilter = null;
+        if (mBeautyFaceFilter != null) {
+            mBeautyFaceFilter.release();
+            mBeautyFaceFilter = null;
         }
     }
 
@@ -255,6 +254,9 @@ public class GLImageBeautyFilter extends GLImageFilter implements IBeautify {
         }
         if (mBeautyAdjustFilter != null) {
             mBeautyAdjustFilter.setSkinBeautyIntensity(beauty.beautyIntensity);
+        }
+        if (mBeautyFaceFilter != null) {
+            mBeautyFaceFilter.onBeauty(beauty);
         }
     }
 }
