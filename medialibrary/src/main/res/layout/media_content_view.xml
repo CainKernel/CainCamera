@@ -32,11 +32,9 @@
 
     <ImageView
         android:id="@+id/iv_preview"
-        android:layout_width="@dimen/dp20"
-        android:layout_height="@dimen/dp20"
+        android:layout_width="@dimen/album_item_preview_size"
+        android:layout_height="@dimen/album_item_preview_size"
         android:layout_gravity="end|bottom"
-        android:layout_marginEnd="@dimen/selected_indicator_padding"
-        android:layout_marginBottom="@dimen/selected_indicator_padding"
         android:background="@drawable/ic_media_thumbnail_preview"/>
 
 </merge>

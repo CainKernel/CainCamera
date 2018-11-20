@@ -8,4 +8,7 @@
     <dimen name="album_item_margin_end">30dp</dimen>
     <dimen name="album_item_margin_top">10dp</dimen>
     <dimen name="album_item_margin_bottom">10dp</dimen>
+    <dimen name="album_item_preview_size">23dp</dimen>
+    <dimen name="preview_play_icon_size">60dp</dimen>
+
 </resources>

@@ -22,13 +22,22 @@
             android:text="@string/btn_camera"/>
 
         <Button
-            android:id="@+id/btn_edit"
+            android:id="@+id/btn_edit_video"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/dp5"
             android:background="@android:color/transparent"
             android:textColor="@color/white"
-            android:text="@string/btn_edit"/>
+            android:text="@string/btn_edit_video"/>
+
+        <Button
+            android:id="@+id/btn_edit_picture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp5"
+            android:background="@android:color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/btn_edit_picture"/>
     </LinearLayout>
 
 </LinearLayout>

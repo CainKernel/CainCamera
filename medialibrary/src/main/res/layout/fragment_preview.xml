@@ -4,17 +4,31 @@
     android:layout_height="match_parent">
 
 
-    <ImageView
-        android:id="@+id/image_view"
-        android:layout_width="wrap_content"
+    <FrameLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center">
+        <ImageView
+            android:id="@+id/image_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+        
+        <VideoView
+            android:id="@+id/video_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+    </FrameLayout>
 
     <ImageView
         android:id="@+id/iv_play"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/preview_play_icon_size"
+        android:layout_height="@dimen/preview_play_icon_size"
         android:layout_gravity="center"
-        android:background="@drawable/ic_media_video_indicator"/>
+        android:background="@drawable/ic_media_video_indicator"
+        android:visibility="gone"/>
 
 </FrameLayout>

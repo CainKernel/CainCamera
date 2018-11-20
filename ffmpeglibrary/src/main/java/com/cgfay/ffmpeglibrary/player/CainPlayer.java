@@ -4,6 +4,9 @@ import android.graphics.SurfaceTexture;
 import android.text.TextUtils;
 import android.view.Surface;
 
+/**
+ * 视频播放器
+ */
 public class CainPlayer {
     static {
         System.loadLibrary("ffmpeg");
