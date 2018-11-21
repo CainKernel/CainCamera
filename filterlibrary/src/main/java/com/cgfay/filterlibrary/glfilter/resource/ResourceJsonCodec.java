@@ -1,7 +1,10 @@
 package com.cgfay.filterlibrary.glfilter.resource;
 
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
+import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColorBaseData;
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColorData;
+import com.cgfay.filterlibrary.glfilter.effect.bean.DynamicEffect;
+import com.cgfay.filterlibrary.glfilter.effect.bean.DynamicEffectData;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.MakeupBaseData;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.MakeupLipstickData;
@@ -23,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * json解码器
@@ -134,7 +136,7 @@ public class ResourceJsonCodec {
                     while (dataIterator.hasNext()) {
                         String key = dataIterator.next();
                         String value = uniformData.getString(key);
-                        filterData.uniformDataList.add(new DynamicColorData.UniformData(key, value));
+                        filterData.uniformDataList.add(new DynamicColorBaseData.UniformData(key, value));
                     }
                 }
                 filterData.strength = (float) jsonData.getDouble("strength");
@@ -205,5 +207,66 @@ public class ResourceJsonCodec {
         }
 
         return dynamicMakeup;
+    }
+
+    /**
+     * 解码单个特效数据列表
+     * @param folderPath
+     * @return
+     */
+    public static DynamicEffect decodecEffectData(String folderPath)
+            throws IOException, JSONException {
+        File file = new File(folderPath, "json");
+        String effectJson = FileUtils.convertToString(new FileInputStream(file));
+
+        DynamicEffect dynamicEffect = new DynamicEffect();
+        dynamicEffect.unzipPath = folderPath;
+        if (dynamicEffect.effectList == null) {
+            dynamicEffect.effectList = new ArrayList<>();
+        }
+
+        JSONObject jsonObject = new JSONObject(effectJson);
+        JSONArray effectList = jsonObject.getJSONArray("effectList");
+        for (int effectIndex = 0; effectIndex < effectList.length(); effectIndex++) {
+            JSONObject jsonData = effectList.getJSONObject(effectIndex);
+            String type = jsonData.getString("type");
+            if (type.equalsIgnoreCase("effect")) {
+                DynamicEffectData effectData = new DynamicEffectData();
+                effectData.name = jsonData.getString("name");
+                effectData.vertexShader = jsonData.getString("vertexShader");
+                effectData.fragmentShader = jsonData.getString("fragmentShader");
+
+                // 解码统一变量和数值
+                JSONObject uniformData = jsonData.getJSONObject("uniformData");
+                if (uniformData != null) {
+                    Iterator<String> dataIterator = uniformData.keys();
+                    while (dataIterator.hasNext()) {
+                        String key = dataIterator.next();
+                        JSONArray effectValue = uniformData.getJSONArray(key);
+                        float[] value = new float[effectValue.length()];
+                        for (int i = 0; i < effectValue.length(); i++) {
+                            value[i] = (float) effectValue.getDouble(i);
+                        }
+                        effectData.uniformDataList.add(new DynamicEffectData.UniformData(key, value));
+                    }
+                }
+                // 解码统一变量和纹理
+                JSONObject uniformSampler = jsonData.getJSONObject("uniformSampler");
+                if (uniformSampler != null) {
+                    Iterator<String> dataIterator = uniformSampler.keys();
+                    while (dataIterator.hasNext()) {
+                        String key = dataIterator.next();
+                        String value = uniformSampler.getString(key);
+                        effectData.uniformSamplerList.add(new DynamicEffectData.UniformSampler(key, value));
+                    }
+                }
+                effectData.texelSize = jsonData.getInt("texelSize") == 1;
+                effectData.duration = jsonData.getInt("duration");
+
+                dynamicEffect.effectList.add(effectData);
+            }
+        }
+
+        return dynamicEffect;
     }
 }

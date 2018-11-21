@@ -30,7 +30,7 @@
 
 
     <!-- 显示图片的size -->
-    <dimen name="preview_item_size">60dp</dimen>
+    <dimen name="preview_item_size">70dp</dimen>
 
     <!--设置PopupView的尺寸-->
     <dimen name="setting_image_size">20dp</dimen>
