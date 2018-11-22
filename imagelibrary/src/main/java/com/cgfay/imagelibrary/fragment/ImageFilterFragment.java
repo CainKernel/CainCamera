@@ -5,11 +5,15 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,9 +25,10 @@ import com.cgfay.filterlibrary.glfilter.resource.bean.ResourceData;
 import com.cgfay.filterlibrary.widget.GLImageSurfaceView;
 import com.cgfay.imagelibrary.R;
 import com.cgfay.imagelibrary.adapter.ImageFilterAdapter;
+import com.cgfay.utilslibrary.utils.BitmapUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.nio.ByteBuffer;
 
 /**
  * 滤镜编辑页面
@@ -35,6 +40,7 @@ public class ImageFilterFragment extends Fragment implements View.OnClickListene
     private Button mBtnInternal;
     private Button mBtnCustomize;
     private Button mBtnCollection;
+    private Button mBtnSave;
     private Button mBtnAdd;
     private Button mBtnSetting;
 
@@ -44,6 +50,7 @@ public class ImageFilterFragment extends Fragment implements View.OnClickListene
     private LinearLayoutManager mLayoutManager;
 
     private Activity mActivity;
+    private Handler mMainHandler;
 
     private Bitmap mBitmap;
 
@@ -51,6 +58,7 @@ public class ImageFilterFragment extends Fragment implements View.OnClickListene
     public void onAttach(Context context) {
         super.onAttach(context);
         mActivity = getActivity();
+        mMainHandler = new Handler(Looper.getMainLooper());
     }
 
     @Override
@@ -89,10 +97,17 @@ public class ImageFilterFragment extends Fragment implements View.OnClickListene
         // 滤镜内容框
         mLayoutFilterContent = (FrameLayout) view.findViewById(R.id.layout_filter_content);
         mBtnInternal = (Button) view.findViewById(R.id.btn_internal);
+        mBtnInternal.setOnClickListener(this);
         mBtnCustomize = (Button) view.findViewById(R.id.btn_customize);
+        mBtnCustomize.setOnClickListener(this);
         mBtnCollection = (Button) view.findViewById(R.id.btn_collection);
+        mBtnCollection.setOnClickListener(this);
+        mBtnSave = (Button) view.findViewById(R.id.btn_save);
+        mBtnSave.setOnClickListener(this);
         mBtnAdd = (Button) view.findViewById(R.id.btn_add);
+        mBtnAdd.setOnClickListener(this);
         mBtnSetting = (Button) view.findViewById(R.id.btn_setting);
+        mBtnSetting.setOnClickListener(this);
         showFilters();
     }
 
@@ -137,6 +152,10 @@ public class ImageFilterFragment extends Fragment implements View.OnClickListene
 
         } else if (id == R.id.btn_setting) {
 
+        } else if (id == R.id.btn_save) {
+            if (mCainImageView != null) {
+                mCainImageView.getCaptureFrame(mCaptureCallback);
+            }
         }
     }
 
@@ -198,5 +217,43 @@ public class ImageFilterFragment extends Fragment implements View.OnClickListene
         if (mCainImageView != null) {
             mCainImageView.setVisibility(showing ? View.VISIBLE : View.GONE);
         }
+    }
+
+    /**
+     * 截屏回调
+     */
+    private GLImageSurfaceView.CaptureCallback mCaptureCallback = new GLImageSurfaceView.CaptureCallback() {
+        @Override
+        public void onCapture(final ByteBuffer buffer, final int width, final int height) {
+            mMainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    String filePath = getDCIMImagePath(mActivity);
+                    BitmapUtils.saveBitmap(filePath, buffer, width, height);
+                    Log.d("hahaha", "run: " + filePath);
+                }
+            });
+        }
+    };
+
+    /**
+     * 获取图片缓存绝对路径
+     * @param context
+     * @return
+     */
+    private static String getDCIMImagePath(Context context) {
+        String directoryPath;
+        // 判断外部存储是否可用，如果不可用则使用内部存储路径
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            directoryPath =Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath();
+        } else { // 使用内部存储缓存目录
+            directoryPath = context.getCacheDir().getAbsolutePath();
+        }
+        String path = directoryPath + File.separator + Environment.DIRECTORY_PICTURES + File.separator + "CainCamera_" + System.currentTimeMillis() + ".jpeg";
+        File file = new File(path);
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+        return path;
     }
 }

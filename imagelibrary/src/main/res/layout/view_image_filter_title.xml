@@ -50,4 +50,14 @@
         android:layout_toStartOf="@id/btn_setting"
         android:textColor="@android:color/white"
         android:text="@string/btn_add"/>
+
+    <Button
+        android:id="@+id/btn_save"
+        android:layout_width="@dimen/dp60"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:layout_toStartOf="@id/btn_add"
+        android:textColor="@android:color/white"
+        android:text="@string/btn_save"/>
+
 </RelativeLayout>

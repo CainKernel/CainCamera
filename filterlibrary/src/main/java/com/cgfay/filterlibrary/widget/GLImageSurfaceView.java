@@ -20,6 +20,8 @@ import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;
 
 import java.io.File;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -192,6 +194,28 @@ public class GLImageSurfaceView extends GLSurfaceView implements GLSurfaceView.R
     }
 
     /**
+     * 拍照
+     */
+    public void getCaptureFrame(final CaptureCallback captureCallback) {
+        queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                int width = getWidth();
+                int height = getHeight();
+                ByteBuffer buf = ByteBuffer.allocateDirect(width * height * 4);
+                buf.order(ByteOrder.LITTLE_ENDIAN);
+                GLES30.glReadPixels(0, 0, width, height,
+                        GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buf);
+                OpenGLUtils.checkGlError("glReadPixels");
+                buf.rewind();
+                if (captureCallback != null) {
+                    captureCallback.onCapture(buf, width, height);
+                }
+            }
+        });
+    }
+
+    /**
      * 创建颜色滤镜
      * @param resourceData
      */
@@ -238,5 +262,12 @@ public class GLImageSurfaceView extends GLSurfaceView implements GLSurfaceView.R
         layoutParams.width = mViewWidth;
         layoutParams.height = mViewHeight;
         setLayoutParams(layoutParams);
+    }
+
+    /**
+     * 截帧回调
+     */
+    public interface CaptureCallback {
+        void onCapture(ByteBuffer buffer, int width, int height);
     }
 }
