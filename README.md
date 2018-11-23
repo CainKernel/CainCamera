@@ -13,6 +13,10 @@ CainCamera是一个集美颜相机、图片编辑、短视频编辑等功能的�
 由于素材的缺乏，相机镜头部分暂不更新功能了，接下来将会更新短视频编辑功能与实现。
 敬请期待。
 
+注意事项：关于人脸关键点SDK验证问题，由于采用Face++的试用版作为测试的，每天使用的次数有限
+所以这里建议大家到Face++官网(https://www.faceplusplus.com/)注册一个Key使用
+要不然我这边每次想要更新功能都要重新搞一个key，比较麻烦。谢谢大家合作。
+
 # CainCamera截图
 ## 动态贴纸与动态滤镜功能
 ![贴纸和滤镜](https://github.com/CainKernel/CainCamera/blob/master/screenshot/sticker_and_filter.jpg)
@@ -26,6 +30,7 @@ CainCamera是一个集美颜相机、图片编辑、短视频编辑等功能的�
 
 ## 彩妆功能
 * 备注：由于缺乏素材，这里只展示彩妆功能是如何通过遮罩来实现。
+
 ![动态彩妆](https://github.com/CainKernel/CainCamera/blob/master/screenshot/makeup.jpg)
 
 ## 媒体库遍历
@@ -33,6 +38,7 @@ CainCamera是一个集美颜相机、图片编辑、短视频编辑等功能的�
 
 ## 图片编辑页面
 * 备注：图片编辑功能暂时没有时间实现所有的功能
+
 ![图片编辑页面](https://github.com/CainKernel/CainCamera/blob/master/screenshot/image_edit.jpg)
 
 # CainCamera 参考项目：
