@@ -23,7 +23,7 @@ set(distribution_DIR ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI})
 # 加载头文件
 include_directories( src/main/cpp/common
                      src/main/cpp/include
-                     src/main/cpp/soundtouch/include )
+                     src/main/cpp/SoundTouch/include )
 
 # 添加ffmpeg库
 add_library( ffmpeg
@@ -34,29 +34,29 @@ set_target_properties( ffmpeg
                        ${distribution_DIR}/libffmpeg.so )
 
 # 添加recorder库
-add_library( recorder
+add_library( media_recorder
 
              SHARED
 
              # library
-             src/main/cpp/recorder/source/CainEncoder.cpp
-             src/main/cpp/recorder/source/CainRecorder.cpp
+             src/main/cpp/MediaRecorder/source/CainEncoder.cpp
+             src/main/cpp/MediaRecorder/source/CainRecorder.cpp
 
              # controller
-             src/main/cpp/recorder/RecorderController.cpp )
+             src/main/cpp/MediaRecorder/RecorderController.cpp )
 
-target_link_libraries( recorder
+target_link_libraries( media_recorder
 
                        ffmpeg
 
                        log )
 
 # 添加soundtouch库，由于soundtouch没有用libffmpeg.so，因此，这里可以用单独的CmakeLists来编译
-ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/main/cpp/soundtouch)
+ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/main/cpp/SoundTouch)
 
 # 备注：后续再做拆分
 # 添加musicPlayer库
-# ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/main/cpp/metadata)
+# ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/main/cpp/Metadata)
 
 # 添加metadata库
 add_library( metadata_retriever
@@ -64,11 +64,11 @@ add_library( metadata_retriever
              SHARED
 
              # library
-             src/main/cpp/metadata/source/MediaMetadataRetriever.cpp
-             src/main/cpp/metadata/source/Metadata.cpp
+             src/main/cpp/Metadata/source/MediaMetadataRetriever.cpp
+             src/main/cpp/Metadata/source/Metadata.cpp
 
              # controller
-             src/main/cpp/metadata/MetadataController.cpp )
+             src/main/cpp/Metadata/MetadataController.cpp )
 
 target_link_libraries( metadata_retriever
 
@@ -80,7 +80,7 @@ target_link_libraries( metadata_retriever
 
 # 备注：后续再做拆分
 # 添加musicPlayer库
-# ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/main/cpp/musicplayer)
+# ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/main/cpp/MusicPlayer)
 
 # 添加musicPlayer库
 add_library( music_player
@@ -88,15 +88,15 @@ add_library( music_player
              SHARED
 
              # library
-             src/main/cpp/musicplayer/source/AudioQueue.cpp
-             src/main/cpp/musicplayer/source/AVAudioDecoder.cpp
-             src/main/cpp/musicplayer/source/AVMusicPlayer.cpp
-             src/main/cpp/musicplayer/source/PlayerCallback.cpp
-             src/main/cpp/musicplayer/source/PlayerStatus.cpp
+             src/main/cpp/MusicPlayer/source/AudioQueue.cpp
+             src/main/cpp/MusicPlayer/source/AVAudioDecoder.cpp
+             src/main/cpp/MusicPlayer/source/AVMusicPlayer.cpp
+             src/main/cpp/MusicPlayer/source/PlayerCallback.cpp
+             src/main/cpp/MusicPlayer/source/PlayerStatus.cpp
 
              # controller
-             src/main/cpp/musicplayer/JniPlayerCallback.cpp
-             src/main/cpp/musicplayer/PlayerController.cpp)
+             src/main/cpp/MusicPlayer/JniPlayerCallback.cpp
+             src/main/cpp/MusicPlayer/PlayerController.cpp)
 
 target_link_libraries( music_player
 

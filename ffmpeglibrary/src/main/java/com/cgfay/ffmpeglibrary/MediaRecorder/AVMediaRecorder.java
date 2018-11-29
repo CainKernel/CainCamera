@@ -1,4 +1,4 @@
-package com.cgfay.ffmpeglibrary.VideoRecorder;
+package com.cgfay.ffmpeglibrary.MediaRecorder;
 
 /**
  * FFmpeg控制
@@ -20,7 +20,7 @@ public final class AVMediaRecorder {
 
     static {
         System.loadLibrary("ffmpeg");
-        System.loadLibrary("recorder");
+        System.loadLibrary("media_recorder");
     }
 
     /**

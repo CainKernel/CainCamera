@@ -19,7 +19,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.cgfay.ffmpeglibrary.R;
-import com.cgfay.ffmpeglibrary.VideoRecorder.AVMediaRecorder;
+import com.cgfay.ffmpeglibrary.MediaRecorder.AVMediaRecorder;
 import com.cgfay.ffmpeglibrary.widget.AspectRatioLayout;
 
 import java.io.IOException;

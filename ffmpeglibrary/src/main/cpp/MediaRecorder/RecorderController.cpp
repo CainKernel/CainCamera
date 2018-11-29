@@ -28,7 +28,7 @@ CainRecorder *recorder;
  */
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_ffmpeglibrary_VideoRecorder_AVMediaRecorder_initMediaRecorder(JNIEnv *env, jobject instance,
+Java_com_cgfay_ffmpeglibrary_MediaRecorder_AVMediaRecorder_initMediaRecorder(JNIEnv *env, jobject instance,
                                                                      jstring videoPath_,
                                                                      jint previewWidth,
                                                                      jint previewHeight,
@@ -69,7 +69,7 @@ Java_com_cgfay_ffmpeglibrary_VideoRecorder_AVMediaRecorder_initMediaRecorder(JNI
  */
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_cgfay_ffmpeglibrary_VideoRecorder_AVMediaRecorder_startRecord(JNIEnv *env, jobject instance) {
+Java_com_cgfay_ffmpeglibrary_MediaRecorder_AVMediaRecorder_startRecord(JNIEnv *env, jobject instance) {
     if (!recorder) {
         return;
     }
@@ -85,7 +85,7 @@ Java_com_cgfay_ffmpeglibrary_VideoRecorder_AVMediaRecorder_startRecord(JNIEnv *e
  */
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_ffmpeglibrary_VideoRecorder_AVMediaRecorder_encodeYUVFrame(JNIEnv *env, jobject instance, jbyteArray yuvData) {
+Java_com_cgfay_ffmpeglibrary_MediaRecorder_AVMediaRecorder_encodeYUVFrame(JNIEnv *env, jobject instance, jbyteArray yuvData) {
     if (!recorder) {
         return 0;
     }
@@ -107,7 +107,7 @@ Java_com_cgfay_ffmpeglibrary_VideoRecorder_AVMediaRecorder_encodeYUVFrame(JNIEnv
  */
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_ffmpeglibrary_VideoRecorder_AVMediaRecorder_encodePCMFrame(JNIEnv *env, jobject instance, jbyteArray pcmData, jint len) {
+Java_com_cgfay_ffmpeglibrary_MediaRecorder_AVMediaRecorder_encodePCMFrame(JNIEnv *env, jobject instance, jbyteArray pcmData, jint len) {
     if (!recorder) {
         return 0;
     }
@@ -127,7 +127,7 @@ Java_com_cgfay_ffmpeglibrary_VideoRecorder_AVMediaRecorder_encodePCMFrame(JNIEnv
  */
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_cgfay_ffmpeglibrary_VideoRecorder_AVMediaRecorder_stopRecord(JNIEnv *env, jobject instance) {
+Java_com_cgfay_ffmpeglibrary_MediaRecorder_AVMediaRecorder_stopRecord(JNIEnv *env, jobject instance) {
     if (!recorder) {
         return;
     }
@@ -142,7 +142,7 @@ Java_com_cgfay_ffmpeglibrary_VideoRecorder_AVMediaRecorder_stopRecord(JNIEnv *en
  */
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_cgfay_ffmpeglibrary_VideoRecorder_AVMediaRecorder_nativeRelease(JNIEnv *env, jobject instance) {
+Java_com_cgfay_ffmpeglibrary_MediaRecorder_AVMediaRecorder_nativeRelease(JNIEnv *env, jobject instance) {
     if(!recorder) {
         return;
     }

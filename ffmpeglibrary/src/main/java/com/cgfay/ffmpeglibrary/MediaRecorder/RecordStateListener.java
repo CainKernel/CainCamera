@@ -1,4 +1,4 @@
-package com.cgfay.ffmpeglibrary.VideoRecorder;
+package com.cgfay.ffmpeglibrary.MediaRecorder;
 
 /**
  * 录制状态监听器
