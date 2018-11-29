@@ -6,4 +6,9 @@
     <string name="btn_edit_picture">编辑图片</string>
     <string name="btn_edit_video">编辑视频</string>
 
+    <string name="btn_test_metadata">截帧测试页面</string>
+    <string name="btn_test_music">音乐播放器测试页面</string>
+    <string name="btn_test_media_player">视频播放器测试页面</string>
+    <string name="btn_test_recorder">录制器测试页面(未完整测试)</string>
+
 </resources>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/video_window_background"
-    tools:context="com.cgfay.caincamera.MainActivity">
+    tools:context="com.cgfay.caincamera.activity.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -38,6 +38,41 @@
             android:background="@android:color/transparent"
             android:textColor="@color/white"
             android:text="@string/btn_edit_picture"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:background="@color/brown"
+            android:textColor="@color/white"
+            android:text="以下选项是测试项"/>
+
+        <Button
+            android:id="@+id/btn_test_music"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp5"
+            android:background="@android:color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/btn_test_music"/>
+
+        <Button
+            android:id="@+id/btn_test_media_player"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp5"
+            android:background="@android:color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/btn_test_media_player"/>
+
+        <Button
+            android:id="@+id/btn_test_recorder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp5"
+            android:background="@android:color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/btn_test_recorder"/>
     </LinearLayout>
 
-</LinearLayout>
+</ScrollView>
