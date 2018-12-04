@@ -412,6 +412,7 @@ void AVMusicPlayer::seek(int64_t seconds) {
             if (mPlayerStatus != NULL) {
                 mPlayerStatus->setSeek(true);
             }
+            audioDecoder->pause();
             audioDecoder->getQueue()->clear();
             audioDecoder->setClock(0);
             audioDecoder->setLastTime(0);
@@ -422,6 +423,7 @@ void AVMusicPlayer::seek(int64_t seconds) {
             if (mPlayerStatus != NULL) {
                 mPlayerStatus->setSeek(false);
             }
+            audioDecoder->resume();
         }
     }
     if (!mPrepared) {

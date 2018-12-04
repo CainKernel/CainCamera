@@ -221,7 +221,7 @@ int AVAudioDecoder::translatePCM() {
 /**
  * 将经过转换后的PCM数据放入队列中执行
  */
-void AVAudioDecoder::enqueuePCMD() {
+void AVAudioDecoder::enqueuePCM() {
     // 获取经过变速变调处理后的PCM数据
     int bufferSize = translatePCM();
     if (bufferSize > 0) {
@@ -249,7 +249,7 @@ void AVAudioDecoder::enqueuePCMD() {
 static void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context) {
     AVAudioDecoder *decoder = (AVAudioDecoder *) context;
     if (decoder != NULL) {
-        decoder->enqueuePCMD();
+        decoder->enqueuePCM();
     }
 }
 
@@ -317,7 +317,7 @@ void AVAudioDecoder::initOpenSLES() {
     // 切换成播放状态
     (*pcmPlayerPlay)->SetPlayState(pcmPlayerPlay, SL_PLAYSTATE_PLAYING);
     // 入队
-    enqueuePCMD();
+    enqueuePCM();
 
     // 退出初始化线程
     pthread_exit(&mInitThread);

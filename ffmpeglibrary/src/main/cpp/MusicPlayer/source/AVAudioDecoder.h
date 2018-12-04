@@ -75,7 +75,7 @@ public:
     int calculateVolumeDB(char *pcmData, size_t pcmsize);
 
     // 入队PCM数据
-    void enqueuePCMD();
+    void enqueuePCM();
 
     // 获取音频流索引
     int getStreamIndex() const;
