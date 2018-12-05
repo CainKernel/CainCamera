@@ -12,7 +12,7 @@ if(CMAKE_COMPILER_IS_CLANG)
 endif(CMAKE_COMPILER_IS_CLANG)
 
 # 添加源文件
-add_library( musicPlayer
+add_library( music_player
 
              SHARED
 
@@ -28,7 +28,7 @@ add_library( musicPlayer
              PlayerController.cpp)
 
 # 链接静态库
-target_link_libraries( musicPlayer
+target_link_libraries( music_player
 
                        ffmpeg
                        soundtouch

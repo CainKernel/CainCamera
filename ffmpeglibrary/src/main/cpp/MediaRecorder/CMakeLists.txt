@@ -14,7 +14,7 @@ endif(CMAKE_COMPILER_IS_CLANG)
 
 
 # 添加recorder库
-add_library( recorder
+add_library( media_recorder
 
              SHARED
 
@@ -25,7 +25,7 @@ add_library( recorder
              # controller
              RecorderController.cpp )
 
-target_link_libraries( recorder
+target_link_libraries( media_recorder
 
                        ffmpeg
 
