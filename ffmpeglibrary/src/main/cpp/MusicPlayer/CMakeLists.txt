@@ -1,15 +1,12 @@
-# 设置cmake最低版本
-cmake_minimum_required(VERSION 3.4.1)
 
-# 设置GCC编译器的编译选项
-if(CMAKE_COMPILER_IS_GNUCC)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wmissing-declarations -Wmissing-prototypes")
-endif(CMAKE_COMPILER_IS_GNUCC)
+# 添加 soundtouch 动态库
+set(soundtouch_dir ../SoundTouch)
+add_subdirectory(${soundtouch_dir} soundtouch)
 
-# 设置clang编译器的编译选项
-if(CMAKE_COMPILER_IS_CLANG)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wmissing-declarations -Wmissing-prototypes -Wdocumentation -Wunreachable-code")
-endif(CMAKE_COMPILER_IS_CLANG)
+# 添加头文件路径
+include_directories( source
+        ${soundtouch_dir}
+        ${soundtouch_dir}/include )
 
 # 添加源文件
 add_library( music_player

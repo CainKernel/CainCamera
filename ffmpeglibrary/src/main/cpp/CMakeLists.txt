@@ -12,29 +12,23 @@ if(CMAKE_COMPILER_IS_CLANG)
 endif(CMAKE_COMPILER_IS_CLANG)
 
 # 设置路径
-set(distribution_DIR ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI})
+set(distribution_DIR ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI})
 
 # 加载头文件
-include_directories( src/main/cpp/common
-                     src/main/cpp/include
-                     src/main/cpp/SoundTouch/include )
+include_directories( ${CMAKE_SOURCE_DIR}/common
+                     ${CMAKE_SOURCE_DIR}/include )
 
 # 添加ffmpeg库
-add_library( ffmpeg
-             SHARED
-             IMPORTED )
+add_library( ffmpeg SHARED IMPORTED )
 set_target_properties( ffmpeg
                        PROPERTIES IMPORTED_LOCATION
-                       ${distribution_DIR}/libffmpeg.so )
-
-# 添加soundtouch库
-ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/main/cpp/SoundTouch)
+                       ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libffmpeg.so )
 
 # 添加recorder库
-ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/main/cpp/MediaRecorder)
+add_subdirectory(${CMAKE_SOURCE_DIR}/MediaRecorder)
 
 # 添加metadata_retriever库
-ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/main/cpp/Metadata)
+add_subdirectory(${CMAKE_SOURCE_DIR}/Metadata)
 
 # 添加music_player库
-ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/main/cpp/MusicPlayer)
+add_subdirectory(${CMAKE_SOURCE_DIR}/MusicPlayer)
