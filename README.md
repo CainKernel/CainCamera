@@ -24,8 +24,10 @@ CainCamera是一个集美颜相机、图片编辑、短视频编辑等功能的�
 
 * landmarklibrary: 关键点处理库。该库用于归一化的关键点处理，用在filterlibrary中处理滤镜、贴纸等处理。
 
-* medialibrary: 短视频编辑库。用于短视频编辑实时预览的播放器全套代码，目前播放器已实现软硬解码(FFmpeg + MediaCodec)、
-音视频多种同步方式、定位播放、倍速播放(硬解码时支持1080P的4倍速播放而音频无杂音等问题)、支持添加实时特效等功能，逆序播放功能暂未实现。
+* medialibrary: 短视频编辑库。用于短视频编辑实时预览的播放器、音频裁剪器、视频合成器等全套代码，其中：
+播放器已实现软硬解码(FFmpeg + MediaCodec)、音视频多种同步方式、定位播放、
+倍速播放(硬解码时支持1080P的4倍速播放而音频无杂音等问题)、支持添加实时特效等功能，逆序播放功能暂未实现。
+音视频裁剪器、视频合成器目前仍在开发阶段，敬请期待。
 
 * scanlibrary: 媒体扫描库。用于遍历扫描媒体库中的图像、视频。
 
@@ -93,6 +95,19 @@ CainCamera是一个集美颜相机、图片编辑、短视频编辑等功能的�
 [第五章 Android OpenGLES 美颜定制实现](https://www.jianshu.com/p/3334a3af331f)
 
 [第六章 Android OpenGLES 美妆定制实现](https://www.jianshu.com/p/bc0d0db2893b)
+
+# 《Android FFmpeg 播放器开发梳理》
+[第零章 基础公共类的封装](https://www.jianshu.com/p/9003caa6683f)
+
+[第一章 播放器初始化与解复用流程](https://www.jianshu.com/p/95dc19217847)
+
+[第二章 音视解码器和视频解码器实现](https://www.jianshu.com/p/8de0fc796ef9)
+
+[第三章 音频输出 —— OpenSLES](https://www.jianshu.com/p/9b41212c71a5)
+
+[第四章 音频重采样与变速变调处理](https://www.jianshu.com/p/4af5d16ac017)
+
+[第五章 视频同步渲染输出](https://www.jianshu.com/p/f8ba3ceac687)
 
 # 个人联系方式
 
