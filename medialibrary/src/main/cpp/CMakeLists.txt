@@ -24,6 +24,11 @@ set_target_properties( ffmpeg
 # Metadata库
 add_subdirectory(${CMAKE_SOURCE_DIR}/Metadata)
 
+# SoundTouch库
+add_subdirectory(${CMAKE_SOURCE_DIR}/SoundTouch)
+
 # 媒体播放器
 add_subdirectory(${CMAKE_SOURCE_DIR}/MediaPlayer)
 
+# 媒体合成器
+add_subdirectory(${CMAKE_SOURCE_DIR}/MediaSynthesizer)

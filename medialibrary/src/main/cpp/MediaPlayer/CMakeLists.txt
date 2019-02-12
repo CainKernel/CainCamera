@@ -12,7 +12,6 @@ endif (${ANDROID_PLATFORM_LEVEL} LESS 11)
 
 # 添加 soundtouch 动态库
 set(soundtouch_dir ../SoundTouch)
-add_subdirectory(${soundtouch_dir} soundtouch)
 
 # 添加头文件路径
 include_directories( source
