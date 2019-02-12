@@ -7,7 +7,6 @@ import android.os.Bundle;
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.bean.MusicItem;
 import com.cgfay.caincamera.fragment.MusicScanFragment;
-import com.cgfay.ffmpeglibrary.activity.AVMusicPlayerActivity;
 
 /**
  * 查找音乐
@@ -49,9 +48,9 @@ public class MusicScanActivity extends AppCompatActivity
 
     @Override
     public void onMusicSelected(MusicItem music) {
-        Intent intent = new Intent(MusicScanActivity.this, AVMusicPlayerActivity.class);
-        intent.putExtra(AVMusicPlayerActivity.PATH, music.getSongUrl());
-        startActivity(intent);
-        finish();
+//        Intent intent = new Intent(MusicScanActivity.this, AVMusicPlayerActivity.class);
+//        intent.putExtra(AVMusicPlayerActivity.PATH, music.getSongUrl());
+//        startActivity(intent);
+//        finish();
     }
 }

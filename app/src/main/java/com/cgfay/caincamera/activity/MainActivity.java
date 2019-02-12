@@ -14,19 +14,18 @@ import com.cgfay.cameralibrary.engine.model.AspectRatio;
 import com.cgfay.cameralibrary.engine.model.GalleryType;
 import com.cgfay.cameralibrary.listener.OnGallerySelectedListener;
 import com.cgfay.cameralibrary.listener.OnPreviewCaptureListener;
-import com.cgfay.ffmpeglibrary.activity.AVMediaPlayerActivity;
-import com.cgfay.ffmpeglibrary.activity.VideoRecordActivity;
+
 import com.cgfay.filterlibrary.glfilter.resource.FilterHelper;
 import com.cgfay.filterlibrary.glfilter.resource.MakeupHelper;
 import com.cgfay.filterlibrary.glfilter.resource.ResourceHelper;
 import com.cgfay.imagelibrary.activity.ImageEditActivity;
-import com.cgfay.medialibrary.engine.MediaScanEngine;
-import com.cgfay.medialibrary.listener.OnCaptureListener;
-import com.cgfay.medialibrary.listener.OnMediaSelectedListener;
-import com.cgfay.medialibrary.loader.impl.GlideMediaLoader;
-import com.cgfay.medialibrary.model.MimeType;
+import com.cgfay.scan.engine.MediaScanEngine;
+import com.cgfay.scan.listener.OnCaptureListener;
+import com.cgfay.scan.listener.OnMediaSelectedListener;
+import com.cgfay.scan.loader.impl.GlideMediaLoader;
+import com.cgfay.scan.model.MimeType;
 import com.cgfay.utilslibrary.utils.PermissionUtils;
-import com.cgfay.videolibrary.activity.VideoEditActivity;
+import com.cgfay.video.activity.VideoCropActivity;
 
 import java.util.List;
 
@@ -66,9 +65,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_camera).setOnClickListener(this);
         findViewById(R.id.btn_edit_video).setOnClickListener(this);
         findViewById(R.id.btn_edit_picture).setOnClickListener(this);
-        findViewById(R.id.btn_test_music).setOnClickListener(this);
-        findViewById(R.id.btn_test_recorder).setOnClickListener(this);
-        findViewById(R.id.btn_test_media_player).setOnClickListener(this);
     }
 
     @Override
@@ -96,42 +92,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_edit_picture: {
                 scanMedia(false, true, false);
-                break;
-            }
-
-            // 测试音乐播放器
-            case R.id.btn_test_music: {
-                startActivity(new Intent(MainActivity.this, MusicScanActivity.class));
-                break;
-            }
-
-            // 测试录制器
-            case R.id.btn_test_recorder: {
-                startActivity(new Intent(MainActivity.this, VideoRecordActivity.class));
-                break;
-            }
-
-            // 测试视频播放器
-            case R.id.btn_test_media_player: {
-                MediaScanEngine.from(this)
-                        .setMimeTypes(MimeType.ofAll())
-                        .ImageLoader(new GlideMediaLoader())
-                        .spanCount(4)
-                        .showCapture(false)
-                        .showImage(false)
-                        .showVideo(true)
-                        .enableSelectGif(false)
-                        .setMediaSelectedListener(new OnMediaSelectedListener() {
-                            @Override
-                            public void onSelected(List<Uri> uriList, List<String> pathList, boolean isVideo) {
-                                if (isVideo) {
-                                    Intent intent = new Intent(MainActivity.this, AVMediaPlayerActivity.class);
-                                    intent.putExtra(AVMediaPlayerActivity.PATH, pathList.get(0));
-                                    startActivity(intent);
-                                }
-                            }
-                        })
-                        .scanMedia();
                 break;
             }
         }
@@ -173,8 +133,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             intent.putExtra(ImageEditActivity.PATH, path);
                             startActivity(intent);
                         } else if (type == GalleryType.VIDEO) {
-                            Intent intent = new Intent(MainActivity.this, VideoEditActivity.class);
-                            intent.putExtra(VideoEditActivity.PATH, path);
+                            Intent intent = new Intent(MainActivity.this, VideoCropActivity.class);
+                            intent.putExtra(VideoCropActivity.PATH, path);
                             startActivity(intent);
                         }
                     }
@@ -214,8 +174,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onSelected(List<Uri> uriList, List<String> pathList, boolean isVideo) {
                         if (isVideo) {
-                            Intent intent = new Intent(MainActivity.this, VideoEditActivity.class);
-                            intent.putExtra(VideoEditActivity.PATH, pathList.get(0));
+                            Intent intent = new Intent(MainActivity.this, VideoCropActivity.class);
+                            intent.putExtra(VideoCropActivity.PATH, pathList.get(0));
                             startActivity(intent);
                         } else {
                             Intent intent = new Intent(MainActivity.this, ImageEditActivity.class);

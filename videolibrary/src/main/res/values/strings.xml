@@ -1,26 +1,18 @@
 <resources>
     <string name="app_name">VideoLibrary</string>
+    
+    <string-array name="video_speed_texts">
+        <item>极慢</item>
+        <item>较慢</item>
+        <item>标准</item>
+        <item>较快</item>
+        <item>极快</item>
+    </string-array>
 
-    <string name="request_permission">需要存储权限</string>
-
-    <!--编辑视频-->
-    <string name="back">返回</string>
-    <string name="edit_title">编辑视频</string>
-    <string name="next">下一步</string>
-
-    <string name="delete">删除</string>
-    <string name="undo">撤销</string>
-
-    <string name="btn_cut">裁剪</string>
-    <string name="btn_music">音乐</string>
-    <string name="btn_filter">滤镜</string>
-    <string name="btn_effect">特效</string>
-    <string name="btn_font">字幕</string>
-
-    <string name="back_message">退出当前操作?</string>
-
-    <string name="add_music">点击添加配乐</string>
-    <string name="source_voice">视频原声</string>
-    <string name="music_voice">配乐</string>
+    <string name="video_crop_next">下一步</string>
+    <string name="video_crop_time_15">15秒</string>
+    <string name="video_crop_time_120">2分钟</string>
+    <string name="video_crop_selected_time">已选取%1$d秒</string>
+    <string name="video_crop_selected_error">解析数据出现错误，暂不支持该视频</string>
 
 </resources>

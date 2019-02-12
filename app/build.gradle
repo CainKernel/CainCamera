@@ -7,8 +7,8 @@ android {
         applicationId "com.cgfay.caincamera"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
@@ -44,8 +44,8 @@ dependencies {
 
     implementation project(':cameralibrary')
     implementation project(':filterlibrary')
-    implementation project(':ffmpeglibrary')
     implementation project(':imagelibrary')
+    implementation project(':scanlibrary')
     implementation project(':medialibrary')
     implementation project(':utilslibrary')
     implementation project(':videolibrary')

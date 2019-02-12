@@ -1,17 +1,30 @@
 apply plugin: 'com.android.library'
 
+//def platformVersion = 24      // openGLES 3.2 min api level
+def platformVersion = 21    // 18: openGLES 3 min api level
+// def platformVersion = 12    //openGLES 2 min api level
+
 android {
     compileSdkVersion 27
 
-
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion "${platformVersion}"
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++11"
+                arguments "-DANDROID_PLATFORM_LEVEL=${platformVersion}",
+                        '-DANDROID_TOOLCHAIN=clang'
+            }
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
+        }
     }
 
     buildTypes {
@@ -21,15 +34,18 @@ android {
         }
     }
 
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+        }
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':utilslibrary')
     implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support:recyclerview-v7:27.1.1'
-    implementation 'com.github.bumptech.glide:glide:4.7.1'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

@@ -15,13 +15,22 @@ CainCamera是一个集美颜相机、图片编辑、短视频编辑等功能的�
 
 # library介绍:
 * cameralibrary: 相机库，包括渲染渲染线程、渲染引擎等流程
+
 * facedetectlibrary: Face++人脸关键点SDK库。结合landmarklibrary库做人脸关键点处理。
-* ffmpeglibrary: 基于FFmpeg开发的工具库，目前实现了音乐播放器、MetadataRetriever等工具，流媒体播放器、短视频播放器、短视频合成器等工具处于开发阶段，敬请期待。
+
 * filterlibrary：滤镜库。该库存放各个滤镜以及资源处理等工具。
+
 * imagelibrary: 图片编辑库。暂时该库仅有的滤镜处理和保存功能，目前由于正在编写短视频编辑功能的，该库目前暂时没完善。
+
 * landmarklibrary: 关键点处理库。该库用于归一化的关键点处理，用在filterlibrary中处理滤镜、贴纸等处理。
-* medialibrary: 媒体扫描库。用于扫描媒体库中的图像、视频。
+
+* medialibrary: 短视频编辑库。用于短视频编辑实时预览的播放器全套代码，目前播放器已实现软硬解码(FFmpeg + MediaCodec)、
+音视频多种同步方式、定位播放、倍速播放(硬解码时支持1080P的4倍速播放而音频无杂音等问题)、支持添加实时特效等功能，逆序播放功能暂未实现。
+
+* scanlibrary: 媒体扫描库。用于遍历扫描媒体库中的图像、视频。
+
 * utilslibrary: 共用工具库。bitmap处理、文件处理、字符串处理的封装工具。
+
 * videolibrary: 视频编辑库。目前该库处于计划实现状态，由于短视频播放器、短视频合成器等工具还没实现，目前该库暂时还没实现，敬请期待。
 
 ## Android Studio 版本问题
@@ -29,7 +38,9 @@ CainCamera是一个集美颜相机、图片编辑、短视频编辑等功能的�
 目前已经更新到Android Studio 3.2.1。
 关于Android Studio 3.2.1 之后无法Cmake无法编译通过的问题，这里提一句：
 1、Android Studio 3.2.1 更新之后，需要更新NDK、cmake、lldb到最新版本
+
 2、更新之后需要将工程的 dependencies 改成 'com.android.tools.build:gradle:3.2.1'
+
 3、需要将gradle-wrapper.properies的版本变成 4.6，即 gradle-4.6-all.zip
 
 原因：NDK跟SDK的Gradle版本不同步导致的。
