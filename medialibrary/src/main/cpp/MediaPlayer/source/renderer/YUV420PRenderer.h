@@ -27,6 +27,8 @@ private:
 
     void resetTexVertices();
 
+    void cropTexVertices(Texture *texture);
+
 private:
     int mInited; // 是否已经初始化
 };

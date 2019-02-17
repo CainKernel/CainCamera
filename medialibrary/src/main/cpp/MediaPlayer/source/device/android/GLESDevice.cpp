@@ -8,6 +8,8 @@
 
 GLESDevice::GLESDevice() {
     mWindow = NULL;
+    mSurfaceWidth = 0;
+    mSurfaceHeight = 0;
     eglSurface = EGL_NO_SURFACE;
     eglHelper = new EglHelper();
 
@@ -34,20 +36,11 @@ void GLESDevice::surfaceCreated(ANativeWindow *window) {
         mSurfaceReset = true;
     }
     mWindow = window;
+    if (mWindow != NULL) {
+        mSurfaceWidth = ANativeWindow_getWidth(mWindow);
+        mSurfaceHeight = ANativeWindow_getHeight(mWindow);
+    }
     mHasSurface = true;
-    mMutex.unlock();
-}
-
-void GLESDevice::surfaceChanged(int width, int height) {
-    mMutex.lock();
-    mVideoTexture->viewWidth = width;
-    mVideoTexture->viewHeight = height;
-    mMutex.unlock();
-}
-
-void GLESDevice::surfaceDestroyed() {
-    mMutex.lock();
-    mHasSurface = false;
     mMutex.unlock();
 }
 
@@ -101,7 +94,18 @@ void GLESDevice::onInitTexture(int width, int height, TextureFormat format, Blen
             terminate(false);
         }
     }
-    mVideoTexture->width = width;
+
+    // 计算帧的宽高，如果不相等，则需要重新计算缓冲区的大小
+    if (mWindow != NULL && mSurfaceWidth != 0 && mSurfaceHeight != 0) {
+        // 宽高比例不一致时，需要调整缓冲区的大小，这里是以宽度为基准
+        if ((mSurfaceWidth / mSurfaceHeight) != (width / height)) {
+            mSurfaceHeight = mSurfaceWidth * height / width;
+            int windowFormat = ANativeWindow_getFormat(mWindow);
+            ANativeWindow_setBuffersGeometry(mWindow, mSurfaceWidth, mSurfaceHeight, windowFormat);
+        }
+    }
+    mVideoTexture->frameWidth = width;
+    mVideoTexture->frameHeight = height;
     mVideoTexture->height = height;
     mVideoTexture->format = format;
     mVideoTexture->blendMode = blendMode;
@@ -139,6 +143,8 @@ int GLESDevice::onUpdateYUV(uint8_t *yData, int yPitch, uint8_t *uData, int uPit
         eglHelper->makeCurrent(eglSurface);
         mRenderer->uploadTexture(mVideoTexture);
     }
+    // 设置像素实际的宽度，即linesize的值
+    mVideoTexture->width = yPitch;
     mMutex.unlock();
     return 0;
 }
@@ -166,6 +172,9 @@ int GLESDevice::onRequestRender(FlipDirection direction) {
     mVideoTexture->direction = direction;
     if (mRenderer != NULL && eglSurface != EGL_NO_SURFACE) {
         eglHelper->makeCurrent(eglSurface);
+        if (mSurfaceWidth != 0 && mSurfaceHeight != 0) {
+            glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
+        }
         mRenderer->renderTexture(mVideoTexture);
         eglHelper->swapBuffers(eglSurface);
     }

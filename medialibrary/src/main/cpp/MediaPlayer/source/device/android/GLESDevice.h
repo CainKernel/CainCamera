@@ -20,10 +20,6 @@ public:
 
     void surfaceCreated(ANativeWindow *window);
 
-    void surfaceChanged(int width, int height);
-
-    void surfaceDestroyed();
-
     void terminate() override;
 
     void terminate(bool releaseContext);
@@ -43,6 +39,8 @@ private:
     Condition mCondition;
 
     ANativeWindow *mWindow;             // Surface窗口
+    int mSurfaceWidth;                  // 窗口宽度
+    int mSurfaceHeight;                 // 窗口高度
     EGLSurface eglSurface;              // eglSurface
     EglHelper *eglHelper;               // EGL帮助器
     bool mSurfaceReset;                 // 重新设置Surface

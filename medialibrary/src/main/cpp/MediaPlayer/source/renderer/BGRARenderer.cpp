@@ -50,6 +50,24 @@ void BGRARenderer::resetTexVertices() {
     texVetrices[7] = 0.0f;
 }
 
+void BGRARenderer::cropTexVertices(Texture *texture) {
+    // 帧宽度和linesize宽度不一致，需要裁掉多余的地方，否则会出现绿屏的情况
+    if (texture->frameWidth != texture->width) {
+        GLsizei padding = texture->width - texture->frameWidth;
+        GLfloat normalized = ((GLfloat)padding + 0.5f) / (GLfloat)texture->width;
+        texVetrices[0] = 0.0f;
+        texVetrices[1] = 1.0f;
+        texVetrices[2] = 1.0f - normalized;
+        texVetrices[3] = 1.0f;
+        texVetrices[4] = 0.0f;
+        texVetrices[5] = 0.0f;
+        texVetrices[6] = 1.0f - normalized;
+        texVetrices[7] = 0.0f;
+    } else {
+        resetTexVertices();
+    }
+}
+
 int BGRARenderer::onInit(Texture *texture) {
     // 判断是否已经初始化
     if (mInited && programHandle != 0) {
@@ -111,11 +129,7 @@ GLboolean BGRARenderer::renderTexture(Texture *texture) {
     if (!texture || programHandle < 0) {
         return GL_FALSE;
     }
-
-    // TODO 后续添加缩放裁剪处理
-    if (texture->viewWidth != 0 && texture->viewHeight != 0) {
-        glViewport(0, 0, texture->viewWidth, texture->viewHeight);
-    }
+    cropTexVertices(texture);
     // 绑定顶点坐标
     glVertexAttribPointer(positionHandle, 2, GL_FLOAT, GL_FALSE, 0, vertices);
     glEnableVertexAttribArray(positionHandle);
