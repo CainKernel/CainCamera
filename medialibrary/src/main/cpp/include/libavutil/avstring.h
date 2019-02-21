@@ -374,7 +374,7 @@ int av_escape(char **dst, const char *src, const char *special_chars,
  * @param codep   pointer used to return the parsed code in case of success.
  *                The value in *codep is set even in case the range check fails.
  * @param bufp    pointer to the address the first byte of the sequence
- *                to decodeFrame, updated by the function to point to the
+ *                to decode, updated by the function to point to the
  *                byte next after the decoded sequence
  * @param buf_end pointer to the end of the buffer, points to the next
  *                byte past the last in the buffer. This is used to

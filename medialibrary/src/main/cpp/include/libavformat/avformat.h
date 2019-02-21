@@ -88,7 +88,7 @@
  *
  * Note that some schemes/protocols are quite powerful, allowing access to
  * both local and remote files, parts of them, concatenations of them, local
- * audioDecoder and video devices and so on.
+ * audio and video devices and so on.
  *
  * @{
  *
@@ -127,7 +127,7 @@
  * AVFormatContext to newly created AVIOContext.
  *
  * Since the format of the opened file is in general not known until after
- * avformat_open_input() has returned, it is not possible to set musicPlayer private
+ * avformat_open_input() has returned, it is not possible to set demuxer private
  * options on a preallocated context. Instead, the options should be passed to
  * avformat_open_input() wrapped in an AVDictionary:
  * @code
@@ -140,17 +140,17 @@
  * av_dict_free(&options);
  * @endcode
  * This code passes the private options 'video_size' and 'pixel_format' to the
- * musicPlayer. They would be necessary for e.g. the rawvideo musicPlayer, since it
+ * demuxer. They would be necessary for e.g. the rawvideo demuxer, since it
  * cannot know how to interpret raw video data otherwise. If the format turns
  * out to be something different than raw video, those options will not be
- * recognized by the musicPlayer and therefore will not be applied. Such unrecognized
+ * recognized by the demuxer and therefore will not be applied. Such unrecognized
  * options are then returned in the options dictionary (recognized options are
  * consumed). The calling program can handle such unrecognized options as it
  * wishes, e.g.
  * @code
  * AVDictionaryEntry *e;
  * if (e = av_dict_get(options, "", NULL, AV_DICT_IGNORE_SUFFIX)) {
- *     fprintf(stderr, "Option %s not recognized by the musicPlayer.\n", e->key);
+ *     fprintf(stderr, "Option %s not recognized by the demuxer.\n", e->key);
  *     abort();
  * }
  * @endcode
@@ -164,18 +164,18 @@
  * containing encoded data for one AVStream, identified by
  * AVPacket.stream_index. This packet may be passed straight into the libavcodec
  * decoding functions avcodec_send_packet() or avcodec_decode_subtitle2() if the
- * caller wishes to decodeFrame the data.
+ * caller wishes to decode the data.
  *
  * AVPacket.pts, AVPacket.dts and AVPacket.duration timing information will be
  * set if known. They may also be unset (i.e. AV_NOPTS_VALUE for
  * pts/dts, 0 for duration) if the stream does not provide them. The timing
- * information will be in AVStream.timeBase units, i.e. it has to be
+ * information will be in AVStream.time_base units, i.e. it has to be
  * multiplied by the timebase to convert them to seconds.
  *
  * If AVPacket.buf is set on the returned packet, then the packet is
  * allocated dynamically and the user may keep it indefinitely.
  * Otherwise, if AVPacket.buf is NULL, the packet data is backed by a
- * static storage somewhere inside the musicPlayer and the packet is only valid
+ * static storage somewhere inside the demuxer and the packet is only valid
  * until the next av_read_frame() call or closing the file. If the caller
  * requires a longer lifetime, av_dup_packet() will make an av_malloc()ed copy
  * of it.
@@ -208,7 +208,7 @@
  *   the @ref AVStream.codecpar "stream codec parameters" information, such as the
  *   codec @ref AVCodecParameters.codec_type "type", @ref AVCodecParameters.codec_id
  *   "id" and other parameters (e.g. width / height, the pixel or sample format,
- *   etc.) as known. The @ref AVStream.timeBase "stream timebase" should
+ *   etc.) as known. The @ref AVStream.time_base "stream timebase" should
  *   be set to the timebase that the caller desires to use for this stream (note
  *   that the timebase actually used by the muxer can be different, as will be
  *   described later).
@@ -344,7 +344,7 @@ struct AVDeviceCapabilitiesQuery;
  *
  * Important concepts to keep in mind:
  * -  Keys are unique; there can never be 2 tags with the same key. This is
- *    also meant semantically, i.e., a musicPlayer should not knowingly produce
+ *    also meant semantically, i.e., a demuxer should not knowingly produce
  *    several keys that are literally different but semantically identical.
  *    E.g., key=Author5, key=Author6. In this example, all authors must be
  *    placed in the same tag.
@@ -358,7 +358,7 @@ struct AVDeviceCapabilitiesQuery;
  *       is appended with the ISO 639-2/B 3-letter language code.
  *       For example: Author-ger=Michael, Author-eng=Mike
  *       The original/default language is in the unqualified "Author" tag.
- *       A musicPlayer should set a default if it sets any translated tag.
+ *       A demuxer should set a default if it sets any translated tag.
  *    -  sorting  -- a modified version of a tag that should be used for
  *       sorting will have '-sort' appended. E.g. artist="The Beatles",
  *       artist-sort="Beatles, The".
@@ -522,7 +522,7 @@ typedef struct AVOutputFormat {
     const char *mime_type;
     const char *extensions; /**< comma-separated filename extensions */
     /* output support */
-    enum AVCodecID audio_codec;    /**< default audioDecoder codec */
+    enum AVCodecID audio_codec;    /**< default audio codec */
     enum AVCodecID video_codec;    /**< default video codec */
     enum AVCodecID subtitle_codec; /**< default subtitle codec */
     /**
@@ -748,7 +748,7 @@ typedef struct AVInputFormat {
                      int stream_index, int64_t timestamp, int flags);
 
     /**
-     * Get the next timestamp in stream[stream_index].timeBase units.
+     * Get the next timestamp in stream[stream_index].time_base units.
      * @return the timestamp or AV_NOPTS_VALUE if an error occurred
      */
     int64_t (*read_timestamp)(struct AVFormatContext *s, int stream_index,
@@ -803,14 +803,14 @@ enum AVStreamParseType {
     AVSTREAM_PARSE_TIMESTAMPS, /**< full parsing and interpolation of timestamps for frames not starting on a packet boundary */
     AVSTREAM_PARSE_FULL_ONCE,  /**< full parsing and repack of the first frame only, only implemented for H.264 currently */
     AVSTREAM_PARSE_FULL_RAW=MKTAG(0,'R','A','W'),       /**< full parsing and repack with timestamp and position generation by parser for raw
-                                                             this assumes that each packet in the file contains no musicPlayer level headers and
+                                                             this assumes that each packet in the file contains no demuxer level headers and
                                                              just codec level data, otherwise position generation would fail */
 };
 
 typedef struct AVIndexEntry {
     int64_t pos;
     int64_t timestamp;        /**<
-                               * Timestamp in AVStream.timeBase units, preferably the time from which on correctly decoded frames are available
+                               * Timestamp in AVStream.time_base units, preferably the time from which on correctly decoded frames are available
                                * when seeking to this entry. That means preferable PTS on keyframe based formats.
                                * But demuxers can choose to store a different timestamp, if it is more convenient for the implementation or nothing better
                                * is known
@@ -922,7 +922,7 @@ typedef struct AVStream {
      * it to really is the pts of the first frame.
      * This may be undefined (AV_NOPTS_VALUE).
      * @note The ASF header does NOT contain a correct start_time the ASF
-     * musicPlayer must NOT set this.
+     * demuxer must NOT set this.
      */
     int64_t start_time;
 
@@ -1131,16 +1131,16 @@ typedef struct AVStream {
      * If not 0, the number of samples that should be skipped from the start of
      * the stream (the samples are removed from packets with pts==0, which also
      * assumes negative timestamps do not happen).
-     * Intended for use with formats such as mp3 with ad-hoc gapless audioDecoder
+     * Intended for use with formats such as mp3 with ad-hoc gapless audio
      * support.
      */
     int64_t start_skip_samples;
 
     /**
-     * If not 0, the first audioDecoder sample that should be discarded from the stream.
+     * If not 0, the first audio sample that should be discarded from the stream.
      * This is broken by design (needs global sample count), but can't be
      * avoided for broken by design formats such as mp3 with ad-hoc gapless
-     * audioDecoder support.
+     * audio support.
      */
     int64_t first_discard_sample;
 
@@ -1252,7 +1252,7 @@ void  av_stream_set_recommended_encoder_configuration(AVStream *s, char *configu
 /**
  * Returns the pts of the last muxed packet + its duration
  *
- * the retuned value is undefined when used with a musicPlayer.
+ * the retuned value is undefined when used with a demuxer.
  */
 int64_t    av_stream_get_end_pts(const AVStream *st);
 
@@ -1296,7 +1296,7 @@ typedef struct AVProgram {
 typedef struct AVChapter {
     int id;                 ///< unique ID to identify the chapter
     AVRational time_base;   ///< time base in which the start/end timestamps are specified
-    int64_t start, end;     ///< chapter start/end time in timeBase units
+    int64_t start, end;     ///< chapter start/end time in time_base units
     AVDictionary *metadata;
 } AVChapter;
 
@@ -1503,7 +1503,7 @@ typedef struct AVFormatContext {
     enum AVCodecID video_codec_id;
 
     /**
-     * Forced audioDecoder codec_id.
+     * Forced audio codec_id.
      * Demuxing: Set by user.
      */
     enum AVCodecID audio_codec_id;
@@ -1518,7 +1518,7 @@ typedef struct AVFormatContext {
      * Maximum amount of memory in bytes to use for the index of each stream.
      * If the index exceeds this size, entries will be discarded as
      * needed to maintain a smaller size. This can lead to slower or less
-     * accurate seeking (depends on musicPlayer).
+     * accurate seeking (depends on demuxer).
      * Demuxers for which a full in-memory index is mandatory will ignore
      * this.
      * - muxing: unused
@@ -1652,7 +1652,7 @@ typedef struct AVFormatContext {
 
     /**
      * Transport stream id.
-     * This will be moved into musicPlayer private options. Thus no API/ABI compatibility
+     * This will be moved into demuxer private options. Thus no API/ABI compatibility
      */
     int ts_id;
 
@@ -1733,7 +1733,7 @@ typedef struct AVFormatContext {
 
     /**
      * format probing score.
-     * The maximal score is AVPROBE_SCORE_MAX, its set when the musicPlayer probes
+     * The maximal score is AVPROBE_SCORE_MAX, its set when the demuxer probes
      * the format.
      * - encoding: unused
      * - decoding: set by avformat, read by user
@@ -1786,7 +1786,7 @@ typedef struct AVFormatContext {
     AVCodec *video_codec;
 
     /**
-     * Forced audioDecoder codec.
+     * Forced audio codec.
      * This allows forcing a specific decoder, even when there are multiple with
      * the same codec_id.
      * Demuxing: Set by user
@@ -1879,7 +1879,7 @@ typedef struct AVFormatContext {
     /*
      * A callback for opening new IO streams.
      *
-     * Whenever a muxer or a musicPlayer needs to open an IO stream (typically from
+     * Whenever a muxer or a demuxer needs to open an IO stream (typically from
      * avformat_open_input() for demuxers, but for certain formats can happen at
      * other times as well), it will call this callback to obtain an IO context.
      *
@@ -2052,7 +2052,7 @@ const AVClass *avformat_get_class(void);
 /**
  * Add a new stream to a media file.
  *
- * When demuxing, it is called by the musicPlayer in read_header(). If the
+ * When demuxing, it is called by the demuxer in read_header(). If the
  * flag AVFMTCTX_NOHEADER is set in s.ctx_flags, then it may also
  * be called in read_packet().
  *
@@ -2217,7 +2217,7 @@ int av_probe_input_buffer(AVIOContext *pb, AVInputFormat **fmt,
  * @param url URL of the stream to open.
  * @param fmt If non-NULL, this parameter forces a specific input format.
  *            Otherwise the format is autodetected.
- * @param options  A dictionary filled with AVFormatContext and musicPlayer-private options.
+ * @param options  A dictionary filled with AVFormatContext and demuxer-private options.
  *                 On return this parameter will be destroyed and replaced with a dict containing
  *                 options that were not found. May be NULL.
  *
@@ -2276,7 +2276,7 @@ void av_program_add_stream_index(AVFormatContext *ac, int progid, unsigned int i
  * be found are ignored.
  *
  * @param ic                media file handle
- * @param type              stream type: video, audioDecoder, subtitles, etc.
+ * @param type              stream type: video, audio, subtitles, etc.
  * @param wanted_stream_nb  user-requested stream number,
  *                          or -1 for automatic selection
  * @param related_stream    try to find a stream related (eg. in the same
@@ -2310,12 +2310,12 @@ int av_find_best_stream(AVFormatContext *ic,
  * av_read_frame() or until avformat_close_input(). Otherwise the packet
  * is valid indefinitely. In both cases the packet must be freed with
  * av_packet_unref when it is no longer needed. For video, the packet contains
- * exactly one frame. For audioDecoder, it contains an integer number of frames if each
- * frame has a known fixed size (e.g. PCM or ADPCM data). If the audioDecoder frames
- * have a variable size (e.g. MPEG audioDecoder), then it contains one frame.
+ * exactly one frame. For audio, it contains an integer number of frames if each
+ * frame has a known fixed size (e.g. PCM or ADPCM data). If the audio frames
+ * have a variable size (e.g. MPEG audio), then it contains one frame.
  *
  * pkt->pts, pkt->dts and pkt->duration are always set to correct
- * values in AVStream.timeBase units (and guessed if the format cannot
+ * values in AVStream.time_base units (and guessed if the format cannot
  * provide them). pkt->pts can be AV_NOPTS_VALUE if the video format
  * has B-frames, so it is better to rely on pkt->dts if you do not
  * decompress the payload.
@@ -2331,8 +2331,8 @@ int av_read_frame(AVFormatContext *s, AVPacket *pkt);
  * @param s media file handle
  * @param stream_index If stream_index is (-1), a default
  * stream is selected, and timestamp is automatically converted
- * from AV_TIME_BASE units to the stream specific timeBase.
- * @param timestamp Timestamp in AVStream.timeBase units
+ * from AV_TIME_BASE units to the stream specific time_base.
+ * @param timestamp Timestamp in AVStream.time_base units
  *        or, if no stream is specified, in AV_TIME_BASE units.
  * @param flags flags which select direction and seeking mode
  * @return >= 0 on success
@@ -2629,7 +2629,7 @@ enum AVCodecID av_guess_codec(AVOutputFormat *fmt, const char *short_name,
  * @param s          media file handle
  * @param stream     stream in the media file
  * @param[out] dts   DTS of the last packet output for the stream, in stream
- *                   timeBase units
+ *                   time_base units
  * @param[out] wall  absolute time when that packet whas output,
  *                   in microsecond
  * @return  0 if OK, AVERROR(ENOSYS) if the format does not support it
@@ -2891,7 +2891,7 @@ int avformat_query_codec(const AVOutputFormat *ofmt, enum AVCodecID codec_id,
  */
 const struct AVCodecTag *avformat_get_riff_video_tags(void);
 /**
- * @return the table mapping RIFF FourCCs for audioDecoder to AVCodecID.
+ * @return the table mapping RIFF FourCCs for audio to AVCodecID.
  */
 const struct AVCodecTag *avformat_get_riff_audio_tags(void);
 /**
@@ -2899,7 +2899,7 @@ const struct AVCodecTag *avformat_get_riff_audio_tags(void);
  */
 const struct AVCodecTag *avformat_get_mov_video_tags(void);
 /**
- * @return the table mapping MOV FourCCs for audioDecoder to AVCodecID.
+ * @return the table mapping MOV FourCCs for audio to AVCodecID.
  */
 const struct AVCodecTag *avformat_get_mov_audio_tags(void);
 
@@ -2912,7 +2912,7 @@ const struct AVCodecTag *avformat_get_mov_audio_tags(void);
  * frame aspect ratio.
  *
  * Since the frame aspect ratio is set by the codec but the stream aspect ratio
- * is set by the musicPlayer, these two may not be equal. This function tries to
+ * is set by the demuxer, these two may not be equal. This function tries to
  * return the value that you should use if you would like to display the frame.
  *
  * Basic logic is to use the stream aspect ratio if it is set to something sane

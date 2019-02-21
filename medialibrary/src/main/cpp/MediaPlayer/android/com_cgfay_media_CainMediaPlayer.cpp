@@ -486,6 +486,42 @@ jint CainMediaPlayer_getVideoHeight(JNIEnv *env, jobject thiz) {
     return mp->getVideoHeight();
 }
 
+void CainMediaPlayer_setOption(JNIEnv *env, jobject thiz,
+        int category, jstring type_, jstring option_) {
+    CainMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == NULL) {
+        jniThrowException(env, "java/lang/IllegalStateException");
+        return;
+    }
+    const char *type = env->GetStringUTFChars(type_, 0);
+    const char *option = env->GetStringUTFChars(option_, 0);
+    if (type == NULL || option == NULL) {
+        return;
+    }
+
+    mp->setOption(category, type, option);
+
+    env->ReleaseStringUTFChars(type_, type);
+    env->ReleaseStringUTFChars(option_, option);
+}
+
+void CainMediaPlayer_setOptionLong(JNIEnv *env, jobject thiz,
+        int category, jstring type_, jlong option_) {
+    CainMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == NULL) {
+        jniThrowException(env, "java/lang/IllegalStateException");
+        return;
+    }
+    const char *type = env->GetStringUTFChars(type_, 0);
+    if (type == NULL) {
+        return;
+    }
+    mp->setOption(category, type, option_);
+
+    env->ReleaseStringUTFChars(type_, type);
+}
+
+
 static const JNINativeMethod gMethods[] = {
         {"_setDataSource", "(Ljava/lang/String;)V", (void *)CainMediaPlayer_setDataSource},
         {
@@ -518,6 +554,8 @@ static const JNINativeMethod gMethods[] = {
         {"native_init", "()V", (void *)CainMediaPlayer_init},
         {"native_setup", "(Ljava/lang/Object;)V", (void *) CainMediaPlayer_setup},
         {"native_finalize", "()V", (void *) CainMediaPlayer_finalize},
+        {"_setOption", "(ILjava/lang/String;Ljava/lang/String;)V", (void *)CainMediaPlayer_setOption},
+        {"_setOption", "(ILjava/lang/String;J)V", (void *)CainMediaPlayer_setOptionLong}
 };
 
 // 注册CainMediaPlayer的Native方法

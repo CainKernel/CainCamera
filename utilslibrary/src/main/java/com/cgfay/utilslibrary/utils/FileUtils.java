@@ -41,6 +41,34 @@ public class FileUtils {
     private FileUtils() {}
 
     /**
+     * 检查文件是否存在
+     * @param path
+     * @return
+     */
+    public static boolean fileExists(String path) {
+        if (path == null) {
+            return false;
+        } else {
+            File file = new File(path);
+            return file.exists();
+        }
+    }
+
+    /**
+     * 检查文件列表是否存在
+     * @param paths
+     * @return
+     */
+    public static boolean fileExists(String[] paths) {
+        for (String path : paths) {
+            if (!fileExists(path)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * 解码得到文件名
      * @param path
      * @return
@@ -67,6 +95,24 @@ public class FileUtils {
         }
         return folderPath.substring(0, index);
     }
+
+    /**
+     * 获取文件后缀
+     * @param path
+     * @return
+     */
+    public static String extractFileSuffix(String path) {
+        if (path == null) {
+            return "";
+        }
+        int index = path.lastIndexOf('.');
+        if (index > -1) {
+            return path.substring(index + 1);
+        }
+        return "";
+    }
+
+
 
     /**
      * 从Stream中获取String

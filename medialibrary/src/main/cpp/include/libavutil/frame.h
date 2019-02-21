@@ -106,7 +106,7 @@ enum AVFrameSideDataType {
      */
     AV_FRAME_DATA_SKIP_SAMPLES,
     /**
-     * This side data must be associated with an audioDecoder frame and corresponds to
+     * This side data must be associated with an audio frame and corresponds to
      * enum AVAudioServiceType defined in avcodec.h.
      */
     AV_FRAME_DATA_AUDIO_SERVICE_TYPE,
@@ -155,7 +155,7 @@ typedef struct AVFrameSideData {
 } AVFrameSideData;
 
 /**
- * This structure describes decoded (raw) audioDecoder or video data.
+ * This structure describes decoded (raw) audio or video data.
  *
  * AVFrame must be allocated using av_frame_alloc(). Note that this only
  * allocates the AVFrame itself, the buffers for the data must be managed
@@ -202,9 +202,9 @@ typedef struct AVFrame {
 
     /**
      * For video, size in bytes of each picture line.
-     * For audioDecoder, size in bytes of each plane.
+     * For audio, size in bytes of each plane.
      *
-     * For audioDecoder, only linesize[0] may be set. For planar audioDecoder, each channel
+     * For audio, only linesize[0] may be set. For planar audio, each channel
      * plane must be the same size.
      *
      * For video the linesizes should be multiples of the CPUs alignment
@@ -222,13 +222,13 @@ typedef struct AVFrame {
      *
      * For video, this should simply point to data[].
      *
-     * For planar audioDecoder, each channel has a separate data pointer, and
+     * For planar audio, each channel has a separate data pointer, and
      * linesize[0] contains the size of each channel buffer.
-     * For packed audioDecoder, there is just one data pointer, and linesize[0]
+     * For packed audio, there is just one data pointer, and linesize[0]
      * contains the total size of the buffer for all channels.
      *
      * Note: Both data and extended_data should always be set in a valid frame,
-     * but for planar audioDecoder with more channels that can fit in data,
+     * but for planar audio with more channels that can fit in data,
      * extended_data must be used in order to access all channels.
      */
     uint8_t **extended_data;
@@ -239,14 +239,14 @@ typedef struct AVFrame {
     int width, height;
 
     /**
-     * number of audioDecoder samples (per channel) described by this frame
+     * number of audio samples (per channel) described by this frame
      */
     int nb_samples;
 
     /**
      * format of the frame, -1 if unknown or unset
      * Values correspond to enum AVPixelFormat for video frames,
-     * enum AVSampleFormat for audioDecoder)
+     * enum AVSampleFormat for audio)
      */
     int format;
 
@@ -266,7 +266,7 @@ typedef struct AVFrame {
     AVRational sample_aspect_ratio;
 
     /**
-     * Presentation timestamp in timeBase units (time when frame should be shown to user).
+     * Presentation timestamp in time_base units (time when frame should be shown to user).
      */
     int64_t pts;
 
@@ -346,12 +346,12 @@ typedef struct AVFrame {
     int64_t reordered_opaque;
 
     /**
-     * Sample rate of the audioDecoder data.
+     * Sample rate of the audio data.
      */
     int sample_rate;
 
     /**
-     * Channel layout of the audioDecoder data.
+     * Channel layout of the audio data.
      */
     uint64_t channel_layout;
 
@@ -362,7 +362,7 @@ typedef struct AVFrame {
      * also be non-NULL for all j < i.
      *
      * There may be at most one AVBuffer per data plane, so for video this array
-     * always contains all the references. For planar audioDecoder with more than
+     * always contains all the references. For planar audio with more than
      * AV_NUM_DATA_POINTERS channels, there may be more buffers than can fit in
      * this array. Then the extra AVBufferRef pointers are stored in the
      * extended_buf array.
@@ -370,7 +370,7 @@ typedef struct AVFrame {
     AVBufferRef *buf[AV_NUM_DATA_POINTERS];
 
     /**
-     * For planar audioDecoder which requires more than AV_NUM_DATA_POINTERS
+     * For planar audio which requires more than AV_NUM_DATA_POINTERS
      * AVBufferRef pointers, this array will hold all the references which
      * cannot fit into AVFrame.buf.
      *
@@ -451,7 +451,7 @@ typedef struct AVFrame {
 
     /**
      * duration of the corresponding packet, expressed in
-     * AVStream->timeBase units, 0 if unknown.
+     * AVStream->time_base units, 0 if unknown.
      * - encoding: unused
      * - decoding: Read by user.
      */
@@ -465,7 +465,7 @@ typedef struct AVFrame {
     AVDictionary *metadata;
 
     /**
-     * decodeFrame error flags of the frame, set to a combination of
+     * decode error flags of the frame, set to a combination of
      * FF_DECODE_ERROR_xxx flags if the decoder produced a frame, but there
      * were errors during the decoding.
      * - encoding: unused
@@ -476,7 +476,7 @@ typedef struct AVFrame {
 #define FF_DECODE_ERROR_MISSING_REFERENCE   2
 
     /**
-     * number of audioDecoder channels, only used for audioDecoder.
+     * number of audio channels, only used for audio.
      * - encoding: unused
      * - decoding: Read by user.
      */
@@ -626,12 +626,12 @@ void av_frame_unref(AVFrame *frame);
 void av_frame_move_ref(AVFrame *dst, AVFrame *src);
 
 /**
- * Allocate new buffer(s) for audioDecoder or video data.
+ * Allocate new buffer(s) for audio or video data.
  *
  * The following fields must be set on frame before calling this function:
- * - format (pixel format for video, sample format for audioDecoder)
+ * - format (pixel format for video, sample format for audio)
  * - width and height for video
- * - nb_samples and channel_layout for audioDecoder
+ * - nb_samples and channel_layout for audio
  *
  * This function will fill AVFrame.data and AVFrame.buf arrays and, if
  * necessary, allocate and fill AVFrame.extended_data and AVFrame.extended_buf.
@@ -692,7 +692,7 @@ int av_frame_copy(AVFrame *dst, const AVFrame *src);
  * Copy only "metadata" fields from src to dst.
  *
  * Metadata for the purpose of this function are those fields that do not affect
- * the data layout in the buffers.  E.g. pts, sample rate (for audioDecoder) or sample
+ * the data layout in the buffers.  E.g. pts, sample rate (for audio) or sample
  * aspect ratio (for video), but not width/height or channel layout.
  * Side data is also copied.
  */

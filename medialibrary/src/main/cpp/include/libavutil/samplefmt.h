@@ -39,7 +39,7 @@
  *
  * - The data described by the sample format is always in native-endian order.
  *   Sample values can be expressed by native C types, hence the lack of a signed
- *   24-bit sample format even though it is a common raw audioDecoder data format.
+ *   24-bit sample format even though it is a common raw audio data format.
  *
  * - The floating-point formats are based on full volume being in the range
  *   [-1.0, 1.0]. Any values outside this range are beyond full volume level.
@@ -48,7 +48,7 @@
  *   (such as AVFrame in libavcodec) is as follows:
  *
  * @par
- * For planar sample formats, each audioDecoder channel is in a separate data plane,
+ * For planar sample formats, each audio channel is in a separate data plane,
  * and linesize is the buffer size, in bytes, for a single plane. All data
  * planes must be the same size. For packed sample formats, only the first data
  * plane is used, and samples for each channel are interleaved. In this case,
@@ -148,7 +148,7 @@ int av_get_bytes_per_sample(enum AVSampleFormat sample_fmt);
 int av_sample_fmt_is_planar(enum AVSampleFormat sample_fmt);
 
 /**
- * Get the required buffer size for the given audioDecoder parameters.
+ * Get the required buffer size for the given audio parameters.
  *
  * @param[out] linesize calculated linesize, may be NULL
  * @param nb_channels   the number of channels
@@ -165,7 +165,7 @@ int av_samples_get_buffer_size(int *linesize, int nb_channels, int nb_samples,
  *
  * @defgroup lavu_sampmanip Samples manipulation
  *
- * Functions that manipulate audioDecoder samples
+ * Functions that manipulate audio samples
  * @{
  */
 
@@ -214,8 +214,8 @@ int av_samples_fill_arrays(uint8_t **audio_data, int *linesize,
  * The documentation for AVSampleFormat describes the data layout.
  *
  * @param[out] audio_data  array to be filled with the pointer for each channel
- * @param[out] linesize    aligned size for audioDecoder buffer(s), may be NULL
- * @param nb_channels      number of audioDecoder channels
+ * @param[out] linesize    aligned size for audio buffer(s), may be NULL
+ * @param nb_channels      number of audio channels
  * @param nb_samples       number of samples per channel
  * @param align            buffer size alignment (0 = default, 1 = no alignment)
  * @return                 >=0 on success or a negative error code on failure
@@ -246,21 +246,21 @@ int av_samples_alloc_array_and_samples(uint8_t ***audio_data, int *linesize, int
  * @param dst_offset offset in samples at which the data will be written to dst
  * @param src_offset offset in samples at which the data will be read from src
  * @param nb_samples number of samples to be copied
- * @param nb_channels number of audioDecoder channels
- * @param sample_fmt audioDecoder sample format
+ * @param nb_channels number of audio channels
+ * @param sample_fmt audio sample format
  */
 int av_samples_copy(uint8_t **dst, uint8_t * const *src, int dst_offset,
                     int src_offset, int nb_samples, int nb_channels,
                     enum AVSampleFormat sample_fmt);
 
 /**
- * Fill an audioDecoder buffer with silence.
+ * Fill an audio buffer with silence.
  *
  * @param audio_data  array of pointers to data planes
  * @param offset      offset in samples at which to start filling
  * @param nb_samples  number of samples to fill
- * @param nb_channels number of audioDecoder channels
- * @param sample_fmt  audioDecoder sample format
+ * @param nb_channels number of audio channels
+ * @param sample_fmt  audio sample format
  */
 int av_samples_set_silence(uint8_t **audio_data, int offset, int nb_samples,
                            int nb_channels, enum AVSampleFormat sample_fmt);

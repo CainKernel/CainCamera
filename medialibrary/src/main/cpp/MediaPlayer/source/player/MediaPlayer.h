@@ -77,6 +77,8 @@ public:
 
     AVMessageQueue *getMessageQueue();
 
+    PlayerState *getPlayerState();
+
     void pcmQueueCallback(uint8_t *stream, int len);
 
 protected:

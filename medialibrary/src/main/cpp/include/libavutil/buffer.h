@@ -210,7 +210,7 @@ int av_buffer_realloc(AVBufferRef **buf, int size);
  *
  * Frequently allocating and freeing large buffers may be slow. AVBufferPool is
  * meant to solve this in cases when the caller needs a set of buffers of the
- * same size (the most obvious use case being buffers for raw video or audioDecoder
+ * same size (the most obvious use case being buffers for raw video or audio
  * frames).
  *
  * At the beginning, the user must call av_buffer_pool_init() to create the

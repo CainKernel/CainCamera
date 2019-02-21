@@ -57,6 +57,13 @@ extern "C" {
 
 #define SAMPLE_CORRECTION_PERCENT_MAX 10
 
+// Options 定义
+#define OPT_CATEGORY_FORMAT 1
+#define OPT_CATEGORY_CODEC 2
+#define OPT_CATEGORY_SWS 3
+#define OPT_CATEGORY_PLAYER 4
+#define OPT_CATEGORY_SWR 5
+
 typedef enum {
     AV_SYNC_AUDIO,      // 同步到音频时钟
     AV_SYNC_VIDEO,      // 同步到视频时钟
@@ -77,16 +84,25 @@ public:
 
     void reset();
 
+    void setOption(int category, const char *type, const char *option);
+
+    void setOptionLong(int category, const char *type, int64_t option);
+
 private:
     void init();
+
+    void parse_string(const char *type, const char *option);
+
+    void parse_int(const char *type, int64_t option);
+
 public:
     Mutex mMutex;                   // 操作互斥锁，主要是给seek操作、音视频解码以及清空解码上下文缓冲使用，不加锁会导致ffmpeg内部崩溃现象
     AVDictionary *sws_dict;         // 视频转码option参数
     AVDictionary *swr_opts;         // 音频重采样option参数
     AVDictionary *format_opts;      // 解复用option参数
     AVDictionary *codec_opts;       // 解码option参数
-    AVDictionary *resample_opts;    // 重采样option参数
 
+    AVInputFormat *iformat;         // 指定文件封装格式，也就是解复用器
     const char *url;                // 文件路径
     int64_t offset;                 // 文件偏移量
     const char *headers;            // 文件头信息

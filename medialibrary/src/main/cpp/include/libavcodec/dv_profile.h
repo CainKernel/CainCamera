@@ -51,7 +51,7 @@ typedef struct AVDVProfile {
     int              bpm;                   /* blocks per macroblock */
     const uint8_t   *block_sizes;           /* AC block sizes, in bits */
     int              audio_stride;          /* size of audio_shuffle table */
-    int              audio_min_samples[3];  /* min amount of audioDecoder samples */
+    int              audio_min_samples[3];  /* min amount of audio samples */
                                             /* for 48kHz, 44.1kHz and 32kHz */
     int              audio_samples_dist[5]; /* how many samples are supposed to be */
                                             /* in each frame in a 5 frames window */

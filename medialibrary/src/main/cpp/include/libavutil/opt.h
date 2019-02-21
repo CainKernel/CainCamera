@@ -291,7 +291,7 @@ typedef struct AVOption {
  */
 #define AV_OPT_FLAG_READONLY        128
 #define AV_OPT_FLAG_FILTERING_PARAM (1<<16) ///< a generic parameter which can be set by the user for filtering
-//FIXME think about enc-audioDecoder, ... style flags
+//FIXME think about enc-audio, ... style flags
 
     /**
      * The logical unit to which the option belongs. Non-constant

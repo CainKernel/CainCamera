@@ -160,6 +160,8 @@ int GLESDevice::onUpdateARGB(uint8_t *rgba, int pitch) {
         eglHelper->makeCurrent(eglSurface);
         mRenderer->uploadTexture(mVideoTexture);
     }
+    // 设置像素实际的宽度，即linesize的值
+    mVideoTexture->width = pitch / 4;
     mMutex.unlock();
     return 0;
 }

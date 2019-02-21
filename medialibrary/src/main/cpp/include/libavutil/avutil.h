@@ -40,7 +40,7 @@
  * @li @ref libavf "libavformat" I/O and muxing/demuxing library
  * @li @ref lavd "libavdevice" special devices muxing/demuxing library
  * @li @ref lavu "libavutil" common utility library
- * @li @ref lswr "libswresample" audioDecoder resampling, format conversion and mixing
+ * @li @ref lswr "libswresample" audio resampling, format conversion and mixing
  * @li @ref lpp  "libpostproc" post processing library
  * @li @ref libsws "libswscale" color conversion and scaling library
  *
@@ -241,7 +241,7 @@ const char *av_get_media_type_string(enum AVMediaType media_type);
 /**
  * @brief Undefined timestamp value
  *
- * Usually reported by musicPlayer that work on containers that do not provide
+ * Usually reported by demuxer that work on containers that do not provide
  * either pts or dts.
  */
 

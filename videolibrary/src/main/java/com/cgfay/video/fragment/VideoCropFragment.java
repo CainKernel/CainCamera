@@ -2,6 +2,7 @@ package com.cgfay.video.fragment;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -16,12 +17,15 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.cgfay.media.CainMediaPlayer;
+import com.cgfay.media.CainShortVideoEditor;
 import com.cgfay.media.IMediaPlayer;
 import com.cgfay.utilslibrary.fragment.BackPressedDialogFragment;
 import com.cgfay.video.R;
+import com.cgfay.video.activity.VideoEditActivity;
 import com.cgfay.video.bean.VideoSpeed;
 import com.cgfay.video.widget.VideoCropViewBar;
 import com.cgfay.video.widget.VideoSpeedLevelBar;
@@ -52,10 +56,12 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
 
     private VideoSpeed mVideoSpeed = VideoSpeed.SPEED_L2;
 
-    private long mCropStart;
-    private long mCropRange;
+    // 毫秒
+    private long mCropStart = 0;
+    private long mCropRange = 15000;
     private CainMediaPlayer mCainMediaPlayer;
     private AudioManager mAudioManager;
+    private CainShortVideoEditor mVideoEditor;
 
     public static VideoCropFragment newInstance() {
         return new VideoCropFragment();
@@ -185,7 +191,7 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
         if (id == R.id.video_crop_back) {
             onBackPressed();
         } else if (id == R.id.video_crop_ok) {
-
+            cropVideo();
         } else if (id == R.id.video_crop_speed_bar_visible) {
             if (mVideoSpeedLevelBar.getVisibility() == View.VISIBLE) {
                 mVideoSpeedLevelBar.setVisibility(View.GONE);
@@ -279,6 +285,7 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
                 mSurface = new Surface(mSurfaceTexture);
             }
             mCainMediaPlayer.setSurface(mSurface);
+            mCainMediaPlayer.setOption(CainMediaPlayer.OPT_CATEGORY_PLAYER, "vcodec", "h264_mediacodec");
             mCainMediaPlayer.prepare();
         } catch (IOException e) {
             e.printStackTrace();
@@ -332,5 +339,49 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
      */
     private void cropVideo() {
         // TODO crop video
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (mCainMediaPlayer != null) {
+                    mCainMediaPlayer.pause();
+                }
+                if (mVideoEditor == null) {
+                    mVideoEditor = new CainShortVideoEditor();
+                    mVideoEditor.setOnVideoEditorProcessListener(mProcessListener);
+                }
+                Log.d(TAG, "run: start = " + mCropStart + "duration = " + mCropRange);
+                String outPath = mVideoEditor.videoCut(mVideoPath, mCropStart / 1000f, mCropRange / 1000f);
+                // 成功则直接退出播放器，并跳转至编辑页面
+                if (outPath != null) {
+                    if (mCainMediaPlayer != null) {
+                        mCainMediaPlayer.reset();
+                        mCainMediaPlayer = null;
+                    }
+                    mVideoEditor.release();
+                    mVideoEditor = null;
+                    Intent intent = new Intent(mActivity, VideoEditActivity.class);
+                    intent.putExtra(VideoEditActivity.PATH, outPath);
+                    startActivity(intent);
+                } else {
+                    Log.e(TAG, "video cut's error!");
+                    if (mCainMediaPlayer != null) {
+                        mCainMediaPlayer.start();
+                    }
+                }
+            }
+        }).start();
     }
+
+    private CainShortVideoEditor.OnVideoEditorProcessListener mProcessListener = new CainShortVideoEditor.OnVideoEditorProcessListener() {
+
+        @Override
+        public void onProcessing(int time) {
+            Log.d(TAG, "onProcessing: time = " + time + "s");
+        }
+
+        @Override
+        public void onError() {
+            Toast.makeText(mActivity, "processing error", Toast.LENGTH_SHORT).show();
+        }
+    };
 }

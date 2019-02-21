@@ -278,6 +278,18 @@ int CainMediaPlayer::getAudioSessionId() {
     return mAudioSessionId;
 }
 
+void CainMediaPlayer::setOption(int category, const char *type, const char *option) {
+    if (mediaPlayer != nullptr) {
+        mediaPlayer->getPlayerState()->setOption(category, type, option);
+    }
+}
+
+void CainMediaPlayer::setOption(int category, const char *type, int64_t option) {
+    if (mediaPlayer != nullptr) {
+        mediaPlayer->getPlayerState()->setOptionLong(category, type, option);
+    }
+}
+
 void CainMediaPlayer::notify(int msg, int ext1, int ext2, void *obj, int len) {
     if (mediaPlayer != nullptr) {
         mediaPlayer->getMessageQueue()->postMessage(msg, ext1, ext2, obj, len);

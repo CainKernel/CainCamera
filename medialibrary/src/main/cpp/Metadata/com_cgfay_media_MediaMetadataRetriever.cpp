@@ -464,7 +464,7 @@ static JNINativeMethod nativeMethods[] = {
 
 };
 
-// 注册CainMediaPlayer的Native方法
+// 注册CainMediaMetadataRetriever的Native方法
 static int register_com_cgfay_media_CainMediaMetadataRetriever(JNIEnv *env) {
     int numMethods = (sizeof(nativeMethods) / sizeof( (nativeMethods)[0]));
     jclass clazz = env->FindClass(RETRIEVER_CLASS_NAME);

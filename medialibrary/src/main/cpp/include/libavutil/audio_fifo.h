@@ -86,7 +86,7 @@ int av_audio_fifo_realloc(AVAudioFifo *af, int nb_samples);
  * The documentation for AVSampleFormat describes the data layout.
  *
  * @param af          AVAudioFifo to write to
- * @param data        audioDecoder data plane pointers
+ * @param data        audio data plane pointers
  * @param nb_samples  number of samples to write
  * @return            number of samples actually written, or negative AVERROR
  *                    code on failure. If successful, the number of samples
@@ -101,7 +101,7 @@ int av_audio_fifo_write(AVAudioFifo *af, void **data, int nb_samples);
  * The documentation for AVSampleFormat describes the data layout.
  *
  * @param af          AVAudioFifo to read from
- * @param data        audioDecoder data plane pointers
+ * @param data        audio data plane pointers
  * @param nb_samples  number of samples to peek
  * @return            number of samples actually peek, or negative AVERROR code
  *                    on failure. The number of samples actually peek will not
@@ -117,7 +117,7 @@ int av_audio_fifo_peek(AVAudioFifo *af, void **data, int nb_samples);
  * The documentation for AVSampleFormat describes the data layout.
  *
  * @param af          AVAudioFifo to read from
- * @param data        audioDecoder data plane pointers
+ * @param data        audio data plane pointers
  * @param nb_samples  number of samples to peek
  * @param offset      offset from current read position
  * @return            number of samples actually peek, or negative AVERROR code
@@ -134,7 +134,7 @@ int av_audio_fifo_peek_at(AVAudioFifo *af, void **data, int nb_samples, int offs
  * The documentation for AVSampleFormat describes the data layout.
  *
  * @param af          AVAudioFifo to read from
- * @param data        audioDecoder data plane pointers
+ * @param data        audio data plane pointers
  * @param nb_samples  number of samples to read
  * @return            number of samples actually read, or negative AVERROR code
  *                    on failure. The number of samples actually read will not

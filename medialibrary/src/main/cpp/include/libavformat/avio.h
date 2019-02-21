@@ -115,13 +115,13 @@ enum AVIODataMarkerType {
     AVIO_DATA_MARKER_HEADER,
     /**
      * A point in the output bytestream where a decoder can start decoding
-     * (i.e. a keyframe). A musicPlayer/decoder given the data flagged with
+     * (i.e. a keyframe). A demuxer/decoder given the data flagged with
      * AVIO_DATA_MARKER_HEADER, followed by any AVIO_DATA_MARKER_SYNC_POINT,
      * should give decodeable results.
      */
     AVIO_DATA_MARKER_SYNC_POINT,
     /**
-     * A point in the output bytestream where a musicPlayer can start parsing
+     * A point in the output bytestream where a demuxer can start parsing
      * (for non self synchronizing bytestream formats). That is, any
      * non-keyframe packet start point.
      */
@@ -772,7 +772,7 @@ int     avio_pause(AVIOContext *h, int pause);
  *        units from the beginning of the presentation.
  *        If a stream_index >= 0 is used and the protocol does not support
  *        seeking based on component streams, the call will fail.
- * @param timestamp timestamp in AVStream.timeBase units
+ * @param timestamp timestamp in AVStream.time_base units
  *        or if there is no stream specified then in AV_TIME_BASE units.
  * @param flags Optional combination of AVSEEK_FLAG_BACKWARD, AVSEEK_FLAG_BYTE
  *        and AVSEEK_FLAG_ANY. The protocol may silently ignore

@@ -144,6 +144,10 @@ public:
 
     int getAudioSessionId();
 
+    void setOption(int category, const char *type, const char *option);
+
+    void setOption(int category, const char *type, int64_t option);
+
     void notify(int msg, int ext1, int ext2, void *obj = NULL, int len = 0);
 
 protected:

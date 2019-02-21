@@ -197,7 +197,7 @@ int64_t av_compare_mod(uint64_t a, uint64_t b, uint64_t mod);
 /**
  * Rescale a timestamp while preserving known durations.
  *
- * This function is designed to be called per audioDecoder packet to scale the input
+ * This function is designed to be called per audio packet to scale the input
  * timestamp to a different time base. Compared to a simple av_rescale_q()
  * call, this function is robust against possible inconsistent frame durations.
  *

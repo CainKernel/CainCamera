@@ -1,6 +1,6 @@
 /*
  * Video Acceleration API (shared data between FFmpeg and the video player)
- * HW decodeFrame acceleration for MPEG-2, MPEG-4, H.264 and VC-1
+ * HW decode acceleration for MPEG-2, MPEG-4, H.264 and VC-1
  *
  * Copyright (C) 2008-2009 Splitted-Desktop Systems
  *
@@ -71,7 +71,7 @@ struct attribute_deprecated vaapi_context {
     uint32_t config_id;
 
     /**
-     * Context ID (video decodeFrame pipeline)
+     * Context ID (video decode pipeline)
      *
      * - encoding: unused
      * - decoding: Set by user

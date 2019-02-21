@@ -22,7 +22,7 @@
 /**
  * @file
  * @ingroup lavfi_buffersink
- * memory buffer sink API for audioDecoder and video
+ * memory buffer sink API for audio and video
  */
 
 #include "avfilter.h"
@@ -92,7 +92,7 @@ typedef struct {
 AVABufferSinkParams *av_abuffersink_params_alloc(void);
 
 /**
- * Set the frame size for an audioDecoder buffer sink.
+ * Set the frame size for an audio buffer sink.
  *
  * All calls to av_buffersink_get_buffer_ref will return a buffer with
  * exactly the specified number of samples, or AVERROR(EAGAIN) if there is
@@ -147,7 +147,7 @@ int av_buffersink_get_frame(AVFilterContext *ctx, AVFrame *frame);
  * @param ctx pointer to a context of the abuffersink AVFilter.
  * @param frame pointer to an allocated frame that will be filled with data.
  *              The data must be freed using av_frame_unref() / av_frame_free()
- *              frame will contain exactly nb_samples audioDecoder samples, except at
+ *              frame will contain exactly nb_samples audio samples, except at
  *              the end of stream, when it can contain less than nb_samples.
  *
  * @return The return codes have the same meaning as for

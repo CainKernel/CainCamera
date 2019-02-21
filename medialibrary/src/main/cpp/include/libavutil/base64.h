@@ -42,7 +42,7 @@
 int av_base64_decode(uint8_t *out, const char *in, int out_size);
 
 /**
- * Calculate the output size in bytes needed to decodeFrame a base64 string
+ * Calculate the output size in bytes needed to decode a base64 string
  * with length x to a data buffer.
  */
 #define AV_BASE64_DECODE_SIZE(x) ((x) * 3LL / 4)

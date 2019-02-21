@@ -289,7 +289,7 @@ void swr_close(struct SwrContext *s);
  * @{
  */
 
-/** Convert audioDecoder.
+/** Convert audio.
  *
  * in and in_count can be set to 0 to flush the last few samples out at the
  * end.
@@ -300,9 +300,9 @@ void swr_close(struct SwrContext *s);
  * input samples. Conversion will run directly without copying whenever possible.
  *
  * @param s         allocated Swr context, with parameters set
- * @param out       output buffers, only the first one need be set in case of packed audioDecoder
+ * @param out       output buffers, only the first one need be set in case of packed audio
  * @param out_count amount of space available for output in samples per channel
- * @param in        input buffers, only the first one need to be set in case of packed audioDecoder
+ * @param in        input buffers, only the first one need to be set in case of packed audio
  * @param in_count  number of input samples available in one channel
  *
  * @return number of samples output per channel, negative value on error
@@ -550,7 +550,7 @@ const char *swresample_license(void);
  * @see swr_convert()
  * @see swr_get_delay()
  *
- * @param swr             audioDecoder resample context
+ * @param swr             audio resample context
  * @param output          output AVFrame
  * @param input           input AVFrame
  * @return                0 on success, AVERROR on failure or nonmatching
@@ -568,7 +568,7 @@ int swr_convert_frame(SwrContext *swr,
  *
  * @see swr_close();
  *
- * @param swr             audioDecoder resample context
+ * @param swr             audio resample context
  * @param output          output AVFrame
  * @param input           input AVFrame
  * @return                0 on success, AVERROR on failure.

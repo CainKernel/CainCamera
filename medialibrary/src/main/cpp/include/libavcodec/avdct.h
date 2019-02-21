@@ -42,7 +42,7 @@ typedef struct AVDCT {
      * - (x -> reference DCT -> reference IDCT -> x)
      * - (x -> reference DCT -> simple_mmx_perm = idct_permutation
      *    -> simple_idct_mmx -> x)
-     * - (-> decodeFrame coeffs -> zigzag reorder -> simple_mmx_perm -> dequant
+     * - (-> decode coeffs -> zigzag reorder -> simple_mmx_perm -> dequant
      *    -> simple_idct_mmx -> ...)
      */
     uint8_t idct_permutation[64];

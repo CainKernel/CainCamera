@@ -25,7 +25,7 @@
 
 /**
  * @file
- * audioDecoder downmix medatata
+ * audio downmix medatata
  */
 
 /**
@@ -52,7 +52,7 @@ enum AVDownmixType {
 /**
  * This structure describes optional metadata relevant to a downmix procedure.
  *
- * All fields are set by the decoder to the value indicated in the audioDecoder
+ * All fields are set by the decoder to the value indicated in the audio
  * bitstream (if present), or to a "sane" default otherwise.
  */
 typedef struct AVDownmixInfo {

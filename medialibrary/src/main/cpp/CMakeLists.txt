@@ -31,4 +31,4 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/SoundTouch)
 add_subdirectory(${CMAKE_SOURCE_DIR}/MediaPlayer)
 
 # 媒体合成器
-add_subdirectory(${CMAKE_SOURCE_DIR}/MediaSynthesizer)
+add_subdirectory(${CMAKE_SOURCE_DIR}/VideoEditor)

@@ -26,7 +26,7 @@
 
 /**
  * @file
- * audioDecoder channel layout utility functions
+ * audio channel layout utility functions
  */
 
 /**

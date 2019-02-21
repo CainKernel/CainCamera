@@ -818,6 +818,36 @@ public class CainMediaPlayer implements IMediaPlayer {
     private native void _setPitch(float pitch);
 
 
+    // ---------------------------------------------------------------------------------------------
+    // Options
+    public static final int OPT_CATEGORY_FORMAT = 1;    // 解封装参数
+    public static final int OPT_CATEGORY_CODEC = 2;     // 解码参数
+    public static final int OPT_CATEGORY_SWS = 3;       // 视频转码参数
+    public static final int OPT_CATEGORY_PLAYER = 4;    // 播放器参数
+    public static final int OPT_CATEGORY_SWR = 5;       // 音频重采样参数
+
+    /**
+     * 设置播放器参数
+     * @param type
+     * @param option
+     */
+    public void setOption(int category, String type, String option) throws IllegalStateException {
+        _setOption(category, type, option);
+    }
+
+    /**
+     * 设置播放器参数
+     * @param category
+     * @param type
+     * @param option
+     */
+    public void setOption(int category, String type, long option) throws IllegalStateException {
+        _setOption(category, type, option);
+    }
+
+    private native void _setOption(int category, String type, long option) throws IllegalStateException;
+    private native void _setOption(int category, String type, String option) throws IllegalStateException;
+
     private static native void native_init();
     private native void native_setup(Object mediaplayer_this);
     private native void native_finalize();

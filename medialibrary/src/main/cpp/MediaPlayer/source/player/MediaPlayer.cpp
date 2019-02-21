@@ -344,6 +344,11 @@ AVMessageQueue *MediaPlayer::getMessageQueue() {
     return messageQueue;
 }
 
+PlayerState *MediaPlayer::getPlayerState() {
+    Mutex::Autolock lock(mMutex);
+    return playerState;
+}
+
 void MediaPlayer::run() {
     readPackets();
 }
@@ -390,7 +395,7 @@ int MediaPlayer::readPackets() {
         }
 
         // 打开文件
-        ret = avformat_open_input(&pFormatCtx, playerState->url, NULL, &playerState->format_opts);
+        ret = avformat_open_input(&pFormatCtx, playerState->url, playerState->iformat, &playerState->format_opts);
         if (ret < 0) {
             printError(playerState->url, ret);
             ret = -1;
@@ -856,6 +861,7 @@ int MediaPlayer::prepareDecoder(int streamIndex) {
             }
         }
         if (forcedCodecName) {
+            ALOGD("forceCodecName = %s", forcedCodecName);
             codec = avcodec_find_decoder_by_name(forcedCodecName);
         }
 
