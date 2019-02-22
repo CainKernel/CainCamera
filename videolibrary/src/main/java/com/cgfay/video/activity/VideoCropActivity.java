@@ -1,5 +1,6 @@
 package com.cgfay.video.activity;
 
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -14,14 +15,30 @@ public class VideoCropActivity extends AppCompatActivity {
 
     private static final String FRAGMENT_VIDEO_CROP = "fragment_video_crop";
 
+    protected void hideNavigationBar() {
+        if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
+            View v = getWindow().getDecorView();
+            v.setSystemUiVisibility(View.GONE);
+        } else if (Build.VERSION.SDK_INT >= 19) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            View decorView = getWindow().getDecorView();
+            int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN;
+            decorView.setSystemUiVisibility(uiOptions);
+            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                @Override
+                public void onSystemUiVisibilityChange(int visibility) {
+                    hideNavigationBar();
+                }
+            });
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        WindowManager.LayoutParams params = getWindow().getAttributes();
-        params.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION| View.SYSTEM_UI_FLAG_IMMERSIVE;
-        getWindow().setAttributes(params);
+        hideNavigationBar();
         setContentView(R.layout.activity_video_crop);
         if (null == savedInstanceState) {
             String videoPath = getIntent().getStringExtra(PATH);
@@ -40,11 +57,7 @@ public class VideoCropActivity extends AppCompatActivity {
         // 判断fragment栈中的个数，如果只有一个，则表示当前只处于视频编辑主页面点击返回
         int backStackEntryCount = getSupportFragmentManager().getBackStackEntryCount();
         if (backStackEntryCount == 1) {
-            VideoCropFragment fragment = (VideoCropFragment) getSupportFragmentManager()
-                    .findFragmentByTag(FRAGMENT_VIDEO_CROP);
-            if (fragment != null) {
-                fragment.onBackPressed();
-            }
+            finish();
         } else {
             super.onBackPressed();
         }

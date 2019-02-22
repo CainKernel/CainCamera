@@ -150,10 +150,6 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
         }
     }
 
-    public void onBackPressed() {
-        new BackPressedDialogFragment().show(getChildFragmentManager(), "");
-    }
-
     @Override
     public void onDestroyView() {
         if (mVideoCropViewBar != null) {
@@ -189,7 +185,7 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.video_crop_back) {
-            onBackPressed();
+            mActivity.onBackPressed();
         } else if (id == R.id.video_crop_ok) {
             cropVideo();
         } else if (id == R.id.video_crop_speed_bar_visible) {

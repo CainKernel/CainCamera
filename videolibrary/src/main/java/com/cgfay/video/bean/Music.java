@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.bean;
+package com.cgfay.video.bean;
 
 import android.database.Cursor;
 import android.os.Parcel;
@@ -7,19 +7,19 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 
 /**
- * 音乐列表
+ * 音频数据
  */
-public class MusicItem implements Parcelable {
+public class Music implements Parcelable {
 
-    public static final Creator<MusicItem> CREATOR = new Creator<MusicItem>() {
+    public static final Creator<Music> CREATOR = new Creator<Music>() {
         @Override
-        public MusicItem createFromParcel(Parcel source) {
-            return new MusicItem(source);
+        public Music createFromParcel(Parcel source) {
+            return new Music(source);
         }
 
         @Override
-        public MusicItem[] newArray(int size) {
-            return new MusicItem[size];
+        public Music[] newArray(int size) {
+            return new Music[size];
         }
     };
 
@@ -28,22 +28,22 @@ public class MusicItem implements Parcelable {
     private String songUrl;     // 路径
     private long duration;       // 时长
 
-    public MusicItem(long id, String name, String songUrl, long duration) {
+    public Music(long id, String name, String songUrl, long duration) {
         this.id = id;
         this.name = name;
         this.songUrl = songUrl;
         this.duration = duration;
     }
 
-    private MusicItem(Parcel source) {
+    private Music(Parcel source) {
         id = source.readLong();
         name =  source.readString();
         songUrl = source.readString();
         duration = source.readInt();
     }
 
-    public static MusicItem valueof(Cursor cursor) {
-        return new MusicItem(cursor.getLong(cursor.getColumnIndex(MediaStore.Files.FileColumns._ID)),
+    public static Music valueof(Cursor cursor) {
+        return new Music(cursor.getLong(cursor.getColumnIndex(MediaStore.Files.FileColumns._ID)),
                 cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
                 cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)),
                 cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)));
@@ -64,10 +64,10 @@ public class MusicItem implements Parcelable {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof MusicItem)) {
+        if (!(obj instanceof Music)) {
             return false;
         }
-        MusicItem music = (MusicItem)obj;
+        Music music = (Music)obj;
 
         return (id == music.id)
                 && ((!TextUtils.isEmpty(name) && name.equals(music.name))
@@ -106,5 +106,4 @@ public class MusicItem implements Parcelable {
     public long getDuration() {
         return duration;
     }
-
 }

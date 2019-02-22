@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 音乐裁剪控件样式 -->
+    <declare-styleable name="WaveCutView">
+        <attr name="selectedColor" format="color"/>
+        <attr name="defaultColor" format="color"/>
+        <attr name="width" format="dimension"/>
+        <attr name="height" format="dimension"/>
+        <attr name="res" format="reference"/>
+    </declare-styleable>
+
+</resources>

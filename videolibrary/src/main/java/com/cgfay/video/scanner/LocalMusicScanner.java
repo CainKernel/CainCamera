@@ -1,5 +1,4 @@
-package com.cgfay.caincamera.scanner;
-
+package com.cgfay.video.scanner;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -15,7 +14,7 @@ import java.lang.ref.WeakReference;
 /**
  * 本地音乐扫描器
  */
-public class MusicItemScanner implements LoaderManager.LoaderCallbacks<Cursor> {
+public class LocalMusicScanner implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int LOADER_ID = 2;
 
@@ -23,7 +22,7 @@ public class MusicItemScanner implements LoaderManager.LoaderCallbacks<Cursor> {
     private LoaderManager mLoaderManager;
     private MusicScanCallbacks mCallbacks;
 
-    public MusicItemScanner(FragmentActivity activity, MusicScanCallbacks callbacks) {
+    public LocalMusicScanner(FragmentActivity activity, MusicScanCallbacks callbacks) {
         mWeakContext = new WeakReference<Context>(activity);
         mLoaderManager = activity.getSupportLoaderManager();
         mCallbacks = callbacks;
@@ -36,7 +35,7 @@ public class MusicItemScanner implements LoaderManager.LoaderCallbacks<Cursor> {
         if (context == null) {
             return null;
         }
-        return MusicCursorLoader.newInstance(context);
+        return LocalMusicCursorLoader.newInstance(context);
     }
 
     @Override

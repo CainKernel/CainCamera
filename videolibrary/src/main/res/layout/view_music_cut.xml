@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom">
+
+    <LinearLayout
+        android:id="@+id/layout_cut_change"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/transparent"
+            android:text="@string/video_cut_music_title"
+            android:textColor="@color/white"
+            android:textAlignment="center"/>
+        <ImageView
+            android:id="@+id/iv_cut_music_save"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/dp30"
+            android:layout_margin="@dimen/dp10"
+            android:background="@drawable/icon_video_change_ok"/>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layout_cut_change"
+        android:layout_marginTop="@dimen/dp10"
+        android:layout_marginBottom="@dimen/dp20">
+
+        <com.cgfay.video.widget.WaveCutView
+            android:id="@+id/wave_cut_view"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginLeft="39dp"
+            android:layout_marginRight="39dp" />
+
+        <TextView
+            android:id="@+id/tv_audio_current"
+            android:layout_width="50dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:text="00:00"
+            android:paddingLeft="10dp"/>
+
+        <TextView
+            android:id="@+id/tv_audio_duration"
+            android:layout_width="50dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:text="00:00"
+            android:paddingRight="10dp"/>
+    </RelativeLayout>
+
+</RelativeLayout>

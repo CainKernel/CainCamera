@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.adapter;
+package com.cgfay.video.adapter;
 
 import android.database.Cursor;
 import android.support.annotation.NonNull;
@@ -9,33 +9,32 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.cgfay.caincamera.R;
-
-import com.cgfay.caincamera.bean.MusicItem;
 import com.cgfay.utilslibrary.utils.StringUtils;
+import com.cgfay.video.R;
+import com.cgfay.video.bean.Music;
 
 /**
  * 本地音乐适配器
  */
-public class MusicItemAdapter extends CursorAdapter<RecyclerView.ViewHolder> {
+public class LocalMusicAdapter extends LocalCursorAdapter<RecyclerView.ViewHolder> {
 
     private OnMusicItemSelectedListener mListener;
 
-    public MusicItemAdapter(Cursor cursor) {
+    public LocalMusicAdapter(Cursor cursor) {
         super(cursor);
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_music_scan_view, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_video_music_select_view, parent, false);
         return new MusicViewHolder(view);
     }
 
     @Override
     protected void onBindViewHolder(RecyclerView.ViewHolder holder, Cursor cursor) {
         MusicViewHolder viewHolder = (MusicViewHolder) holder;
-        final MusicItem music = MusicItem.valueof(cursor);
+        final Music music = Music.valueof(cursor);
         viewHolder.mTextName.setText(music.getName());
         viewHolder.mTexDuration.setText(StringUtils.generateMillisTime((int) music.getDuration()));
         viewHolder.mLayoutMusic.setOnClickListener(new View.OnClickListener() {
@@ -61,7 +60,7 @@ public class MusicItemAdapter extends CursorAdapter<RecyclerView.ViewHolder> {
      */
     public interface OnMusicItemSelectedListener {
         // 选中音乐
-        void onMusicItemSelected(MusicItem music);
+        void onMusicItemSelected(Music music);
     }
 
 

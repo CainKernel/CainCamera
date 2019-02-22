@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.scanner;
+package com.cgfay.video.scanner;
 
 import android.content.Context;
 import android.net.Uri;
@@ -8,7 +8,7 @@ import android.support.v4.content.CursorLoader;
 /**
  * 本地音乐加载器
  */
-public class MusicCursorLoader extends CursorLoader {
+public class LocalMusicCursorLoader extends CursorLoader {
 
     private static final Uri QUERY_URI = MediaStore.Files.getContentUri("external");
 
@@ -29,7 +29,7 @@ public class MusicCursorLoader extends CursorLoader {
 
     private static final String ORDER_BY = "datetaken DESC";
 
-    private MusicCursorLoader(Context context, String selection, String[] selectionArgs) {
+    private LocalMusicCursorLoader(Context context, String selection, String[] selectionArgs) {
         super(context, QUERY_URI, PROJECTION, selection, selectionArgs, ORDER_BY);
     }
 
@@ -37,6 +37,6 @@ public class MusicCursorLoader extends CursorLoader {
         String selection = SELECTION_ALL;
         String[] selectionArgs = SELECTION_ARGS;
 
-        return new MusicCursorLoader(context, selection, selectionArgs);
+        return new LocalMusicCursorLoader(context, selection, selectionArgs);
     }
 }

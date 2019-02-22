@@ -6,32 +6,195 @@
     android:background="@color/video_crop_background">
 
     <!-- 视频显示页面 -->
-    <com.cgfay.video.widget.VideoTextureView
-        android:id="@+id/video_player_view"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true">
+        <com.cgfay.video.widget.VideoTextureView
+            android:id="@+id/video_player_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+        
+        <ImageView
+            android:id="@+id/iv_video_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/icon_video_edit_play"
+            android:visibility="gone"/>
 
-    <!-- back -->
-    <ImageView
-        android:id="@+id/video_edit_back"
-        android:layout_width="@dimen/dp25"
-        android:layout_height="@dimen/dp25"
-        android:layout_marginTop="@dimen/dp20"
-        android:layout_marginStart="@dimen/dp10"
-        android:scaleType="centerInside"
-        android:background="@drawable/icon_video_crop_back"/>
+    </FrameLayout>
 
-    <!-- OK -->
-    <Button
-        android:id="@+id/video_edit_ok"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/dp40"
-        android:layout_marginTop="@dimen/dp15"
-        android:layout_marginEnd="@dimen/dp10"
-        android:layout_alignParentEnd="true"
-        android:background="@color/brown"
-        android:textColor="@color/white"
-        android:text="@string/video_crop_next"/>
+    <RelativeLayout
+        android:id="@+id/layout_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:visibility="visible">
+        <!-- back -->
+        <ImageView
+            android:id="@+id/btn_edit_back"
+            android:layout_width="@dimen/dp25"
+            android:layout_height="@dimen/dp25"
+            android:layout_marginTop="@dimen/dp20"
+            android:layout_marginStart="@dimen/dp10"
+            android:scaleType="centerInside"
+            android:background="@drawable/icon_video_crop_back"/>
+
+        <!-- 选音乐 -->
+        <Button
+            android:id="@+id/btn_select_music"
+            android:layout_width="@dimen/dp60"
+            android:layout_height="@dimen/dp40"
+            android:layout_marginTop="@dimen/dp15"
+            android:layout_marginEnd="@dimen/dp10"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:background="@color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/video_edit_select_music" />
+        <!-- 声音-->
+        <Button
+            android:id="@+id/btn_change_voice"
+            android:layout_width="@dimen/dp60"
+            android:layout_height="@dimen/dp40"
+            android:layout_marginTop="@dimen/dp15"
+            android:layout_marginEnd="@dimen/dp10"
+            android:layout_toStartOf="@id/btn_select_music"
+            android:background="@color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/video_edit_voice" />
+
+        <!-- 剪音乐 -->
+        <Button
+            android:id="@+id/btn_cut_music"
+            android:layout_width="@dimen/dp60"
+            android:layout_height="@dimen/dp40"
+            android:layout_marginTop="@dimen/dp15"
+            android:layout_marginEnd="@dimen/dp10"
+            android:layout_toStartOf="@id/btn_change_voice"
+            android:background="@color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/video_edit_cut_music"/>
+    </RelativeLayout>
+
+    <!-- 顶部子控制栏 -->
+    <RelativeLayout
+        android:id="@+id/layout_sub_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:visibility="gone">
+
+        <!-- 取消 -->
+        <Button
+            android:id="@+id/btn_sub_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp20"
+            android:layout_marginStart="@dimen/dp10"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:background="@color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/video_edit_cancel"/>
+
+        <!-- 保存 -->
+        <Button
+            android:id="@+id/btn_sub_save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp20"
+            android:layout_marginEnd="@dimen/dp10"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:background="@color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/video_edit_save"/>
+    </RelativeLayout>
+
+    <!-- 底部控制栏 -->
+    <RelativeLayout
+        android:id="@+id/layout_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/dp10"
+        android:layout_alignParentBottom="true">
+        <!-- 特效 -->
+        <Button
+            android:id="@+id/btn_edit_effect"
+            android:layout_width="@dimen/dp60"
+            android:layout_height="@dimen/dp40"
+            android:layout_marginTop="@dimen/dp15"
+            android:layout_marginEnd="@dimen/dp5"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:background="@color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/video_edit_effect"/>
+
+        <!-- 选封面 -->
+        <Button
+            android:id="@+id/btn_edit_cover"
+            android:layout_width="@dimen/dp60"
+            android:layout_height="@dimen/dp40"
+            android:layout_marginTop="@dimen/dp15"
+            android:layout_marginEnd="@dimen/dp5"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@id/btn_edit_effect"
+            android:background="@color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/video_edit_cover"/>
+        <!-- 滤镜 -->
+        <Button
+            android:id="@+id/btn_edit_filter"
+            android:layout_width="@dimen/dp60"
+            android:layout_height="@dimen/dp40"
+            android:layout_marginTop="@dimen/dp15"
+            android:layout_marginEnd="@dimen/dp5"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@id/btn_edit_cover"
+            android:background="@color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/video_edit_filter"/>
+
+        <!-- 贴纸 -->
+        <Button
+            android:id="@+id/btn_edit_stickers"
+            android:layout_width="@dimen/dp60"
+            android:layout_height="@dimen/dp40"
+            android:layout_marginTop="@dimen/dp15"
+            android:layout_marginEnd="@dimen/dp5"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@id/btn_edit_filter"
+            android:background="@color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/video_edit_stickers"/>
+
+        <!-- next -->
+        <Button
+            android:id="@+id/btn_edit_next"
+            android:layout_width="@dimen/dp60"
+            android:layout_height="@dimen/dp40"
+            android:layout_marginTop="@dimen/dp15"
+            android:layout_marginEnd="@dimen/dp10"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:background="@color/brown"
+            android:textColor="@color/white"
+            android:text="@string/video_edit_next"/>
+    </RelativeLayout>
+
+    <!-- 底部子选择栏 -->
+    <FrameLayout
+        android:id="@+id/layout_sub_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/dp10"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone">
+
+    </FrameLayout>
 
 </RelativeLayout>

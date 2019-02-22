@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.adapter;
+package com.cgfay.video.adapter;
 
 import android.database.Cursor;
 import android.provider.MediaStore;
@@ -9,13 +9,13 @@ import android.support.v7.widget.RecyclerView;
  * 本地游标适配器
  * @param <VH>
  */
-public abstract class CursorAdapter<VH extends RecyclerView.ViewHolder>
+public abstract class LocalCursorAdapter<VH extends RecyclerView.ViewHolder>
         extends RecyclerView.Adapter<VH> {
 
     private Cursor mCursor;
     private int mColumnID;
 
-    public CursorAdapter(Cursor cursor) {
+    public LocalCursorAdapter(Cursor cursor) {
         setHasStableIds(true);
         setCursor(cursor);
     }

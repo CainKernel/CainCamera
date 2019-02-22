@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.activity;
+package com.cgfay.caincamera;
 
 import android.Manifest;
 import android.content.Intent;
@@ -8,7 +8,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-import com.cgfay.caincamera.R;
 import com.cgfay.cameralibrary.engine.PreviewEngine;
 import com.cgfay.cameralibrary.engine.model.AspectRatio;
 import com.cgfay.cameralibrary.engine.model.GalleryType;

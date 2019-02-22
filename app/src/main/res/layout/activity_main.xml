@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/video_window_background"
-    tools:context="com.cgfay.caincamera.activity.MainActivity">
+    tools:context="com.cgfay.caincamera.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"

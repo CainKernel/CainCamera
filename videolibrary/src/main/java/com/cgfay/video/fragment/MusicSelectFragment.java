@@ -1,4 +1,4 @@
-package com.cgfay.caincamera.fragment;
+package com.cgfay.video.fragment;
 
 import android.database.Cursor;
 import android.os.Bundle;
@@ -11,31 +11,30 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.cgfay.caincamera.R;
-import com.cgfay.caincamera.adapter.MusicItemAdapter;
-import com.cgfay.caincamera.bean.MusicItem;
-import com.cgfay.caincamera.scanner.MusicItemScanner;
-
+import com.cgfay.video.R;
+import com.cgfay.video.adapter.LocalMusicAdapter;
+import com.cgfay.video.bean.Music;
+import com.cgfay.video.scanner.LocalMusicScanner;
 
 /**
  * 音乐选择页面
  */
-public class MusicScanFragment extends Fragment implements MusicItemScanner.MusicScanCallbacks,
-        MusicItemAdapter.OnMusicItemSelectedListener {
+public class MusicSelectFragment extends Fragment implements LocalMusicScanner.MusicScanCallbacks,
+        LocalMusicAdapter.OnMusicItemSelectedListener {
 
-    private MusicItemScanner mMusicItemScanner;
+    private LocalMusicScanner mMusicScanner;
     private RecyclerView mRecyclerView;
-    private MusicItemAdapter mAdapter;
+    private LocalMusicAdapter mAdapter;
     private OnMusicSelectedListener mMusicSelectedListener;
 
-    public MusicScanFragment() {
+    public MusicSelectFragment() {
 
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_music_scan, container, false);
+        return inflater.inflate(R.layout.fragment_video_music_select, container, false);
     }
 
     @Override
@@ -48,19 +47,20 @@ public class MusicScanFragment extends Fragment implements MusicItemScanner.Musi
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mAdapter = new MusicItemAdapter(null);
+        mAdapter = new LocalMusicAdapter(null);
         mAdapter.setOnMusicSelectedListener(this);
         mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(),
+                LinearLayoutManager.VERTICAL, false));
         mRecyclerView.setAdapter(mAdapter);
-        mMusicItemScanner = new MusicItemScanner(getActivity(), this);
-        mMusicItemScanner.scanLocalMusic();
+        mMusicScanner = new LocalMusicScanner(getActivity(), this);
+        mMusicScanner.scanLocalMusic();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mMusicItemScanner.destroy();
+        mMusicScanner.destroy();
     }
 
     @Override
@@ -74,7 +74,7 @@ public class MusicScanFragment extends Fragment implements MusicItemScanner.Musi
     }
 
     @Override
-    public void onMusicItemSelected(MusicItem music) {
+    public void onMusicItemSelected(Music music) {
         if (mMusicSelectedListener != null) {
             mMusicSelectedListener.onMusicSelected(music);
         }
@@ -84,7 +84,8 @@ public class MusicScanFragment extends Fragment implements MusicItemScanner.Musi
      * 音乐选中监听器
      */
     public interface OnMusicSelectedListener {
-        void onMusicSelected(MusicItem music);
+
+        void onMusicSelected(Music music);
     }
 
     /**

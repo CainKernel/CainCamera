@@ -15,4 +15,22 @@
     <string name="video_crop_selected_time">已选取%1$d秒</string>
     <string name="video_crop_selected_error">解析数据出现错误，暂不支持该视频</string>
 
+    <!-- 编辑页面 -->
+    <string name="video_edit_back_press">返回上一步会丢失当前效果，是否返回</string>
+    <string name="video_edit_select_music">选音乐</string>
+    <string name="video_edit_voice">声音</string>
+    <string name="video_edit_cut_music">剪音乐</string>
+    <string name="video_edit_effect">特效</string>
+    <string name="video_edit_cover">选封面</string>
+    <string name="video_edit_filter">滤镜</string>
+    <string name="video_edit_stickers">贴纸</string>
+    <string name="video_edit_next">下一步</string>
+    <string name="video_edit_cancel">取消</string>
+    <string name="video_edit_save">保存</string>
+    <!-- 声音控制 -->
+    <string name="video_voice_save">保存</string>
+    <string name="video_voice_source">原声</string>
+    <string name="video_voice_background">配乐</string>
+    <string name="video_cut_music_title">左右拖动声谱以剪取音乐</string>
+
 </resources>
