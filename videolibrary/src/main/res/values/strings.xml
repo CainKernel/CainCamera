@@ -14,6 +14,7 @@
     <string name="video_crop_time_120">2分钟</string>
     <string name="video_crop_selected_time">已选取%1$d秒</string>
     <string name="video_crop_selected_error">解析数据出现错误，暂不支持该视频</string>
+    <string name="video_crop_progress_tips">处理中...</string>
 
     <!-- 编辑页面 -->
     <string name="video_edit_back_press">返回上一步会丢失当前效果，是否返回</string>

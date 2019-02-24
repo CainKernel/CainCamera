@@ -16,6 +16,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,15 +24,18 @@ import android.widget.Toast;
 import com.cgfay.media.CainMediaPlayer;
 import com.cgfay.media.CainShortVideoEditor;
 import com.cgfay.media.IMediaPlayer;
-import com.cgfay.utilslibrary.fragment.BackPressedDialogFragment;
+import com.cgfay.utilslibrary.utils.FileUtils;
 import com.cgfay.video.R;
 import com.cgfay.video.activity.VideoEditActivity;
 import com.cgfay.video.bean.VideoSpeed;
+import com.cgfay.video.widget.CircleProgressView;
 import com.cgfay.video.widget.VideoCropViewBar;
 import com.cgfay.video.widget.VideoSpeedLevelBar;
 import com.cgfay.video.widget.VideoTextureView;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class VideoCropFragment extends Fragment implements View.OnClickListener {
 
@@ -54,11 +58,18 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
     // 设置旋转角度
     private TextView mTextVideoRotation;
 
+    // 执行进度提示
+    private LinearLayout mLayoutProgress;
+    // 圆形进度条
+    private CircleProgressView mCvCropProgress;
+    private TextView mTvCropProgress;
+
     private VideoSpeed mVideoSpeed = VideoSpeed.SPEED_L2;
 
     // 毫秒
     private long mCropStart = 0;
     private long mCropRange = 15000;
+    private long mVideoDuration;
     private CainMediaPlayer mCainMediaPlayer;
     private AudioManager mAudioManager;
     private CainShortVideoEditor mVideoEditor;
@@ -105,12 +116,17 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
         mVideoSpeedLevelBar.setOnSpeedChangedListener(new VideoSpeedLevelBar.OnSpeedChangedListener() {
             @Override
             public void onSpeedChanged(VideoSpeed speed) {
-                mVideoSpeed = speed;
-                float rate = speed.getSpeed();
-                float pitch = 1.0f / rate;
-                mCainMediaPlayer.setRate(rate);
-                mCainMediaPlayer.setPitch(pitch);
-                mCainMediaPlayer.seekTo(mCropStart);
+                if (mCainMediaPlayer != null) {
+                    mVideoSpeed = speed;
+                    float rate = speed.getSpeed();
+                    float pitch = 1.0f / rate;
+                    mCainMediaPlayer.setRate(rate);
+                    mCainMediaPlayer.setPitch(pitch);
+                    mCainMediaPlayer.seekTo(mCropStart);
+                    if (mVideoCropViewBar != null) {
+                        mVideoCropViewBar.setSpeed(mVideoSpeed);
+                    }
+                }
             }
         });
 
@@ -126,6 +142,11 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
             mVideoCropViewBar.setVideoPath(mVideoPath);
         }
         mVideoCropViewBar.setOnVideoCropViewBarListener(mOnVideoCropViewBarListener);
+
+        mLayoutProgress = mContentView.findViewById(R.id.layout_progress);
+        mLayoutProgress.setVisibility(View.GONE);
+        mCvCropProgress = mLayoutProgress.findViewById(R.id.cv_crop_progress);
+        mTvCropProgress = mLayoutProgress.findViewById(R.id.tv_crop_progress);
     }
 
     @Override
@@ -137,9 +158,7 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
     @Override
     public void onResume() {
         super.onResume();
-        if (mCainMediaPlayer != null) {
-            mCainMediaPlayer.resume();
-        }
+        openMediaPlayer();
     }
 
     @Override
@@ -251,6 +270,7 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
         mCainMediaPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(IMediaPlayer mp) {
+                mVideoDuration = mCainMediaPlayer.getDuration();
                 mp.start();
             }
         });
@@ -277,10 +297,12 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
 
         try {
             mCainMediaPlayer.setDataSource(mVideoPath);
-            if (mSurface == null) {
-                mSurface = new Surface(mSurfaceTexture);
+            if (mSurfaceTexture != null) {
+                if (mSurface == null) {
+                    mSurface = new Surface(mSurfaceTexture);
+                }
+                mCainMediaPlayer.setSurface(mSurface);
             }
-            mCainMediaPlayer.setSurface(mSurface);
             mCainMediaPlayer.setOption(CainMediaPlayer.OPT_CATEGORY_PLAYER, "vcodec", "h264_mediacodec");
             mCainMediaPlayer.prepare();
         } catch (IOException e) {
@@ -334,6 +356,7 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
      * 裁剪视频
      */
     private void cropVideo() {
+        mLayoutProgress.setVisibility(View.VISIBLE);
         // TODO crop video
         new Thread(new Runnable() {
             @Override
@@ -343,10 +366,26 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
                 }
                 if (mVideoEditor == null) {
                     mVideoEditor = new CainShortVideoEditor();
-                    mVideoEditor.setOnVideoEditorProcessListener(mProcessListener);
                 }
-                Log.d(TAG, "run: start = " + mCropStart + "duration = " + mCropRange);
-                String outPath = mVideoEditor.videoCut(mVideoPath, mCropStart / 1000f, mCropRange / 1000f);
+                mVideoEditor.setOnVideoEditorProcessListener(mProcessListener);
+
+                float start = mVideoSpeed.getSpeed() * mCropStart;
+                float duration = mVideoSpeed.getSpeed() * mCropRange;
+                if (duration > mVideoDuration) {
+                    duration = mVideoDuration;
+                }
+
+                String outPath = mVideoEditor.videoCut(mVideoPath, start, duration);
+
+                // 倍速调整比较慢
+                if (mVideoSpeed.getSpeed() != 1.0) {
+                    // 这里是使用了MediaCodec对视频帧进行pts调整
+                    // TODO 后续编写FFmpeg转码程序来实现倍速处理
+                    String tmpPath = mVideoEditor.videoCut(mVideoPath, start, duration, mVideoSpeed.getSpeed());
+                    FileUtils.deleteFile(outPath);
+                    outPath = tmpPath;
+                }
+
                 // 成功则直接退出播放器，并跳转至编辑页面
                 if (outPath != null) {
                     if (mCainMediaPlayer != null) {
@@ -364,6 +403,15 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
                         mCainMediaPlayer.start();
                     }
                 }
+                if (mCainMediaPlayer != null) {
+                    mCainMediaPlayer.start();
+                }
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mLayoutProgress.setVisibility(View.GONE);
+                    }
+                });
             }
         }).start();
     }
@@ -372,7 +420,15 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
 
         @Override
         public void onProcessing(int time) {
-            Log.d(TAG, "onProcessing: time = " + time + "s");
+            Log.d(TAG, "onProcessing: time = " + time + "s" + ", duration = " + mVideoDuration);
+            if (mVideoSpeed.getSpeed() != 1.0) {
+                float percent = time * 1000f / mVideoDuration * 100;
+                if (percent > 100) {
+                    percent = 100;
+                }
+                mCvCropProgress.setProgress(percent);
+                mTvCropProgress.setText(percent + "%");
+            }
         }
 
         @Override

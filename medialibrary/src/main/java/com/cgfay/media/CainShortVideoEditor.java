@@ -1,5 +1,9 @@
 package com.cgfay.media;
 
+import android.media.MediaCodec;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
+import android.media.MediaMuxer;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -11,6 +15,7 @@ import com.cgfay.utilslibrary.utils.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -403,6 +408,8 @@ public class CainShortVideoEditor {
         String suffix = FileUtils.extractFileSuffix(srcPath);
         if (suffix.equals("m4a") || suffix.equals("mp3")) {
             audioPath = VideoEditorUtil.createFileInBox(suffix);
+        } else { // 如果是mp4文件，则转码成aac
+            audioPath = VideoEditorUtil.createFileInBox("aac");
         }
         if (audioPath == null) {
             return null;
@@ -420,6 +427,7 @@ public class CainShortVideoEditor {
 
         cmdList.add("-y");
         cmdList.add(audioPath);
+
         String[] command = new String[cmdList.size()];
         for (int i = 0; i < cmdList.size(); i++) {
             command[i] = (String) cmdList.get(i);
@@ -564,7 +572,8 @@ public class CainShortVideoEditor {
     }
 
     /**
-     * 调整视频的播放速度
+     * 调整视频的播放速度，备注：1080P 20秒视频 4倍速需要将近30秒的时间，而2倍速则要将近40秒，实在太慢了
+     * 建议使用videoCut方法调整速度
      * @param srcPath   源视频路径
      * @param speed 0.5 ~ 4.0
      * @return
@@ -624,6 +633,208 @@ public class CainShortVideoEditor {
         } else {
             return null;
         }
+    }
+
+    /**
+     * 调整音频速度，这里比较快，20秒1080P只需要800毫秒不到的时间
+     * @param srcPath
+     * @param speed
+     * @return
+     */
+    public String adjustAudioSpeed(String srcPath, float speed) {
+        if (FileUtils.fileExists(srcPath)) {
+
+            if (speed < 0.25f) {
+                speed = 0.25f;
+            } else if (speed > 4.0f) {
+                speed = 4.0f;
+            }
+
+            String dstPath = VideoEditorUtil.createFileInBox("aac");
+            List<String> cmdList = new ArrayList<String>();
+            cmdList.add("ffmpeg");
+
+            cmdList.add("-i");
+            cmdList.add(srcPath);
+
+            cmdList.add("-vn");
+
+            cmdList.add("-filter:a");
+            String filter = String.format(Locale.getDefault(), "atempo=%f", speed);
+            // 备注：这里当速度大于2.0/小于0.5时，atempo都需要拆分成两个。此时拼接时呈倍数关系的。
+            // 比如，speed = 3.0 时，相当于 atempo=2.0,atempo=1.5，先调整为2.0倍后再调整1.5倍
+            if (speed > 2.0) {
+                filter = String.format(Locale.getDefault(), "atempo=2.0,atempo=%f", (speed / 2.0f));
+            } else if (speed < 0.5) {
+                filter = String.format(Locale.getDefault(), "atempo=0.5,atempo=%f", (speed / 0.5f));
+            }
+            cmdList.add(filter);
+
+            cmdList.add("-y");
+            cmdList.add(dstPath);
+
+            String[] command = new String[cmdList.size()];
+            for (int i = 0; i < cmdList.size(); i++) {
+                command[i] = (String) cmdList.get(i);
+            }
+            int ret = execute(command);
+            if (ret == 0) {
+                return dstPath;
+            } else {
+                FileUtils.deleteFile(dstPath);
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * 裁剪视频的并调整速度，这里是用MediaCodec对视频转码处理的，速度非常快，但支持的格式比较少
+     * @param srcPath
+     * @param start
+     * @param duration
+     * @param speed
+     */
+    public String videoCut(String srcPath, float start, float duration, float speed)
+            throws IllegalStateException {
+
+        if (FileUtils.fileExists(srcPath)) {
+
+            String tmpVideo = videoCut(srcPath, start, duration);
+
+            if (tmpVideo == null) {
+                return null;
+            }
+            // 获取倍速调整后的音频文件，这里不是性能瓶颈
+            String audioPath = adjustAudioSpeed(tmpVideo, speed);
+            // 分离视频流文件
+            String videoTmpPath = splitVideoTrack(tmpVideo);
+            // 删除裁剪中间文件
+            FileUtils.deleteFile(tmpVideo);
+
+            if (videoTmpPath == null && audioPath == null) {
+                return null;
+            }
+
+            // 采用MediaExtractor、MediaCodec和MediaMuxer来对视频流进行倍速转码处理
+            String videoPath = null;
+            if (videoTmpPath != null) {
+                boolean hasVideo = true;
+                MediaExtractor extractor = new MediaExtractor();
+                try {
+                    extractor.setDataSource(videoTmpPath);
+                } catch (Exception e) {
+                    hasVideo = false;
+                }
+                int videoTrack = selectTrack(extractor, "video/");
+                if (videoTrack < 0) {
+                    hasVideo = false;
+                }
+                if (!hasVideo) {
+                    FileUtils.deleteFile(audioPath);
+                    FileUtils.deleteFile(videoTmpPath);
+                    return null;
+                }
+                extractor.selectTrack(videoTrack);
+                MediaFormat videoFormat = extractor.getTrackFormat(videoTrack);
+                ByteBuffer mReadBuf = ByteBuffer.allocate(MAX_BUFF_SIZE);
+                videoPath = VideoEditorUtil.createFileInBox("mp4");
+                MediaMuxer muxer = null;
+                int outVideoTrack = -1;
+                try {
+                    muxer = new MediaMuxer(videoPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+                    outVideoTrack = muxer.addTrack(videoFormat);
+                } catch (IOException e) {
+                    FileUtils.deleteFile(videoPath);
+                    return null;
+                }
+                int framSize;
+                MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+                muxer.start();
+                long pts = 0;
+                // 读取数据处理
+                while (true) {
+
+                    if (!hasVideo) {
+                        break;
+                    }
+
+                    mReadBuf.rewind();
+                    framSize = extractor.readSampleData(mReadBuf, 0);
+                    if (framSize < 0) {
+                        hasVideo = false;
+                    } else {
+                        if (extractor.getSampleTrackIndex() == videoTrack) {
+                            info.offset = 0;
+                            info.size = framSize;
+                            // 调整pts
+                            pts = extractor.getSampleTime();
+                            info.presentationTimeUs = (long)(pts / speed);
+                            // 设置关键帧
+                            if ((extractor.getSampleFlags() & MediaCodec.BUFFER_FLAG_KEY_FRAME) != 0) {
+                                info.flags = MediaCodec.BUFFER_FLAG_KEY_FRAME;
+                            }
+                            mReadBuf.rewind();
+                            // 写入文件
+                            muxer.writeSampleData(outVideoTrack, mReadBuf, info);
+                            extractor.advance();
+                            Message msg = mEventHandler.obtainMessage(EDITOR_PROCESSING, (int)(pts / 1000000), 0, null);
+                            mEventHandler.sendMessage(msg);
+                        }
+                    }
+                }
+                extractor.release();
+                if (muxer != null) {
+                    try {
+                        muxer.stop();
+                        muxer.release();
+                    } catch (Exception e) {
+                        Log.e(TAG, "Muxer close error. No data was written");
+                    } finally {
+                        muxer = null;
+                    }
+                }
+
+                // 音视频混合
+                String dstPath = audioVideoMix(videoPath, audioPath, 0.0f, 1.0f);
+                // 删除缓存文件
+                FileUtils.deleteFile(videoTmpPath);
+                FileUtils.deleteFile(videoPath);
+                FileUtils.deleteFile(audioPath);
+                return dstPath;
+
+            } else {
+                FileUtils.deleteFile(audioPath);
+                return null;
+            }
+        } else {
+            return null;
+        }
+
+    }
+
+    private static final int MAX_BUFF_SIZE = 1048576;
+
+    /**
+     * 选择轨道
+     * @param extractor
+     * @param mimePrefix
+     * @return
+     */
+    private int selectTrack(MediaExtractor extractor, String mimePrefix) {
+        // 获取轨道总数
+        int numTracks = extractor.getTrackCount();
+        // 遍历查找包含mimePrefix的轨道
+        for(int i = 0; i < numTracks; ++i) {
+            MediaFormat format = extractor.getTrackFormat(i);
+            String mime = format.getString("mime");
+            if (mime.startsWith(mimePrefix)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     /**
@@ -1007,58 +1218,13 @@ public class CainShortVideoEditor {
     }
 
     /**
-     * 视频逆序
+     * 视频逆序, TODO 不能用命令行来处理，分辨率较大时执行到一半就会崩掉，这里需要自行用代码实现。
      * @param srcPath
      * @return
      */
     public String reverseVideo(String srcPath) {
-        if (FileUtils.fileExists(srcPath)) {
-
-            List<String> cmdList = new ArrayList<String>();
-
-            cmdList.add("-i");
-            cmdList.add(srcPath);
-
-            // 翻转
-            cmdList.add("-vf");
-            cmdList.add("reverse");
-
-            // 使用libx264
-            cmdList.add("-vcodec");
-            cmdList.add("libx264");
-
-            // 指定为yuv420p
-            cmdList.add("-pix_fmt");
-            cmdList.add("yuv420p");
-
-            // 复制音频
-            cmdList.add("-acodec");
-            cmdList.add("copy");
-
-
-            cmdList.add("-bf");
-            cmdList.add("0");
-
-            // gop size
-            cmdList.add("-g");
-            cmdList.add("30");
-
-            String dstPath = VideoEditorUtil.createFileInBox(".mp4");
-            String[] command = new String[cmdList.size()];
-            for (int i = 0; i < cmdList.size(); i++) {
-                command[i] = (String) cmdList.get(i);
-            }
-            int ret = execute(command);
-            if (ret == 0) {
-                return dstPath;
-            } else {
-                FileUtils.deleteFile(dstPath);
-                return null;
-            }
-
-        } else {
-            return null;
-        }
+        // TODO 只能解码然后在做处理。
+        return null;
     }
 
 
@@ -1266,4 +1432,25 @@ public class CainShortVideoEditor {
     }
 
     private OnVideoEditorProcessListener mOnVideoEditorProcessListener;
+
+    /**
+     * 视频裁剪监听器
+     */
+    public interface OnVideoCutListener {
+
+        // 裁剪进度
+        void onVideoCutting(long current, long duration);
+
+        // 裁剪完成
+        void onVideoCutFinish();
+
+        // 裁剪出错
+        void onVideoCutError();
+    }
+
+    public void setOnVideoCutListener(OnVideoCutListener listener) {
+        mOnVideoCutListener = listener;
+    }
+
+    private OnVideoCutListener mOnVideoCutListener;
 }

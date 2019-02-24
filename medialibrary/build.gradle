@@ -17,7 +17,7 @@ android {
 
         externalNativeBuild {
             cmake {
-                cppFlags "-std=c++11"
+                cppFlags "-std=c++11", "-D__STDC_CONSTANT_MACROS"
                 arguments "-DANDROID_PLATFORM_LEVEL=${platformVersion}",
                         '-DANDROID_TOOLCHAIN=clang'
             }

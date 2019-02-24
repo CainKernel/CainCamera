@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- 圆形进度控件样式 -->
+    <declare-styleable name="CircleProgressView">
+        <attr name="textPrefix" format="string"/>
+        <attr name="textSuffix" format="string"/>
+        <attr name="progress" format="integer" />
+        <attr name="color" format="color" />
+        <attr name="backgroundColor" format="color" />
+        <attr name="textColor" format="color"/>
+        <attr name="textSize" format="integer" />
+        <attr name="circleWidth" format="dimension" />
+        <attr name="backgroundCircleWidth" format="dimension" />
+    </declare-styleable>
+
     <!-- 音乐裁剪控件样式 -->
     <declare-styleable name="WaveCutView">
         <attr name="selectedColor" format="color"/>
