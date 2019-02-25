@@ -199,6 +199,24 @@ int Metadata::getMetadata(AVFormatContext *pFormatCtx, AVDictionary **metadata) 
     }
 
     setShoutcastMetadata(pFormatCtx);
+    // 查找视频旋转角度
+    int videoIndex = -1;
+    for (int i = 0; i < pFormatCtx->nb_streams; ++i) {
+        if (pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+            videoIndex = i;
+            break;
+        }
+    }
+    AVStream *videoStream = nullptr;
+    if (videoIndex >= 0) {
+        videoStream = pFormatCtx->streams[videoIndex];
+        AVDictionaryEntry *entry = av_dict_get(videoStream->metadata, ROTATE, NULL, AV_DICT_MATCH_CASE);
+        if (entry && entry->value) {
+            av_dict_set(&pFormatCtx->metadata, ROTATE, entry->value, 0);
+        } else {
+            av_dict_set(&pFormatCtx->metadata, ROTATE, "0", 0);
+        }
+    }
     av_dict_copy(metadata, pFormatCtx->metadata, 0);
 
     return 0;

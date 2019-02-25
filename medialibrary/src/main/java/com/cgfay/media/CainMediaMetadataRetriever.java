@@ -6,8 +6,10 @@ import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.util.Log;
 
 import com.cgfay.media.annotations.AccessedByNative;
+import com.cgfay.utilslibrary.utils.BitmapUtils;
 
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
@@ -353,10 +355,16 @@ public class CainMediaMetadataRetriever {
         //bitmapOptionsCache.inPreferredConfig = getInPreferredConfig();
         bitmapOptionsCache.inDither = false;
 
+        int rotate = Integer.valueOf(extractMetadata(METADATA_KEY_ROTAE));
         byte [] picture = _getScaledFrameAtTime(timeUs, option, width, height);
 
         if (picture != null) {
-            b = BitmapFactory.decodeByteArray(picture, 0, picture.length, bitmapOptionsCache);
+
+            if (rotate % 90 != 0) {
+                return BitmapUtils.rotateBitmap(picture, rotate);
+            } else {
+                b = BitmapFactory.decodeByteArray(picture, 0, picture.length, bitmapOptionsCache);
+            }
         }
 
         return b;
@@ -389,12 +397,15 @@ public class CainMediaMetadataRetriever {
         //bitmapOptionsCache.inPreferredConfig = getInPreferredConfig();
         bitmapOptionsCache.inDither = false;
 
+        int rotate = Integer.valueOf(extractMetadata(METADATA_KEY_ROTAE));
         byte [] picture = _getScaledFrameAtTime(timeUs, OPTION_CLOSEST_SYNC, width, height);
-
         if (picture != null) {
-            b = BitmapFactory.decodeByteArray(picture, 0, picture.length, bitmapOptionsCache);
+            if (rotate != 0) {
+                return BitmapUtils.rotateBitmap(picture, rotate);
+            } else {
+                b = BitmapFactory.decodeByteArray(picture, 0, picture.length, bitmapOptionsCache);
+            }
         }
-
         return b;
     }
 
