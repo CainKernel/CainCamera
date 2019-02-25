@@ -27,6 +27,9 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/Metadata)
 # SoundTouch库
 add_subdirectory(${CMAKE_SOURCE_DIR}/SoundTouch)
 
+# libyuv库
+add_subdirectory(${CMAKE_SOURCE_DIR}/libyuv)
+
 # 媒体播放器
 add_subdirectory(${CMAKE_SOURCE_DIR}/MediaPlayer)
 
