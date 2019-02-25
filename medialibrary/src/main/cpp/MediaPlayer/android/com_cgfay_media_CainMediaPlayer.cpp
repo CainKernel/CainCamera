@@ -468,6 +468,15 @@ jboolean CainMediaPlayer_isPlaying(JNIEnv *env, jobject thiz) {
     return (jboolean)(mp->isPlaying() ? JNI_TRUE : JNI_FALSE);
 }
 
+jint CainMediaPlayer_getRotate(JNIEnv *env, jobject thiz) {
+    CainMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == NULL) {
+        jniThrowException(env, "java/lang/IllegalStateException");
+        return 0;
+    }
+    return mp->getRotate();
+}
+
 jint CainMediaPlayer_getVideoWidth(JNIEnv *env, jobject thiz) {
     CainMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == NULL) {
@@ -536,6 +545,7 @@ static const JNINativeMethod gMethods[] = {
         {"_start", "()V", (void *) CainMediaPlayer_start},
         {"_stop", "()V", (void *) CainMediaPlayer_stop},
         {"_resume", "()V", (void *) CainMediaPlayer_resume},
+        {"_getRotate", "()I", (void *) CainMediaPlayer_getRotate},
         {"_getVideoWidth", "()I", (void *) CainMediaPlayer_getVideoWidth},
         {"_getVideoHeight", "()I", (void *) CainMediaPlayer_getVideoHeight},
         {"_seekTo", "(F)V", (void *) CainMediaPlayer_seekTo},

@@ -196,6 +196,11 @@ public class AndroidMediaPlayer implements IMediaPlayer {
     }
 
     @Override
+    public int getRotate() {
+        return 0;
+    }
+
+    @Override
     public int getVideoWidth() {
         if (mMediaPlayer != null) {
             return mMediaPlayer.getVideoWidth();

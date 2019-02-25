@@ -207,6 +207,13 @@ public interface IMediaPlayer {
     public void setScreenOnWhilePlaying(boolean screenOn);
 
     /**
+     * Returns the rotate of the video.
+     *
+     * @return the rotate of the video, or o if there is no video
+     */
+    public int getRotate();
+
+    /**
      * Returns the width of the video.
      *
      * @return the width of the video, or 0 if there is no video,

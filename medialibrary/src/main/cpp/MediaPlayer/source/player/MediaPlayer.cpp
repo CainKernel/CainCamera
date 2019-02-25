@@ -262,6 +262,14 @@ void MediaPlayer::setPitch(float pitch) {
     mMutex.unlock();
 }
 
+int MediaPlayer::getRotate() {
+    Mutex::Autolock lock(mMutex);
+    if (videoDecoder) {
+        return videoDecoder->getRotate();
+    }
+    return 0;
+}
+
 int MediaPlayer::getVideoWidth() {
     Mutex::Autolock lock(mMutex);
     if (videoDecoder) {

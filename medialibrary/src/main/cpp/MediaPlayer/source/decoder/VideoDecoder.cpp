@@ -12,6 +12,13 @@ VideoDecoder::VideoDecoder(AVFormatContext *pFormatCtx, AVCodecContext *avctx,
     mExit = true;
     decodeThread = NULL;
     masterClock = NULL;
+    // 旋转角度
+    AVDictionaryEntry *entry = av_dict_get(stream->metadata, "rotate", NULL, AV_DICT_MATCH_CASE);
+    if (entry && entry->value) {
+        mRotate = atoi(entry->value);
+    } else {
+        mRotate = 0;
+    }
 }
 
 VideoDecoder::~VideoDecoder() {
@@ -73,6 +80,11 @@ void VideoDecoder::flush() {
 int VideoDecoder::getFrameSize() {
     Mutex::Autolock lock(mMutex);
     return frameQueue ? frameQueue->getFrameSize() : 0;
+}
+
+int VideoDecoder::getRotate() {
+    Mutex::Autolock lock(mMutex);
+    return mRotate;
 }
 
 FrameQueue *VideoDecoder::getFrameQueue() {

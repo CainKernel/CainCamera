@@ -278,6 +278,7 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
             @Override
             public void onVideoSizeChanged(IMediaPlayer mediaPlayer, int width, int height) {
                 mVideoPlayerView.setVideoSize(width, height);
+                mVideoPlayerView.setRotation(mediaPlayer.getRotate());
             }
         });
         mCainMediaPlayer.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {

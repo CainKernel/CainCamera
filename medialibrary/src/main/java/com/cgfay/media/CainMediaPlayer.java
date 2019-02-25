@@ -557,6 +557,17 @@ public class CainMediaPlayer implements IMediaPlayer {
     }
 
     /**
+     * Returns the rotate of the video.
+     *
+     * @return the rotate of the video, or o if there is no video
+     */
+    @Override
+    public int getRotate() {
+        return _getRotate();
+    }
+    private native int _getRotate();
+
+    /**
      * Returns the width of the video.
      *
      * @return the width of the video, or 0 if there is no video,

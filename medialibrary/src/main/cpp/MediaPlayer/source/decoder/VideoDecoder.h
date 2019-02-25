@@ -27,6 +27,8 @@ public:
 
     int getFrameSize();
 
+    int getRotate();
+
     FrameQueue *getFrameQueue();
 
     void run() override;
@@ -38,6 +40,7 @@ private:
 private:
     AVFormatContext *pFormatCtx;    // 解复用上下文
     FrameQueue *frameQueue;         // 帧队列
+    int mRotate;                    // 旋转角度
 
     bool mExit;                     // 退出标志
     Thread *decodeThread;           // 解码线程

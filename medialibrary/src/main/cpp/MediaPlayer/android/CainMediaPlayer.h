@@ -114,6 +114,8 @@ public:
 
     bool isPlaying();
 
+    int getRotate();
+
     int getVideoWidth();
 
     int getVideoHeight();

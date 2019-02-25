@@ -167,6 +167,13 @@ bool CainMediaPlayer::isPlaying() {
     return false;
 }
 
+int CainMediaPlayer::getRotate() {
+    if (mediaPlayer != nullptr) {
+        return mediaPlayer->getRotate();
+    }
+    return 0;
+}
+
 int CainMediaPlayer::getVideoWidth() {
     if (mediaPlayer != nullptr) {
         return mediaPlayer->getVideoWidth();
@@ -236,7 +243,7 @@ status_t CainMediaPlayer::setLooping(bool looping) {
 
 bool CainMediaPlayer::isLooping() {
     if (mediaPlayer != nullptr) {
-        return (mediaPlayer->isPlaying() != 0);
+        return (mediaPlayer->isLooping() != 0);
     }
     return false;
 }

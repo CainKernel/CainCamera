@@ -61,6 +61,8 @@ public:
 
     void setPitch(float pitch);
 
+    int getRotate();
+
     int getVideoWidth();
 
     int getVideoHeight();
