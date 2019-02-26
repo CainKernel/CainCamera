@@ -15,6 +15,7 @@ import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicStickerData;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicStickerFrameData;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicStickerNormalData;
+import com.cgfay.filterlibrary.glfilter.stickers.bean.StaticStickerNormalData;
 import com.cgfay.utilslibrary.utils.FileUtils;
 
 import org.json.JSONArray;
@@ -68,6 +69,9 @@ public class ResourceJsonCodec {
                 ((DynamicStickerNormalData) data).baseScale = (float) jsonData.getDouble("baseScale");
                 ((DynamicStickerNormalData) data).startIndex = jsonData.getInt("startIndex");
                 ((DynamicStickerNormalData) data).endIndex = jsonData.getInt("endIndex");
+            }else if ("static".equals(type)) {//静态贴纸
+                data = new StaticStickerNormalData();
+                ((StaticStickerNormalData) data).alignMode = jsonData.getInt("alignMode");
             } else {
                 // 如果不是贴纸又不是前景的话，则直接跳过
                 if (!"frame".equals(type)) {

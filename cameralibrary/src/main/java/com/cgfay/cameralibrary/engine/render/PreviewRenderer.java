@@ -1,6 +1,7 @@
 package com.cgfay.cameralibrary.engine.render;
 
 import android.content.Context;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -8,6 +9,7 @@ import com.cgfay.cameralibrary.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.engine.listener.OnCameraCallback;
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
+import com.cgfay.filterlibrary.glfilter.stickers.StaticStickerNormalFilter;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 
 import java.lang.ref.WeakReference;
@@ -285,5 +287,17 @@ public final class PreviewRenderer {
         synchronized (mSynOperation) {
             mCameraParam.showCompare = enable;
         }
+    }
+    /**
+     * 测试贴纸触摸事件
+     * @param e
+     */
+    public StaticStickerNormalFilter touchDown(MotionEvent e) {
+        synchronized (mSynOperation) {
+            if (mPreviewRenderThread != null) {
+                return mPreviewRenderThread.touchDown(e);
+            }
+        }
+        return null;
     }
 }
