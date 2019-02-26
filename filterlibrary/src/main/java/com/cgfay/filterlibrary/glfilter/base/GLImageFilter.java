@@ -5,6 +5,9 @@ import android.graphics.PointF;
 import android.opengl.GLES30;
 import android.text.TextUtils;
 
+import com.badlogic.gdx.math.Camera;
+import com.badlogic.gdx.math.Vector3;
+import com.cgfay.filterlibrary.glfilter.stickers.StaticStickerNormalFilter;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;
 
@@ -148,13 +151,15 @@ public class GLImageFilter {
 
         // 设置视口大小
         GLES30.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
 
         // 使用当前的program
         GLES30.glUseProgram(mProgramHandle);
         // 运行延时任务
         runPendingOnDrawTasks();
 
-        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
 
         // 绘制纹理
         onDrawTexture(textureId, vertexBuffer, textureBuffer);
@@ -179,6 +184,30 @@ public class GLImageFilter {
         // 绑定FBO
         GLES30.glViewport(0, 0, mFrameWidth, mFrameHeight);
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFrameBuffers[0]);
+        // 使用当前的program
+        GLES30.glUseProgram(mProgramHandle);
+        // 运行延时任务，这个要放在glUseProgram之后，要不然某些设置项会不生效
+        runPendingOnDrawTasks();
+
+        // 绘制纹理
+        onDrawTexture(textureId, vertexBuffer, textureBuffer);
+
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
+        return mFrameBufferTextures[0];
+    }
+
+    public int drawFrameBufferClear(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
+        // 没有FBO、没初始化、输入纹理不合法、滤镜不可用时，直接返回
+        if (textureId == OpenGLUtils.GL_NOT_TEXTURE || mFrameBuffers == null
+                || !mIsInitialized || !mFilterEnable) {
+            return textureId;
+        }
+
+        // 绑定FBO
+        GLES30.glViewport(0, 0, mFrameWidth, mFrameHeight);
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFrameBuffers[0]);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
         // 使用当前的program
         GLES30.glUseProgram(mProgramHandle);
         // 运行延时任务，这个要放在glUseProgram之后，要不然某些设置项会不生效

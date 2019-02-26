@@ -6,8 +6,10 @@ import android.hardware.Camera;
 import android.opengl.GLES30;
 import android.os.HandlerThread;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
+import com.badlogic.gdx.math.Vector3;
 import com.cgfay.cameralibrary.engine.camera.CameraEngine;
 import com.cgfay.cameralibrary.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.engine.recorder.HardcodeEncoder;
@@ -15,6 +17,7 @@ import com.cgfay.filterlibrary.gles.EglCore;
 import com.cgfay.filterlibrary.gles.WindowSurface;
 import com.cgfay.filterlibrary.glfilter.color.bean.DynamicColor;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
+import com.cgfay.filterlibrary.glfilter.stickers.StaticStickerNormalFilter;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 
@@ -406,5 +409,15 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
     private void releaseCamera() {
         isPreviewing = false;
         CameraEngine.getInstance().releaseCamera();
+    }
+
+
+    public StaticStickerNormalFilter touchDown(MotionEvent e) {
+        synchronized (mSyncFrameNum) {
+            if (mRenderManager != null) {
+               return mRenderManager.touchDown(e);
+            }
+        }
+        return null;
     }
 }

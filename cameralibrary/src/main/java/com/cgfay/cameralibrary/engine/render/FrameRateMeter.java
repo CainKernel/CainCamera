@@ -5,7 +5,7 @@ package com.cgfay.cameralibrary.engine.render;
  * Created by cain.huang on 2017/12/19.
  */
 
-final class FrameRateMeter {
+public final class FrameRateMeter {
 
     private static final long TIMETRAVEL = 1;
     private static final long TIMETRAVEL_MS = TIMETRAVEL * 1000;

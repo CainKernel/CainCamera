@@ -1,8 +1,12 @@
 package com.cgfay.cameralibrary.engine.render;
 
 import android.content.Context;
+import android.util.Log;
 import android.util.SparseArray;
+import android.view.MotionEvent;
+import android.widget.Toast;
 
+import com.badlogic.gdx.math.Vector3;
 import com.cgfay.cameralibrary.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.engine.model.ScaleType;
 import com.cgfay.filterlibrary.glfilter.base.GLImageDepthBlurFilter;
@@ -19,6 +23,8 @@ import com.cgfay.filterlibrary.glfilter.makeup.GLImageMakeupFilter;
 import com.cgfay.filterlibrary.glfilter.makeup.bean.DynamicMakeup;
 import com.cgfay.filterlibrary.glfilter.multiframe.GLImageFrameEdgeBlurFilter;
 import com.cgfay.filterlibrary.glfilter.stickers.GLImageDynamicStickerFilter;
+import com.cgfay.filterlibrary.glfilter.stickers.GestureHelp;
+import com.cgfay.filterlibrary.glfilter.stickers.StaticStickerNormalFilter;
 import com.cgfay.filterlibrary.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 import com.cgfay.filterlibrary.glfilter.utils.TextureRotationUtils;
@@ -424,5 +430,27 @@ public final class RenderManager {
      */
     private float addDistance(float coordinate, float distance) {
         return coordinate == 0.0f ? distance : 1 - distance;
+    }
+
+    public static final Vector3 tempVec=new Vector3();
+    public StaticStickerNormalFilter touchDown(MotionEvent e) {
+
+        if (mFilterArrays.get(RenderIndex.ResourceIndex) != null) {
+          GLImageFilter  glImageFilter = mFilterArrays.get(RenderIndex.ResourceIndex);
+          if(glImageFilter instanceof GLImageDynamicStickerFilter) {
+              GLImageDynamicStickerFilter glImageDynamicStickerFilter= (GLImageDynamicStickerFilter) glImageFilter;
+              tempVec.set(e.getX(), e.getY(), 0);
+              StaticStickerNormalFilter staticStickerNormalFilter=GestureHelp.hit(tempVec,glImageDynamicStickerFilter.getmFilters());
+              if(staticStickerNormalFilter!=null){
+                  Log.d("touchSticker","找到贴纸");
+              }else{
+                  Log.d("touchSticker","没有贴纸");
+              }
+              return staticStickerNormalFilter;
+          }
+        }
+
+        return null;
+
     }
 }

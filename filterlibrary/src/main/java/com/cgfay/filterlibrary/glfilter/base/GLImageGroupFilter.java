@@ -145,4 +145,12 @@ public abstract class GLImageGroupFilter extends GLImageFilter {
         }
         mFilters.clear();
     }
+
+    public List<GLImageFilter> getmFilters() {
+        return mFilters;
+    }
+
+    public void setmFilters(List<GLImageFilter> mFilters) {
+        this.mFilters = mFilters;
+    }
 }

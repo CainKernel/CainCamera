@@ -1,2 +1,2 @@
-include ':app', ':cameralibrary', ':facedetectlibrary', ':filterlibrary', ':videolibrary',
+include ':app', ':cameralibrary', ':facedetectlibrary', ':filterlibrary', ':videolibrary', ':gdxlibrary',
         ':landmarklibrary', ':scanlibrary', ':imagelibrary', ':medialibrary', ':utilslibrary'

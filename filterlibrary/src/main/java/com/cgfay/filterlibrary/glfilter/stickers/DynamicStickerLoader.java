@@ -21,6 +21,7 @@ import java.lang.ref.WeakReference;
  */
 public class DynamicStickerLoader {
 
+    public boolean isStaticSticker=false;
     private static final String TAG = "DynamicStickerLoader";
 
     // 贴纸纹理
@@ -39,8 +40,8 @@ public class DynamicStickerLoader {
     private long mCurrentTime = -1L;
     // 贴纸滤镜
     private final WeakReference<DynamicStickerBaseFilter> mWeakFilter;
-
-    public DynamicStickerLoader(DynamicStickerBaseFilter filter, DynamicStickerData stickerData, String folderPath) {
+    public DynamicStickerLoader(boolean isStaticSticker,DynamicStickerBaseFilter filter, DynamicStickerData stickerData, String folderPath) {
+        this.isStaticSticker=isStaticSticker;
         mWeakFilter = new WeakReference<>(filter);
         mStickerTexture = OpenGLUtils.GL_NOT_TEXTURE;
         mRestoreTexture = OpenGLUtils.GL_NOT_TEXTURE;
@@ -74,13 +75,16 @@ public class DynamicStickerLoader {
             }
         }
     }
+    public DynamicStickerLoader(DynamicStickerBaseFilter filter, DynamicStickerData stickerData, String folderPath) {
+       this(false,filter,stickerData,folderPath);
+    }
 
     /**
      * 更新贴纸纹理
      */
     public void updateStickerTexture() {
         // 判断人脸是否存在
-        if (!LandmarkEngine.getInstance().hasFace()) {
+        if (!LandmarkEngine.getInstance().hasFace()&&!isStaticSticker) {
             mCurrentTime = -1L;
             if (mWeakFilter.get() != null) {
                 mWeakFilter.get().stopPlayer();
