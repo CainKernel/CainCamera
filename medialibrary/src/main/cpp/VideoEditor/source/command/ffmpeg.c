@@ -4727,7 +4727,7 @@ static int64_t getmaxrss(void)
 
 // [Cain change start]
 // 处理log回调
-#include "ffmpeg_log.h"
+#include "editor_log.h"
 static void (*process_callback)(void *opaque, int type, int time);
 static void *process_opaque;
 void register_process_callback(void *opaque, void (*cb)(void *opaque, int type, int ret)) {

@@ -2,10 +2,11 @@
 // Created by CainHuang on 2019/2/17.
 //
 extern "C" {
-#include <ffmpeg.h>
+#include <command/ffmpeg.h>
 };
 
-#include <ffmpeg_log.h>
+#include <editor_log.h>
+#include <editor/VideoCutEditor.h>
 #include "CainShortVideoEditor.h"
 
 static void processCallback(void *opaque, int type, int time) {
@@ -76,6 +77,35 @@ int CainShortVideoEditor::execute(int argc, char **argv) {
     int ret = runCommand(argc, argv);
     register_process_callback(NULL, NULL);
     return ret;
+}
+
+/**
+ * 处理回调消息
+ * @param opaque
+ * @param what
+ * @param arg1
+ * @param arg2
+ * @param obj
+ * @param len
+ */
+static void handleMessage(void *opaque, int what, int arg1, int arg2, void *obj, int len) {
+    CainShortVideoEditor *editor = (CainShortVideoEditor *)opaque;
+    if (editor != nullptr) {
+        editor->postMessage(what, arg1, arg2, obj, len);
+    }
+}
+
+int CainShortVideoEditor::videoCut(const char *srcPath, const char *dstPath, long start, long duration,float speed) {
+    Mutex::Autolock lock(mMutex);
+    LOGD("video cut start");
+    MessageHandle messageHandle;
+    memset(&messageHandle, 0, sizeof(MessageHandle));
+    messageHandle.opaque = this;
+    messageHandle.callback = handleMessage;
+    VideoCutEditor editor = VideoCutEditor(srcPath, dstPath, &messageHandle);
+    editor.setDuration(start, duration);
+    editor.setSpeed(speed);
+    return editor.process();
 }
 
 void CainShortVideoEditor::postMessage(int what, int arg1, int arg2, void *obj, int len) {

@@ -6,12 +6,15 @@ add_library( video_editor
 
              SHARED
 
-             # library
-             source/cmdutils.c
-             source/ffmpeg.c
-             source/ffmpeg_filter.c
-             source/ffmpeg_opt.c
+             # FFmpeg命令行
+             source/command/cmdutils.c
+             source/command/ffmpeg.c
+             source/command/ffmpeg_filter.c
+             source/command/ffmpeg_opt.c
+             # 使用代码编辑视频
+             source/editor/VideoCutEditor.cpp
 
+             # android wrapper
              android/CainShortVideoEditor.cpp
              android/com_cgfay_media_CainShortVideoEditor.cpp)
 

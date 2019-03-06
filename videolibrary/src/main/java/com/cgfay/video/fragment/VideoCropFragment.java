@@ -34,8 +34,6 @@ import com.cgfay.video.widget.VideoSpeedLevelBar;
 import com.cgfay.video.widget.VideoTextureView;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class VideoCropFragment extends Fragment implements View.OnClickListener {
 
@@ -206,7 +204,7 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
         if (id == R.id.video_crop_back) {
             mActivity.onBackPressed();
         } else if (id == R.id.video_crop_ok) {
-            cropVideo();
+            cutVideo();
         } else if (id == R.id.video_crop_speed_bar_visible) {
             if (mVideoSpeedLevelBar.getVisibility() == View.VISIBLE) {
                 mVideoSpeedLevelBar.setVisibility(View.GONE);
@@ -354,9 +352,9 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
     };
 
     /**
-     * 裁剪视频
+     * 剪辑视频
      */
-    private void cropVideo() {
+    private void cutVideo() {
         mLayoutProgress.setVisibility(View.VISIBLE);
         // TODO crop video
         new Thread(new Runnable() {
@@ -375,37 +373,33 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
                 if (duration > mVideoDuration) {
                     duration = mVideoDuration;
                 }
-
-                String outPath = mVideoEditor.videoCut(mVideoPath, start, duration);
-
-                // 倍速调整比较慢
-                if (mVideoSpeed.getSpeed() != 1.0) {
-                    // 这里是使用了MediaCodec对视频帧进行pts调整
-                    // TODO 后续编写FFmpeg转码程序来实现倍速处理
-                    String tmpPath = mVideoEditor.videoCut(mVideoPath, start, duration, mVideoSpeed.getSpeed());
-                    FileUtils.deleteFile(outPath);
-                    outPath = tmpPath;
-                }
-
-                // 成功则直接退出播放器，并跳转至编辑页面
-                if (outPath != null) {
+                // TODO videoCutSpeed方法是通过native层来实现的，但目前倍速时音频部分还没想好怎么处理才不会出现杂音问题，暂时先弄完后面的编辑页面再回来弄这个
+                String videoPath = CainShortVideoEditor.VideoEditorUtil.createPathInBox("mp4");
+                int ret = mVideoEditor.videoCutSpeed(mVideoPath, videoPath, start, duration, mVideoSpeed.getSpeed());
+                // 成功则释放播放器并跳转至编辑页面
+                if (ret == 0 && FileUtils.fileExists(videoPath)) {
+                    // 需要释放销毁播放器，后面要用到播放器，防止内存占用过大
                     if (mCainMediaPlayer != null) {
-                        mCainMediaPlayer.reset();
+                        mCainMediaPlayer.stop();
+                        mCainMediaPlayer.release();
                         mCainMediaPlayer = null;
                     }
-                    mVideoEditor.release();
-                    mVideoEditor = null;
+                    if (mSurface != null) {
+                        mSurface.release();
+                        mSurface = null;
+                    }
+                    if (mVideoEditor != null) {
+                        mVideoEditor.release();
+                        mVideoEditor = null;
+                    }
                     Intent intent = new Intent(mActivity, VideoEditActivity.class);
-                    intent.putExtra(VideoEditActivity.PATH, outPath);
+                    intent.putExtra(VideoEditActivity.VIDEO_PATH, videoPath);
                     startActivity(intent);
                 } else {
                     Log.e(TAG, "video cut's error!");
                     if (mCainMediaPlayer != null) {
                         mCainMediaPlayer.start();
                     }
-                }
-                if (mCainMediaPlayer != null) {
-                    mCainMediaPlayer.start();
                 }
                 mActivity.runOnUiThread(new Runnable() {
                     @Override
@@ -423,7 +417,7 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
         public void onProcessing(int time) {
             Log.d(TAG, "onProcessing: time = " + time + "s" + ", duration = " + mVideoDuration);
             if (mVideoSpeed.getSpeed() != 1.0) {
-                float percent = time * 1000f / mVideoDuration * 100;
+                float percent = time * 1000f / mCropRange * 100;
                 if (percent > 100) {
                     percent = 100;
                 }

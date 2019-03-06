@@ -838,6 +838,33 @@ public class CainShortVideoEditor {
     }
 
     /**
+     * 带速度调整的裁剪方法
+     * @param srcPath
+     * @param start
+     * @param duration
+     * @param speed
+     * @return
+     */
+    public int videoCutSpeed(String srcPath, String dstPath, float start, float duration, float speed) {
+        if (FileUtils.fileExists(srcPath)) {
+            return _videoCut(srcPath, dstPath, start, duration, speed);
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * native层的裁剪代码
+     * @param srcPath       原始路径
+     * @param dstPath       目标路径
+     * @param start         起始位置，毫秒
+     * @param duration      结束位置，毫秒
+     * @param speed
+     * @return
+     */
+    private native int _videoCut(String srcPath, String dstPath, float start, float duration, float speed);
+
+    /**
      * 将图片转成视频
      * @param picPath
      * @param duration
@@ -1280,6 +1307,54 @@ public class CainShortVideoEditor {
                 file.mkdirs();
             }
             return TMP_DIR;
+        }
+
+        /**
+         * 创建文件路径
+         * @param dir
+         * @param suffix
+         * @return
+         */
+        public static String createPath(String dir, String suffix) {
+            Calendar c = Calendar.getInstance();
+            int hour = c.get(Calendar.HOUR_OF_DAY);
+            int minute = c.get(Calendar.MINUTE);
+            int year = c.get(Calendar.YEAR);
+            int month = c.get(Calendar.MONTH) + 1;
+            int day = c.get(Calendar.DAY_OF_MONTH);
+            int second = c.get(Calendar.SECOND);
+            int millisecond = c.get(Calendar.MILLISECOND);
+            year = year - 2000;
+            String name = dir;
+            File d = new File(name);
+
+            // 如果目录不中存在，创建这个目录
+            if (!d.exists())
+                d.mkdir();
+            name += "/";
+
+
+            name += String.valueOf(year);
+            name += String.valueOf(month);
+            name += String.valueOf(day);
+            name += String.valueOf(hour);
+            name += String.valueOf(minute);
+            name += String.valueOf(second);
+            name += String.valueOf(millisecond);
+            if (!suffix.startsWith(".")) {
+                name += ".";
+            }
+            name += suffix;
+            return name;
+        }
+
+        /**
+         * 创建文件路径
+         * @param suffix
+         * @return
+         */
+        public static String createPathInBox(String suffix) {
+            return createPath(TMP_DIR, suffix);
         }
 
         /**

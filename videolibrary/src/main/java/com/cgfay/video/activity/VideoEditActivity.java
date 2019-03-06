@@ -1,8 +1,6 @@
 package com.cgfay.video.activity;
 
-import android.graphics.Color;
 import android.os.Build;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,7 +14,7 @@ import com.cgfay.video.fragment.VideoEditFragment;
 public class VideoEditActivity extends AppCompatActivity implements VideoEditFragment.OnSelectMusicListener,
         MusicSelectFragment.OnMusicSelectedListener {
 
-    public static final String PATH = "path";
+    public static final String VIDEO_PATH = "videoPath";
 
     private static final String FRAGMENT_VIDEO_EDIT = "fragment_video_edit";
     private static final String FRAGMENT_MUSIC_SELECT = "fragment_video_music_select";
@@ -47,7 +45,7 @@ public class VideoEditActivity extends AppCompatActivity implements VideoEditFra
         hideNavigationBar();
         setContentView(R.layout.activity_video_edit);
         if (null == savedInstanceState) {
-            String videoPath = getIntent().getStringExtra(PATH);
+            String videoPath = getIntent().getStringExtra(VIDEO_PATH);
             VideoEditFragment fragment = VideoEditFragment.newInstance();
             fragment.setOnSelectMusicListener(this);
             fragment.setVideoPath(videoPath);

@@ -43,7 +43,7 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
 
     private Activity mActivity;
 
-    private String mVideoPath;                      // 视频路径
+    private String mVideoPath;                      // 视频流路径
     private String mMusicPath;                      // 背景音乐路径
     private float mSourceVolumePercent = 0.5f;      // 源音量百分比
     private float mBackgroundVolumePercent = 0.5f;  // 背景音乐音量百分比
@@ -393,7 +393,7 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     }
 
     /**
-     * 设置视频路径
+     * 设置视频流路径
      * @param videoPath
      */
     public void setVideoPath(String videoPath) {

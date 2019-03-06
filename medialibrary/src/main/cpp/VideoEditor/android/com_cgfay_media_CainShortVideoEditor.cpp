@@ -140,6 +140,29 @@ CainShortVideoEditor_execute(JNIEnv *env, jobject thiz, jobjectArray command) {
     return result;
 }
 
+static int
+CainShortVideoEditor_videoCut(JNIEnv *env, jobject thiz, jstring srcPath_, jstring videoDstPath_,
+        jfloat start, jfloat duration, jfloat speed) {
+    CainShortVideoEditor *editor = getVideoEditor(env, thiz);
+    if (editor == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException");
+        return -1;
+    }
+    const char *srcPath = env->GetStringUTFChars(srcPath_, 0);
+    const char *videoDstPath = env->GetStringUTFChars(videoDstPath_, 0);
+    if (srcPath == nullptr || videoDstPath == nullptr) {
+        jniThrowException(env, "java/lang/NullPointerException");
+        return -1;
+    }
+
+    int ret = editor->videoCut(srcPath, videoDstPath, start, duration, speed);
+
+    env->ReleaseStringUTFChars(srcPath_, srcPath);
+    env->ReleaseStringUTFChars(videoDstPath_, videoDstPath);
+
+    return ret;
+}
+
 static void
 CainShortVideoEditor_init(JNIEnv *env) {
     jclass clazz = env->FindClass(EDITOR_CLASS_NAME);
@@ -201,6 +224,7 @@ CainShortVideoEditor_finalize(JNIEnv *env, jobject thiz) {
 
 static JNINativeMethod nativeMethods[] = {
         {"execute", "([Ljava/lang/String;)I", (void *)CainShortVideoEditor_execute},
+        {"_videoCut", "(Ljava/lang/String;Ljava/lang/String;FFF)I", (void *)CainShortVideoEditor_videoCut},
         {"_release", "()V", (void *)CainShortVideoEditor_release},
         {"native_setup", "(Ljava/lang/Object;)V", (void *)CainShortVideoEditor_setup},
         {"native_init", "()V", (void *)CainShortVideoEditor_init},

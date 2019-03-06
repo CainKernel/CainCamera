@@ -9,10 +9,6 @@
 #include <Mutex.h>
 #include <Condition.h>
 
-enum editor_event_type {
-    EDITOR_PROCESSING = 1,
-    EDITOR_ERROR = 100,
-};
 
 class ShortVideoEditorListener {
 public:
@@ -42,6 +38,8 @@ public:
 
     int execute(int argc, char **argv);
 
+    int videoCut(const char *srcPath, const char *dstPath, long start, long duration, float speed);
+
     void postMessage(int what, int arg1 = 0, int arg2 = 0, void *obj = NULL, int len = 0);
 
 protected:
@@ -58,6 +56,7 @@ private:
     ShortVideoEditorListener *mListener;
     Message *mFirstMsg, *mLastMsg;
     int mSize;
+
 };
 
 #endif //CAINSHORTVIDEOEDITOR_H
