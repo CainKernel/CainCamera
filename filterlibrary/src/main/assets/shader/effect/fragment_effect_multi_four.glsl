@@ -1,4 +1,4 @@
-// 四分镜
+// 仿抖音四屏特效
 precision highp float;
 uniform sampler2D inputTexture;
 varying highp vec2 textureCoordinate;

@@ -42,8 +42,6 @@ public class GLImageFilter {
     protected String TAG = getClass().getSimpleName();
 
     protected Context mContext;
-    // 当前时钟
-    protected float mCurrentTimer;
 
     private final LinkedList<Runnable> mRunOnDraw;
 
@@ -351,14 +349,6 @@ public class GLImageFilter {
      */
     public void setFilterEnable(boolean enable) {
         mFilterEnable = enable;
-    }
-
-    /**
-     * 设置时钟
-     * @param currentTimer
-     */
-    public void setTimerValue(float currentTimer) {
-        mCurrentTimer = currentTimer;
     }
 
     /**

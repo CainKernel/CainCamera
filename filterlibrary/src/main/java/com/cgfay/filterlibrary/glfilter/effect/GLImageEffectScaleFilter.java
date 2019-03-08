@@ -3,13 +3,13 @@ package com.cgfay.filterlibrary.glfilter.effect;
 import android.content.Context;
 import android.opengl.GLES20;
 
-import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 
 /**
- * 缩放滤镜
+ * 仿抖音缩放特效
+ *
  */
-public class GLImageScaleFilter extends GLImageFilter {
+public class GLImageEffectScaleFilter extends GLImageEffectFilter {
 
     private int mScaleHandle;
 
@@ -17,11 +17,11 @@ public class GLImageScaleFilter extends GLImageFilter {
     private float mScale = 1.0f;
     private float mOffset = 0.0f;
 
-    public GLImageScaleFilter(Context context) {
-        this(context, VERTEX_SHADER, OpenGLUtils.getShaderFromAssets(context, "shader/effect/fragment_scale.glsl"));
+    public GLImageEffectScaleFilter(Context context) {
+        this(context, VERTEX_SHADER, OpenGLUtils.getShaderFromAssets(context, "shader/effect/fragment_effect_scale.glsl"));
     }
 
-    public GLImageScaleFilter(Context context, String vertexShader, String fragmentShader) {
+    public GLImageEffectScaleFilter(Context context, String vertexShader, String fragmentShader) {
         super(context, vertexShader, fragmentShader);
     }
 
@@ -37,14 +37,20 @@ public class GLImageScaleFilter extends GLImageFilter {
     @Override
     public void onDrawFrameBegin() {
         super.onDrawFrameBegin();
-        mOffset += plus ? +0.06f : -0.06f;
+        GLES20.glUniform1f(mScaleHandle, mScale);
+    }
+
+    @Override
+    protected void calculateInterval() {
+        // 步进，60ms一次步进
+        float interval = mCurrentPosition % 33.0f;
+        mOffset += plus ? + interval * 0.0067f : -interval * 0.0067f;
         if (mOffset >= 1.0f) {
             plus = false;
         } else if (mOffset <= 0.0f) {
             plus = true;
         }
         mScale = 1.0f + 0.5f * getInterpolation(mOffset);
-        GLES20.glUniform1f(mScaleHandle, mScale);
     }
 
     private float getInterpolation(float input) {

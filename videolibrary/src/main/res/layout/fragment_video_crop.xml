@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/video_crop_background">
+    android:background="@color/video_page_background">
 
     <!-- 视频显示页面 -->
     <com.cgfay.video.widget.VideoTextureView
@@ -20,17 +20,17 @@
         android:layout_marginTop="@dimen/dp20"
         android:layout_marginStart="@dimen/dp10"
         android:scaleType="centerInside"
-        android:background="@drawable/icon_video_crop_back"/>
+        android:background="@drawable/icon_video_cut_back"/>
 
     <!-- OK -->
     <Button
         android:id="@+id/video_crop_ok"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/dp40"
+        android:layout_width="@dimen/dp80"
+        android:layout_height="@dimen/dp30"
         android:layout_marginTop="@dimen/dp15"
         android:layout_marginEnd="@dimen/dp10"
         android:layout_alignParentEnd="true"
-        android:background="@color/brown"
+        android:background="@drawable/bg_button_brown_round"
         android:textColor="@color/white"
         android:text="@string/video_crop_next"/>
 
@@ -53,41 +53,41 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/dp10">
+            android:layout_marginTop="@dimen/dp10"
+            android:layout_marginBottom="@dimen/dp10">
             <TextView
-                android:id="@+id/video_crop_selected"
+                android:id="@+id/tv_video_cut_selected"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_gravity="center_vertical"
+                android:layout_margin="@dimen/dp10"
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 android:text="已选中 15.0s" />
-            <TextView
-                android:id="@+id/video_crop_speed_bar_visible"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:id="@+id/tv_video_cut_speed_bar_visible"
+                android:layout_width="@dimen/dp30"
+                android:layout_height="@dimen/dp30"
                 android:layout_gravity="center_vertical"
-                android:padding="@dimen/dp15"
-                android:textColor="@color/white"
-                android:text="@string/video_crop_speed_bar_visible"/>
-            <TextView
-                android:id="@+id/video_crop_rotation"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/dp15"
+                android:background="@drawable/icon_video_cut_speed"/>
+            <ImageView
+                android:id="@+id/tv_video_cut_rotation"
+                android:layout_width="@dimen/dp30"
+                android:layout_height="@dimen/dp30"
                 android:layout_gravity="center_vertical"
-                android:padding="@dimen/dp15"
-                android:textColor="@color/white"
-                android:text="角度"/>
+                android:layout_marginEnd="@dimen/dp10"
+                android:background="@drawable/icon_video_cut_rotate" />
         </LinearLayout>
 
         <!-- 裁剪缩略图 -->
-        <com.cgfay.video.widget.VideoCropViewBar
+        <com.cgfay.video.widget.VideoCutViewBar
             android:id="@+id/video_crop_view_bar"
             android:layout_width="match_parent"
             android:layout_height="70dp"
             android:layout_marginBottom="70dp"
-            android:background="@color/video_crop_bar_background"/>
+            android:background="@color/video_cut_bar_background"/>
     </LinearLayout>
 
     <!-- 视频裁剪时长选择 -->

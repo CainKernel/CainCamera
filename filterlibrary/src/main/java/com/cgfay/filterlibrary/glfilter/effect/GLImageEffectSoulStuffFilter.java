@@ -3,24 +3,23 @@ package com.cgfay.filterlibrary.glfilter.effect;
 import android.content.Context;
 import android.opengl.GLES20;
 
-import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 
 /**
- * 灵魂出窍滤镜
+ * 仿灵魂出窍特效
  */
-public class GLImageSoulStuffFilter extends GLImageFilter {
+public class GLImageEffectSoulStuffFilter extends GLImageEffectFilter {
 
     private int mScaleHandle;
 
     private float mScale = 1.0f;
     private float mOffset = 0.0f;
 
-    public GLImageSoulStuffFilter(Context context) {
-        this(context, VERTEX_SHADER, OpenGLUtils.getShaderFromAssets(context, "shader/effect/fragment_soul_stuff.glsl"));
+    public GLImageEffectSoulStuffFilter(Context context) {
+        this(context, VERTEX_SHADER, OpenGLUtils.getShaderFromAssets(context, "shader/effect/fragment_effect_soul_stuff.glsl"));
     }
 
-    public GLImageSoulStuffFilter(Context context, String vertexShader, String fragmentShader) {
+    public GLImageEffectSoulStuffFilter(Context context, String vertexShader, String fragmentShader) {
         super(context, vertexShader, fragmentShader);
     }
 
@@ -35,12 +34,18 @@ public class GLImageSoulStuffFilter extends GLImageFilter {
     @Override
     public void onDrawFrameBegin() {
         super.onDrawFrameBegin();
-        mScale = 1.0f + 0.5f * getInterpolation(mOffset);
-        mOffset += 0.04f;
+        GLES20.glUniform1f(mScaleHandle, mScale);
+    }
+
+    @Override
+    protected void calculateInterval() {
+        // 步进，40ms算一次步进
+        float interval = mCurrentPosition % 40.0f;
+        mOffset += interval * 0.0025f;
         if (mOffset > 1.0f) {
             mOffset = 0.0f;
         }
-        GLES20.glUniform1f(mScaleHandle, mScale);
+        mScale = 1.0f + 0.3f * getInterpolation(mOffset);
     }
 
     private float getInterpolation(float input) {

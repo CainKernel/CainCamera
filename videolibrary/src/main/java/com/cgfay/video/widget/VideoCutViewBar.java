@@ -22,9 +22,8 @@ import java.util.ArrayList;
 /**
  * 视频帧裁剪页面
  */
-public class VideoCropViewBar extends View {
+public class VideoCutViewBar extends View {
 
-    private static final String TAG = "VideoCropViewBar";
 
     private final int CROP_TIME_MAX_15 = 15000;
 
@@ -68,20 +67,21 @@ public class VideoCropViewBar extends View {
     private float mCropStart = 0;               // 选取的开始时间
     private float mCropEnd = mCropMax;          // 选取的结束时间
 
-    private SlideHandler mSlideHandler = new SlideHandler();
+//    // 减速处理，TODO 滑动时播放器的音频会有些问题，暂时不开减速处理
+//    private SlideHandler mSlideHandler = new SlideHandler();
 
     // 帧提取器
     private CainMediaMetadataRetriever mMetadataRetriever;
 
-    public VideoCropViewBar(Context context) {
+    public VideoCutViewBar(Context context) {
         this(context,null);
     }
 
-    public VideoCropViewBar(Context context, AttributeSet attrs) {
+    public VideoCutViewBar(Context context, AttributeSet attrs) {
         this(context, attrs,0);
     }
 
-    public VideoCropViewBar(Context context, AttributeSet attrs, int defStyleAttr) {
+    public VideoCutViewBar(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mMetadataRetriever = new CainMediaMetadataRetriever();
         mLoadingFrames = new ArrayList<>();
@@ -96,7 +96,7 @@ public class VideoCropViewBar extends View {
         new ReleaseThread().start();
         mMetadataRetriever.release();
         mMetadataRetriever = null;
-        mSlideHandler.removeCallbacksAndMessages(null);
+//        mSlideHandler.removeCallbacksAndMessages(null);
     }
 
     private void reset() {
@@ -126,9 +126,9 @@ public class VideoCropViewBar extends View {
                 nextNode.setPrev(null);
             }
         }
-        if (mSlideHandler.hasMessages(SLIDE_MESSAGE)) {
-            mSlideHandler.removeMessages(SLIDE_MESSAGE);
-        }
+//        if (mSlideHandler.hasMessages(SLIDE_MESSAGE)) {
+//            mSlideHandler.removeMessages(SLIDE_MESSAGE);
+//        }
         invalidate();
     }
 
@@ -238,9 +238,9 @@ public class VideoCropViewBar extends View {
                         + (mExcursionX / mViewFrameWidth * (mFrameTime*mCurrentSpeed.getSpeed())))
                         + mCropStart * mCurrentSpeed.getSpeed()));
             }
-            if (mSlideHandler.hasMessages(SLIDE_MESSAGE)) {
-                mSlideHandler.removeMessages(SLIDE_MESSAGE);
-            }
+//            if (mSlideHandler.hasMessages(SLIDE_MESSAGE)) {
+//                mSlideHandler.removeMessages(SLIDE_MESSAGE);
+//            }
             return;
         }
         if (mVideoDuration != 0 && ((mLastNode != null && mLastNode.getFrameTime() + (mFrameTime * mCurrentSpeed.getSpeed()) > mVideoDuration && mExcursionX > 0)
@@ -253,9 +253,9 @@ public class VideoCropViewBar extends View {
                         + (mExcursionX / mViewFrameWidth * (mFrameTime * mCurrentSpeed.getSpeed())))
                         + mCropStart * mCurrentSpeed.getSpeed()));
             }
-            if (mSlideHandler.hasMessages(SLIDE_MESSAGE)) {
-                mSlideHandler.removeMessages(SLIDE_MESSAGE);
-            }
+//            if (mSlideHandler.hasMessages(SLIDE_MESSAGE)) {
+//                mSlideHandler.removeMessages(SLIDE_MESSAGE);
+//            }
             return;
         }
 
@@ -419,9 +419,9 @@ public class VideoCropViewBar extends View {
                     mVelocityTracker.clear();
                 }
                 mVelocityTracker.addMovement(event);
-                if (mSlideHandler.hasMessages(SLIDE_MESSAGE)) {
-                    mSlideHandler.removeMessages(SLIDE_MESSAGE);
-                }
+//                if (mSlideHandler.hasMessages(SLIDE_MESSAGE)) {
+//                    mSlideHandler.removeMessages(SLIDE_MESSAGE);
+//                }
                 break;
             }
 
@@ -475,18 +475,18 @@ public class VideoCropViewBar extends View {
                     touchEdge = false;
                     break;
                 }
-                if (Math.abs(mVelocityTracker.getXVelocity()) > 1000) {
-                    Message message = mSlideHandler.obtainMessage();
-                    int xVelocity = (int) mVelocityTracker.getXVelocity();
-                    if (xVelocity > 8000) {
-                        xVelocity = 8000;
-                    } else if (xVelocity < -8000) {
-                        xVelocity = -8000;
-                    }
-                    message.arg1 = xVelocity;
-                    message.what = SLIDE_MESSAGE;
-                    mSlideHandler.sendMessage(message);
-                }
+//                if (Math.abs(mVelocityTracker.getXVelocity()) > 1000) {
+//                    Message message = mSlideHandler.obtainMessage();
+//                    int xVelocity = (int) mVelocityTracker.getXVelocity();
+//                    if (xVelocity > 8000) {
+//                        xVelocity = 8000;
+//                    } else if (xVelocity < -8000) {
+//                        xVelocity = -8000;
+//                    }
+//                    message.arg1 = xVelocity;
+//                    message.what = SLIDE_MESSAGE;
+//                    mSlideHandler.sendMessage(message);
+//                }
                 break;
             }
 
@@ -497,34 +497,34 @@ public class VideoCropViewBar extends View {
         return true;
     }
 
-    /**
-     * 滑动减速Handler
-     */
-    private class SlideHandler extends Handler {
-
-        @Override
-        public void handleMessage(Message msg) {
-            int slideVt = msg.arg1;
-            mExcursionX += -slideVt / 120;
-            processEventMove();
-            invalidate();
-            if (slideVt < 0) {
-                Message message = mSlideHandler.obtainMessage();
-                message.arg1 = slideVt + 120;
-                message.what = SLIDE_MESSAGE;
-                if (slideVt + 120 < -500) {
-                    mSlideHandler.sendMessageDelayed(message,10);
-                }
-            } else if (slideVt > 0) {
-                Message message = mSlideHandler.obtainMessage();
-                message.arg1 = slideVt - 120;
-                message.what = SLIDE_MESSAGE;
-                if (slideVt - 120 > 500) {
-                    mSlideHandler.sendMessageDelayed(message,10);
-                }
-            }
-        }
-    }
+//    /**
+//     * 滑动减速Handler
+//     */
+//    private class SlideHandler extends Handler {
+//
+//        @Override
+//        public void handleMessage(Message msg) {
+//            int slideVt = msg.arg1;
+//            mExcursionX += -slideVt / 120;
+//            processEventMove();
+//            invalidate();
+//            if (slideVt < 0) {
+//                Message message = mSlideHandler.obtainMessage();
+//                message.arg1 = slideVt + 120;
+//                message.what = SLIDE_MESSAGE;
+//                if (slideVt + 120 < -500) {
+//                    mSlideHandler.sendMessageDelayed(message,10);
+//                }
+//            } else if (slideVt > 0) {
+//                Message message = mSlideHandler.obtainMessage();
+//                message.arg1 = slideVt - 120;
+//                message.what = SLIDE_MESSAGE;
+//                if (slideVt - 120 > 500) {
+//                    mSlideHandler.sendMessageDelayed(message,10);
+//                }
+//            }
+//        }
+//    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {

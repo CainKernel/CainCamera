@@ -29,15 +29,15 @@ import com.cgfay.video.R;
 import com.cgfay.video.activity.VideoEditActivity;
 import com.cgfay.video.bean.VideoSpeed;
 import com.cgfay.video.widget.CircleProgressView;
-import com.cgfay.video.widget.VideoCropViewBar;
+import com.cgfay.video.widget.VideoCutViewBar;
 import com.cgfay.video.widget.VideoSpeedLevelBar;
 import com.cgfay.video.widget.VideoTextureView;
 
 import java.io.IOException;
 
-public class VideoCropFragment extends Fragment implements View.OnClickListener {
+public class VideoCutFragment extends Fragment implements View.OnClickListener {
 
-    private static final String TAG = "VideoCropFragment";
+    private static final String TAG = "VideoCutFragment";
 
     private String mVideoPath;
     private Activity mActivity;
@@ -48,13 +48,9 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
     // 倍速选择条
     private VideoSpeedLevelBar mVideoSpeedLevelBar;
     // 裁剪Bar
-    private VideoCropViewBar mVideoCropViewBar;
+    private VideoCutViewBar mVideoCutViewBar;
     // 选中提示
     private TextView mTextVideoCropSelected;
-    // 显示播放倍速
-    private TextView mTextSpeedBarVisible;
-    // 设置旋转角度
-    private TextView mTextVideoRotation;
 
     // 执行进度提示
     private LinearLayout mLayoutProgress;
@@ -72,8 +68,8 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
     private AudioManager mAudioManager;
     private CainShortVideoEditor mVideoEditor;
 
-    public static VideoCropFragment newInstance() {
-        return new VideoCropFragment();
+    public static VideoCutFragment newInstance() {
+        return new VideoCutFragment();
     }
 
     @Override
@@ -121,25 +117,23 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
                     mCainMediaPlayer.setRate(rate);
                     mCainMediaPlayer.setPitch(pitch);
                     mCainMediaPlayer.seekTo(mCropStart);
-                    if (mVideoCropViewBar != null) {
-                        mVideoCropViewBar.setSpeed(mVideoSpeed);
+                    if (mVideoCutViewBar != null) {
+                        mVideoCutViewBar.setSpeed(mVideoSpeed);
                     }
                 }
             }
         });
 
-        mTextVideoCropSelected = mContentView.findViewById(R.id.video_crop_selected);
-        mTextSpeedBarVisible = mContentView.findViewById(R.id.video_crop_speed_bar_visible);
-        mTextSpeedBarVisible.setOnClickListener(this);
-        mTextVideoRotation = mContentView.findViewById(R.id.video_crop_rotation);
-        mTextVideoRotation.setOnClickListener(this);
+        mTextVideoCropSelected = mContentView.findViewById(R.id.tv_video_cut_selected);
+        mContentView.findViewById(R.id.tv_video_cut_speed_bar_visible).setOnClickListener(this);
+        mContentView.findViewById(R.id.tv_video_cut_rotation).setOnClickListener(this);
 
 
-        mVideoCropViewBar = mContentView.findViewById(R.id.video_crop_view_bar);
+        mVideoCutViewBar = mContentView.findViewById(R.id.video_crop_view_bar);
         if (mVideoPath != null) {
-            mVideoCropViewBar.setVideoPath(mVideoPath);
+            mVideoCutViewBar.setVideoPath(mVideoPath);
         }
-        mVideoCropViewBar.setOnVideoCropViewBarListener(mOnVideoCropViewBarListener);
+        mVideoCutViewBar.setOnVideoCropViewBarListener(mOnVideoCropViewBarListener);
 
         mLayoutProgress = mContentView.findViewById(R.id.layout_progress);
         mLayoutProgress.setVisibility(View.GONE);
@@ -169,9 +163,9 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
 
     @Override
     public void onDestroyView() {
-        if (mVideoCropViewBar != null) {
-            mVideoCropViewBar.release();
-            mVideoCropViewBar = null;
+        if (mVideoCutViewBar != null) {
+            mVideoCutViewBar.release();
+            mVideoCutViewBar = null;
         }
         mContentView = null;
         super.onDestroyView();
@@ -205,15 +199,13 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
             mActivity.onBackPressed();
         } else if (id == R.id.video_crop_ok) {
             cutVideo();
-        } else if (id == R.id.video_crop_speed_bar_visible) {
+        } else if (id == R.id.tv_video_cut_speed_bar_visible) {
             if (mVideoSpeedLevelBar.getVisibility() == View.VISIBLE) {
                 mVideoSpeedLevelBar.setVisibility(View.GONE);
-                mTextSpeedBarVisible.setText(R.string.video_crop_speed_bar_visible);
             } else {
                 mVideoSpeedLevelBar.setVisibility(View.VISIBLE);
-                mTextSpeedBarVisible.setText(R.string.video_crop_speed_bar_gone);
             }
-        } else if (id == R.id.video_crop_rotation) {
+        } else if (id == R.id.tv_video_cut_rotation) {
             // TODO it has a bug here, fix it in future.
 //            float nextRotation = mVideoPlayerView.getRotation() + 90f;
 //            mVideoPlayerView.setRotation(nextRotation);
@@ -222,8 +214,8 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
 
     public void setVideoPath(String videoPath) {
         mVideoPath = videoPath;
-        if (mVideoCropViewBar != null) {
-            mVideoCropViewBar.setVideoPath(mVideoPath);
+        if (mVideoCutViewBar != null) {
+            mVideoCutViewBar.setVideoPath(mVideoPath);
         }
     }
 
@@ -310,7 +302,7 @@ public class VideoCropFragment extends Fragment implements View.OnClickListener 
     }
 
 
-    private VideoCropViewBar.OnVideoCropViewBarListener mOnVideoCropViewBarListener = new VideoCropViewBar.OnVideoCropViewBarListener() {
+    private VideoCutViewBar.OnVideoCropViewBarListener mOnVideoCropViewBarListener = new VideoCutViewBar.OnVideoCropViewBarListener() {
         @Override
         public void onTouchDown() {
             if (mCainMediaPlayer != null) {

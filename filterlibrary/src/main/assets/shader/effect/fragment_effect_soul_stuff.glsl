@@ -1,4 +1,4 @@
-// 灵魂出窍滤镜
+// 仿抖音灵魂出窍滤镜
 precision highp float;
 varying vec2 textureCoordinate;
 uniform sampler2D inputTexture;

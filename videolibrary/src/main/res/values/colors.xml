@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="video_speed_background">#80000000</color>
-    <color name="video_crop_background">#05101c</color>
-    <color name="video_crop_bar_background">#66000000</color>
+    <color name="video_speed_background">#2A2A2A</color>
+    <color name="video_page_background">#000000</color>
+    <color name="video_cut_bar_background">#66000000</color>
+
+    <!-- 编辑页面颜色 -->
+    <color name="video_edit_effect_background">#9AFFFFFF</color>
+    <color name="video_edit_effect_category_background">#FF1B1D2A</color>
+    <color name="video_edit_effect_category_split">#4DFFFFFF</color>
+    <color name="video_edit_effect_category_select">#ffd217</color>
 
 </resources>

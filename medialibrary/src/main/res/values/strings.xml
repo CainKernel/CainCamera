@@ -1,5 +1,3 @@
 <resources>
     <string name="app_name">PlayerLibrary</string>
-    <string name="video_crop_speed_bar_visible">显示倍速</string>
-    <string name="video_crop_speed_bar_gone">隐藏倍速</string>
 </resources>

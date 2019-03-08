@@ -3,7 +3,7 @@
     package="com.cgfay.video">
 
     <application>
-        <activity android:name=".activity.VideoCropActivity"
+        <activity android:name=".activity.VideoCutActivity"
             android:theme="@style/VideoTheme"/>
         <activity android:name=".activity.VideoEditActivity"
             android:theme="@style/VideoTheme"/>

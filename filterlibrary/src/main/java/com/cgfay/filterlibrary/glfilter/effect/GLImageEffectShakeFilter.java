@@ -3,24 +3,23 @@ package com.cgfay.filterlibrary.glfilter.effect;
 import android.content.Context;
 import android.opengl.GLES20;
 
-import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
 import com.cgfay.filterlibrary.glfilter.utils.OpenGLUtils;
 
 /**
- * RGB通道偏移滤镜
+ * 仿抖音抖动特效
  */
-public class GLImageShiftRGBFilter extends GLImageFilter {
+public class GLImageEffectShakeFilter extends GLImageEffectFilter {
 
     private int mScaleHandle;
 
     private float mScale = 1.0f;
     private float mOffset = 0.0f;
 
-    public GLImageShiftRGBFilter(Context context) {
-        this(context, VERTEX_SHADER, OpenGLUtils.getShaderFromAssets(context, "shader/effect/fragment_shit_rgb.glsl"));
+    public GLImageEffectShakeFilter(Context context) {
+        this(context, VERTEX_SHADER, OpenGLUtils.getShaderFromAssets(context, "shader/effect/fragment_effect_shake.glsl"));
     }
 
-    public GLImageShiftRGBFilter(Context context, String vertexShader, String fragmentShader) {
+    private GLImageEffectShakeFilter(Context context, String vertexShader, String fragmentShader) {
         super(context, vertexShader, fragmentShader);
     }
 
@@ -35,12 +34,19 @@ public class GLImageShiftRGBFilter extends GLImageFilter {
     @Override
     public void onDrawFrameBegin() {
         super.onDrawFrameBegin();
-        mScale = 1.0f + 0.3f * getInterpolation(mOffset);
-        mOffset += 0.06f;
+
+        GLES20.glUniform1f(mScaleHandle, mScale);
+    }
+
+    @Override
+    protected void calculateInterval() {
+        // 步进，40ms算一次步进
+        float interval = mCurrentPosition % 40.0f;
+        mOffset += interval * 0.0025f;
         if (mOffset > 1.0f) {
             mOffset = 0.0f;
         }
-        GLES20.glUniform1f(mScaleHandle, mScale);
+        mScale = 1.0f + 0.3f * getInterpolation(mOffset);
     }
 
     private float getInterpolation(float input) {

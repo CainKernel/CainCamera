@@ -24,7 +24,7 @@ import com.cgfay.scan.listener.OnMediaSelectedListener;
 import com.cgfay.scan.loader.impl.GlideMediaLoader;
 import com.cgfay.scan.model.MimeType;
 import com.cgfay.utilslibrary.utils.PermissionUtils;
-import com.cgfay.video.activity.VideoCropActivity;
+import com.cgfay.video.activity.VideoCutActivity;
 
 import java.util.List;
 
@@ -132,8 +132,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             intent.putExtra(ImageEditActivity.PATH, path);
                             startActivity(intent);
                         } else if (type == GalleryType.VIDEO) {
-                            Intent intent = new Intent(MainActivity.this, VideoCropActivity.class);
-                            intent.putExtra(VideoCropActivity.PATH, path);
+                            Intent intent = new Intent(MainActivity.this, VideoCutActivity.class);
+                            intent.putExtra(VideoCutActivity.PATH, path);
                             startActivity(intent);
                         }
                     }
@@ -173,8 +173,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onSelected(List<Uri> uriList, List<String> pathList, boolean isVideo) {
                         if (isVideo) {
-                            Intent intent = new Intent(MainActivity.this, VideoCropActivity.class);
-                            intent.putExtra(VideoCropActivity.PATH, pathList.get(0));
+                            Intent intent = new Intent(MainActivity.this, VideoCutActivity.class);
+                            intent.putExtra(VideoCutActivity.PATH, pathList.get(0));
                             startActivity(intent);
                         } else {
                             Intent intent = new Intent(MainActivity.this, ImageEditActivity.class);

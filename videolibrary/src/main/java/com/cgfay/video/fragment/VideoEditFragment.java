@@ -1,5 +1,7 @@
 package com.cgfay.video.fragment;
 
+import android.animation.AnimatorSet;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
@@ -10,6 +12,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -18,17 +22,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.cgfay.filterlibrary.glfilter.resource.FilterHelper;
+import com.cgfay.filterlibrary.glfilter.resource.bean.ResourceData;
 import com.cgfay.media.CainMediaPlayer;
 import com.cgfay.media.CainShortVideoEditor;
 import com.cgfay.media.IMediaPlayer;
 import com.cgfay.utilslibrary.fragment.BackPressedDialogFragment;
+import com.cgfay.utilslibrary.utils.DensityUtils;
 import com.cgfay.utilslibrary.utils.FileUtils;
 import com.cgfay.utilslibrary.utils.StringUtils;
 import com.cgfay.video.R;
+import com.cgfay.video.adapter.VideoFilterAdapter;
+import com.cgfay.video.bean.EffectMimeType;
+import com.cgfay.video.widget.EffectSelectedSeekBar;
 import com.cgfay.video.widget.VideoTextureView;
 import com.cgfay.video.widget.WaveCutView;
 
@@ -51,8 +62,21 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
 
     private View mContentView;
     // 播放控件
+    private RelativeLayout mLayoutPlayer;
     private VideoTextureView mVideoPlayerView;
     private ImageView mIvVideoPlay;
+
+    // 特效选择栏
+    private LinearLayout mLayoutEffect;             // 特效布局
+    private TextView mTvVideoCurrent;               // 当前位置
+    private EffectSelectedSeekBar mSbEffectSelected;// 带特效选中的进度条
+    private TextView mTvVideoDuration;              // 视频时长
+    private TextView mTvEffectTips;                 // 特效提示
+    private TextView mTvEffectCancel;               // 撤销按钮
+    private RecyclerView mListEffectView;           // 特效列表
+    private RecyclerView mListEffectCategoryView;   // 特效目录列表
+    private boolean mEffectShowing;                 // 特效页面显示状态
+
     // 顶部控制栏
     private RelativeLayout mLayoutTop;
     // 顶部子控制栏
@@ -69,13 +93,23 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     // 音乐裁剪页面
     private View mLayoutCutMusic;
     private WaveCutView mWaveCutView;
-    private TextView mTvCutCurrent;
-    private TextView mTvCutDuration;
+    private TextView mTvMusicCurrent;
+    private TextView mTvMusicDuration;
 
+    // 滤镜列表
+    private RecyclerView mListFilterView;
+    private VideoFilterAdapter mFilterAdapter;
+
+
+    // 播放器
     private MediaPlayer mAudioPlayer;
     private CainMediaPlayer mCainMediaPlayer;
     private AudioManager mAudioManager;
     private CainShortVideoEditor mVideoEditor;
+    private int mPlayViewWidth;
+    private int mPlayViewHeight;
+    private int mVideoWidth;
+    private int mVideoHeight;
 
     public static VideoEditFragment newInstance() {
         return new VideoEditFragment();
@@ -110,10 +144,24 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         }
 
         // 播放器显示控件
+        mLayoutPlayer = mContentView.findViewById(R.id.layout_player);
         mVideoPlayerView = mContentView.findViewById(R.id.video_player_view);
         mVideoPlayerView.setSurfaceTextureListener(mSurfaceTextureListener);
+        mVideoPlayerView.setOnClickListener(this);
         mIvVideoPlay = mContentView.findViewById(R.id.iv_video_play);
         mIvVideoPlay.setOnClickListener(this);
+
+        // 特效控制栏
+        mLayoutEffect = mContentView.findViewById(R.id.layout_effect);
+        mTvVideoCurrent = mContentView.findViewById(R.id.tv_video_current);
+        mSbEffectSelected = mContentView.findViewById(R.id.sb_select_effect);
+        mSbEffectSelected.setOnSeekBarChangeListener(mOnSeekBarChangeListener);
+        mTvVideoDuration = mContentView.findViewById(R.id.tv_video_duration);
+        mTvEffectTips = mContentView.findViewById(R.id.tv_video_edit_effect_tips);
+        mTvEffectCancel = mContentView.findViewById(R.id.tv_video_edit_effect_cancel);
+        mTvEffectCancel.setOnClickListener(this);
+        mListEffectView = mContentView.findViewById(R.id.list_video_edit_effect);
+        mListEffectCategoryView = mContentView.findViewById(R.id.list_video_edit_effect_category);
 
         // 顶部控制栏
         mLayoutTop = mContentView.findViewById(R.id.layout_top);
@@ -214,11 +262,16 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if (id == R.id.iv_video_play) {
+        if (id == R.id.video_player_view) {
             if (mCainMediaPlayer != null) {
-                mCainMediaPlayer.resume();
-                mIvVideoPlay.setVisibility(View.GONE);
+                if (mCainMediaPlayer.isPlaying()) {
+                    pausePlayer();
+                } else {
+                    resumePlayer();
+                }
             }
+        } else if (id == R.id.iv_video_play) {
+            resumePlayer();
         } else if (id == R.id.btn_edit_back) {
             onBackPressed();
         } else if (id == R.id.btn_select_music) {
@@ -245,6 +298,8 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             showVolumeChangeLayout(false);
         } else if (id == R.id.iv_cut_music_save) {
             showCutMusicLayout(false);
+        } else if (id == R.id.tv_video_edit_effect_cancel) {   // 撤销特效
+            // TODO 撤销上一个特效
         }
     }
 
@@ -253,6 +308,7 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         mLayoutSubBottom.setVisibility(View.GONE);
         mLayoutBottom.setVisibility(View.VISIBLE);
         mLayoutTop.setVisibility(View.VISIBLE);
+        mLayoutSubTop.setVisibility(View.GONE);
     }
 
     private void selectMusic() {
@@ -311,14 +367,14 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             if (mLayoutCutMusic == null) {
                 mLayoutCutMusic = LayoutInflater.from(mActivity).inflate(R.layout.view_music_cut, null);
                 mLayoutCutMusic.findViewById(R.id.iv_cut_music_save).setOnClickListener(this);
-                mTvCutCurrent = mLayoutCutMusic.findViewById(R.id.tv_audio_current);
-                mTvCutDuration = mLayoutCutMusic.findViewById(R.id.tv_audio_duration);
+                mTvMusicCurrent = mLayoutCutMusic.findViewById(R.id.tv_audio_current);
+                mTvMusicDuration = mLayoutCutMusic.findViewById(R.id.tv_audio_duration);
                 mWaveCutView = mLayoutCutMusic.findViewById(R.id.wave_cut_view);
                 mWaveCutView.setOnDragListener(mCutMusicListener);
                 if (mMusicPath != null) {
                     mWaveCutView.setMax((int) mBackgroundDuration);
                     mWaveCutView.setProgress(0);
-                    mTvCutDuration.setText(StringUtils.generateStandardTime((int) mBackgroundDuration));
+                    mTvMusicDuration.setText(StringUtils.generateStandardTime((int) mBackgroundDuration));
                 } else {
                     mWaveCutView.setMax(50);
                     mWaveCutView.setProgress(0);
@@ -335,10 +391,16 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
 
     private void subChangeCancel() {
         resetBottomView();
+        if (mEffectShowing) {
+            showChangeEffectLayout(false);
+        }
     }
 
     private void subChangeSave() {
         resetBottomView();
+        if (mEffectShowing) {
+            showChangeEffectLayout(false);
+        }
     }
 
     /**
@@ -346,10 +408,76 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
      * @param showSubView
      */
     private void showChangeEffectLayout(boolean showSubView) {
+        mEffectShowing = showSubView;
         if (showSubView) {
+            AnimatorSet animatorSet = new AnimatorSet();
+            // 特效页面显示动画
+            ValueAnimator effectShowAnimator = ValueAnimator.ofFloat(1f, 0f);
+            effectShowAnimator.setDuration(400);
+            final LinearLayout.LayoutParams effectParams = (LinearLayout.LayoutParams) mLayoutEffect.getLayoutParams();
+            final LinearLayout.LayoutParams playerParams = (LinearLayout.LayoutParams) mLayoutPlayer.getLayoutParams();
+            mPlayViewWidth = mLayoutPlayer.getWidth();
+            mPlayViewHeight = mLayoutPlayer.getHeight();
+            final int minPlayViewHeight = mPlayViewHeight - DensityUtils.dp2px(mActivity, 200);
+            final float playerViewScale = mPlayViewWidth/(float)mPlayViewHeight;
+            effectShowAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    effectParams.bottomMargin = (int) (-DensityUtils.dp2px(mActivity, 200) * (float)animation.getAnimatedValue());
+                    mLayoutEffect.setLayoutParams(effectParams);
+                    playerParams.width = (int) ((minPlayViewHeight + ((mPlayViewHeight - minPlayViewHeight)* (float)animation.getAnimatedValue())) * playerViewScale);
+                    playerParams.bottomMargin = (int) (DensityUtils.dp2px(mActivity, 18) * (1f - (float)animation.getAnimatedValue()));
+                    mLayoutPlayer.setLayoutParams(playerParams);
+                }
+            });
+            animatorSet.playSequentially(effectShowAnimator);
+            animatorSet.start();
 
+            mLayoutBottom.setVisibility(View.GONE);
+            mLayoutTop.setVisibility(View.GONE);
+            mLayoutSubTop.setVisibility(View.VISIBLE);
+
+            pausePlayer();
         } else {
-            resetBottomView();
+
+            AnimatorSet animatorSet = new AnimatorSet();
+            // 特效页面退出动画
+            ValueAnimator effectExitAnimator = ValueAnimator.ofFloat(0f, 1f);
+            effectExitAnimator.setDuration(400);
+            final LinearLayout.LayoutParams effectParams = (LinearLayout.LayoutParams) mLayoutEffect.getLayoutParams();
+            final LinearLayout.LayoutParams playerParams = (LinearLayout.LayoutParams) mLayoutPlayer.getLayoutParams();
+            final int minPlayViewHeight = mPlayViewHeight - DensityUtils.dp2px(mActivity, 200);
+            final float playerViewScale = mPlayViewWidth/(float)mPlayViewHeight;
+            effectExitAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    effectParams.bottomMargin = (int) (-DensityUtils.dp2px(mActivity, 200) * (float)animation.getAnimatedValue());
+                    mLayoutEffect.setLayoutParams(effectParams);
+                    playerParams.width = (int) ((minPlayViewHeight + ((mPlayViewHeight - minPlayViewHeight)* (float)animation.getAnimatedValue())) * playerViewScale);
+                    playerParams.bottomMargin = (int) (DensityUtils.dp2px(mActivity, 18) * (1f - (float)animation.getAnimatedValue()));
+                    mLayoutPlayer.setLayoutParams(playerParams);
+                }
+            });
+            animatorSet.playSequentially(effectExitAnimator);
+            animatorSet.start();
+
+            resumePlayer();
+        }
+    }
+
+    /**
+     * 切换特效目录
+     * @param type
+     */
+    private void changeEffectCategoryView(EffectMimeType type) {
+        if (type == EffectMimeType.FILTER) {
+
+        } else if (type == EffectMimeType.TRANSITION) {
+
+        } else if (type == EffectMimeType.MULTIFRAME) {
+
+        } else if (type == EffectMimeType.TIME) {
+
         }
     }
 
@@ -371,12 +499,33 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
      */
     private void showSelectFilterLayout(boolean showSubView) {
         if (showSubView) {
+            if (mListFilterView == null) {
+                mListFilterView = new RecyclerView(mActivity);
+                RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(mActivity);
+                ((LinearLayoutManager) layoutManager).setOrientation(LinearLayoutManager.HORIZONTAL);
+                mListFilterView.setLayoutManager(layoutManager);
+            }
+            if (mFilterAdapter == null) {
+                mFilterAdapter = new VideoFilterAdapter(mActivity, FilterHelper.getFilterList());
+            }
+            mFilterAdapter.setOnFilterChangeListener(mFilterChangeListener);
+            mListFilterView.setAdapter(mFilterAdapter);
+            mLayoutSubBottom.removeAllViews();
+            mLayoutSubBottom.addView(mListFilterView);
+            mLayoutSubBottom.setVisibility(View.VISIBLE);
 
+            mLayoutBottom.setVisibility(View.GONE);
+            mLayoutTop.setVisibility(View.GONE);
+            mLayoutSubTop.setVisibility(View.VISIBLE);
         } else {
             resetBottomView();
         }
     }
 
+    /**
+     * 选择贴纸页面
+     * @param showSubView
+     */
     private void showSelectStickersLayout(boolean showSubView) {
         if (showSubView) {
 
@@ -390,6 +539,38 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
      */
     private void saveAllChange() {
 
+    }
+
+    private void resumePlayer() {
+        if (mCainMediaPlayer != null) {
+            mCainMediaPlayer.resume();
+        }
+        if (mAudioPlayer != null) {
+            mAudioPlayer.start();
+        }
+        mIvVideoPlay.setVisibility(View.GONE);
+    }
+
+    private void seekTo(long timeMs) {
+        if (mCainMediaPlayer != null) {
+            mCainMediaPlayer.resume();
+            mCainMediaPlayer.seekTo(timeMs);
+        }
+        if (mAudioPlayer != null) {
+            mAudioPlayer.start();
+            mAudioPlayer.seekTo((int)timeMs);
+        }
+        mIvVideoPlay.setVisibility(View.GONE);
+    }
+
+    private void pausePlayer() {
+        if (mCainMediaPlayer != null) {
+            mCainMediaPlayer.pause();
+        }
+        if (mAudioPlayer != null) {
+            mAudioPlayer.pause();
+        }
+        mIvVideoPlay.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -433,10 +614,11 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         if (mWaveCutView != null) {
             mWaveCutView.setMax((int) mBackgroundDuration);
             mWaveCutView.setProgress(0);
-            mTvCutDuration.setText(StringUtils.generateStandardTime((int) mBackgroundDuration));
+            mTvMusicDuration.setText(StringUtils.generateStandardTime((int) mBackgroundDuration));
         }
     }
 
+    // 视频显示监听
     private SurfaceTexture mSurfaceTexture;
     private Surface mSurface;
     private TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
@@ -473,8 +655,23 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         mContentView.setKeepScreenOn(true);
         mCainMediaPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
-            public void onPrepared(IMediaPlayer mp) {
+            public void onPrepared(final IMediaPlayer mp) {
                 mp.start();
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mSbEffectSelected != null) {
+                            mSbEffectSelected.setMax(mp.getDuration());
+                            mSbEffectSelected.setProgress(mp.getCurrentPosition());
+                        }
+                        if (mTvVideoCurrent != null) {
+                            mTvVideoCurrent.setText(StringUtils.generateStandardTime((int)mp.getCurrentPosition()));
+                        }
+                        if (mTvVideoDuration != null) {
+                            mTvVideoDuration.setText(StringUtils.generateStandardTime((int)mp.getDuration()));
+                        }
+                    }
+                });
             }
         });
         mCainMediaPlayer.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener() {
@@ -512,6 +709,29 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             e.printStackTrace();
         }
     }
+
+    /**
+     * 带特效选中的滑动监听
+     */
+    private EffectSelectedSeekBar.OnSeekBarChangeListener mOnSeekBarChangeListener = new EffectSelectedSeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgress(int progress, boolean fromUser) {
+            if (fromUser) {
+                Log.d(TAG, "onProgress: progress = " + progress);
+            }
+        }
+
+        @Override
+        public void onStopTrackingTouch(int progress) {
+            seekTo(progress);
+        }
+
+        @Override
+        public void onStartTrackingTouch() {
+            pausePlayer();
+        }
+    };
+
 
     /**
      * 音量调节监听器
@@ -554,7 +774,7 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     private WaveCutView.OnDragListener mCutMusicListener = new WaveCutView.OnDragListener() {
         @Override
         public void onDragging(int position) {
-            mTvCutCurrent.setText(StringUtils.generateStandardTime(position));
+            mTvMusicCurrent.setText(StringUtils.generateStandardTime(position));
         }
 
         @Override
@@ -562,6 +782,16 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             if (mAudioPlayer != null) {
                 mAudioPlayer.seekTo((int)position);
             }
+        }
+    };
+
+    /**
+     * 滤镜列表改变回调
+     */
+    private VideoFilterAdapter.OnFilterChangeListener mFilterChangeListener = new VideoFilterAdapter.OnFilterChangeListener() {
+        @Override
+        public void onFilterChanged(ResourceData resourceData) {
+
         }
     };
 

@@ -7,13 +7,13 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.cgfay.video.R;
-import com.cgfay.video.fragment.VideoCropFragment;
+import com.cgfay.video.fragment.VideoCutFragment;
 
-public class VideoCropActivity extends AppCompatActivity {
+public class VideoCutActivity extends AppCompatActivity {
 
     public static final String PATH = "path";
 
-    private static final String FRAGMENT_VIDEO_CROP = "fragment_video_crop";
+    private static final String FRAGMENT_VIDEO_CROP = "fragment_video_cut";
 
     protected void hideNavigationBar() {
         if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
@@ -42,7 +42,7 @@ public class VideoCropActivity extends AppCompatActivity {
         setContentView(R.layout.activity_video_crop);
         if (null == savedInstanceState) {
             String videoPath = getIntent().getStringExtra(PATH);
-            VideoCropFragment fragment = VideoCropFragment.newInstance();
+            VideoCutFragment fragment = VideoCutFragment.newInstance();
             fragment.setVideoPath(videoPath);
             getSupportFragmentManager()
                     .beginTransaction()

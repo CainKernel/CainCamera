@@ -1,3 +1,4 @@
+// 仿抖音抖动特效
 precision highp float;
 varying vec2 textureCoordinate;
 uniform sampler2D inputTexture;

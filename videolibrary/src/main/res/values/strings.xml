@@ -34,4 +34,10 @@
     <string name="video_voice_background">配乐</string>
     <string name="video_cut_music_title">左右拖动声谱以剪取音乐</string>
 
+    <!-- 特效提示 -->
+    <string name="video_edit_effect_hint">选择位置后，按住使用效果</string>
+    <string name="video_edit_effect_cancel">撤销</string>
+    <string name="video_edit_effect_category_filter">滤镜特效</string>
+    <string name="video_edit_effect_category_time">时间特效</string>
+
 </resources>

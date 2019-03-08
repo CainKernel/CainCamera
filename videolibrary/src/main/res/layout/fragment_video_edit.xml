@@ -3,28 +3,125 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/video_crop_background">
+    android:background="@color/video_page_background">
 
-    <!-- 视频显示页面 -->
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true">
-        <com.cgfay.video.widget.VideoTextureView
-            android:id="@+id/video_player_view"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <!-- 视频显示页面 -->
+        <RelativeLayout
+            android:id="@+id/layout_player"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"/>
-        
-        <ImageView
-            android:id="@+id/iv_video_play"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="@drawable/icon_video_edit_play"
-            android:visibility="gone"/>
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center_horizontal">
+            <com.cgfay.video.widget.VideoTextureView
+                android:id="@+id/video_player_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center"/>
 
-    </FrameLayout>
+            <ImageView
+                android:id="@+id/iv_video_play"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center"
+                android:background="@drawable/icon_video_edit_play"
+                android:visibility="gone"/>
+        </RelativeLayout>
+
+        <!-- 特效显示 -->
+        <LinearLayout
+            android:id="@+id/layout_effect"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp200"
+            android:orientation="vertical"
+            android:layout_marginBottom="-200dp">
+            <!-- 进度条显示 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp30"
+                android:orientation="horizontal">
+                <!-- 当前播放位置 -->
+                <TextView
+                    android:id="@+id/tv_video_current"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/dp10"
+                    android:layout_marginEnd="@dimen/dp5"
+                    android:textSize="12sp"
+                    android:textColor="@color/white"
+                    android:text="00:00"/>
+
+                <!-- 带特效选中的进度条 -->
+                <com.cgfay.video.widget.EffectSelectedSeekBar
+                    android:id="@+id/sb_select_effect"
+                    android:layout_width="0dp"
+                    android:layout_height="28dp"
+                    android:layout_weight="1"/>
+
+                <!-- 文件时长 -->
+                <TextView
+                    android:id="@+id/tv_video_duration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/dp5"
+                    android:layout_marginEnd="@dimen/dp10"
+                    android:textSize="12sp"
+                    android:textColor="@color/white"
+                    android:text="00:00"/>
+
+            </LinearLayout>
+
+            <!--特效提示/撤销栏 -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp30">
+                <TextView
+                    android:id="@+id/tv_video_edit_effect_tips"
+                    android:layout_width="wrap_content"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="@dimen/dp20"
+                    android:layout_centerVertical="true"
+                    android:textSize="12sp"
+                    android:textColor="@color/video_edit_effect_background"
+                    android:text="@string/video_edit_effect_hint"/>
+                <TextView
+                    android:id="@+id/tv_video_edit_effect_cancel"
+                    android:layout_width="@dimen/dp60"
+                    android:layout_height="@dimen/dp30"
+                    android:background="@drawable/bg_video_edit_effect_cancel"
+                    android:textSize="13sp"
+                    android:textColor="@color/video_edit_effect_background"
+                    android:text="@string/video_edit_effect_cancel"
+                    android:gravity="center"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="@dimen/dp20"
+                    android:visibility="gone"/>
+            </RelativeLayout>
+
+            <!-- 特效列表 -->
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/list_video_edit_effect"
+                android:layout_width="match_parent"
+                android:layout_height="92dp">
+            </android.support.v7.widget.RecyclerView>
+
+            <!-- 特效分类栏 -->
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/list_video_edit_effect_category"
+                android:layout_width="match_parent"
+                android:layout_height="47dp">
+            </android.support.v7.widget.RecyclerView>
+        </LinearLayout>
+    </LinearLayout>
+
 
     <RelativeLayout
         android:id="@+id/layout_top"
@@ -40,43 +137,73 @@
             android:layout_marginTop="@dimen/dp20"
             android:layout_marginStart="@dimen/dp10"
             android:scaleType="centerInside"
-            android:background="@drawable/icon_video_crop_back"/>
+            android:background="@drawable/icon_video_cut_back"/>
 
         <!-- 选音乐 -->
-        <Button
+        <LinearLayout
             android:id="@+id/btn_select_music"
-            android:layout_width="@dimen/dp60"
-            android:layout_height="@dimen/dp40"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dp15"
             android:layout_marginEnd="@dimen/dp10"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
-            android:background="@color/transparent"
-            android:textColor="@color/white"
-            android:text="@string/video_edit_select_music" />
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="@dimen/dp40"
+                android:layout_height="@dimen/dp40"
+                android:background="@drawable/icon_video_edit_music_select"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp5"
+                android:textColor="@color/white"
+                android:text="@string/video_edit_select_music"/>
+        </LinearLayout>
         <!-- 声音-->
-        <Button
+        <LinearLayout
             android:id="@+id/btn_change_voice"
-            android:layout_width="@dimen/dp60"
-            android:layout_height="@dimen/dp40"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dp15"
             android:layout_marginEnd="@dimen/dp10"
             android:layout_toStartOf="@id/btn_select_music"
-            android:background="@color/transparent"
-            android:textColor="@color/white"
-            android:text="@string/video_edit_voice" />
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="@dimen/dp40"
+                android:layout_height="@dimen/dp40"
+                android:background="@drawable/icon_video_edit_music_voice"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp5"
+                android:textColor="@color/white"
+                android:text="@string/video_edit_voice"/>
+        </LinearLayout>
 
         <!-- 剪音乐 -->
-        <Button
+        <LinearLayout
             android:id="@+id/btn_cut_music"
-            android:layout_width="@dimen/dp60"
-            android:layout_height="@dimen/dp40"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dp15"
             android:layout_marginEnd="@dimen/dp10"
             android:layout_toStartOf="@id/btn_change_voice"
-            android:background="@color/transparent"
-            android:textColor="@color/white"
-            android:text="@string/video_edit_cut_music"/>
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="@dimen/dp40"
+                android:layout_height="@dimen/dp40"
+                android:background="@drawable/icon_video_edit_music_cut"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp5"
+                android:textColor="@color/white"
+                android:text="@string/video_edit_cut_music"/>
+        </LinearLayout>
     </RelativeLayout>
 
     <!-- 顶部子控制栏 -->
@@ -118,70 +245,107 @@
     <RelativeLayout
         android:id="@+id/layout_bottom"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/dp100"
         android:layout_marginBottom="@dimen/dp10"
         android:layout_alignParentBottom="true">
         <!-- 特效 -->
-        <Button
+        <LinearLayout
             android:id="@+id/btn_edit_effect"
-            android:layout_width="@dimen/dp60"
-            android:layout_height="@dimen/dp40"
-            android:layout_marginTop="@dimen/dp15"
-            android:layout_marginEnd="@dimen/dp5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp15"
             android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
-            android:background="@color/transparent"
-            android:textColor="@color/white"
-            android:text="@string/video_edit_effect"/>
+            android:layout_centerVertical="true"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageView
+                android:layout_width="@dimen/dp40"
+                android:layout_height="42dp"
+                android:background="@drawable/icon_video_edit_effect" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="@string/video_edit_effect"/>
+        </LinearLayout>
 
         <!-- 选封面 -->
-        <Button
+        <LinearLayout
             android:id="@+id/btn_edit_cover"
-            android:layout_width="@dimen/dp60"
-            android:layout_height="@dimen/dp40"
-            android:layout_marginTop="@dimen/dp15"
-            android:layout_marginEnd="@dimen/dp5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp15"
             android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
             android:layout_toEndOf="@id/btn_edit_effect"
-            android:background="@color/transparent"
-            android:textColor="@color/white"
-            android:text="@string/video_edit_cover"/>
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="@dimen/dp40"
+                android:layout_height="@dimen/dp40"
+                android:background="@drawable/icon_video_edit_cover"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="@string/video_edit_cover"/>
+        </LinearLayout>
         <!-- 滤镜 -->
-        <Button
+        <LinearLayout
             android:id="@+id/btn_edit_filter"
-            android:layout_width="@dimen/dp60"
-            android:layout_height="@dimen/dp40"
-            android:layout_marginTop="@dimen/dp15"
-            android:layout_marginEnd="@dimen/dp5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp15"
             android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
             android:layout_toEndOf="@id/btn_edit_cover"
-            android:background="@color/transparent"
-            android:textColor="@color/white"
-            android:text="@string/video_edit_filter"/>
-
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="@dimen/dp40"
+                android:layout_height="@dimen/dp40"
+                android:background="@drawable/icon_video_edit_filter"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="@string/video_edit_filter"/>
+        </LinearLayout>
         <!-- 贴纸 -->
-        <Button
+        <LinearLayout
             android:id="@+id/btn_edit_stickers"
-            android:layout_width="@dimen/dp60"
-            android:layout_height="@dimen/dp40"
-            android:layout_marginTop="@dimen/dp15"
-            android:layout_marginEnd="@dimen/dp5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp15"
             android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
             android:layout_toEndOf="@id/btn_edit_filter"
-            android:background="@color/transparent"
-            android:textColor="@color/white"
-            android:text="@string/video_edit_stickers"/>
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="@dimen/dp40"
+                android:layout_height="@dimen/dp40"
+                android:background="@drawable/icon_video_edit_stickers"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="@string/video_edit_stickers"/>
+        </LinearLayout>
 
         <!-- next -->
         <Button
             android:id="@+id/btn_edit_next"
-            android:layout_width="@dimen/dp60"
-            android:layout_height="@dimen/dp40"
+            android:layout_width="@dimen/dp80"
+            android:layout_height="@dimen/dp30"
             android:layout_marginTop="@dimen/dp15"
             android:layout_marginEnd="@dimen/dp10"
-            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="@dimen/dp15"
+            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
-            android:background="@color/brown"
+            android:background="@drawable/bg_button_brown_round"
             android:textColor="@color/white"
             android:text="@string/video_edit_next"/>
     </RelativeLayout>

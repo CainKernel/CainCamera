@@ -1,3 +1,4 @@
+// 仿抖音缩放特效
 precision mediump float;
 varying vec2 textureCoordinate;
 uniform sampler2D inputTexture;
