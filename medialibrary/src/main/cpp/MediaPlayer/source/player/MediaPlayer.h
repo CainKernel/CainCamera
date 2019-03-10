@@ -22,7 +22,6 @@
 #include <android/native_window_jni.h>
 #include <sync/MediaSync.h>
 #include <convertor/AudioResampler.h>
-#include <player/AVMessageQueue.h>
 
 
 class MediaPlayer : public Runnable {
@@ -102,8 +101,6 @@ private:
     Thread *readThread;                     // 读数据包线程
 
     PlayerState *playerState;               // 播放器状态
-
-    AVMessageQueue *messageQueue;           // 播放器消息队列
 
     AudioDecoder *audioDecoder;             // 音频解码器
     VideoDecoder *videoDecoder;             // 视频解码器

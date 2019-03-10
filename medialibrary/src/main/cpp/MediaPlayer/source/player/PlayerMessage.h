@@ -38,4 +38,6 @@
 #define MSG_REQUEST_PAUSE               0x202   // 请求暂停
 #define MSG_REQUEST_SEEK                0x203   // 请求定位
 
+#define MSG_CURRENT_POSITON             0x300   // 当前时钟
+
 #endif //PLAYERMESSAGE_H

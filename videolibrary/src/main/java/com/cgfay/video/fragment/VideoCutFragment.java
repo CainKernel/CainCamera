@@ -25,6 +25,7 @@ import com.cgfay.media.CainMediaPlayer;
 import com.cgfay.media.CainShortVideoEditor;
 import com.cgfay.media.IMediaPlayer;
 import com.cgfay.utilslibrary.utils.FileUtils;
+import com.cgfay.utilslibrary.utils.StringUtils;
 import com.cgfay.video.R;
 import com.cgfay.video.activity.VideoEditActivity;
 import com.cgfay.video.bean.VideoSpeed;
@@ -61,9 +62,10 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
     private VideoSpeed mVideoSpeed = VideoSpeed.SPEED_L2;
 
     // 毫秒
-    private long mCropStart = 0;
-    private long mCropRange = 15000;
+    private long mCutStart = 0;
+    private long mCutRange = 15000;
     private long mVideoDuration;
+    private boolean mSeeking = false;
     private CainMediaPlayer mCainMediaPlayer;
     private AudioManager mAudioManager;
     private CainShortVideoEditor mVideoEditor;
@@ -116,7 +118,7 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
                     float pitch = 1.0f / rate;
                     mCainMediaPlayer.setRate(rate);
                     mCainMediaPlayer.setPitch(pitch);
-                    mCainMediaPlayer.seekTo(mCropStart);
+                    mCainMediaPlayer.seekTo(mCutStart);
                     if (mVideoCutViewBar != null) {
                         mVideoCutViewBar.setSpeed(mVideoSpeed);
                     }
@@ -286,6 +288,25 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
             }
         });
 
+        mCainMediaPlayer.setOnSeekCompleteListener(new IMediaPlayer.OnSeekCompleteListener() {
+            @Override
+            public void onSeekComplete(IMediaPlayer mp) {
+                mSeeking = false;
+            }
+        });
+
+        mCainMediaPlayer.setOnCurrentPositionListener(new CainMediaPlayer.OnCurrentPositionListener() {
+            @Override
+            public void onCurrentPosition(long current, long duration) {
+                if (!mSeeking) {
+                    if (current > mCutRange + mCutStart) {
+                        mCainMediaPlayer.seekTo(mCutStart);
+                        mSeeking = true;
+                    }
+                }
+            }
+        });
+
         try {
             mCainMediaPlayer.setDataSource(mVideoPath);
             if (mSurfaceTexture != null) {
@@ -319,21 +340,21 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
 
         @Override
         public void onTouchChange(long time) {
-            mCropStart = time;
+            mCutStart = time;
             if (mCainMediaPlayer != null) {
-                mCainMediaPlayer.seekTo(mCropStart);
+                mCainMediaPlayer.seekTo(mCutStart);
             }
         }
 
         @Override
         public void onRangeChange(long time, long range) {
-            mCropStart = time;
-            mCropRange = range;
+            mCutStart = time;
+            mCutRange = range;
             if (mTextVideoCropSelected != null) {
                 mTextVideoCropSelected.setText(mActivity.getString(R.string.video_crop_selected_time, (int)(range/1000L)));
             }
             if (mCainMediaPlayer != null) {
-                mCainMediaPlayer.seekTo(mCropStart);
+                mCainMediaPlayer.seekTo(mCutStart);
             }
         }
 
@@ -360,8 +381,8 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
                 }
                 mVideoEditor.setOnVideoEditorProcessListener(mProcessListener);
 
-                float start = mVideoSpeed.getSpeed() * mCropStart;
-                float duration = mVideoSpeed.getSpeed() * mCropRange;
+                float start = mVideoSpeed.getSpeed() * mCutStart;
+                float duration = mVideoSpeed.getSpeed() * mCutRange;
                 if (duration > mVideoDuration) {
                     duration = mVideoDuration;
                 }
@@ -409,7 +430,7 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
         public void onProcessing(int time) {
             Log.d(TAG, "onProcessing: time = " + time + "s" + ", duration = " + mVideoDuration);
             if (mVideoSpeed.getSpeed() != 1.0) {
-                float percent = time * 1000f / mCropRange * 100;
+                float percent = time * 1000f / mCutRange * 100;
                 if (percent > 100) {
                     percent = 100;
                 }

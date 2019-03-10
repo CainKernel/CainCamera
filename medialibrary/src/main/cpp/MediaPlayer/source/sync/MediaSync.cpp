@@ -263,6 +263,32 @@ void MediaSync::refreshVideo(double *remaining_time) {
         break;
     }
 
+    // 回调当前时长
+    if (playerState->messageQueue && playerState->syncType == AV_SYNC_VIDEO) {
+        // 起始延时
+        int64_t start_time = videoDecoder->getFormatContext()->start_time;
+        int64_t start_diff = 0;
+        if (start_time > 0 && start_time != AV_NOPTS_VALUE) {
+            start_diff = av_rescale(start_time, 1000, AV_TIME_BASE);
+        }
+        // 计算主时钟的时间
+        int64_t pos = 0;
+        double clock = getMasterClock();
+        if (isnan(clock)) {
+            pos = playerState->seekPos;
+        } else {
+            pos = (int64_t)(clock * 1000);
+        }
+        if (pos < 0 || pos < start_diff) {
+            pos = 0;
+        }
+        pos = (long) (pos - start_diff);
+        if (playerState->videoDuration < 0) {
+            pos = 0;
+        }
+        playerState->messageQueue->postMessage(MSG_CURRENT_POSITON, pos, playerState->videoDuration);
+    }
+
     // 显示画面
     if (!playerState->displayDisable && forceRefresh && videoDecoder
         && videoDecoder->getFrameQueue()->getShowIndex()) {

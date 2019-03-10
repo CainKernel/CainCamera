@@ -684,6 +684,7 @@ public class CainMediaPlayer implements IMediaPlayer {
         mOnInfoListener = null;
         mOnVideoSizeChangedListener = null;
         mOnTimedTextListener = null;
+        mOnCurrentPositionListener = null;
         _release();
     }
 
@@ -881,6 +882,7 @@ public class CainMediaPlayer implements IMediaPlayer {
     private static final int MEDIA_TIMED_TEXT = 99;
     private static final int MEDIA_ERROR = 100;
     private static final int MEDIA_INFO = 200;
+    private static final int MEDIA_CURRENT = 300;
 
     private class EventHandler extends Handler {
 
@@ -975,6 +977,13 @@ public class CainMediaPlayer implements IMediaPlayer {
                 }
 
                 case MEDIA_NOP: { // interface test message - ignore
+                    break;
+                }
+
+                case MEDIA_CURRENT: {
+                    if (mOnCurrentPositionListener != null) {
+                        mOnCurrentPositionListener.onCurrentPosition(msg.arg1, msg.arg2);
+                    }
                     break;
                 }
 
@@ -1105,9 +1114,27 @@ public class CainMediaPlayer implements IMediaPlayer {
      *
      * @param listener the callback that will be run
      */
+    @Override
     public void setOnInfoListener(OnInfoListener listener) {
         mOnInfoListener = listener;
     }
 
     private OnInfoListener mOnInfoListener;
+
+    /**
+     * Interface definition of a callback to be invoked to playing position.
+     */
+    public interface OnCurrentPositionListener {
+
+        void onCurrentPosition(long current, long duration);
+    }
+
+    /**
+     * Register a callback to be invoked on playing position.
+     * @param listener
+     */
+    public void setOnCurrentPositionListener(OnCurrentPositionListener listener) {
+        mOnCurrentPositionListener = listener;
+    }
+    private OnCurrentPositionListener mOnCurrentPositionListener;
 }

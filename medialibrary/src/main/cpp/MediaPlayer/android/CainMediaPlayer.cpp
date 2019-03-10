@@ -487,7 +487,11 @@ void CainMediaPlayer::run() {
                 if (mediaPlayer != nullptr) {
                     mediaPlayer->seekTo(mSeekingPosition);
                 }
-//                seekTo((float)msg.arg1);
+                break;
+            }
+
+            case MSG_CURRENT_POSITON: {
+                postEvent(MEDIA_CURRENT, msg.arg1, msg.arg2);
                 break;
             }
 

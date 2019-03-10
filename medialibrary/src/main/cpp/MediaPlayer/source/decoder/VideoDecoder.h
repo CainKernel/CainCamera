@@ -31,6 +31,8 @@ public:
 
     FrameQueue *getFrameQueue();
 
+    AVFormatContext *getFormatContext();
+
     void run() override;
 
 private:

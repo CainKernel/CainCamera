@@ -12,6 +12,11 @@ PlayerState::PlayerState() {
 
 PlayerState::~PlayerState() {
     reset();
+    if (messageQueue) {
+        messageQueue->release();
+        delete messageQueue;
+        messageQueue = nullptr;
+    }
 }
 
 void PlayerState::init() {
@@ -30,6 +35,7 @@ void PlayerState::init() {
 
     audioCodecName = NULL;
     videoCodecName = NULL;
+    messageQueue = new AVMessageQueue();
 }
 
 void PlayerState::reset() {
@@ -78,6 +84,7 @@ void PlayerState::reset() {
     mute = 0;
     frameDrop = 1;
     reorderVideoPts = -1;
+    videoDuration = 0;
 }
 
 void PlayerState::setOption(int category, const char *type, const char *option) {
