@@ -36,9 +36,14 @@ public:
 
     void setListener(ShortVideoEditorListener *listener);
 
+    // 执行命令
     int execute(int argc, char **argv);
 
+    // 视频剪辑
     int videoCut(const char *srcPath, const char *dstPath, long start, long duration, float speed);
+
+    // 音频剪辑
+    int audioCut(const char *srcPath, const char *dstPath, long start, long duration);
 
     void postMessage(int what, int arg1 = 0, int arg2 = 0, void *obj = NULL, int len = 0);
 

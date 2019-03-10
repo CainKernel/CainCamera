@@ -7,6 +7,7 @@ extern "C" {
 
 #include <editor_log.h>
 #include <editor/VideoCutEditor.h>
+#include <editor/AudioCutEditor.h>
 #include "CainShortVideoEditor.h"
 
 static void processCallback(void *opaque, int type, int time) {
@@ -105,6 +106,19 @@ int CainShortVideoEditor::videoCut(const char *srcPath, const char *dstPath, lon
     VideoCutEditor editor = VideoCutEditor(srcPath, dstPath, &messageHandle);
     editor.setDuration(start, duration);
     editor.setSpeed(speed);
+    return editor.process();
+}
+
+int CainShortVideoEditor::audioCut(const char *srcPath, const char *dstPath, long start,
+                                   long duration) {
+    Mutex::Autolock lock(mMutex);
+    LOGD("video cut start");
+    MessageHandle messageHandle;
+    memset(&messageHandle, 0, sizeof(MessageHandle));
+    messageHandle.opaque = this;
+    messageHandle.callback = handleMessage;
+    AudioCutEditor editor = AudioCutEditor(srcPath, dstPath, &messageHandle);
+    editor.setDuration(start, duration);
     return editor.process();
 }
 

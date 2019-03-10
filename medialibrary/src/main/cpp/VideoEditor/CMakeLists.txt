@@ -12,6 +12,7 @@ add_library( video_editor
              source/command/ffmpeg_filter.c
              source/command/ffmpeg_opt.c
              # 使用代码编辑视频
+             source/editor/AudioCutEditor.cpp
              source/editor/VideoCutEditor.cpp
 
              # android wrapper

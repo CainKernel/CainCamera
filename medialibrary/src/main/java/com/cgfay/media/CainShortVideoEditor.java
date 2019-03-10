@@ -476,53 +476,6 @@ public class CainShortVideoEditor {
     }
 
     /**
-     * 音频裁剪，输出后缀跟输入后缀一致
-     * @param srcPath
-     * @param start     起始秒
-     * @param duration  结束秒
-     * @return
-     */
-    public String audioCut(String srcPath, float start, float duration) {
-
-        if (FileUtils.fileExists(srcPath)) {
-
-            List<String> cmdList = new ArrayList<String>();
-
-            String dstFile = VideoEditorUtil.createFileInBox(FileUtils.extractFileSuffix(srcPath));
-            cmdList.add("ffmpeg");
-
-            cmdList.add("-i");
-            cmdList.add(srcPath);
-
-            cmdList.add("-ss");
-            cmdList.add(String.valueOf(start));
-
-            cmdList.add("-t");
-            cmdList.add(String.valueOf(duration));
-
-            cmdList.add("-acodec");
-            cmdList.add("copy");
-
-            cmdList.add("-y");
-            cmdList.add(dstFile);
-
-            String[] command = new String[cmdList.size()];
-            for (int i = 0; i < cmdList.size(); i++) {
-                command[i] = (String) cmdList.get(i);
-            }
-            int ret = execute(command);
-            if (ret == 0) {
-                return dstFile;
-            } else {
-                FileUtils.deleteFile(dstFile);
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * 视频裁剪
      * @param srcPath    源媒体路径
      * @param start     起始位置，秒
@@ -863,6 +816,75 @@ public class CainShortVideoEditor {
      * @return
      */
     private native int _videoCut(String srcPath, String dstPath, float start, float duration, float speed);
+
+//    /**
+//     * 音频裁剪，输出后缀跟输入后缀一致
+//     * @param srcPath
+//     * @param start     起始秒
+//     * @param duration  结束秒
+//     * @return
+//     */
+//    public String audioCut(String srcPath, float start, float duration) {
+//
+//        if (FileUtils.fileExists(srcPath)) {
+//
+//            List<String> cmdList = new ArrayList<String>();
+//
+//            String dstFile = VideoEditorUtil.createFileInBox(FileUtils.extractFileSuffix(srcPath));
+//            cmdList.add("ffmpeg");
+//
+//            cmdList.add("-i");
+//            cmdList.add(srcPath);
+//
+//            cmdList.add("-ss");
+//            cmdList.add(String.valueOf(start));
+//
+//            cmdList.add("-t");
+//            cmdList.add(String.valueOf(duration));
+//
+//            cmdList.add("-acodec");
+//            cmdList.add("copy");
+//
+//            cmdList.add("-y");
+//            cmdList.add(dstFile);
+//
+//            String[] command = new String[cmdList.size()];
+//            for (int i = 0; i < cmdList.size(); i++) {
+//                command[i] = (String) cmdList.get(i);
+//            }
+//            int ret = execute(command);
+//            if (ret == 0) {
+//                return dstFile;
+//            } else {
+//                FileUtils.deleteFile(dstFile);
+//                return null;
+//            }
+//        } else {
+//            return null;
+//        }
+//    }
+
+    /**
+     * 音频裁剪
+     * @param srcPath
+     * @param dstPath
+     * @param start
+     * @param duration
+     * @return
+     */
+    public int audioCut(String srcPath, String dstPath, float start, float duration) {
+        return _audioCut(srcPath, dstPath, start, duration);
+    }
+
+    /**
+     * native层的音频裁剪
+     * @param srcPath
+     * @param dstPath
+     * @param start
+     * @param duration
+     * @return
+     */
+    private native int _audioCut(String srcPath, String dstPath, float start, float duration);
 
     /**
      * 将图片转成视频
