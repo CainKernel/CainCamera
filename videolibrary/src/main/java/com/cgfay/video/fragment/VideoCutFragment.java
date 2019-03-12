@@ -299,8 +299,8 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onCurrentPosition(long current, long duration) {
                 if (!mSeeking) {
-                    if (current > mCutRange + mCutStart) {
-                        mCainMediaPlayer.seekTo(mCutStart);
+                    if (current > (mCutRange + mCutStart) * mVideoSpeed.getSpeed()) {
+                        mCainMediaPlayer.seekTo(mCutStart * mVideoSpeed.getSpeed());
                         mSeeking = true;
                     }
                 }

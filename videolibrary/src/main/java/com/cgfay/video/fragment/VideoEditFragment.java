@@ -37,8 +37,12 @@ import com.cgfay.utilslibrary.utils.DensityUtils;
 import com.cgfay.utilslibrary.utils.FileUtils;
 import com.cgfay.utilslibrary.utils.StringUtils;
 import com.cgfay.video.R;
+import com.cgfay.video.adapter.VideoEffectAdapter;
+import com.cgfay.video.adapter.VideoEffectCategoryAdapter;
 import com.cgfay.video.adapter.VideoFilterAdapter;
 import com.cgfay.video.bean.EffectMimeType;
+import com.cgfay.video.bean.EffectType;
+import com.cgfay.video.engine.EffectFilterHelper;
 import com.cgfay.video.widget.EffectSelectedSeekBar;
 import com.cgfay.video.widget.VideoTextureView;
 import com.cgfay.video.widget.WaveCutView;
@@ -76,6 +80,8 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     private RecyclerView mListEffectView;           // 特效列表
     private RecyclerView mListEffectCategoryView;   // 特效目录列表
     private boolean mEffectShowing;                 // 特效页面显示状态
+    private VideoEffectAdapter mEffectAdapter;      // 特效列表适配器
+    private VideoEffectCategoryAdapter mEffectCategoryAdapter; // 特效目录列表适配器
 
     // 顶部控制栏
     private RelativeLayout mLayoutTop;
@@ -160,8 +166,24 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         mTvEffectTips = mContentView.findViewById(R.id.tv_video_edit_effect_tips);
         mTvEffectCancel = mContentView.findViewById(R.id.tv_video_edit_effect_cancel);
         mTvEffectCancel.setOnClickListener(this);
+
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(mActivity);
+        ((LinearLayoutManager) layoutManager).setOrientation(LinearLayoutManager.HORIZONTAL);
+        // 特效列表
         mListEffectView = mContentView.findViewById(R.id.list_video_edit_effect);
+        mListEffectView.setLayoutManager(layoutManager);
+        mEffectAdapter = new VideoEffectAdapter(mActivity, EffectFilterHelper.getInstance().getEffectFilterData());
+        mEffectAdapter.setOnEffectChangeListener(mEffectChangeListener);
+        mListEffectView.setAdapter(mEffectAdapter);
+
+        // 特效目录列表
         mListEffectCategoryView = mContentView.findViewById(R.id.list_video_edit_effect_category);
+        RecyclerView.LayoutManager manager = new LinearLayoutManager(mActivity);
+        ((LinearLayoutManager) manager).setOrientation(LinearLayoutManager.HORIZONTAL);
+        mListEffectCategoryView.setLayoutManager(manager);
+        mEffectCategoryAdapter = new VideoEffectCategoryAdapter(mActivity);
+        mEffectCategoryAdapter.setOnEffectCategoryChangeListener(mEffectCategoryChangeListener);
+        mListEffectCategoryView.setAdapter(mEffectCategoryAdapter);
 
         // 顶部控制栏
         mLayoutTop = mContentView.findViewById(R.id.layout_top);
@@ -795,6 +817,31 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         }
     };
 
+    /**
+     * 特效列表切换
+     */
+    private VideoEffectAdapter.OnEffectChangeListener mEffectChangeListener = new VideoEffectAdapter.OnEffectChangeListener() {
+        @Override
+        public void onEffectChanged(EffectType effectType) {
+
+        }
+    };
+
+    /**
+     * 特效目录切换
+     */
+    private VideoEffectCategoryAdapter.OnEffectCategoryChangeListener mEffectCategoryChangeListener = new VideoEffectCategoryAdapter.OnEffectCategoryChangeListener() {
+        @Override
+        public void onCategoryChange(EffectMimeType mimeType) {
+            if (mimeType == EffectMimeType.FILTER) {
+                mEffectAdapter.changeEffectData(EffectFilterHelper.getInstance().getEffectFilterData());
+            } else if (mimeType == EffectMimeType.MULTIFRAME) {
+                mEffectAdapter.changeEffectData(EffectFilterHelper.getInstance().getEffectMultiData());
+            } else {
+                mEffectAdapter.changeEffectData(null);
+            }
+        }
+    };
 
     /**
      * 页面操作监听器

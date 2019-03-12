@@ -26,6 +26,4 @@
     <dimen name="selected_indicator_padding">5dp</dimen>
     <dimen name="selected_indicator_width">25dp</dimen>
 
-    <dimen name="effect_item_size">60dp</dimen>
-
 </resources>

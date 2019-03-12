@@ -8,19 +8,25 @@ import android.os.Parcelable;
  */
 public enum EffectMimeType implements Parcelable {
 
-    FILTER(0),      // 滤镜特效
-    TRANSITION(1),  // 转场特效
-    MULTIFRAME(2),  // 分屏特效
-    TIME(3);        // 时间特效
+    FILTER("滤镜特效", 0),      // 滤镜特效
+    TRANSITION("转场特效", 1),  // 转场特效
+    MULTIFRAME("分屏特效", 2),  // 分屏特效
+    TIME("时间特效", 3);        // 时间特效
 
     private int mimeType;
+    private String mName;
 
-    EffectMimeType(int type) {
+    EffectMimeType(String name, int type) {
+        this.mName = name;
         this.mimeType = type;
     }
 
     public int getMimeType() {
         return mimeType;
+    }
+
+    public String getName() {
+        return mName;
     }
 
     @Override
@@ -30,13 +36,14 @@ public enum EffectMimeType implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mName);
         dest.writeInt(mimeType);
     }
 
     public static final Creator<EffectMimeType> CREATOR = new Creator<EffectMimeType>() {
         @Override
         public EffectMimeType createFromParcel(Parcel in) {
-            return EffectMimeType.values()[in.readInt()];
+            return EffectMimeType.valueOf(in.readString());
         }
 
         @Override

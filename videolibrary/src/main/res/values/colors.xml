@@ -7,8 +7,6 @@
 
     <!-- 编辑页面颜色 -->
     <color name="video_edit_effect_background">#9AFFFFFF</color>
-    <color name="video_edit_effect_category_background">#FF1B1D2A</color>
-    <color name="video_edit_effect_category_split">#4DFFFFFF</color>
-    <color name="video_edit_effect_category_select">#ffd217</color>
+    <color name="video_edit_effect_category_text_normal">#4DFFFFFF</color>
 
 </resources>
