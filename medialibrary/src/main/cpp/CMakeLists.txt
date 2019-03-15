@@ -30,6 +30,9 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/SoundTouch)
 # libyuv库
 add_subdirectory(${CMAKE_SOURCE_DIR}/libyuv)
 
+# GLFilter库
+add_subdirectory(${CMAKE_SOURCE_DIR}/GLFilter)
+
 # 媒体播放器
 add_subdirectory(${CMAKE_SOURCE_DIR}/MediaPlayer)
 

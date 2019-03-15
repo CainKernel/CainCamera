@@ -1,9 +1,11 @@
 //
-// Created by cain on 2019/1/9.
+// Created by CainHuang on 2019/3/13.
 //
 
-#ifndef GLUTILS_H
-#define GLUTILS_H
+#ifndef OPENGLUTILS_H
+#define OPENGLUTILS_H
+
+#if defined(__ANDROID__)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,11 +13,9 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2platform.h>
 
-#include <AndroidLog.h>
+#endif
 
-
-
-class GLUtils {
+class OpenGLUtils {
 public:
     // 创建program
     static GLuint createProgram(const char *vertexShader, const char *fragShader);
@@ -45,9 +45,9 @@ public:
     static void checkGLError(const char * op);
 
 private:
-    GLUtils() = default;
-    virtual ~GLUtils(){}
+    OpenGLUtils() = default;
+    virtual ~OpenGLUtils(){}
 };
 
 
-#endif //GLUTILS_H
+#endif //OPENGLUTILS_H

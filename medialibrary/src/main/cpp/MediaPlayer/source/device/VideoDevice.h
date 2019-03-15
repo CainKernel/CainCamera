@@ -6,7 +6,7 @@
 #define VIDEODEVICE_H
 
 #include <player/PlayerState.h>
-#include <renderer/Renderer.h>
+#include <Filter.h>
 
 class VideoDevice {
 public:

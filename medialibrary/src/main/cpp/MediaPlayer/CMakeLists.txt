@@ -13,10 +13,15 @@ endif (${ANDROID_PLATFORM_LEVEL} LESS 11)
 # 添加 soundtouch 动态库
 set(soundtouch_dir ../SoundTouch)
 
+# 添加GLFilter库
+set(glfilter_dir ../GLFilter)
+
+
 # 添加头文件路径
 include_directories( source
                      android
-                     ${soundtouch_dir} )
+                     ${soundtouch_dir}
+                     ${glfilter_dir} )
 
 # 添加源文件
 add_library( media_player
@@ -40,12 +45,6 @@ add_library( media_player
              source/queue/FrameQueue.cpp
              source/queue/PacketQueue.cpp
 
-             source/renderer/EglHelper.cpp
-             source/renderer/GLUtils.cpp
-             source/renderer/RenderShaders.cpp
-             source/renderer/BGRARenderer.cpp
-             source/renderer/YUV420PRenderer.cpp
-
              source/sync/MediaClock.cpp
              source/sync/MediaSync.cpp
 
@@ -64,6 +63,7 @@ target_link_libraries( media_player
 
                        ffmpeg
                        soundtouch
+                       gl_filter
 
                        -landroid
                        -llog

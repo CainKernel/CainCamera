@@ -2,8 +2,6 @@
 // Created by cain on 2018/12/30.
 //
 
-#include <renderer/YUV420PRenderer.h>
-#include <renderer/BGRARenderer.h>
 #include "GLESDevice.h"
 
 GLESDevice::GLESDevice() {
@@ -19,7 +17,25 @@ GLESDevice::GLESDevice() {
 
     mVideoTexture = (Texture *) malloc(sizeof(Texture));
     memset(mVideoTexture, 0, sizeof(Texture));
-    mRenderer = NULL;
+    mRenderNode = NULL;
+    displayNode = new DisplayRenderNode();
+
+    vertices[0] = -1.0f;
+    vertices[1] = -1.0f;
+    vertices[2] =  1.0f;
+    vertices[3] = -1.0f;
+    vertices[4] = -1.0f;
+    vertices[5] =  1.0f;
+    vertices[6] =  1.0f;
+    vertices[7] =  1.0f;
+    textureVetrices[0] = 0.0f;
+    textureVetrices[1] = 0.0f;
+    textureVetrices[2] = 1.0f;
+    textureVetrices[3] = 0.0f;
+    textureVetrices[4] = 0.0f;
+    textureVetrices[5] = 1.0f;
+    textureVetrices[6] = 1.0f;
+    textureVetrices[7] = 1.0f;
 }
 
 GLESDevice::~GLESDevice() {
@@ -55,6 +71,10 @@ void GLESDevice::terminate(bool releaseContext) {
         mHaveEGLSurface = false;
     }
     if (eglHelper->getEglContext() != EGL_NO_CONTEXT && releaseContext) {
+        if (mRenderNode) {
+            mRenderNode->destroy();
+            delete mRenderNode;
+        }
         eglHelper->release();
         mHaveEGlContext = false;
     }
@@ -110,20 +130,17 @@ void GLESDevice::onInitTexture(int width, int height, TextureFormat format, Blen
     mVideoTexture->format = format;
     mVideoTexture->blendMode = blendMode;
     mVideoTexture->direction = FLIP_NONE;
-    if (mRenderer == NULL) {
-        if (format == FMT_YUV420P) {
-            mRenderer = new YUV420PRenderer();
-        } else if (format == FMT_ARGB) {
-            mRenderer = new BGRARenderer();
-        } else {
-            mRenderer = NULL;
-        }
-        if (mRenderer != NULL) {
-            eglHelper->makeCurrent(eglSurface);
-            mRenderer->onInit(mVideoTexture);
-            eglHelper->swapBuffers(eglSurface);
+    eglHelper->makeCurrent(eglSurface);
+    if (mRenderNode == NULL) {
+        mRenderNode = new InputRenderNode();
+        if (mRenderNode != NULL) {
+            mRenderNode->initFilter(mVideoTexture);
+            FrameBuffer *frameBuffer = new FrameBuffer(width, height);
+            frameBuffer->init();
+            mRenderNode->setFrameBuffer(frameBuffer);
         }
     }
+    displayNode->init();
     mMutex.unlock();
 }
 
@@ -139,9 +156,9 @@ int GLESDevice::onUpdateYUV(uint8_t *yData, int yPitch, uint8_t *uData, int uPit
     mVideoTexture->pixels[0] = yData;
     mVideoTexture->pixels[1] = uData;
     mVideoTexture->pixels[2] = vData;
-    if (mRenderer != NULL && eglSurface != EGL_NO_SURFACE) {
+    if (mRenderNode != NULL && eglSurface != EGL_NO_SURFACE) {
         eglHelper->makeCurrent(eglSurface);
-        mRenderer->uploadTexture(mVideoTexture);
+        mRenderNode->uploadTexture(mVideoTexture);
     }
     // 设置像素实际的宽度，即linesize的值
     mVideoTexture->width = yPitch;
@@ -156,9 +173,9 @@ int GLESDevice::onUpdateARGB(uint8_t *rgba, int pitch) {
     mMutex.lock();
     mVideoTexture->pitches[0] = pitch;
     mVideoTexture->pixels[0] = rgba;
-    if (mRenderer != NULL && eglSurface != EGL_NO_SURFACE) {
+    if (mRenderNode != NULL && eglSurface != EGL_NO_SURFACE) {
         eglHelper->makeCurrent(eglSurface);
-        mRenderer->uploadTexture(mVideoTexture);
+        mRenderNode->uploadTexture(mVideoTexture);
     }
     // 设置像素实际的宽度，即linesize的值
     mVideoTexture->width = pitch / 4;
@@ -172,12 +189,13 @@ int GLESDevice::onRequestRender(FlipDirection direction) {
     }
     mMutex.lock();
     mVideoTexture->direction = direction;
-    if (mRenderer != NULL && eglSurface != EGL_NO_SURFACE) {
+    if (mRenderNode != NULL && eglSurface != EGL_NO_SURFACE) {
         eglHelper->makeCurrent(eglSurface);
+        int texture = mRenderNode->drawFrameBuffer(mVideoTexture);
         if (mSurfaceWidth != 0 && mSurfaceHeight != 0) {
             glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
         }
-        mRenderer->renderTexture(mVideoTexture);
+        displayNode->drawFrame(texture, vertices, textureVetrices);
         eglHelper->swapBuffers(eglSurface);
     }
     mMutex.unlock();

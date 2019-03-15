@@ -8,9 +8,8 @@
 #include <device/VideoDevice.h>
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
-
-#include <renderer/GLUtils.h>
-#include <renderer/EglHelper.h>
+#include <node/DisplayRenderNode.h>
+#include <node/InputRenderNode.h>
 
 class GLESDevice : public VideoDevice {
 public:
@@ -49,7 +48,10 @@ private:
     bool mHaveEGlContext;               // 释放资源
 
     Texture *mVideoTexture;             // 视频纹理
-    Renderer *mRenderer;                // 渲染器
+    InputRenderNode *mRenderNode;       // 输入渲染结点
+    DisplayRenderNode *displayNode;     // 显示渲染结点
+    GLfloat vertices[8];                // 顶点坐标
+    GLfloat textureVetrices[8];         // 纹理坐标
 };
 
 #endif //GLESDEVICE_H

@@ -1,18 +1,11 @@
 //
-// Created by cain on 2019/1/14.
+// Created by CainHuang on 2019/3/13.
 //
 
-#ifndef RENDERER_H
-#define RENDERER_H
+#ifndef GLINPUTFILTER_H
+#define GLINPUTFILTER_H
 
-#if defined(__ANDROID__)
-
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#include <GLES2/gl2platform.h>
-
-#endif
-
+#include "GLFilter.h"
 
 #include <cstdint>
 
@@ -65,29 +58,26 @@ typedef struct Texture {
 
 } Texture;
 
-class Renderer {
+/**
+ * 图像数据输入滤镜基类
+ */
+class GLInputFilter : public GLFilter {
 public:
-    virtual ~Renderer() {}
+    GLInputFilter();
 
-    virtual void reset() = 0;
+    virtual ~GLInputFilter();
 
-    virtual int onInit(Texture *texture) = 0;
+    virtual GLboolean uploadTexture(Texture *texture);
 
-    virtual GLboolean uploadTexture(Texture *texture) = 0;
-
-    virtual GLboolean renderTexture(Texture *texture) = 0;
+    virtual GLboolean renderTexture(Texture *texture, float *vertices, float *textureVertices);
 
 protected:
-    GLuint programHandle;                   // 程序句柄
-    GLint positionHandle;                   // 顶点坐标句柄
-    GLint texCoordHandle;                   // 纹理坐标句柄
-    GLint mvpMatrixHandle;                  // 总变换矩阵句柄
+    void drawTexture(GLuint texture, float *vertices, float *textureVertices) override;
+
+protected:
     GLuint textureHandle[GLES_MAX_PLANE];   // textureHandle句柄
     GLuint textures[GLES_MAX_PLANE];        // 纹理id
-
-    GLfloat vertices[8];                    // 顶点坐标
-    GLfloat texVetrices[8];                 // 纹理坐标
 };
 
 
-#endif //RENDERER_H
+#endif //GLINPUTFILTER_H
