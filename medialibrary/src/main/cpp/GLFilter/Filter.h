@@ -16,7 +16,11 @@
 #include "filter/GLInputABGRFilter.h"
 #include "filter/GLInputYUV420PFilter.h"
 
-// 特效滤镜
+// 分屏特效滤镜
 #include "filter/GLFrameTwoFilter.h"
+#include "filter/GLFrameThreeFilter.h"
+#include "filter/GLFrameFourFilter.h"
+#include "filter/GLFrameSixFilter.h"
+#include "filter/GLFrameNineFilter.h"
 
 #endif //FILTER_H

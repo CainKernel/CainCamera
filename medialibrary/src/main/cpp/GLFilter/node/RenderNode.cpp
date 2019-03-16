@@ -58,6 +58,9 @@ void RenderNode::changeFilter(GLFilter *filter) {
         delete this->glFilter;
     }
     this->glFilter = filter;
+    if (glFilter && !glFilter->isInitialized()) {
+        glFilter->initProgram();
+    }
 }
 
 void RenderNode::setTimeStamp(double timeStamp) {

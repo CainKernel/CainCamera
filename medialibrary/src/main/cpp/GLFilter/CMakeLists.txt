@@ -32,11 +32,16 @@ add_library( gl_filter
 
         # 特效滤镜
         filter/GLFrameTwoFilter.cpp
+        filter/GLFrameThreeFilter.cpp
+        filter/GLFrameFourFilter.cpp
+        filter/GLFrameSixFilter.cpp
+        filter/GLFrameNineFilter.cpp
 
         # 输入滤镜
         filter/GLInputFilter.cpp
         filter/GLInputABGRFilter.cpp
         filter/GLInputYUV420PFilter.cpp
+
         filter/GLFilter.cpp
         )
 
