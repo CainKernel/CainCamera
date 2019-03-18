@@ -30,7 +30,7 @@ const std::string kBeautyAdjustFragmentShader = SHADER_TO_STRING(
         );
 
 GLBeautyAdjustFilter::GLBeautyAdjustFilter() {
-
+    intensity = 0.5f;
 }
 
 GLBeautyAdjustFilter::~GLBeautyAdjustFilter() {
@@ -38,7 +38,7 @@ GLBeautyAdjustFilter::~GLBeautyAdjustFilter() {
 }
 
 void GLBeautyAdjustFilter::initProgram() {
-    if (isInitialized()) {
+    if (!isInitialized()) {
         initProgram(kDefaultVertexShader.c_str(), kBeautyAdjustFragmentShader.c_str());
     }
 }
