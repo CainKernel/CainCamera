@@ -73,8 +73,8 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
     // 上下文
     private Context mContext;
 
-    // 正在拍照
-    private volatile boolean mTakingPicture;
+//    // 正在拍照
+//    private volatile boolean mTakingPicture;
     // 预览参数
     private CameraParam mCameraParam;
 
@@ -172,7 +172,7 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
      * Surface销毁
      */
     void surfaceDestroyed() {
-        mTakingPicture = false;
+//        mTakingPicture = false;
         mRenderManager.release();
         releaseCamera();
         if (mSurfaceTexture != null) {
@@ -217,16 +217,20 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
         // 是否绘制人脸关键点
         mRenderManager.drawFacePoint(mCurrentTexture);
 
-        // 显示到屏幕
-        mDisplaySurface.swapBuffers();
-
         // 执行拍照
-        if (mCameraParam.isTakePicture && !mTakingPicture) {
+        if (mCameraParam.isTakePicture) {
             synchronized (mSyncFence) {
-                mTakingPicture = true;
-                mRenderHandler.sendEmptyMessage(RenderHandler.MSG_TAKE_PICTURE);
+//                mTakingPicture = true;
+//                mRenderHandler.sendEmptyMessage(RenderHandler.MSG_TAKE_PICTURE);
+                ByteBuffer buffer = mDisplaySurface.getCurrentFrame();
+                mCameraParam.captureCallback.onCapture(buffer,
+                        mDisplaySurface.getWidth(), mDisplaySurface.getHeight());
+                mCameraParam.isTakePicture = false;
             }
         }
+
+        // 显示到屏幕
+        mDisplaySurface.swapBuffers();
 
         // 是否处于录制状态
         if (isRecording && !isRecordingPause) {
@@ -244,7 +248,7 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
             ByteBuffer buffer = mDisplaySurface.getCurrentFrame();
             mCameraParam.captureCallback.onCapture(buffer,
                     mDisplaySurface.getWidth(), mDisplaySurface.getHeight());
-            mTakingPicture = false;
+//            mTakingPicture = false;
             mCameraParam.isTakePicture = false;
         }
     }
