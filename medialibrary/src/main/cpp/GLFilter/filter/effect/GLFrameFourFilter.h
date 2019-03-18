@@ -6,8 +6,11 @@
 #define GLFRAMEFOURFILTER_H
 
 
-#include "GLFilter.h"
+#include "filter/GLFilter.h"
 
+/**
+ * 仿抖音四屏特效
+ */
 class GLFrameFourFilter : public GLFilter {
 
 public:

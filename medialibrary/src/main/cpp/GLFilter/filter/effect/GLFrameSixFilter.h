@@ -6,8 +6,11 @@
 #define GLFRAMESIXFILTER_H
 
 
-#include "GLFilter.h"
+#include "filter/GLFilter.h"
 
+/**
+ * 仿抖音六屏特效
+ */
 class GLFrameSixFilter : public GLFilter {
 public:
     void initProgram() override;

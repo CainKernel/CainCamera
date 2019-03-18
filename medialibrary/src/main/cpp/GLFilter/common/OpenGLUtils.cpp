@@ -228,3 +228,13 @@ void OpenGLUtils::checkGLError(const char *op) {
         ALOGE("[GLES2] after %s() glError (0x%x)\n", op, error);
     }
 }
+
+void OpenGLUtils::bindTexture(int location, int texture, int index) {
+    bindTexture(location, texture, index, GL_TEXTURE_2D);
+}
+
+void OpenGLUtils::bindTexture(int location, int texture, int index, int textureType) {
+    glActiveTexture(GL_TEXTURE0 + index);
+    glBindTexture(textureType, texture);
+    glUniform1i(location, index);
+}

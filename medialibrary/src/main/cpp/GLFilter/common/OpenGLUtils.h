@@ -44,6 +44,12 @@ public:
     // 检查是否出错
     static void checkGLError(const char * op);
 
+    // 绑定纹理
+    static void bindTexture(int location, int texture, int index);
+
+    // 绑定纹理，指定纹理类型
+    static void bindTexture(int location, int texture, int index, int textureType);
+
 private:
     OpenGLUtils() = default;
     virtual ~OpenGLUtils(){}

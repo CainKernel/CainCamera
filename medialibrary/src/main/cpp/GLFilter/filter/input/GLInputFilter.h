@@ -5,7 +5,7 @@
 #ifndef GLINPUTFILTER_H
 #define GLINPUTFILTER_H
 
-#include "GLFilter.h"
+#include "filter/GLFilter.h"
 
 #include <cstdint>
 
@@ -72,7 +72,11 @@ public:
     virtual GLboolean renderTexture(Texture *texture, float *vertices, float *textureVertices);
 
 protected:
-    void drawTexture(GLuint texture, float *vertices, float *textureVertices) override;
+    void drawTexture(GLuint texture, float *vertices, float *textureVertices,
+                     bool viewPortUpdate = false) override;
+
+    void drawTexture(FrameBuffer *frameBuffer, GLuint texture, float *vertices,
+                     float *textureVertices) override;
 
 protected:
     GLuint textureHandle[GLES_MAX_PLANE];   // textureHandle句柄

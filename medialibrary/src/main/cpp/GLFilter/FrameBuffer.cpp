@@ -23,7 +23,7 @@ FrameBuffer::FrameBuffer(int width, int height, const TextureAttributes textureA
 }
 
 FrameBuffer::~FrameBuffer() {
-
+    destroy();
 }
 
 void FrameBuffer::init() {
@@ -31,11 +31,20 @@ void FrameBuffer::init() {
 }
 
 void FrameBuffer::destroy() {
-    destroyFrameBuffer();
+    if (texture >= 0) {
+        glDeleteTextures(1, &texture);
+        texture = -1;
+    }
+    if (framebuffer >= 0) {
+        glDeleteFramebuffers(1, &framebuffer);
+        framebuffer = -1;
+    }
 }
 
 void FrameBuffer::bindBuffer() {
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    if (framebuffer >= 0) {
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    }
     glViewport(0, 0, width, height);
 }
 
@@ -64,8 +73,4 @@ void FrameBuffer::createFrameBuffer() {
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     initialized = true;
-}
-
-void FrameBuffer::destroyFrameBuffer() {
-
 }

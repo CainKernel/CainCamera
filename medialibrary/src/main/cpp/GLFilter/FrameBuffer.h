@@ -78,8 +78,6 @@ private:
     void createTexture();
 
     void createFrameBuffer();
-
-    void destroyFrameBuffer();
 };
 
 

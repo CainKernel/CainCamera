@@ -7,21 +7,21 @@
 //--------------------------------------------------------------------------------
 // vec3
 //--------------------------------------------------------------------------------
-Vec3::Vec3( const Vec4& vec ) {
-    x_ = vec.x_;
-    y_ = vec.y_;
-    z_ = vec.z_;
+Vector3::Vector3( const Vector4& vec ) {
+    f_[0] = vec.f_[0];
+    f_[1] = vec.f_[1];
+    f_[2] = vec.f_[2];
 }
 
 //--------------------------------------------------------------------------------
 // vec4
 //--------------------------------------------------------------------------------
-Vec4 Vec4::operator*( const Matrix4& rhs ) const {
-    Vec4 out;
-    out.x_ = x_ * rhs.f_[0] + y_ * rhs.f_[1] + z_ * rhs.f_[2] + w_ * rhs.f_[3];
-    out.y_ = x_ * rhs.f_[4] + y_ * rhs.f_[5] + z_ * rhs.f_[6] + w_ * rhs.f_[7];
-    out.z_ = x_ * rhs.f_[8] + y_ * rhs.f_[9] + z_ * rhs.f_[10] + w_ * rhs.f_[11];
-    out.w_ = x_ * rhs.f_[12] + y_ * rhs.f_[13] + z_ * rhs.f_[14] + w_ * rhs.f_[15];
+Vector4 Vector4::operator*( const Matrix4& rhs ) const {
+    Vector4 out;
+    out.f_[0] = f_[0] * rhs.f_[0] + f_[1] * rhs.f_[1] + f_[2] * rhs.f_[2] + f_[3] * rhs.f_[3];
+    out.f_[1] = f_[0] * rhs.f_[4] + f_[1] * rhs.f_[5] + f_[2] * rhs.f_[6] + f_[3] * rhs.f_[7];
+    out.f_[2] = f_[0] * rhs.f_[8] + f_[1] * rhs.f_[9] + f_[2] * rhs.f_[10] + f_[3] * rhs.f_[11];
+    out.f_[3] = f_[0] * rhs.f_[12] + f_[1] * rhs.f_[13] + f_[2] * rhs.f_[14] + f_[3] * rhs.f_[15];
     return out;
 }
 
@@ -81,12 +81,12 @@ Matrix4 Matrix4::operator*( const Matrix4& rhs ) const {
     return ret;
 }
 
-Vec4 Matrix4::operator*( const Vec4& rhs ) const {
-    Vec4 ret;
-    ret.x_ = rhs.x_ * f_[0] + rhs.y_ * f_[4] + rhs.z_ * f_[8] + rhs.w_ * f_[12];
-    ret.y_ = rhs.x_ * f_[1] + rhs.y_ * f_[5] + rhs.z_ * f_[9] + rhs.w_ * f_[13];
-    ret.z_ = rhs.x_ * f_[2] + rhs.y_ * f_[6] + rhs.z_ * f_[10] + rhs.w_ * f_[14];
-    ret.w_ = rhs.x_ * f_[3] + rhs.y_ * f_[7] + rhs.z_ * f_[11] + rhs.w_ * f_[15];
+Vector4 Matrix4::operator*( const Vector4& rhs ) const {
+    Vector4 ret;
+    ret.f_[0] = rhs.f_[0] * f_[0] + rhs.f_[1] * f_[4] + rhs.f_[2] * f_[8] + rhs.f_[3] * f_[12];
+    ret.f_[1] = rhs.f_[0] * f_[1] + rhs.f_[1] * f_[5] + rhs.f_[2] * f_[9] + rhs.f_[3] * f_[13];
+    ret.f_[2] = rhs.f_[0] * f_[2] + rhs.f_[1] * f_[6] + rhs.f_[2] * f_[10] + rhs.f_[3] * f_[14];
+    ret.f_[3] = rhs.f_[0] * f_[3] + rhs.f_[1] * f_[7] + rhs.f_[2] * f_[11] + rhs.f_[3] * f_[15];
     return ret;
 }
 
@@ -267,20 +267,20 @@ Matrix4 Matrix4::translation( const float fX, const float fY, const float fZ ) {
     return ret;
 }
 
-Matrix4 Matrix4::translation( const Vec3 vec ) {
+Matrix4 Matrix4::translation( const Vector3 vec ) {
     Matrix4 ret;
     ret.f_[0] = 1.0f;
     ret.f_[4] = 0.0f;
     ret.f_[8] = 0.0f;
-    ret.f_[12] = vec.x_;
+    ret.f_[12] = vec.f_[0];
     ret.f_[1] = 0.0f;
     ret.f_[5] = 1.0f;
     ret.f_[9] = 0.0f;
-    ret.f_[13] = vec.y_;
+    ret.f_[13] = vec.f_[1];
     ret.f_[2] = 0.0f;
     ret.f_[6] = 0.0f;
     ret.f_[10] = 1.0f;
-    ret.f_[14] = vec.z_;
+    ret.f_[14] = vec.f_[2];
     ret.f_[3] = 0.0f;
     ret.f_[7] = 0.0f;
     ret.f_[11] = 0.0f;
@@ -313,13 +313,13 @@ Matrix4 Matrix4::perspective( float width, float height, float nearPlane, float 
     return result;
 }
 
-Matrix4 Matrix4::lookAt( const Vec3& vec_eye, const Vec3& vec_at, const Vec3& vec_up ) {
-    Vec3 vec_forward, vec_up_norm, vec_side;
+Matrix4 Matrix4::lookAt( const Vector3& vec_eye, const Vector3& vec_at, const Vector3& vec_up ) {
+    Vector3 vec_forward, vec_up_norm, vec_side;
     Matrix4 result;
 
-    vec_forward.x_ = vec_eye.x_ - vec_at.x_;
-    vec_forward.y_ = vec_eye.y_ - vec_at.y_;
-    vec_forward.z_ = vec_eye.z_ - vec_at.z_;
+    vec_forward.f_[0] = vec_eye.f_[0] - vec_at.f_[0];
+    vec_forward.f_[1] = vec_eye.f_[1] - vec_at.f_[1];
+    vec_forward.f_[2] = vec_eye.f_[2] - vec_at.f_[2];
 
     vec_forward.normalize();
     vec_up_norm = vec_up;
@@ -327,23 +327,23 @@ Matrix4 Matrix4::lookAt( const Vec3& vec_eye, const Vec3& vec_at, const Vec3& ve
     vec_side = vec_up_norm.cross( vec_forward );
     vec_up_norm = vec_forward.cross( vec_side );
 
-    result.f_[0] = vec_side.x_;
-    result.f_[4] = vec_side.y_;
-    result.f_[8] = vec_side.z_;
+    result.f_[0] = vec_side.f_[0];
+    result.f_[4] = vec_side.f_[1];
+    result.f_[8] = vec_side.f_[2];
     result.f_[12] = 0;
-    result.f_[1] = vec_up_norm.x_;
-    result.f_[5] = vec_up_norm.y_;
-    result.f_[9] = vec_up_norm.z_;
+    result.f_[1] = vec_up_norm.f_[0];
+    result.f_[5] = vec_up_norm.f_[1];
+    result.f_[9] = vec_up_norm.f_[2];
     result.f_[13] = 0;
-    result.f_[2] = vec_forward.x_;
-    result.f_[6] = vec_forward.y_;
-    result.f_[10] = vec_forward.z_;
+    result.f_[2] = vec_forward.f_[0];
+    result.f_[6] = vec_forward.f_[1];
+    result.f_[10] = vec_forward.f_[2];
     result.f_[14] = 0;
     result.f_[3] = 0;
     result.f_[7] = 0;
     result.f_[11] = 0;
     result.f_[15] = 1.0;
 
-    result.postTranslate( -vec_eye.x_, -vec_eye.y_, -vec_eye.z_ );
+    result.postTranslate( -vec_eye.f_[0], -vec_eye.f_[1], -vec_eye.f_[2] );
     return result;
 }

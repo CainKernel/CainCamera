@@ -14,6 +14,7 @@
 #endif
 
 #include <string>
+#include <FrameBuffer.h>
 #include "macros.h"
 
 /**
@@ -62,20 +63,33 @@ public:
     // 销毁program
     virtual void destroyProgram();
 
-    // 绘制纹理
-    virtual void drawTexture(GLuint texture, float *vertices, float *textureVertices);
+    // 更新viewport值
+    void updateViewPort();
 
-    // 设置是否初始化
-    void setInitialized(bool initialized);
+    // 直接绘制纹理
+    virtual void drawTexture(GLuint texture, float *vertices, float *textureVertices, bool viewPortUpdate = true);
 
-    // 是否已经初始化
-    bool isInitialized() const;
+    // 将纹理绘制到FBO中，实际上就是RenderNode中创建的FrameBuffer。这个FBO可以不跟随GLFilter释放，单独维护
+    virtual void drawTexture(FrameBuffer *frameBuffer, GLuint texture, float *vertices,
+                             float *textureVertices);
+
+    // 设置纹理大小
+    virtual void setTextureSize(int width, int height);
+
+    // 设置输出大小
+    virtual void setDisplaySize(int width, int height);
 
     // 设置时间戳
     virtual void setTimeStamp(double timeStamp);
 
     // 设置强度
-    void setIntensity(float intensity);
+    virtual void setIntensity(float intensity);
+
+    // 设置是否初始化
+    virtual void setInitialized(bool initialized);
+
+    // 是否已经初始化
+    virtual bool isInitialized();
 
 protected:
 
@@ -97,7 +111,7 @@ protected:
     // 解绑attribute属性
     virtual void unbindAttributes();
 
-    //
+    // 解绑纹理
     virtual void unbindTextures();
 
     // 绑定的纹理类型，默认为GL_TEXTURE_2D
@@ -110,8 +124,12 @@ protected:
     int texCoordHandle;     // 纹理坐标句柄
     int inputTextureHandle; // 纹理句柄
     int vertexCount = 4;    // 绘制的顶点个数，默认为4
-    double timeStamp;        // 时间戳
+    double timeStamp;       // 时间戳
     float intensity;        // 强度 0.0 ~ 1.0，默认为1.0
+    int textureWidth;       // 纹理宽度
+    int textureHeight;      // 纹理高度
+    int displayWidth;       // 显示输出宽度
+    int displayHeight;      // 显示输出高度
 };
 
 

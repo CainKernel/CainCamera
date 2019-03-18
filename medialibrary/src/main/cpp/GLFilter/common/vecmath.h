@@ -9,154 +9,153 @@
 #include <AndroidLog.h>
 #include <cstdint>
 
-class Vec2;
-class Vec3;
-class Vec4;
+class Vector2;
+class Vector3;
+class Vector4;
 class Matrix4;
 
 /******************************************************************
  * 2 elements vector class
  *
  */
-class Vec2 {
+class Vector2 {
 private:
-    float x_;
-    float y_;
+    float f_[2];
 
 public:
-    friend class Vec3;
-    friend class Vec4;
+    friend class Vector3;
+    friend class Vector4;
     friend class Matrix4;
     friend class Quaternion;
 
-    Vec2() {
-        x_ = y_ = 0.f;
+    Vector2() {
+        f_[0] = f_[1] = 0.f;
     }
 
-    Vec2( const float fX, const float fY ) {
-        x_ = fX;
-        y_ = fY;
+    Vector2( const float fX, const float fY ) {
+        f_[0] = fX;
+        f_[1] = fY;
     }
 
-    Vec2( const Vec2& vec ) {
-        x_ = vec.x_;
-        y_ = vec.y_;
+    Vector2( const Vector2& vec ) {
+        f_[0] = vec.f_[0];
+        f_[1] = vec.f_[1];
     }
 
-    Vec2( const float* pVec ) {
-        x_ = (*pVec++);
-        y_ = (*pVec++);
+    Vector2( const float* pVec ) {
+        f_[0] = (*pVec++);
+        f_[1] = (*pVec++);
     }
 
     //Operators
-    Vec2 operator*( const Vec2& rhs ) const {
-        Vec2 ret;
-        ret.x_ = x_ * rhs.x_;
-        ret.y_ = y_ * rhs.y_;
+    Vector2 operator*( const Vector2& rhs ) const {
+        Vector2 ret;
+        ret.f_[0] = f_[0] * rhs.f_[0];
+        ret.f_[1] = f_[1] * rhs.f_[1];
         return ret;
     }
 
-    Vec2 operator/( const Vec2& rhs ) const {
-        Vec2 ret;
-        ret.x_ = x_ / rhs.x_;
-        ret.y_ = y_ / rhs.y_;
+    Vector2 operator/( const Vector2& rhs ) const {
+        Vector2 ret;
+        ret.f_[0] = f_[0] / rhs.f_[0];
+        ret.f_[1] = f_[1] / rhs.f_[1];
         return ret;
     }
 
-    Vec2 operator+( const Vec2& rhs ) const {
-        Vec2 ret;
-        ret.x_ = x_ + rhs.x_;
-        ret.y_ = y_ + rhs.y_;
+    Vector2 operator+( const Vector2& rhs ) const {
+        Vector2 ret;
+        ret.f_[0] = f_[0] + rhs.f_[0];
+        ret.f_[1] = f_[1] + rhs.f_[1];
         return ret;
     }
 
-    Vec2 operator-( const Vec2& rhs ) const{
-        Vec2 ret;
-        ret.x_ = x_ - rhs.x_;
-        ret.y_ = y_ - rhs.y_;
+    Vector2 operator-( const Vector2& rhs ) const{
+        Vector2 ret;
+        ret.f_[0] = f_[0] - rhs.f_[0];
+        ret.f_[1] = f_[1] - rhs.f_[1];
         return ret;
     }
 
-    Vec2& operator+=( const Vec2& rhs ) {
-        x_ += rhs.x_;
-        y_ += rhs.y_;
+    Vector2& operator+=( const Vector2& rhs ) {
+        f_[0] += rhs.f_[0];
+        f_[1] += rhs.f_[1];
         return *this;
     }
 
-    Vec2& operator-=( const Vec2& rhs ) {
-        x_ -= rhs.x_;
-        y_ -= rhs.y_;
+    Vector2& operator-=( const Vector2& rhs ) {
+        f_[0] -= rhs.f_[0];
+        f_[1] -= rhs.f_[1];
         return *this;
     }
 
-    Vec2& operator*=( const Vec2& rhs ) {
-        x_ *= rhs.x_;
-        y_ *= rhs.y_;
+    Vector2& operator*=( const Vector2& rhs ) {
+        f_[0] *= rhs.f_[0];
+        f_[1] *= rhs.f_[1];
         return *this;
     }
 
-    Vec2& operator/=( const Vec2& rhs ) {
-        x_ /= rhs.x_;
-        y_ /= rhs.y_;
+    Vector2& operator/=( const Vector2& rhs ) {
+        f_[0] /= rhs.f_[0];
+        f_[1] /= rhs.f_[1];
         return *this;
     }
 
     //External operators
-    friend Vec2 operator-( const Vec2& rhs ) {
-        return Vec2( rhs ) *= -1;
+    friend Vector2 operator-( const Vector2& rhs ) {
+        return Vector2( rhs ) *= -1;
     }
 
-    friend Vec2 operator*( const float lhs, const Vec2& rhs ) {
-        Vec2 ret;
-        ret.x_ = lhs * rhs.x_;
-        ret.y_ = lhs * rhs.y_;
+    friend Vector2 operator*( const float lhs, const Vector2& rhs ) {
+        Vector2 ret;
+        ret.f_[0] = lhs * rhs.f_[0];
+        ret.f_[1] = lhs * rhs.f_[1];
         return ret;
     }
 
-    friend Vec2 operator/( const float lhs, const Vec2& rhs ) {
-        Vec2 ret;
-        ret.x_ = lhs / rhs.x_;
-        ret.y_ = lhs / rhs.y_;
+    friend Vector2 operator/( const float lhs, const Vector2& rhs ) {
+        Vector2 ret;
+        ret.f_[0] = lhs / rhs.f_[0];
+        ret.f_[1] = lhs / rhs.f_[1];
         return ret;
     }
 
     //Operators with float
-    Vec2 operator*( const float& rhs ) const {
-        Vec2 ret;
-        ret.x_ = x_ * rhs;
-        ret.y_ = y_ * rhs;
+    Vector2 operator*( const float& rhs ) const {
+        Vector2 ret;
+        ret.f_[0] = f_[0] * rhs;
+        ret.f_[1] = f_[1] * rhs;
         return ret;
     }
 
-    Vec2& operator*=( const float& rhs ) {
-        x_ = x_ * rhs;
-        y_ = y_ * rhs;
+    Vector2& operator*=( const float& rhs ) {
+        f_[0] = f_[0] * rhs;
+        f_[1] = f_[1] * rhs;
         return *this;
     }
 
-    Vec2 operator/( const float& rhs ) const {
-        Vec2 ret;
-        ret.x_ = x_ / rhs;
-        ret.y_ = y_ / rhs;
+    Vector2 operator/( const float& rhs ) const {
+        Vector2 ret;
+        ret.f_[0] = f_[0] / rhs;
+        ret.f_[1] = f_[1] / rhs;
         return ret;
     }
 
-    Vec2& operator/=( const float& rhs ) {
-        x_ = x_ / rhs;
-        y_ = y_ / rhs;
+    Vector2& operator/=( const float& rhs ) {
+        f_[0] = f_[0] / rhs;
+        f_[1] = f_[1] / rhs;
         return *this;
     }
 
     //Compare
-    bool operator==( const Vec2& rhs ) const {
-        if ( x_ != rhs.x_ || y_ != rhs.y_ ) {
+    bool operator==( const Vector2& rhs ) const {
+        if ( f_[0] != rhs.f_[0] || f_[1] != rhs.f_[1] ) {
             return false;
         }
         return true;
     }
 
-    bool operator!=( const Vec2& rhs ) const {
-        if ( x_ == rhs.x_ ) {
+    bool operator!=( const Vector2& rhs ) const {
+        if ( f_[0] == rhs.f_[0] ) {
             return false;
         }
 
@@ -164,34 +163,46 @@ public:
     }
 
     float length() const {
-        return sqrtf( x_ * x_ + y_ * y_ );
+        return sqrtf( f_[0] * f_[0] + f_[1] * f_[1] );
     }
 
-    Vec2 normalize() {
+    Vector2 normalize() {
         float len = length();
-        x_ = x_ / len;
-        y_ = y_ / len;
+        f_[0] = f_[0] / len;
+        f_[1] = f_[1] / len;
         return *this;
     }
 
-    float dot( const Vec2& rhs ) {
-        return x_ * rhs.x_ + y_ * rhs.y_;
+    float dot( const Vector2& rhs ) {
+        return f_[0] * rhs.f_[0] + f_[1] * rhs.f_[1];
     }
 
     bool validate() {
-        if ( isnan( x_ ) || isnan( y_ ) ) {
+        if ( isnan( f_[0] ) || isnan( f_[1] ) ) {
             return false;
         }
         return true;
     }
 
     void value( float& fX, float& fY ) {
-        fX = x_;
-        fY = y_;
+        fX = f_[0];
+        fY = f_[1];
+    }
+
+    float getX() {
+        return f_[0];
+    }
+
+    float getY() {
+        return f_[1];
+    }
+
+    float* ptr() {
+        return f_;
     }
 
     void dump() {
-        ALOGI( "Vec2 %f %f", x_, y_ );
+        ALOGI( "Vector2 %f %f", f_[0], f_[1] );
     }
 };
 
@@ -199,168 +210,168 @@ public:
  * 3 elements vector class
  *
  */
-class Vec3 {
+class Vector3 {
 private:
-    float x_, y_, z_;
+    float f_[3];
 
 public:
-    friend class Vec4;
+    friend class Vector4;
     friend class Matrix4;
     friend class Quaternion;
 
-    Vec3() {
-        x_ = y_ = z_ = 0.f;
+    Vector3() {
+        f_[0] = f_[1] = f_[2] = 0.f;
     }
 
-    Vec3( const float fX, const float fY, const float fZ ) {
-        x_ = fX;
-        y_ = fY;
-        z_ = fZ;
+    Vector3( const float fX, const float fY, const float fZ ) {
+        f_[0] = fX;
+        f_[1] = fY;
+        f_[2] = fZ;
     }
 
-    Vec3( const Vec3& vec ) {
-        x_ = vec.x_;
-        y_ = vec.y_;
-        z_ = vec.z_;
+    Vector3( const Vector3& vec ) {
+        f_[0] = vec.f_[0];
+        f_[1] = vec.f_[1];
+        f_[2] = vec.f_[2];
     }
 
-    Vec3( const float* pVec ) {
-        x_ = (*pVec++);
-        y_ = (*pVec++);
-        z_ = *pVec;
+    Vector3( const float* pVec ) {
+        f_[0] = (*pVec++);
+        f_[1] = (*pVec++);
+        f_[2] = *pVec;
     }
 
-    Vec3( const Vec2& vec, float f ) {
-        x_ = vec.x_;
-        y_ = vec.y_;
-        z_ = f;
+    Vector3( const Vector2& vec, float f ) {
+        f_[0] = vec.f_[0];
+        f_[1] = vec.f_[1];
+        f_[2] = f;
     }
 
-    Vec3( const Vec4& vec );
+    Vector3( const Vector4& vec );
 
     //Operators
-    Vec3 operator*( const Vec3& rhs ) const {
-        Vec3 ret;
-        ret.x_ = x_ * rhs.x_;
-        ret.y_ = y_ * rhs.y_;
-        ret.z_ = z_ * rhs.z_;
+    Vector3 operator*( const Vector3& rhs ) const {
+        Vector3 ret;
+        ret.f_[0] = f_[0] * rhs.f_[0];
+        ret.f_[1] = f_[1] * rhs.f_[1];
+        ret.f_[2] = f_[2] * rhs.f_[2];
         return ret;
     }
 
-    Vec3 operator/( const Vec3& rhs ) const {
-        Vec3 ret;
-        ret.x_ = x_ / rhs.x_;
-        ret.y_ = y_ / rhs.y_;
-        ret.z_ = z_ / rhs.z_;
+    Vector3 operator/( const Vector3& rhs ) const {
+        Vector3 ret;
+        ret.f_[0] = f_[0] / rhs.f_[0];
+        ret.f_[1] = f_[1] / rhs.f_[1];
+        ret.f_[2] = f_[2] / rhs.f_[2];
         return ret;
     }
 
-    Vec3 operator+( const Vec3& rhs ) const {
-        Vec3 ret;
-        ret.x_ = x_ + rhs.x_;
-        ret.y_ = y_ + rhs.y_;
-        ret.z_ = z_ + rhs.z_;
+    Vector3 operator+( const Vector3& rhs ) const {
+        Vector3 ret;
+        ret.f_[0] = f_[0] + rhs.f_[0];
+        ret.f_[1] = f_[1] + rhs.f_[1];
+        ret.f_[2] = f_[2] + rhs.f_[2];
         return ret;
     }
 
-    Vec3 operator-( const Vec3& rhs ) const {
-        Vec3 ret;
-        ret.x_ = x_ - rhs.x_;
-        ret.y_ = y_ - rhs.y_;
-        ret.z_ = z_ - rhs.z_;
+    Vector3 operator-( const Vector3& rhs ) const {
+        Vector3 ret;
+        ret.f_[0] = f_[0] - rhs.f_[0];
+        ret.f_[1] = f_[1] - rhs.f_[1];
+        ret.f_[2] = f_[2] - rhs.f_[2];
         return ret;
     }
 
-    Vec3& operator+=( const Vec3& rhs ) {
-        x_ += rhs.x_;
-        y_ += rhs.y_;
-        z_ += rhs.z_;
+    Vector3& operator+=( const Vector3& rhs ) {
+        f_[0] += rhs.f_[0];
+        f_[1] += rhs.f_[1];
+        f_[2] += rhs.f_[2];
         return *this;
     }
 
-    Vec3& operator-=( const Vec3& rhs ) {
-        x_ -= rhs.x_;
-        y_ -= rhs.y_;
-        z_ -= rhs.z_;
+    Vector3& operator-=( const Vector3& rhs ) {
+        f_[0] -= rhs.f_[0];
+        f_[1] -= rhs.f_[1];
+        f_[2] -= rhs.f_[2];
         return *this;
     }
 
-    Vec3& operator*=( const Vec3& rhs ) {
-        x_ *= rhs.x_;
-        y_ *= rhs.y_;
-        z_ *= rhs.z_;
+    Vector3& operator*=( const Vector3& rhs ) {
+        f_[0] *= rhs.f_[0];
+        f_[1] *= rhs.f_[1];
+        f_[2] *= rhs.f_[2];
         return *this;
     }
 
-    Vec3& operator/=( const Vec3& rhs ) {
-        x_ /= rhs.x_;
-        y_ /= rhs.y_;
-        z_ /= rhs.z_;
+    Vector3& operator/=( const Vector3& rhs ) {
+        f_[0] /= rhs.f_[0];
+        f_[1] /= rhs.f_[1];
+        f_[2] /= rhs.f_[2];
         return *this;
     }
 
     //External operators
-    friend Vec3 operator-( const Vec3& rhs ) {
-        return Vec3( rhs ) *= -1;
+    friend Vector3 operator-( const Vector3& rhs ) {
+        return Vector3( rhs ) *= -1;
     }
 
-    friend Vec3 operator*( const float lhs, const Vec3& rhs ) {
-        Vec3 ret;
-        ret.x_ = lhs * rhs.x_;
-        ret.y_ = lhs * rhs.y_;
-        ret.z_ = lhs * rhs.z_;
+    friend Vector3 operator*( const float lhs, const Vector3& rhs ) {
+        Vector3 ret;
+        ret.f_[0] = lhs * rhs.f_[0];
+        ret.f_[1] = lhs * rhs.f_[1];
+        ret.f_[2] = lhs * rhs.f_[2];
         return ret;
     }
 
-    friend Vec3 operator/( const float lhs, const Vec3& rhs ) {
-        Vec3 ret;
-        ret.x_ = lhs / rhs.x_;
-        ret.y_ = lhs / rhs.y_;
-        ret.z_ = lhs / rhs.z_;
+    friend Vector3 operator/( const float lhs, const Vector3& rhs ) {
+        Vector3 ret;
+        ret.f_[0] = lhs / rhs.f_[0];
+        ret.f_[1] = lhs / rhs.f_[1];
+        ret.f_[2] = lhs / rhs.f_[2];
         return ret;
     }
 
     //Operators with float
-    Vec3 operator*( const float& rhs ) const {
-        Vec3 ret;
-        ret.x_ = x_ * rhs;
-        ret.y_ = y_ * rhs;
-        ret.z_ = z_ * rhs;
+    Vector3 operator*( const float& rhs ) const {
+        Vector3 ret;
+        ret.f_[0] = f_[0] * rhs;
+        ret.f_[1] = f_[1] * rhs;
+        ret.f_[2] = f_[2] * rhs;
         return ret;
     }
 
-    Vec3& operator*=( const float& rhs ) {
-        x_ = x_ * rhs;
-        y_ = y_ * rhs;
-        z_ = z_ * rhs;
+    Vector3& operator*=( const float& rhs ) {
+        f_[0] = f_[0] * rhs;
+        f_[1] = f_[1] * rhs;
+        f_[2] = f_[2] * rhs;
         return *this;
     }
 
-    Vec3 operator/( const float& rhs ) const {
-        Vec3 ret;
-        ret.x_ = x_ / rhs;
-        ret.y_ = y_ / rhs;
-        ret.z_ = z_ / rhs;
+    Vector3 operator/( const float& rhs ) const {
+        Vector3 ret;
+        ret.f_[0] = f_[0] / rhs;
+        ret.f_[1] = f_[1] / rhs;
+        ret.f_[2] = f_[2] / rhs;
         return ret;
     }
 
-    Vec3& operator/=( const float& rhs ) {
-        x_ = x_ / rhs;
-        y_ = y_ / rhs;
-        z_ = z_ / rhs;
+    Vector3& operator/=( const float& rhs ) {
+        f_[0] = f_[0] / rhs;
+        f_[1] = f_[1] / rhs;
+        f_[2] = f_[2] / rhs;
         return *this;
     }
 
     //Compare
-    bool operator==( const Vec3& rhs ) const {
-        if ( x_ != rhs.x_ || y_ != rhs.y_ || z_ != rhs.z_ ) {
+    bool operator==( const Vector3& rhs ) const {
+        if ( f_[0] != rhs.f_[0] || f_[1] != rhs.f_[1] || f_[2] != rhs.f_[2] ) {
             return false;
         }
         return true;
     }
 
-    bool operator!=( const Vec3& rhs ) const {
-        if ( x_ == rhs.x_ ) {
+    bool operator!=( const Vector3& rhs ) const {
+        if ( f_[0] == rhs.f_[0] ) {
             return false;
         }
 
@@ -368,44 +379,60 @@ public:
     }
 
     float length() const {
-        return sqrtf( x_ * x_ + y_ * y_ + z_ * z_ );
+        return sqrtf( f_[0] * f_[0] + f_[1] * f_[1] + f_[2] * f_[2] );
     }
 
-    Vec3 normalize() {
+    Vector3 normalize() {
         float len = length();
-        x_ = x_ / len;
-        y_ = y_ / len;
-        z_ = z_ / len;
+        f_[0] = f_[0] / len;
+        f_[1] = f_[1] / len;
+        f_[2] = f_[2] / len;
         return *this;
     }
 
-    float dot( const Vec3& rhs ) {
-        return x_ * rhs.x_ + y_ * rhs.y_ + z_ * rhs.z_;
+    float dot( const Vector3& rhs ) {
+        return f_[0] * rhs.f_[0] + f_[1] * rhs.f_[1] + f_[2] * rhs.f_[2];
     }
 
-    Vec3 cross( const Vec3& rhs ) {
-        Vec3 ret;
-        ret.x_ = y_ * rhs.z_ - z_ * rhs.y_;
-        ret.y_ = z_ * rhs.x_ - x_ * rhs.z_;
-        ret.z_ = x_ * rhs.y_ - y_ * rhs.x_;
+    Vector3 cross( const Vector3& rhs ) {
+        Vector3 ret;
+        ret.f_[0] = f_[1] * rhs.f_[2] - f_[2] * rhs.f_[1];
+        ret.f_[1] = f_[2] * rhs.f_[0] - f_[0] * rhs.f_[2];
+        ret.f_[2] = f_[0] * rhs.f_[1] - f_[1] * rhs.f_[0];
         return ret;
     }
 
     bool validate() {
-        if ( isnan( x_ ) || isnan( y_ ) || isnan( z_ ) ) {
+        if ( isnan( f_[0] ) || isnan( f_[1] ) || isnan( f_[2] ) ) {
             return false;
         }
         return true;
     }
 
     void value( float& fX, float& fY, float& fZ ) {
-        fX = x_;
-        fY = y_;
-        fZ = z_;
+        fX = f_[0];
+        fY = f_[1];
+        fZ = f_[2];
+    }
+
+    float getX() {
+        return f_[0];
+    }
+
+    float getY() {
+        return f_[1];
+    }
+
+    float getZ() {
+        return f_[2];
+    }
+
+    float* ptr() {
+        return f_;
     }
 
     void dump() {
-        ALOGI( "Vec3 %f %f %f", x_, y_, z_ );
+        ALOGI( "Vector3 %f %f %f", f_[0], f_[1], f_[2] );
     }
 };
 
@@ -413,229 +440,249 @@ public:
  * 4 elements vector class
  *
  */
-class Vec4 {
+class Vector4 {
 private:
-    float x_, y_, z_, w_;
+    float f_[4];
 
 public:
-    friend class Vec3;
+    friend class Vector3;
     friend class Matrix4;
     friend class Quaternion;
 
-    Vec4() {
-        x_ = y_ = z_ = w_ = 0.f;
+    Vector4() {
+        f_[0] = f_[1] = f_[2] = f_[3] = 0.f;
     }
 
-    Vec4( const float fX, const float fY, const float fZ, const float fW ) {
-        x_ = fX;
-        y_ = fY;
-        z_ = fZ;
-        w_ = fW;
+    Vector4( const float fX, const float fY, const float fZ, const float fW ) {
+        f_[0] = fX;
+        f_[1] = fY;
+        f_[2] = fZ;
+        f_[3] = fW;
     }
 
-    Vec4( const Vec4& vec ) {
-        x_ = vec.x_;
-        y_ = vec.y_;
-        z_ = vec.z_;
-        w_ = vec.w_;
+    Vector4( const Vector4& vec ) {
+        f_[0] = vec.f_[0];
+        f_[1] = vec.f_[1];
+        f_[2] = vec.f_[2];
+        f_[3] = vec.f_[3];
     }
 
-    Vec4( const Vec3& vec, const float fW ) {
-        x_ = vec.x_;
-        y_ = vec.y_;
-        z_ = vec.z_;
-        w_ = fW;
+    Vector4( const Vector3& vec, const float fW ) {
+        f_[0] = vec.f_[0];
+        f_[1] = vec.f_[1];
+        f_[2] = vec.f_[2];
+        f_[3] = fW;
     }
 
-    Vec4( const float* pVec ) {
-        x_ = (*pVec++);
-        y_ = (*pVec++);
-        z_ = *pVec;
-        w_ = *pVec;
+    Vector4( const float* pVec ) {
+        f_[0] = (*pVec++);
+        f_[1] = (*pVec++);
+        f_[2] = *pVec;
+        f_[3] = *pVec;
     }
 
     //Operators
-    Vec4 operator*( const Vec4& rhs ) const {
-        Vec4 ret;
-        ret.x_ = x_ * rhs.x_;
-        ret.y_ = y_ * rhs.y_;
-        ret.z_ = z_ * rhs.z_;
-        ret.w_ = z_ * rhs.w_;
+    Vector4 operator*( const Vector4& rhs ) const {
+        Vector4 ret;
+        ret.f_[0] = f_[0] * rhs.f_[0];
+        ret.f_[1] = f_[1] * rhs.f_[1];
+        ret.f_[2] = f_[2] * rhs.f_[2];
+        ret.f_[3] = f_[2] * rhs.f_[3];
         return ret;
     }
 
-    Vec4 operator/( const Vec4& rhs ) const {
-        Vec4 ret;
-        ret.x_ = x_ / rhs.x_;
-        ret.y_ = y_ / rhs.y_;
-        ret.z_ = z_ / rhs.z_;
-        ret.w_ = z_ / rhs.w_;
+    Vector4 operator/( const Vector4& rhs ) const {
+        Vector4 ret;
+        ret.f_[0] = f_[0] / rhs.f_[0];
+        ret.f_[1] = f_[1] / rhs.f_[1];
+        ret.f_[2] = f_[2] / rhs.f_[2];
+        ret.f_[3] = f_[2] / rhs.f_[3];
         return ret;
     }
 
-    Vec4 operator+( const Vec4& rhs ) const {
-        Vec4 ret;
-        ret.x_ = x_ + rhs.x_;
-        ret.y_ = y_ + rhs.y_;
-        ret.z_ = z_ + rhs.z_;
-        ret.w_ = z_ + rhs.w_;
+    Vector4 operator+( const Vector4& rhs ) const {
+        Vector4 ret;
+        ret.f_[0] = f_[0] + rhs.f_[0];
+        ret.f_[1] = f_[1] + rhs.f_[1];
+        ret.f_[2] = f_[2] + rhs.f_[2];
+        ret.f_[3] = f_[2] + rhs.f_[3];
         return ret;
     }
 
-    Vec4 operator-( const Vec4& rhs ) const {
-        Vec4 ret;
-        ret.x_ = x_ - rhs.x_;
-        ret.y_ = y_ - rhs.y_;
-        ret.z_ = z_ - rhs.z_;
-        ret.w_ = z_ - rhs.w_;
+    Vector4 operator-( const Vector4& rhs ) const {
+        Vector4 ret;
+        ret.f_[0] = f_[0] - rhs.f_[0];
+        ret.f_[1] = f_[1] - rhs.f_[1];
+        ret.f_[2] = f_[2] - rhs.f_[2];
+        ret.f_[3] = f_[2] - rhs.f_[3];
         return ret;
     }
 
-    Vec4& operator+=( const Vec4& rhs ) {
-        x_ += rhs.x_;
-        y_ += rhs.y_;
-        z_ += rhs.z_;
-        w_ += rhs.w_;
+    Vector4& operator+=( const Vector4& rhs ) {
+        f_[0] += rhs.f_[0];
+        f_[1] += rhs.f_[1];
+        f_[2] += rhs.f_[2];
+        f_[3] += rhs.f_[3];
         return *this;
     }
 
-    Vec4& operator-=( const Vec4& rhs ) {
-        x_ -= rhs.x_;
-        y_ -= rhs.y_;
-        z_ -= rhs.z_;
-        w_ -= rhs.w_;
+    Vector4& operator-=( const Vector4& rhs ) {
+        f_[0] -= rhs.f_[0];
+        f_[1] -= rhs.f_[1];
+        f_[2] -= rhs.f_[2];
+        f_[3] -= rhs.f_[3];
         return *this;
     }
 
-    Vec4& operator*=( const Vec4& rhs ) {
-        x_ *= rhs.x_;
-        y_ *= rhs.y_;
-        z_ *= rhs.z_;
-        w_ *= rhs.w_;
+    Vector4& operator*=( const Vector4& rhs ) {
+        f_[0] *= rhs.f_[0];
+        f_[1] *= rhs.f_[1];
+        f_[2] *= rhs.f_[2];
+        f_[3] *= rhs.f_[3];
         return *this;
     }
 
-    Vec4& operator/=( const Vec4& rhs ) {
-        x_ /= rhs.x_;
-        y_ /= rhs.y_;
-        z_ /= rhs.z_;
-        w_ /= rhs.w_;
+    Vector4& operator/=( const Vector4& rhs ) {
+        f_[0] /= rhs.f_[0];
+        f_[1] /= rhs.f_[1];
+        f_[2] /= rhs.f_[2];
+        f_[3] /= rhs.f_[3];
         return *this;
     }
 
     //External operators
-    friend Vec4 operator-( const Vec4& rhs ) {
-        return Vec4( rhs ) *= -1;
+    friend Vector4 operator-( const Vector4& rhs ) {
+        return Vector4( rhs ) *= -1;
     }
 
-    friend Vec4 operator*( const float lhs, const Vec4& rhs ) {
-        Vec4 ret;
-        ret.x_ = lhs * rhs.x_;
-        ret.y_ = lhs * rhs.y_;
-        ret.z_ = lhs * rhs.z_;
-        ret.w_ = lhs * rhs.w_;
+    friend Vector4 operator*( const float lhs, const Vector4& rhs ) {
+        Vector4 ret;
+        ret.f_[0] = lhs * rhs.f_[0];
+        ret.f_[1] = lhs * rhs.f_[1];
+        ret.f_[2] = lhs * rhs.f_[2];
+        ret.f_[3] = lhs * rhs.f_[3];
         return ret;
     }
 
-    friend Vec4 operator/( const float lhs, const Vec4& rhs ) {
-        Vec4 ret;
-        ret.x_ = lhs / rhs.x_;
-        ret.y_ = lhs / rhs.y_;
-        ret.z_ = lhs / rhs.z_;
-        ret.w_ = lhs / rhs.w_;
+    friend Vector4 operator/( const float lhs, const Vector4& rhs ) {
+        Vector4 ret;
+        ret.f_[0] = lhs / rhs.f_[0];
+        ret.f_[1] = lhs / rhs.f_[1];
+        ret.f_[2] = lhs / rhs.f_[2];
+        ret.f_[3] = lhs / rhs.f_[3];
         return ret;
     }
 
     //Operators with float
-    Vec4 operator*( const float& rhs ) const {
-        Vec4 ret;
-        ret.x_ = x_ * rhs;
-        ret.y_ = y_ * rhs;
-        ret.z_ = z_ * rhs;
-        ret.w_ = w_ * rhs;
+    Vector4 operator*( const float& rhs ) const {
+        Vector4 ret;
+        ret.f_[0] = f_[0] * rhs;
+        ret.f_[1] = f_[1] * rhs;
+        ret.f_[2] = f_[2] * rhs;
+        ret.f_[3] = f_[3] * rhs;
         return ret;
     }
 
-    Vec4& operator*=( const float& rhs ) {
-        x_ = x_ * rhs;
-        y_ = y_ * rhs;
-        z_ = z_ * rhs;
-        w_ = w_ * rhs;
+    Vector4& operator*=( const float& rhs ) {
+        f_[0] = f_[0] * rhs;
+        f_[1] = f_[1] * rhs;
+        f_[2] = f_[2] * rhs;
+        f_[3] = f_[3] * rhs;
         return *this;
     }
 
-    Vec4 operator/( const float& rhs ) const {
-        Vec4 ret;
-        ret.x_ = x_ / rhs;
-        ret.y_ = y_ / rhs;
-        ret.z_ = z_ / rhs;
-        ret.w_ = w_ / rhs;
+    Vector4 operator/( const float& rhs ) const {
+        Vector4 ret;
+        ret.f_[0] = f_[0] / rhs;
+        ret.f_[1] = f_[1] / rhs;
+        ret.f_[2] = f_[2] / rhs;
+        ret.f_[3] = f_[3] / rhs;
         return ret;
     }
 
-    Vec4& operator/=( const float& rhs ) {
-        x_ = x_ / rhs;
-        y_ = y_ / rhs;
-        z_ = z_ / rhs;
-        w_ = w_ / rhs;
+    Vector4& operator/=( const float& rhs ) {
+        f_[0] = f_[0] / rhs;
+        f_[1] = f_[1] / rhs;
+        f_[2] = f_[2] / rhs;
+        f_[3] = f_[3] / rhs;
         return *this;
     }
 
     //Compare
-    bool operator==( const Vec4& rhs ) const {
-        if ( x_ != rhs.x_ || y_ != rhs.y_ || z_ != rhs.z_ || w_ != rhs.w_ ) {
+    bool operator==( const Vector4& rhs ) const {
+        if ( f_[0] != rhs.f_[0] || f_[1] != rhs.f_[1] || f_[2] != rhs.f_[2] || f_[3] != rhs.f_[3] ) {
             return false;
         }
         return true;
     }
 
-    bool operator!=( const Vec4& rhs ) const {
-        if( x_ == rhs.x_ ) {
+    bool operator!=( const Vector4& rhs ) const {
+        if( f_[0] == rhs.f_[0] ) {
             return false;
         }
 
         return true;
     }
 
-    Vec4 operator*( const Matrix4& rhs ) const;
+    Vector4 operator*( const Matrix4& rhs ) const;
 
     float length() const {
-        return sqrtf( x_ * x_ + y_ * y_ + z_ * z_ + w_ * w_ );
+        return sqrtf( f_[0] * f_[0] + f_[1] * f_[1] + f_[2] * f_[2] + f_[3] * f_[3] );
     }
 
-    Vec4 normalize() {
+    Vector4 normalize() {
         float len = length();
-        x_ = x_ / len;
-        y_ = y_ / len;
-        z_ = z_ / len;
-        w_ = w_ / len;
+        f_[0] = f_[0] / len;
+        f_[1] = f_[1] / len;
+        f_[2] = f_[2] / len;
+        f_[3] = f_[3] / len;
         return *this;
     }
 
-    float dot( const Vec3& rhs ) {
-        return x_ * rhs.x_ + y_ * rhs.y_ + z_ * rhs.z_;
+    float dot( const Vector3& rhs ) {
+        return f_[0] * rhs.f_[0] + f_[1] * rhs.f_[1] + f_[2] * rhs.f_[2];
     }
 
-    Vec3 cross( const Vec3& rhs ) {
-        Vec3 ret;
-        ret.x_ = y_ * rhs.z_ - z_ * rhs.y_;
-        ret.y_ = z_ * rhs.x_ - x_ * rhs.z_;
-        ret.z_ = x_ * rhs.y_ - y_ * rhs.x_;
+    Vector3 cross( const Vector3& rhs ) {
+        Vector3 ret;
+        ret.f_[0] = f_[1] * rhs.f_[2] - f_[2] * rhs.f_[1];
+        ret.f_[1] = f_[2] * rhs.f_[0] - f_[0] * rhs.f_[2];
+        ret.f_[2] = f_[0] * rhs.f_[1] - f_[1] * rhs.f_[0];
         return ret;
     }
 
     bool validate() {
-        if ( isnan( x_ ) || isnan( y_ ) || isnan( z_ ) || isnan( w_ ) ) {
+        if ( isnan( f_[0] ) || isnan( f_[1] ) || isnan( f_[2] ) || isnan( f_[3] ) ) {
             return false;
         }
         return true;
     }
 
     void value( float& fX, float& fY, float& fZ, float& fW ) {
-        fX = x_;
-        fY = y_;
-        fZ = z_;
-        fW = w_;
+        fX = f_[0];
+        fY = f_[1];
+        fZ = f_[2];
+        fW = f_[3];
+    }
+
+    float getX() {
+        return f_[0];
+    }
+
+    float getY() {
+        return f_[1];
+    }
+
+    float getZ() {
+        return f_[2];
+    }
+
+    float getW() {
+        return f_[3];
+    }
+
+    float* ptr() {
+        return f_;
     }
 };
 
@@ -648,15 +695,15 @@ private:
     float f_[16];
 
 public:
-    friend class Vec3;
-    friend class Vec4;
+    friend class Vector3;
+    friend class Vector4;
     friend class Quaternion;
 
     Matrix4();
     Matrix4( const float* );
 
     Matrix4 operator*( const Matrix4& rhs ) const;
-    Vec4 operator*( const Vec4& rhs ) const;
+    Vector4 operator*( const Vector4& rhs ) const;
 
     Matrix4 operator+( const Matrix4& rhs ) const {
         Matrix4 ret;
@@ -793,10 +840,10 @@ public:
     //--------------------------------------------------------------------------------
     static Matrix4 perspective( float width, float height, float nearPlane, float farPlane );
 
-    static Matrix4 lookAt( const Vec3& vEye, const Vec3& vAt, const Vec3& vUp );
+    static Matrix4 lookAt( const Vector3& vEye, const Vector3& vAt, const Vector3& vUp );
 
     static Matrix4 translation( const float fX, const float fY, const float fZ );
-    static Matrix4 translation( const Vec3 vec );
+    static Matrix4 translation( const Vector3 vec );
 
     static Matrix4 rotationX( const float angle );
 
@@ -839,87 +886,87 @@ public:
  */
 class Quaternion {
 private:
-    float x_, y_, z_, w_;
+    float f_[4];
 
 public:
-    friend class Vec3;
-    friend class Vec4;
+    friend class Vector3;
+    friend class Vector4;
     friend class Matrix4;
 
     Quaternion() {
-        x_ = 0.f;
-        y_ = 0.f;
-        z_ = 0.f;
-        w_ = 1.f;
+        f_[0] = 0.f;
+        f_[1] = 0.f;
+        f_[2] = 0.f;
+        f_[3] = 1.f;
     }
 
     Quaternion( const float fX, const float fY, const float fZ, const float fW ) {
-        x_ = fX;
-        y_ = fY;
-        z_ = fZ;
-        w_ = fW;
+        f_[0] = fX;
+        f_[1] = fY;
+        f_[2] = fZ;
+        f_[3] = fW;
     }
 
-    Quaternion( const Vec3 vec, const float fW ) {
-        x_ = vec.x_;
-        y_ = vec.y_;
-        z_ = vec.z_;
-        w_ = fW;
+    Quaternion( const Vector3 vec, const float fW ) {
+        f_[0] = vec.f_[0];
+        f_[1] = vec.f_[1];
+        f_[2] = vec.f_[2];
+        f_[3] = fW;
     }
 
     Quaternion( const float* p ) {
-        x_ = *p++;
-        y_ = *p++;
-        z_ = *p++;
-        w_ = *p++;
+        f_[0] = *p++;
+        f_[1] = *p++;
+        f_[2] = *p++;
+        f_[3] = *p++;
     }
 
     Quaternion operator*( const Quaternion rhs ) {
         Quaternion ret;
-        ret.x_ = x_ * rhs.w_ + y_ * rhs.z_ - z_ * rhs.y_ + w_ * rhs.x_;
-        ret.y_ = -x_ * rhs.z_ + y_ * rhs.w_ + z_ * rhs.x_ + w_ * rhs.y_;
-        ret.z_ = x_ * rhs.y_ - y_ * rhs.x_ + z_ * rhs.w_ + w_ * rhs.z_;
-        ret.w_ = -x_ * rhs.x_ - y_ * rhs.y_ - z_ * rhs.z_ + w_ * rhs.w_;
+        ret.f_[0] = f_[0] * rhs.f_[3] + f_[1] * rhs.f_[2] - f_[2] * rhs.f_[1] + f_[3] * rhs.f_[0];
+        ret.f_[1] = -f_[0] * rhs.f_[2] + f_[1] * rhs.f_[3] + f_[2] * rhs.f_[0] + f_[3] * rhs.f_[1];
+        ret.f_[2] = f_[0] * rhs.f_[1] - f_[1] * rhs.f_[0] + f_[2] * rhs.f_[3] + f_[3] * rhs.f_[2];
+        ret.f_[3] = -f_[0] * rhs.f_[0] - f_[1] * rhs.f_[1] - f_[2] * rhs.f_[2] + f_[3] * rhs.f_[3];
         return ret;
     }
 
     Quaternion& operator*=( const Quaternion rhs ) {
         Quaternion ret;
-        ret.x_ = x_ * rhs.w_ + y_ * rhs.z_ - z_ * rhs.y_ + w_ * rhs.x_;
-        ret.y_ = -x_ * rhs.z_ + y_ * rhs.w_ + z_ * rhs.x_ + w_ * rhs.y_;
-        ret.z_ = x_ * rhs.y_ - y_ * rhs.x_ + z_ * rhs.w_ + w_ * rhs.z_;
-        ret.w_ = -x_ * rhs.x_ - y_ * rhs.y_ - z_ * rhs.z_ + w_ * rhs.w_;
+        ret.f_[0] = f_[0] * rhs.f_[3] + f_[1] * rhs.f_[2] - f_[2] * rhs.f_[1] + f_[3] * rhs.f_[0];
+        ret.f_[1] = -f_[0] * rhs.f_[2] + f_[1] * rhs.f_[3] + f_[2] * rhs.f_[0] + f_[3] * rhs.f_[1];
+        ret.f_[2] = f_[0] * rhs.f_[1] - f_[1] * rhs.f_[0] + f_[2] * rhs.f_[3] + f_[3] * rhs.f_[2];
+        ret.f_[3] = -f_[0] * rhs.f_[0] - f_[1] * rhs.f_[1] - f_[2] * rhs.f_[2] + f_[3] * rhs.f_[3];
         *this = ret;
         return *this;
     }
 
     Quaternion conjugate() {
-        x_ = -x_;
-        y_ = -y_;
-        z_ = -z_;
+        f_[0] = -f_[0];
+        f_[1] = -f_[1];
+        f_[2] = -f_[2];
         return *this;
     }
 
     //Non destuctive version
     Quaternion conjugated() {
         Quaternion ret;
-        ret.x_ = -x_;
-        ret.y_ = -y_;
-        ret.z_ = -z_;
-        ret.w_ = w_;
+        ret.f_[0] = -f_[0];
+        ret.f_[1] = -f_[1];
+        ret.f_[2] = -f_[2];
+        ret.f_[3] = f_[3];
         return ret;
     }
 
     void toMatrix( Matrix4& mat ) {
-        float x2 = x_ * x_ * 2.0f;
-        float y2 = y_ * y_ * 2.0f;
-        float z2 = z_ * z_ * 2.0f;
-        float xy = x_ * y_ * 2.0f;
-        float yz = y_ * z_ * 2.0f;
-        float zx = z_ * x_ * 2.0f;
-        float xw = x_ * w_ * 2.0f;
-        float yw = y_ * w_ * 2.0f;
-        float zw = z_ * w_ * 2.0f;
+        float x2 = f_[0] * f_[0] * 2.0f;
+        float y2 = f_[1] * f_[1] * 2.0f;
+        float z2 = f_[2] * f_[2] * 2.0f;
+        float xy = f_[0] * f_[1] * 2.0f;
+        float yz = f_[1] * f_[2] * 2.0f;
+        float zx = f_[2] * f_[0] * 2.0f;
+        float xw = f_[0] * f_[3] * 2.0f;
+        float yw = f_[1] * f_[3] * 2.0f;
+        float zw = f_[2] * f_[3] * 2.0f;
 
         mat.f_[0] = 1.0f - y2 - z2;
         mat.f_[1] = xy + zw;
@@ -936,15 +983,15 @@ public:
     }
 
     void toMatrixPreserveTranslate( Matrix4& mat ) {
-        float x2 = x_ * x_ * 2.0f;
-        float y2 = y_ * y_ * 2.0f;
-        float z2 = z_ * z_ * 2.0f;
-        float xy = x_ * y_ * 2.0f;
-        float yz = y_ * z_ * 2.0f;
-        float zx = z_ * x_ * 2.0f;
-        float xw = x_ * w_ * 2.0f;
-        float yw = y_ * w_ * 2.0f;
-        float zw = z_ * w_ * 2.0f;
+        float x2 = f_[0] * f_[0] * 2.0f;
+        float y2 = f_[1] * f_[1] * 2.0f;
+        float z2 = f_[2] * f_[2] * 2.0f;
+        float xy = f_[0] * f_[1] * 2.0f;
+        float yz = f_[1] * f_[2] * 2.0f;
+        float zx = f_[2] * f_[0] * 2.0f;
+        float xw = f_[0] * f_[3] * 2.0f;
+        float yw = f_[1] * f_[3] * 2.0f;
+        float zw = f_[2] * f_[3] * 2.0f;
 
         mat.f_[0] = 1.0f - y2 - z2;
         mat.f_[1] = xy + zw;
@@ -960,21 +1007,21 @@ public:
         mat.f_[15] = 1.0f;
     }
 
-    static Quaternion rotationAxis( const Vec3 axis, const float angle ) {
+    static Quaternion rotationAxis( const Vector3 axis, const float angle ) {
         Quaternion ret;
         float s = sinf( angle / 2 );
-        ret.x_ = s * axis.x_;
-        ret.y_ = s * axis.y_;
-        ret.z_ = s * axis.z_;
-        ret.w_ = cosf( angle / 2 );
+        ret.f_[0] = s * axis.f_[0];
+        ret.f_[1] = s * axis.f_[1];
+        ret.f_[2] = s * axis.f_[2];
+        ret.f_[3] = cosf( angle / 2 );
         return ret;
     }
 
     void value( float& fX, float& fY, float& fZ, float& fW ) {
-        fX = x_;
-        fY = y_;
-        fZ = z_;
-        fW = w_;
+        fX = f_[0];
+        fY = f_[1];
+        fZ = f_[2];
+        fW = f_[3];
     }
 };
 

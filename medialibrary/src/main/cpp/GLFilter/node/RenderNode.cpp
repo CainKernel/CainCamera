@@ -34,8 +34,13 @@ void RenderNode::destroy() {
 }
 
 void RenderNode::setTextureSize(int width, int height) {
-    textureWidth = width;
-    textureHeight = height;
+    if (textureWidth != width || textureHeight != height) {
+        textureWidth = width;
+        textureHeight = height;
+    }
+    if (glFilter) {
+        glFilter->setTextureSize(width, height);
+    }
 }
 
 void RenderNode::setDisplaySize(int width, int height) {
@@ -80,9 +85,7 @@ bool RenderNode::drawFrame(GLuint texture, float *vertices, float *textureVertic
         return false;
     }
     if (displayWidth != 0 && displayHeight != 0) {
-        glViewport(0, 0, displayWidth, displayHeight);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glFilter->setDisplaySize(displayWidth, displayHeight);
     }
     glFilter->drawTexture(texture, vertices, textureVertices);
     return true;
@@ -94,11 +97,7 @@ int RenderNode::drawFrameBuffer(GLuint texture, float *vertices, float *textureV
     if (!frameBuffer || !frameBuffer->isInitialized() || !glFilter || !glFilter->isInitialized()) {
         return texture;
     }
-
-    frameBuffer->bindBuffer();
-    glFilter->drawTexture(texture, vertices, textureVertices);
-    frameBuffer->unbindBuffer();
-
+    glFilter->drawTexture(frameBuffer, texture, vertices, textureVertices);
     return frameBuffer->getTexture();
 }
 

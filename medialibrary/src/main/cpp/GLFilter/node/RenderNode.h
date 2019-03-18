@@ -52,11 +52,11 @@ public:
     // 设置强度
     void setIntensity(float intensity);
 
-    virtual // 直接绘制输出
-    bool drawFrame(GLuint texture, float *vertices, float *textureVertices);
+    // 直接绘制输出
+    virtual bool drawFrame(GLuint texture, float *vertices, float *textureVertices);
 
-    virtual // 绘制到FBO
-    int drawFrameBuffer(GLuint texture, float *vertices, float *textureVertices);
+    // 绘制到FBO
+    virtual int drawFrameBuffer(GLuint texture, float *vertices, float *textureVertices);
 
     RenderNodeType getNodeType() const;
 

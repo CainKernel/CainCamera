@@ -6,8 +6,11 @@
 #define GLFRAMETHREEFILTER_H
 
 
-#include "GLFilter.h"
+#include "filter/GLFilter.h"
 
+/**
+ * 仿抖音三屏特效
+ */
 class GLFrameThreeFilter : public GLFilter {
 
 public:

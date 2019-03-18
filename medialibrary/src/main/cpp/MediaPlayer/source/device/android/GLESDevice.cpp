@@ -141,6 +141,7 @@ void GLESDevice::onInitTexture(int width, int height, TextureFormat format, Blen
         }
     }
     displayNode->init();
+    displayNode->setTextureSize(width, height);
     mMutex.unlock();
 }
 
@@ -193,7 +194,7 @@ int GLESDevice::onRequestRender(FlipDirection direction) {
         eglHelper->makeCurrent(eglSurface);
         int texture = mRenderNode->drawFrameBuffer(mVideoTexture);
         if (mSurfaceWidth != 0 && mSurfaceHeight != 0) {
-            glViewport(0, 0, mSurfaceWidth, mSurfaceHeight);
+            displayNode->setDisplaySize(mSurfaceWidth, mSurfaceHeight);
         }
         displayNode->drawFrame(texture, vertices, textureVetrices);
         eglHelper->swapBuffers(eglSurface);

@@ -18,31 +18,44 @@ add_library( gl_filter
 
         STATIC
 
-        # 渲染结点
-        node/DisplayRenderNode.cpp;
-        node/FrameBuffer.cpp
-        node/InputRenderNode.cpp
-        node/RenderNode.cpp
-        node/RenderNodeList.cpp
+        FrameBuffer.cpp
 
         # 公共类
         common/EglHelper.cpp
         common/OpenGLUtils.cpp
+        common/CoordinateUtils.cpp
         common/vecmath.cpp
 
+        # 基础滤镜
+        filter/GLFilter.cpp
+        filter/GLGroupFilter.cpp
+        filter/GLGaussianBlurFilter.cpp
+        filter/GLGaussianPassBlurFilter.cpp
+
+        # 美颜滤镜
+        filter/beauty/GLBeautyAdjustFilter.cpp
+        filter/beauty/GLBeautyBlurFilter.cpp
+        filter/beauty/GLBeautyFilter.cpp
+        filter/beauty/GLBeautyHighPassFilter.cpp
+
         # 特效滤镜
-        filter/GLFrameTwoFilter.cpp
-        filter/GLFrameThreeFilter.cpp
-        filter/GLFrameFourFilter.cpp
-        filter/GLFrameSixFilter.cpp
-        filter/GLFrameNineFilter.cpp
+        filter/effect/GLFrameBlackWhiteThreeFilter.cpp
+        filter/effect/GLFrameTwoFilter.cpp
+        filter/effect/GLFrameThreeFilter.cpp
+        filter/effect/GLFrameFourFilter.cpp
+        filter/effect/GLFrameSixFilter.cpp
+        filter/effect/GLFrameNineFilter.cpp
 
         # 输入滤镜
-        filter/GLInputFilter.cpp
-        filter/GLInputABGRFilter.cpp
-        filter/GLInputYUV420PFilter.cpp
+        filter/input/GLInputFilter.cpp
+        filter/input/GLInputABGRFilter.cpp
+        filter/input/GLInputYUV420PFilter.cpp
 
-        filter/GLFilter.cpp
+        # 渲染结点
+        node/DisplayRenderNode.cpp;
+        node/InputRenderNode.cpp
+        node/RenderNode.cpp
+        node/RenderNodeList.cpp
         )
 
 # 链接静态库
