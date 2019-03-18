@@ -24,7 +24,10 @@ public class BackPressedDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         final Fragment parent = getParentFragment();
         Bundle bundle = getArguments();
-        int resId = bundle.getInt(MESSAGE, -1);
+        int resId = -1;
+        if (bundle != null) {
+            resId = bundle.getInt(MESSAGE, -1);
+        }
         return new AlertDialog.Builder(getActivity())
                 .setMessage(resId == -1 ? R.string.back_pressed_message : resId)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
