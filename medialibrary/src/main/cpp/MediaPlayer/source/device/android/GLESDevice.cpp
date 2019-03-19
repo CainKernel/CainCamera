@@ -18,7 +18,8 @@ GLESDevice::GLESDevice() {
     mVideoTexture = (Texture *) malloc(sizeof(Texture));
     memset(mVideoTexture, 0, sizeof(Texture));
     mRenderNode = NULL;
-    displayNode = new DisplayRenderNode();
+    nodeList = new RenderNodeList();
+    nodeList->addNode(new DisplayRenderNode());     // 显示渲染结点
 
     vertices[0] = -1.0f;
     vertices[1] = -1.0f;
@@ -140,8 +141,8 @@ void GLESDevice::onInitTexture(int width, int height, TextureFormat format, Blen
             mRenderNode->setFrameBuffer(frameBuffer);
         }
     }
-    displayNode->init();
-    displayNode->setTextureSize(width, height);
+    nodeList->init();
+    nodeList->setTextureSize(width, height);
     mMutex.unlock();
 }
 
@@ -194,9 +195,9 @@ int GLESDevice::onRequestRender(FlipDirection direction) {
         eglHelper->makeCurrent(eglSurface);
         int texture = mRenderNode->drawFrameBuffer(mVideoTexture);
         if (mSurfaceWidth != 0 && mSurfaceHeight != 0) {
-            displayNode->setDisplaySize(mSurfaceWidth, mSurfaceHeight);
+            nodeList->setDisplaySize(mSurfaceWidth, mSurfaceHeight);
         }
-        displayNode->drawFrame(texture, vertices, textureVetrices);
+        nodeList->drawFrame(texture, vertices, textureVetrices);
         eglHelper->swapBuffers(eglSurface);
     }
     mMutex.unlock();

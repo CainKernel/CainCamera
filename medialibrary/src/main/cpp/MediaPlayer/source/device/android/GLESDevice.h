@@ -10,6 +10,7 @@
 #include <android/native_window_jni.h>
 #include <node/DisplayRenderNode.h>
 #include <node/InputRenderNode.h>
+#include <node/RenderNodeList.h>
 
 class GLESDevice : public VideoDevice {
 public:
@@ -49,7 +50,8 @@ private:
 
     Texture *mVideoTexture;             // 视频纹理
     InputRenderNode *mRenderNode;       // 输入渲染结点
-    DisplayRenderNode *displayNode;     // 显示渲染结点
+//    DisplayRenderNode *displayNode;     // 显示渲染结点
+    RenderNodeList *nodeList;           // 滤镜链
     GLfloat vertices[8];                // 顶点坐标
     GLfloat textureVetrices[8];         // 纹理坐标
 };

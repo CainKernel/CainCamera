@@ -18,6 +18,7 @@ add_library( gl_filter
 
         STATIC
 
+        FilterManager.cpp
         FrameBuffer.cpp
 
         # 公共类

@@ -19,9 +19,9 @@ RenderNodeList::~RenderNodeList() {
     }
 }
 
-int RenderNodeList::insertNode(RenderNode *node) {
+bool RenderNodeList::addNode(RenderNode *node) {
     if (node->getNodeType() == NODE_NONE) {
-        return -1;
+        return false;
     }
     // 如果结点头为空值，则表示此时为空链表，直接插入
     if (!head) {
@@ -41,7 +41,7 @@ int RenderNodeList::insertNode(RenderNode *node) {
         }
 
         // 判断找到后继结点，则将结点插入后继结点前面
-        if (!tmp) {
+        if (tmp) {
             node->prevNode = tmp->prevNode;
             // 判断前继结点是否存在，绑定前继结点的后继结点
             if (tmp->prevNode) {
@@ -57,6 +57,7 @@ int RenderNodeList::insertNode(RenderNode *node) {
         }
     }
     length++;
+    return false;
 }
 
 RenderNode *RenderNodeList::removeNode(RenderNodeType type) {
@@ -87,6 +88,92 @@ RenderNode *RenderNodeList::findNode(RenderNodeType type) {
         node = node->nextNode;
     }
     return node;
+}
+
+void RenderNodeList::init() {
+    RenderNode *node = head;
+    while (node != nullptr) {
+        node->init();
+        node = node->nextNode;
+    }
+}
+
+void RenderNodeList::setTextureSize(int width, int height) {
+    RenderNode *node = head;
+    while (node != nullptr) {
+        node->setTextureSize(width, height);
+        node = node->nextNode;
+    }
+}
+
+void RenderNodeList::setDisplaySize(int width, int height) {
+    RenderNode *node = head;
+    while (node != nullptr) {
+        node->setDisplaySize(width, height);
+        node = node->nextNode;
+    }
+}
+
+void RenderNodeList::setTimeStamp(double timeStamp) {
+    RenderNode *node = head;
+    while (node != nullptr) {
+        node->setTimeStamp(timeStamp);
+        node = node->nextNode;
+    }
+}
+
+void RenderNodeList::setIntensity(float intensity) {
+    RenderNode *node = head;
+    while (node != nullptr) {
+        node->setIntensity(intensity);
+        node = node->nextNode;
+    }
+}
+
+void RenderNodeList::setIntensity(RenderNodeType type, float intensity) {
+    RenderNode *node = findNode(type);
+    if (node != nullptr) {
+        node->setIntensity(intensity);
+    }
+}
+
+void RenderNodeList::changeFilter(RenderNodeType type, GLFilter *filter) {
+    // 如果存在渲染结点，则直接切换当前渲染结点的滤镜
+    // 否则，创建一个新的渲染结点并添加到渲染链表中
+    RenderNode *node = findNode(type);
+    if (node) {
+        node->changeFilter(filter);
+    } else {
+        node = new RenderNode(type);
+        node->changeFilter(filter);
+        addNode(node);
+    }
+}
+
+bool RenderNodeList::drawFrame(GLuint texture, float *vertices, float *textureVertices) {
+    RenderNode *node = head;
+    GLuint currentTexture = texture;
+    bool result = true;
+    while (node != nullptr) {
+        // 尾结点直接绘制输出
+        if (node == tail) {
+            result = node->drawFrame(currentTexture, vertices, textureVertices);
+        } else {
+            currentTexture = node->drawFrameBuffer(currentTexture, vertices, textureVertices);
+        }
+        node = node->nextNode;
+    }
+    return result;
+}
+
+int RenderNodeList::drawFrameBuffer(GLuint texture, float *vertices, float *textureVertices) {
+    RenderNode *node = head;
+    GLuint currentTexture = texture;
+    while (node != nullptr) {
+        currentTexture = node->drawFrameBuffer(currentTexture, vertices, textureVertices);
+        node = node->nextNode;
+    }
+    return currentTexture;
 }
 
 bool RenderNodeList::isEmpty() {
