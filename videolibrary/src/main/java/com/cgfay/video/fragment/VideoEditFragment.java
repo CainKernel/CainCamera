@@ -42,7 +42,6 @@ import com.cgfay.video.adapter.VideoEffectCategoryAdapter;
 import com.cgfay.video.adapter.VideoFilterAdapter;
 import com.cgfay.video.bean.EffectMimeType;
 import com.cgfay.video.bean.EffectType;
-import com.cgfay.video.engine.EffectFilterHelper;
 import com.cgfay.video.widget.EffectSelectedSeekBar;
 import com.cgfay.video.widget.VideoTextureView;
 import com.cgfay.video.widget.WaveCutView;
@@ -823,7 +822,9 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     private VideoEffectAdapter.OnEffectChangeListener mEffectChangeListener = new VideoEffectAdapter.OnEffectChangeListener() {
         @Override
         public void onEffectChanged(EffectType effectType) {
-
+            if (mCainMediaPlayer != null) {
+                mCainMediaPlayer.changeEffect(effectType.getId());
+            }
         }
     };
 
@@ -837,6 +838,8 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
                 mEffectAdapter.changeEffectData(EffectFilterHelper.getInstance().getEffectFilterData());
             } else if (mimeType == EffectMimeType.MULTIFRAME) {
                 mEffectAdapter.changeEffectData(EffectFilterHelper.getInstance().getEffectMultiData());
+            } else if (mimeType == EffectMimeType.TRANSITION) {
+                mEffectAdapter.changeEffectData(EffectFilterHelper.getInstance().getEffectTransitionData());
             } else {
                 mEffectAdapter.changeEffectData(null);
             }

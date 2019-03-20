@@ -49,6 +49,12 @@ public:
     // 切换滤镜，还有切换那种只切换lut滤镜的那种估计需要构建一个对象来存放处理规则，这里先这么处理吧。
     void changeFilter(RenderNodeType type, GLFilter *filter);
 
+    // 根据滤镜名称切换滤镜
+    void changeFilter(RenderNodeType type, const char *name);
+
+    // 根据滤镜ID切换滤镜
+    void changeFilter(RenderNodeType type, const int id);
+
     // 绘制纹理并显示
     bool drawFrame(GLuint texture, float *vertices, float *textureVertices);
 
@@ -65,6 +71,8 @@ public:
     void deleteAll();
 
 private:
+    void dump();
+
     RenderNode *head;
     RenderNode *tail;
     int length;

@@ -33,6 +33,9 @@ public:
 
     int onRequestRender(FlipDirection direction) override;
 
+    void changeFilter(RenderNodeType type, const char *filterName);
+
+    void changeFilter(RenderNodeType type, const int id);
 
 private:
     Mutex mMutex;
@@ -50,8 +53,9 @@ private:
 
     Texture *mVideoTexture;             // 视频纹理
     InputRenderNode *mRenderNode;       // 输入渲染结点
-//    DisplayRenderNode *displayNode;     // 显示渲染结点
     RenderNodeList *nodeList;           // 滤镜链
+    FilterInfo filterInfo;              // 滤镜信息
+    bool filterChange;                  // 切换滤镜
     GLfloat vertices[8];                // 顶点坐标
     GLfloat textureVetrices[8];         // 纹理坐标
 };

@@ -285,6 +285,18 @@ int CainMediaPlayer::getAudioSessionId() {
     return mAudioSessionId;
 }
 
+void CainMediaPlayer::changeFilter(int type, const char *name) {
+    if (videoDevice != nullptr) {
+        videoDevice->changeFilter((RenderNodeType)type, name);
+    }
+}
+
+void CainMediaPlayer::changeFilter(int type, const int id) {
+    if (videoDevice != nullptr) {
+        videoDevice->changeFilter((RenderNodeType)type, id);
+    }
+}
+
 void CainMediaPlayer::setOption(int category, const char *type, const char *option) {
     if (mediaPlayer != nullptr) {
         mediaPlayer->getPlayerState()->setOption(category, type, option);

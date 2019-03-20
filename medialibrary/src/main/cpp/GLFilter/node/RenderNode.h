@@ -60,6 +60,7 @@ public:
 
     RenderNodeType getNodeType() const;
 
+    bool hasFrameBuffer() const;
 public:
     // 前继结点
     RenderNode *prevNode;

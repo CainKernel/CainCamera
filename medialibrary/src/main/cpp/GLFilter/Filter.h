@@ -8,6 +8,7 @@
 #include "macros.h"
 
 #include "FrameBuffer.h"
+#include "FilterManager.h"
 
 #include "common/EglHelper.h"
 #include "common/OpenGLUtils.h"

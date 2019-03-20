@@ -46,6 +46,8 @@ bool RenderNodeList::addNode(RenderNode *node) {
             // 判断前继结点是否存在，绑定前继结点的后继结点
             if (tmp->prevNode) {
                 tmp->prevNode->nextNode = node;
+            } else { // 如果前继结点不存在，则表示tmp为头结点，需要更新头结点指针的位置
+                head = node;
             }
             node->nextNode = tmp;
             tmp->prevNode = node;
@@ -57,7 +59,7 @@ bool RenderNodeList::addNode(RenderNode *node) {
         }
     }
     length++;
-    return false;
+    return true;
 }
 
 RenderNode *RenderNodeList::removeNode(RenderNodeType type) {
@@ -102,6 +104,12 @@ void RenderNodeList::setTextureSize(int width, int height) {
     RenderNode *node = head;
     while (node != nullptr) {
         node->setTextureSize(width, height);
+        // 创建与渲染结点绑定的FBO
+        if (node->getNodeType() != NODE_DISPLAY && !node->hasFrameBuffer()) {
+            FrameBuffer *frameBuffer = new FrameBuffer(width, height);
+            frameBuffer->init();
+            node->setFrameBuffer(frameBuffer);
+        }
         node = node->nextNode;
     }
 }
@@ -138,16 +146,38 @@ void RenderNodeList::setIntensity(RenderNodeType type, float intensity) {
 }
 
 void RenderNodeList::changeFilter(RenderNodeType type, GLFilter *filter) {
+    if (type == NODE_NONE) {
+        return;
+    }
     // 如果存在渲染结点，则直接切换当前渲染结点的滤镜
     // 否则，创建一个新的渲染结点并添加到渲染链表中
     RenderNode *node = findNode(type);
-    if (node) {
-        node->changeFilter(filter);
-    } else {
+    if (!node) {
         node = new RenderNode(type);
-        node->changeFilter(filter);
         addNode(node);
     }
+    node->changeFilter(filter);
+}
+
+void RenderNodeList::changeFilter(RenderNodeType type, const char *name) {
+    if (type == NODE_NONE) {
+        return;
+    }
+    RenderNode *node = findNode(type);
+    if (!node) {
+        node = new RenderNode(type);
+        addNode(node);
+    }
+    node->changeFilter(FilterManager::getInstance()->getFilter(name));
+}
+
+void RenderNodeList::changeFilter(RenderNodeType type, const int id) {
+    RenderNode *node = findNode(type);
+    if (!node) {
+        node = new RenderNode(type);
+        addNode(node);
+    }
+    node->changeFilter(FilterManager::getInstance()->getFilter(id));
 }
 
 bool RenderNodeList::drawFrame(GLuint texture, float *vertices, float *textureVertices) {
@@ -195,4 +225,12 @@ void RenderNodeList::deleteAll() {
     length = 0;
     head = nullptr;
     tail = nullptr;
+}
+
+void RenderNodeList::dump() {
+    RenderNode *node = head;
+    while (node != nullptr) {
+        ALOGD("dump - node type = %d", node->getNodeType());
+        node = node->nextNode;
+    }
 }

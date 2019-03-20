@@ -24,6 +24,9 @@ void GLFilter::initProgram() {
 }
 
 void GLFilter::initProgram(const char *vertexShader, const char *fragmentShader) {
+    if (isInitialized()) {
+        return;
+    }
     if (vertexShader && fragmentShader) {
         programHandle = OpenGLUtils::createProgram(vertexShader, fragmentShader);
         OpenGLUtils::checkGLError("createProgram");

@@ -104,3 +104,7 @@ int RenderNode::drawFrameBuffer(GLuint texture, float *vertices, float *textureV
 RenderNodeType RenderNode::getNodeType() const {
     return nodeType;
 }
+
+bool RenderNode::hasFrameBuffer() const {
+    return (frameBuffer != nullptr);
+}

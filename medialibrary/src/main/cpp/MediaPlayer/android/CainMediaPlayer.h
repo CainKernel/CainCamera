@@ -147,6 +147,10 @@ public:
 
     int getAudioSessionId();
 
+    void changeFilter(int type, const char *name);
+
+    void changeFilter(int type, const int id);
+
     void setOption(int category, const char *type, const char *option);
 
     void setOption(int category, const char *type, int64_t option);

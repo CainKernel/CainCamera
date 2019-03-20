@@ -20,6 +20,11 @@ GLESDevice::GLESDevice() {
     mRenderNode = NULL;
     nodeList = new RenderNodeList();
     nodeList->addNode(new DisplayRenderNode());     // 显示渲染结点
+    memset(&filterInfo, 0, sizeof(FilterInfo));
+    filterInfo.type = NODE_NONE;
+    filterInfo.name = nullptr;
+    filterInfo.id = -1;
+    filterChange = false;
 
     vertices[0] = -1.0f;
     vertices[1] = -1.0f;
@@ -141,6 +146,10 @@ void GLESDevice::onInitTexture(int width, int height, TextureFormat format, Blen
             mRenderNode->setFrameBuffer(frameBuffer);
         }
     }
+    if (filterChange) {
+        nodeList->changeFilter(filterInfo.type, FilterManager::getInstance()->getFilter(&filterInfo));
+        filterChange = false;
+    }
     nodeList->init();
     nodeList->setTextureSize(width, height);
     mMutex.unlock();
@@ -202,4 +211,27 @@ int GLESDevice::onRequestRender(FlipDirection direction) {
     }
     mMutex.unlock();
     return 0;
+}
+
+
+void GLESDevice::changeFilter(RenderNodeType type, const char *filterName) {
+    mMutex.lock();
+    filterInfo.type = type;
+    filterInfo.name = av_strdup(filterName);
+    filterInfo.id = -1;
+    filterChange = true;
+    mMutex.unlock();
+}
+
+void GLESDevice::changeFilter(RenderNodeType type, const int id) {
+    mMutex.lock();
+    filterInfo.type = type;
+    if (filterInfo.name) {
+        av_freep(&filterInfo.name);
+        filterInfo.name = nullptr;
+    }
+    filterInfo.name = nullptr;
+    filterInfo.id = id;
+    filterChange = true;
+    mMutex.unlock();
 }

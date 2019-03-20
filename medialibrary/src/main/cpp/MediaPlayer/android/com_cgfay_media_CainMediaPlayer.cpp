@@ -495,6 +495,26 @@ jint CainMediaPlayer_getVideoHeight(JNIEnv *env, jobject thiz) {
     return mp->getVideoHeight();
 }
 
+void CainMediaPlayer_changeFilter(JNIEnv *env, jobject thiz, int node_type, jstring filterName_) {
+    CainMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == NULL) {
+        jniThrowException(env, "java/lang/IllegalStateException");
+        return;
+    }
+    const char *name = env->GetStringUTFChars(filterName_, 0);
+    mp->changeFilter(node_type, name);
+    env->ReleaseStringUTFChars(filterName_, name);
+}
+
+void CainMediaPlayer_changeFilterById(JNIEnv *env, jobject thiz, int node_type, jint filterId) {
+    CainMediaPlayer *mp = getMediaPlayer(env, thiz);
+    if (mp == NULL) {
+        jniThrowException(env, "java/lang/IllegalStateException");
+        return;
+    }
+    mp->changeFilter(node_type, filterId);
+}
+
 void CainMediaPlayer_setOption(JNIEnv *env, jobject thiz,
         int category, jstring type_, jstring option_) {
     CainMediaPlayer *mp = getMediaPlayer(env, thiz);
@@ -564,6 +584,8 @@ static const JNINativeMethod gMethods[] = {
         {"native_init", "()V", (void *)CainMediaPlayer_init},
         {"native_setup", "(Ljava/lang/Object;)V", (void *) CainMediaPlayer_setup},
         {"native_finalize", "()V", (void *) CainMediaPlayer_finalize},
+        {"_changeFilter", "(ILjava/lang/String;)V", (void *)CainMediaPlayer_changeFilter},
+        {"_changeFilter", "(II)V", (void *)CainMediaPlayer_changeFilterById},
         {"_setOption", "(ILjava/lang/String;Ljava/lang/String;)V", (void *)CainMediaPlayer_setOption},
         {"_setOption", "(ILjava/lang/String;J)V", (void *)CainMediaPlayer_setOptionLong}
 };

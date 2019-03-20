@@ -63,6 +63,9 @@ void FrameBuffer::createTexture() {
 }
 
 void FrameBuffer::createFrameBuffer() {
+    if (initialized) {
+        return;
+    }
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
