@@ -1,3 +1,4 @@
+precision mediump float;
 varying highp vec2 textureCoordinate;
 
 uniform sampler2D inputTexture;         // 输入图像纹理
