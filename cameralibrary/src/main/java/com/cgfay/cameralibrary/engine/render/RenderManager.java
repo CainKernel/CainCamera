@@ -92,7 +92,7 @@ public final class RenderManager {
      * 释放滤镜
      */
     private void releaseFilters() {
-        for (int i = 0; i < mFilterArrays.size(); i++) {
+        for (int i = 0; i < RenderIndex.NumberIndex; i++) {
             if (mFilterArrays.get(i) != null) {
                 mFilterArrays.get(i).release();
             }
