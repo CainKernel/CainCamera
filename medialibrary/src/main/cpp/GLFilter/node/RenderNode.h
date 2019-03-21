@@ -53,10 +53,10 @@ public:
     void setIntensity(float intensity);
 
     // 直接绘制输出
-    virtual bool drawFrame(GLuint texture, float *vertices, float *textureVertices);
+    virtual bool drawFrame(GLuint texture, const float *vertices, const float *textureVertices);
 
     // 绘制到FBO
-    virtual int drawFrameBuffer(GLuint texture, float *vertices, float *textureVertices);
+    virtual int drawFrameBuffer(GLuint texture, const float *vertices, const float *textureVertices);
 
     RenderNodeType getNodeType() const;
 

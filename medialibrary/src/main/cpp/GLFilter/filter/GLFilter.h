@@ -17,6 +17,8 @@
 #include <FrameBuffer.h>
 #include "macros.h"
 
+// OpenGLES 2.0 最大支持32个纹理
+#define MAX_TEXTURES 32
 /**
  * 默认的 vertex shader
  */
@@ -67,11 +69,11 @@ public:
     void updateViewPort();
 
     // 直接绘制纹理
-    virtual void drawTexture(GLuint texture, float *vertices, float *textureVertices, bool viewPortUpdate = true);
+    virtual void drawTexture(GLuint texture, const float *vertices, const float *textureVertices, bool viewPortUpdate = true);
 
     // 将纹理绘制到FBO中，实际上就是RenderNode中创建的FrameBuffer。这个FBO可以不跟随GLFilter释放，单独维护
-    virtual void drawTexture(FrameBuffer *frameBuffer, GLuint texture, float *vertices,
-                             float *textureVertices);
+    virtual void drawTexture(FrameBuffer *frameBuffer, GLuint texture, const float *vertices,
+                             const float *textureVertices);
 
     // 设置纹理大小
     virtual void setTextureSize(int width, int height);
@@ -94,7 +96,7 @@ public:
 protected:
 
     // 绑定attribute属性
-    virtual void bindAttributes(float *vertices, float *textureVertices);
+    virtual void bindAttributes(const float *vertices, const float *textureVertices);
 
     // 绑定纹理
     virtual void bindTexture(GLuint texture);
@@ -121,8 +123,9 @@ protected:
     bool initialized;       // shader program 初始化标志
     int programHandle;      // 程序句柄
     int positionHandle;     // 顶点坐标句柄
-    int texCoordHandle;     // 纹理坐标句柄
-    int inputTextureHandle; // 纹理句柄
+    int texCoordinateHandle;// 纹理坐标句柄
+    int inputTextureHandle[MAX_TEXTURES]; // 纹理句柄列表
+    int nb_textures;        // 纹理数量
     int vertexCount = 4;    // 绘制的顶点个数，默认为4
     double timeStamp;       // 时间戳
     float intensity;        // 强度 0.0 ~ 1.0，默认为1.0

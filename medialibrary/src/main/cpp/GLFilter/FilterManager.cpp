@@ -26,6 +26,16 @@ FilterManager *FilterManager::getInstance() {
     return instance;
 }
 
+void FilterManager::destroy() {
+    if (instance) {
+        std::unique_lock<std::mutex> lock(mutex);
+        if (instance) {
+            delete instance;
+            instance = nullptr;
+        }
+    }
+}
+
 GLFilter *FilterManager::getFilter(FilterInfo *filterInfo) {
     if (filterInfo->id != -1) {
         return getFilter(filterInfo->id);

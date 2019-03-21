@@ -19,8 +19,8 @@ const std::string kABGRFragmentShader = SHADER_TO_STRING(
 );
 
 GLInputABGRFilter::GLInputABGRFilter() {
-    for (int i = 0; i < GLES_MAX_PLANE; ++i) {
-        textureHandle[i] = 0;
+    for (int i = 0; i < 1; ++i) {
+        inputTextureHandle[i] = 0;
         textures[i] = 0;
     }
 }
@@ -71,7 +71,7 @@ GLboolean GLInputABGRFilter::uploadTexture(Texture *texture) {
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,
                  texture->pixels[0]);
-    glUniform1i(textureHandle[0], 0);
+    glUniform1i(inputTextureHandle[0], 0);
     return GL_TRUE;
 }
 

@@ -56,8 +56,8 @@ private:
     RenderNodeList *nodeList;           // 滤镜链
     FilterInfo filterInfo;              // 滤镜信息
     bool filterChange;                  // 切换滤镜
-    GLfloat vertices[8];                // 顶点坐标
-    GLfloat textureVetrices[8];         // 纹理坐标
+    const float *vertices;                  // 顶点坐标
+    const float *textureVetrices;           // 纹理坐标
 };
 
 #endif //GLESDEVICE_H

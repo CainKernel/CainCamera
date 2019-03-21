@@ -19,7 +19,8 @@ GLBeautyFilter::~GLBeautyFilter() {
 
 }
 
-void GLBeautyFilter::drawTexture(GLuint texture, float *vertices, float *textureVertices, bool viewPortUpdate) {
+void GLBeautyFilter::drawTexture(GLuint texture, const float *vertices, const float *textureVertices,
+                                 bool viewPortUpdate) {
     if (filterList.size() != 4 || frameBufferList.size() != 3) {
         return;
     }
@@ -40,8 +41,8 @@ void GLBeautyFilter::drawTexture(GLuint texture, float *vertices, float *texture
     filterList[3]->drawTexture(texture, vertices, textureVertices, viewPortUpdate);
 }
 
-void GLBeautyFilter::drawTexture(FrameBuffer *frameBuffer, GLuint texture, float *vertices,
-                                 float *textureVertices) {
+void GLBeautyFilter::drawTexture(FrameBuffer *frameBuffer, GLuint texture, const float *vertices,
+                                 const float *textureVertices) {
     if (filterList.size() != 4 || frameBufferList.size() < filterList.size()-1) {
         return;
     }

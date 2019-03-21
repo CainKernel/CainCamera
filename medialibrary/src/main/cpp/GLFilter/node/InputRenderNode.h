@@ -29,9 +29,9 @@ public:
     int drawFrameBuffer(Texture *texture);
 
 private:
-    bool drawFrame(GLuint texture, float *vertices, float *textureVertices) override;
+    bool drawFrame(GLuint texture, const float *vertices, const float *textureVertices) override;
 
-    int drawFrameBuffer(GLuint texture, float *vertices, float *textureVertices) override;
+    int drawFrameBuffer(GLuint texture, const float *vertices, const float *textureVertices) override;
 
     void resetVertices();
 

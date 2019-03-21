@@ -14,10 +14,11 @@ public:
 
     virtual ~GLBeautyFilter();
 
-    void drawTexture(GLuint texture, float *vertices, float *textureVertices, bool viewPortUpdate = false) override;
+    void drawTexture(GLuint texture, const float *vertices, const float *textureVertices,
+                     bool viewPortUpdate = false) override;
 
-    void drawTexture(FrameBuffer *frameBuffer, GLuint texture, float *vertices,
-                     float *textureVertices) override;
+    void drawTexture(FrameBuffer *frameBuffer, GLuint texture, const float *vertices,
+                     const float *textureVertices) override;
 };
 
 

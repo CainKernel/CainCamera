@@ -66,7 +66,8 @@ void GLGroupFilter::destroyProgram() {
     }
 }
 
-void GLGroupFilter::drawTexture(GLuint texture, float *vertices, float *textureVertices, bool viewPortUpdate) {
+void GLGroupFilter::drawTexture(GLuint texture, const float *vertices, const float *textureVertices,
+                                bool viewPortUpdate) {
     if (frameBufferList.size() < filterList.size()-1) {
         return;
     }
@@ -85,8 +86,8 @@ void GLGroupFilter::drawTexture(GLuint texture, float *vertices, float *textureV
     }
 }
 
-void GLGroupFilter::drawTexture(FrameBuffer *frameBuffer, GLuint texture, float *vertices,
-                                float *textureVertices) {
+void GLGroupFilter::drawTexture(FrameBuffer *frameBuffer, GLuint texture, const float *vertices,
+                                const float *textureVertices) {
     if (frameBufferList.size() < filterList.size()-1) {
         return;
     }

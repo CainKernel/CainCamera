@@ -21,10 +21,11 @@ public:
 
     void destroyProgram() override;
 
-    void drawTexture(GLuint texture, float *vertices, float *textureVertices, bool viewPortUpdate = false) override;
+    void drawTexture(GLuint texture, const float *vertices, const float *textureVertices,
+                     bool viewPortUpdate = false) override;
 
-    void drawTexture(FrameBuffer *frameBuffer, GLuint texture, float *vertices,
-                     float *textureVertices) override;
+    void drawTexture(FrameBuffer *frameBuffer, GLuint texture, const float *vertices,
+                     const float *textureVertices) override;
 
     // 设置组滤镜的子滤镜使用的FBO宽高缩放值
     void setFrameBufferScale(float scale);

@@ -80,7 +80,7 @@ void RenderNode::setIntensity(float intensity) {
     }
 }
 
-bool RenderNode::drawFrame(GLuint texture, float *vertices, float *textureVertices) {
+bool RenderNode::drawFrame(GLuint texture, const float *vertices, const float *textureVertices) {
     if (!glFilter || !glFilter->isInitialized()) {
         return false;
     }
@@ -91,7 +91,7 @@ bool RenderNode::drawFrame(GLuint texture, float *vertices, float *textureVertic
     return true;
 }
 
-int RenderNode::drawFrameBuffer(GLuint texture, float *vertices, float *textureVertices) {
+int RenderNode::drawFrameBuffer(GLuint texture, const float *vertices, const float *textureVertices) {
 
     // FrameBuffer 没有 或者是 滤镜还没初始化，则直接返回输入的纹理
     if (!frameBuffer || !frameBuffer->isInitialized() || !glFilter || !glFilter->isInitialized()) {

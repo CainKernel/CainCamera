@@ -61,11 +61,11 @@ int InputRenderNode::drawFrameBuffer(Texture *texture) {
     return frameBuffer->getTexture();
 }
 
-bool InputRenderNode::drawFrame(GLuint texture, float *vertices, float *textureVertices) {
+bool InputRenderNode::drawFrame(GLuint texture, const float *vertices, const float *textureVertices) {
     return RenderNode::drawFrame(texture, vertices, textureVertices);
 }
 
-int InputRenderNode::drawFrameBuffer(GLuint texture, float *vertices, float *textureVertices) {
+int InputRenderNode::drawFrameBuffer(GLuint texture, const float *vertices, const float *textureVertices) {
     return RenderNode::drawFrameBuffer(texture, vertices, textureVertices);
 }
 

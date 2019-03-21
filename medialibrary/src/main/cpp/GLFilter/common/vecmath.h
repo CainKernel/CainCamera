@@ -831,6 +831,12 @@ public:
         return *this;
     }
 
+    void put(const float *mIn) {
+        for ( int32_t i = 0; i < 16; ++i ) {
+            f_[i] = mIn[i];
+        }
+    }
+
     float* ptr() {
         return f_;
     }

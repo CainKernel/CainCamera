@@ -56,10 +56,10 @@ public:
     void changeFilter(RenderNodeType type, const int id);
 
     // 绘制纹理并显示
-    bool drawFrame(GLuint texture, float *vertices, float *textureVertices);
+    bool drawFrame(GLuint texture, const float *vertices, const float *textureVertices);
 
     // 绘制纹理到FBO
-    int drawFrameBuffer(GLuint texture, float *vertices, float *textureVertices);
+    int drawFrameBuffer(GLuint texture, const float *vertices, const float *textureVertices);
 
     // 判断是否为空
     bool isEmpty();

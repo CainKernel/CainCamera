@@ -23,6 +23,7 @@
 #include "filter/input/GLInputFilter.h"
 #include "filter/input/GLInputABGRFilter.h"
 #include "filter/input/GLInputYUV420PFilter.h"
+#include "filter/input/GLOESInputFilter.h"
 
 // 美颜滤镜
 #include "filter/beauty/GLBeautyFilter.h"

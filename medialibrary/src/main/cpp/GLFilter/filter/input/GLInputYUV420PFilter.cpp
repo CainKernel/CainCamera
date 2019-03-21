@@ -28,7 +28,7 @@ const std::string kYUV420PFragmentShader = SHADER_TO_STRING(
 
 GLInputYUV420PFilter::GLInputYUV420PFilter() {
     for (int i = 0; i < GLES_MAX_PLANE; ++i) {
-        textureHandle[i] = 0;
+        inputTextureHandle[i] = 0;
         textures[i] = 0;
     }
 }
@@ -46,10 +46,10 @@ void GLInputYUV420PFilter::initProgram(const char *vertexShader, const char *fra
         programHandle = OpenGLUtils::createProgram(vertexShader, fragmentShader);
         OpenGLUtils::checkGLError("createProgram");
         positionHandle = glGetAttribLocation(programHandle, "aPosition");
-        texCoordHandle = glGetAttribLocation(programHandle, "aTextureCoord");
-        textureHandle[0] = glGetUniformLocation(programHandle, "inputTextureY");
-        textureHandle[1] = glGetUniformLocation(programHandle, "inputTextureU");
-        textureHandle[2] = glGetUniformLocation(programHandle, "inputTextureV");
+        texCoordinateHandle = glGetAttribLocation(programHandle, "aTextureCoord");
+        inputTextureHandle[0] = glGetUniformLocation(programHandle, "inputTextureY");
+        inputTextureHandle[1] = glGetUniformLocation(programHandle, "inputTextureU");
+        inputTextureHandle[2] = glGetUniformLocation(programHandle, "inputTextureV");
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glUseProgram(programHandle);
@@ -65,13 +65,13 @@ void GLInputYUV420PFilter::initProgram(const char *vertexShader, const char *fra
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glUniform1i(textureHandle[i], i);
+            glUniform1i(inputTextureHandle[i], i);
         }
         setInitialized(true);
     } else {
         positionHandle = -1;
         positionHandle = -1;
-        inputTextureHandle = -1;
+        inputTextureHandle[0] = -1;
         setInitialized(false);
     }
 }
@@ -95,7 +95,7 @@ GLboolean GLInputYUV420PFilter::uploadTexture(Texture *texture) {
                      GL_LUMINANCE,
                      GL_UNSIGNED_BYTE,
                      texture->pixels[i]);
-        glUniform1i(textureHandle[i], i);
+        glUniform1i(inputTextureHandle[i], i);
     }
     glPixelStorei(GL_UNPACK_ALIGNMENT, 0);
     return GL_TRUE;

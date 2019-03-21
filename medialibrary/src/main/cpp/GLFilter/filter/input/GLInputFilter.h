@@ -72,14 +72,13 @@ public:
     virtual GLboolean renderTexture(Texture *texture, float *vertices, float *textureVertices);
 
 protected:
-    void drawTexture(GLuint texture, float *vertices, float *textureVertices,
+    void drawTexture(GLuint texture, const float *vertices, const float *textureVertices,
                      bool viewPortUpdate = false) override;
 
-    void drawTexture(FrameBuffer *frameBuffer, GLuint texture, float *vertices,
-                     float *textureVertices) override;
+    void drawTexture(FrameBuffer *frameBuffer, GLuint texture, const float *vertices,
+                     const float *textureVertices) override;
 
 protected:
-    GLuint textureHandle[GLES_MAX_PLANE];   // textureHandle句柄
     GLuint textures[GLES_MAX_PLANE];        // 纹理id
 };
 

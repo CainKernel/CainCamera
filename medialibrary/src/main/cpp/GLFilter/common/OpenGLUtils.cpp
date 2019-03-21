@@ -52,13 +52,17 @@ GLuint OpenGLUtils::createProgram(const char *vertexShader, const char *fragShad
             free(infoLog);
         }
         // 删除着色器释放内存
+        glDetachShader(program, vertex);
         glDeleteShader(vertex);
+        glDetachShader(program, fragment);
         glDeleteShader(fragment);
         glDeleteProgram(program);
         return 0;
     }
     // 删除着色器释放内存
+    glDetachShader(program, vertex);
     glDeleteShader(vertex);
+    glDetachShader(program, fragment);
     glDeleteShader(fragment);
 
     return program;

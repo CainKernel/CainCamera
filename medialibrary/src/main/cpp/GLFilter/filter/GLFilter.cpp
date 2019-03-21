@@ -7,9 +7,12 @@
 #include "GLFilter.h"
 #include <AndroidLog.h>
 
-GLFilter::GLFilter() : initialized(false), programHandle(-1), positionHandle(-1), texCoordHandle(-1),
-                   inputTextureHandle(-1), vertexCount(4), timeStamp(0), intensity(1.0),
+GLFilter::GLFilter() : initialized(false), programHandle(-1), positionHandle(-1), texCoordinateHandle(-1),
+                   nb_textures(1), vertexCount(4), timeStamp(0), intensity(1.0),
                    textureWidth(0), textureHeight(0), displayWidth(0), displayHeight(0) {
+    for (int i = 0; i < MAX_TEXTURES; ++i) {
+        inputTextureHandle[i] = -1;
+    }
 
 }
 
@@ -29,15 +32,15 @@ void GLFilter::initProgram(const char *vertexShader, const char *fragmentShader)
     }
     if (vertexShader && fragmentShader) {
         programHandle = OpenGLUtils::createProgram(vertexShader, fragmentShader);
-        OpenGLUtils::checkGLError("createProgram");
+//        OpenGLUtils::checkGLError("createProgram");
         positionHandle = glGetAttribLocation(programHandle, "aPosition");
-        texCoordHandle = glGetAttribLocation(programHandle, "aTextureCoord");
-        inputTextureHandle = glGetUniformLocation(programHandle, "inputTexture");
+        texCoordinateHandle = glGetAttribLocation(programHandle, "aTextureCoord");
+        inputTextureHandle[0] = glGetUniformLocation(programHandle, "inputTexture");
         setInitialized(true);
     } else {
         positionHandle = -1;
         positionHandle = -1;
-        inputTextureHandle = -1;
+        inputTextureHandle[0] = -1;
         setInitialized(false);
     }
 }
@@ -85,7 +88,8 @@ void GLFilter::updateViewPort() {
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void GLFilter::drawTexture(GLuint texture, float *vertices, float *textureVertices, bool viewPortUpdate) {
+void GLFilter::drawTexture(GLuint texture, const float *vertices, const float *textureVertices,
+                           bool viewPortUpdate) {
     if (!isInitialized() || texture < 0) {
         return;
     }
@@ -114,8 +118,8 @@ void GLFilter::drawTexture(GLuint texture, float *vertices, float *textureVertic
     glUseProgram(0);
 }
 
-void GLFilter::drawTexture(FrameBuffer *frameBuffer, GLuint texture, float *vertices,
-                           float *textureVertices) {
+void GLFilter::drawTexture(FrameBuffer *frameBuffer, GLuint texture, const float *vertices,
+                           const float *textureVertices) {
     if (frameBuffer) {
         frameBuffer->bindBuffer();
     }
@@ -125,14 +129,14 @@ void GLFilter::drawTexture(FrameBuffer *frameBuffer, GLuint texture, float *vert
     }
 }
 
-void GLFilter::bindAttributes(float *vertices, float *textureVertices) {
+void GLFilter::bindAttributes(const float *vertices, const float *textureVertices) {
     // 绑定顶点坐标
     glVertexAttribPointer(positionHandle, 2, GL_FLOAT, GL_FALSE, 0, vertices);
     glEnableVertexAttribArray(positionHandle);
 
     // 绑定纹理坐标
-    glVertexAttribPointer(texCoordHandle, 2, GL_FLOAT, GL_FALSE, 0, textureVertices);
-    glEnableVertexAttribArray(texCoordHandle);
+    glVertexAttribPointer(texCoordinateHandle, 2, GL_FLOAT, GL_FALSE, 0, textureVertices);
+    glEnableVertexAttribArray(texCoordinateHandle);
 
 }
 
@@ -140,7 +144,7 @@ void GLFilter::bindTexture(GLuint texture) {
     // 绑定纹理
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(getTextureType(), texture);
-    glUniform1i(inputTextureHandle, 0);
+    glUniform1i(inputTextureHandle[0], 0);
 }
 
 void GLFilter::onDrawBegin() {
@@ -156,7 +160,7 @@ void GLFilter::onDrawFrame() {
 }
 
 void GLFilter::unbindAttributes() {
-    glDisableVertexAttribArray(texCoordHandle);
+    glDisableVertexAttribArray(texCoordinateHandle);
     glDisableVertexAttribArray(positionHandle);
 }
 

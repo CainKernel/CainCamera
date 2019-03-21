@@ -11,6 +11,11 @@ static const  float vertices_default[] = {
         1.0f,   1.0f,  // right, top
 };
 
+static const short indices_default[] = {
+        0, 1, 2,
+        2, 1, 3,
+};
+
 static const float texture_vertices_none[] = {
         0.0f, 0.0f, // left,  bottom
         1.0f, 0.0f, // right, bottom
@@ -55,6 +60,10 @@ static const float texture_vertices_flip_horizontal[] = {
 
 const float *CoordinateUtils::getVertexCoordinates() {
     return vertices_default;
+}
+
+const short *CoordinateUtils::getDefaultIndices() {
+    return indices_default;
 }
 
 const float *CoordinateUtils::getTextureCoordinates(const RotationMode &rotationMode) {

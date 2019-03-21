@@ -26,6 +26,9 @@ public:
     // 获取顶点坐标
     static const float *getVertexCoordinates();
 
+    // 获取默认索引
+    static const short *getDefaultIndices();
+
     // 获取纹理坐标
     static const float *getTextureCoordinates(const RotationMode &rotationMode);
 

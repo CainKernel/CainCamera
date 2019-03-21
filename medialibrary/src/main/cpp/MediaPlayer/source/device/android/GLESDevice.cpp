@@ -26,22 +26,24 @@ GLESDevice::GLESDevice() {
     filterInfo.id = -1;
     filterChange = false;
 
-    vertices[0] = -1.0f;
-    vertices[1] = -1.0f;
-    vertices[2] =  1.0f;
-    vertices[3] = -1.0f;
-    vertices[4] = -1.0f;
-    vertices[5] =  1.0f;
-    vertices[6] =  1.0f;
-    vertices[7] =  1.0f;
-    textureVetrices[0] = 0.0f;
-    textureVetrices[1] = 0.0f;
-    textureVetrices[2] = 1.0f;
-    textureVetrices[3] = 0.0f;
-    textureVetrices[4] = 0.0f;
-    textureVetrices[5] = 1.0f;
-    textureVetrices[6] = 1.0f;
-    textureVetrices[7] = 1.0f;
+//    vertices[0] = -1.0f;
+//    vertices[1] = -1.0f;
+//    vertices[2] =  1.0f;
+//    vertices[3] = -1.0f;
+//    vertices[4] = -1.0f;
+//    vertices[5] =  1.0f;
+//    vertices[6] =  1.0f;
+//    vertices[7] =  1.0f;
+//    textureVetrices[0] = 0.0f;
+//    textureVetrices[1] = 0.0f;
+//    textureVetrices[2] = 1.0f;
+//    textureVetrices[3] = 0.0f;
+//    textureVetrices[4] = 0.0f;
+//    textureVetrices[5] = 1.0f;
+//    textureVetrices[6] = 1.0f;
+//    textureVetrices[7] = 1.0f;
+    vertices = CoordinateUtils::getVertexCoordinates();
+    textureVetrices = CoordinateUtils::getTextureCoordinates(ROTATE_NONE);
 }
 
 GLESDevice::~GLESDevice() {
@@ -91,7 +93,7 @@ void GLESDevice::onInitTexture(int width, int height, TextureFormat format, Blen
 
     // 创建EGLContext
     if (!mHaveEGlContext) {
-        mHaveEGlContext = eglHelper->init(NULL, FLAG_TRY_GLES3);
+        mHaveEGlContext = eglHelper->init(FLAG_TRY_GLES3);
         ALOGD("mHaveEGlContext = %d", mHaveEGlContext);
     }
 

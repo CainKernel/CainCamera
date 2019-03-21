@@ -38,6 +38,9 @@ public:
 
     virtual ~EglHelper();
 
+    // 初始化
+    bool init(int flags);
+
     // 初始化EGLDisplay、EGLContext、EGLConfig等资源
     bool init(EGLContext sharedContext, int flags);
 

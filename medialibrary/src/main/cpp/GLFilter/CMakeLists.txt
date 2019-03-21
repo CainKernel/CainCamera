@@ -22,12 +22,15 @@ add_library( gl_filter
         FrameBuffer.cpp
 
         # 公共类
+        common/CainEGLContext.cpp
         common/EglHelper.cpp
         common/OpenGLUtils.cpp
         common/CoordinateUtils.cpp
         common/vecmath.cpp
 
         # 基础滤镜
+        filter/GL64LookupTableFilter.cpp
+        filter/GL512LookupTableFilter.cpp
         filter/GLFilter.cpp
         filter/GLGroupFilter.cpp
         filter/GLGaussianBlurFilter.cpp
@@ -51,10 +54,12 @@ add_library( gl_filter
         filter/input/GLInputFilter.cpp
         filter/input/GLInputABGRFilter.cpp
         filter/input/GLInputYUV420PFilter.cpp
+        filter/input/GLOESInputFilter.cpp
 
         # 渲染结点
         node/DisplayRenderNode.cpp;
         node/InputRenderNode.cpp
+        node/OESRenderNode.cpp
         node/RenderNode.cpp
         node/RenderNodeList.cpp
         )

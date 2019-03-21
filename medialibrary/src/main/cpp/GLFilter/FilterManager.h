@@ -21,11 +21,10 @@ typedef struct FilterInfo {
 
 class FilterManager {
 public:
-    FilterManager();
-
-    virtual ~FilterManager();
 
     static FilterManager *getInstance();
+
+    void destroy();
 
     // 根据滤镜信息对象获取滤镜
     GLFilter *getFilter(FilterInfo *filterInfo);
@@ -37,6 +36,10 @@ public:
     GLFilter *getFilter(const int id);
 
 private:
+    FilterManager();
+
+    virtual ~FilterManager();
+
     static FilterManager *instance;
     static std::mutex mutex;
 };

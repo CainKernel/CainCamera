@@ -180,7 +180,7 @@ void RenderNodeList::changeFilter(RenderNodeType type, const int id) {
     node->changeFilter(FilterManager::getInstance()->getFilter(id));
 }
 
-bool RenderNodeList::drawFrame(GLuint texture, float *vertices, float *textureVertices) {
+bool RenderNodeList::drawFrame(GLuint texture, const float *vertices, const float *textureVertices) {
     RenderNode *node = head;
     GLuint currentTexture = texture;
     bool result = true;
@@ -196,7 +196,7 @@ bool RenderNodeList::drawFrame(GLuint texture, float *vertices, float *textureVe
     return result;
 }
 
-int RenderNodeList::drawFrameBuffer(GLuint texture, float *vertices, float *textureVertices) {
+int RenderNodeList::drawFrameBuffer(GLuint texture, const float *vertices, const float *textureVertices) {
     RenderNode *node = head;
     GLuint currentTexture = texture;
     while (node != nullptr) {
