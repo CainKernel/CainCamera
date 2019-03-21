@@ -364,7 +364,7 @@ public final class RenderManager {
      * 调整滤镜
      */
     private void onFilterChanged() {
-        for (int i = 0; i < mFilterArrays.size(); i++) {
+        for (int i = 0; i < RenderIndex.NumberIndex; i++) {
             if (mFilterArrays.get(i) != null) {
                 mFilterArrays.get(i).onInputSizeChanged(mTextureWidth, mTextureHeight);
                 // 到显示之前都需要创建FBO，这里限定是防止创建多余的FBO，节省GPU资源
