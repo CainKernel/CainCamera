@@ -80,7 +80,7 @@ const float *CoordinateUtils::getTextureCoordinates(const RotationMode &rotation
         }
 
         case ROTATE_270: {
-            return texture_vertices_180;
+            return texture_vertices_270;
         }
 
         case ROTATE_FLIP_VERTICAL: {

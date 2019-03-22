@@ -57,6 +57,8 @@ add_library( gl_filter
 
         # 特效滤镜
         filter/effect/GLFrameBlackWhiteThreeFilter.cpp
+        filter/effect/GLFrameBlurFilter.cpp
+        filter/effect/GLFrameBlurMixFilter.cpp
         filter/effect/GLFrameTwoFilter.cpp
         filter/effect/GLFrameThreeFilter.cpp
         filter/effect/GLFrameFourFilter.cpp

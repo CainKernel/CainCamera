@@ -52,8 +52,8 @@ GLFilter *FilterManager::getFilter(const char *name) {
 GLFilter *FilterManager::getFilter(const int id) {
     switch (id) {
 
-        case 0x200: { // TODO 模糊分屏特效，滤镜暂未实现
-            return nullptr;
+        case 0x200: {
+            return new GLFrameBlurFilter();
         }
 
         case 0x201:{ // 黑白三屏特效

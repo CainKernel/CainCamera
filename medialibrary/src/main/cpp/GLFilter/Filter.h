@@ -30,6 +30,7 @@
 
 // 分屏特效滤镜
 #include "filter/effect/GLFrameBlackWhiteThreeFilter.h"
+#include "filter/effect/GLFrameBlurFilter.h"
 #include "filter/effect/GLFrameTwoFilter.h"
 #include "filter/effect/GLFrameThreeFilter.h"
 #include "filter/effect/GLFrameFourFilter.h"
