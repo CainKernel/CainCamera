@@ -46,7 +46,6 @@ const std::string k512LutFragmentShader = SHADER_TO_STRING(
 
 
 GL512LookupTableFilter::GL512LookupTableFilter() {
-    intensityHandle = -1;
     lutTexture = -1;
 }
 
@@ -55,23 +54,19 @@ void GL512LookupTableFilter::initProgram() {
 }
 
 void GL512LookupTableFilter::initProgram(const char *vertexShader, const char *fragmentShader) {
-    GLFilter::initProgram(vertexShader, fragmentShader);
+    GLIntensityFilter::initProgram(vertexShader, fragmentShader);
     if (isInitialized()) {
         inputTextureHandle[1] = glGetUniformLocation(programHandle, "lutTexture");
-        intensityHandle = glGetUniformLocation(programHandle, "intensity");
     }
+}
+
+void GL512LookupTableFilter::setLutTexture(int lutTexture) {
+    this->lutTexture = lutTexture;
 }
 
 void GL512LookupTableFilter::bindTexture(GLuint texture) {
     GLFilter::bindTexture(texture);
     if (isInitialized()) {
         OpenGLUtils::bindTexture(inputTextureHandle[1], lutTexture, 1);
-    }
-}
-
-void GL512LookupTableFilter::onDrawBegin() {
-    GLFilter::onDrawBegin();
-    if (isInitialized()) {
-        glUniform1f(intensityHandle, intensity);
     }
 }

@@ -31,7 +31,7 @@ public class GLImage512LookupTableFilter extends GLImageFilter {
     public void initProgramHandle() {
         super.initProgramHandle();
         mStrengthHandle = GLES30.glGetUniformLocation(mProgramHandle, "strength");
-        mLookupTableTextureHandle = GLES30.glGetUniformLocation(mProgramHandle, "curveTexture");
+        mLookupTableTextureHandle = GLES30.glGetUniformLocation(mProgramHandle, "lookupTableTexture");
         setStrength(1.0f);
     }
 

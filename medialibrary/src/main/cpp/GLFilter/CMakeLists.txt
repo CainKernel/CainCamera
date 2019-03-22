@@ -31,10 +31,23 @@ add_library( gl_filter
         # 基础滤镜
         filter/GL64LookupTableFilter.cpp
         filter/GL512LookupTableFilter.cpp
+        filter/GLDepthFilter.cpp
+        filter/GLDepthMixFilter.cpp
+        filter/GLDrosteFilter.cpp
         filter/GLFilter.cpp
         filter/GLGroupFilter.cpp
         filter/GLGaussianBlurFilter.cpp
         filter/GLGaussianPassBlurFilter.cpp
+        filter/GLIntensityFilter.cpp
+
+        # 图片调节滤镜
+        filter/adjust/GLImageAdjustFilter.cpp
+        filter/adjust/GLBrightnessFilter.cpp
+        filter/adjust/GLContrastFilter.cpp
+        filter/adjust/GLExposureFilter.cpp
+        filter/adjust/GLHueFilter.cpp
+        filter/adjust/GLSaturationFilter.cpp
+        filter/adjust/GLSharpenFilter.cpp
 
         # 美颜滤镜
         filter/beauty/GLBeautyAdjustFilter.cpp

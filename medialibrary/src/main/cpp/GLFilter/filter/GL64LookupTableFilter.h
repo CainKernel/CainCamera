@@ -6,9 +6,9 @@
 #define GL64LOOKUPTABLEFILTER_H
 
 
-#include "GLFilter.h"
+#include "GLIntensityFilter.h"
 
-class GL64LookupTableFilter : public GLFilter {
+class GL64LookupTableFilter : public GLIntensityFilter {
 public:
     GL64LookupTableFilter();
 
@@ -16,13 +16,12 @@ public:
 
     void initProgram(const char *vertexShader, const char *fragmentShader) override;
 
+    void setLutTexture(int lutTexture);
+
 protected:
     void bindTexture(GLuint texture) override;
 
-    void onDrawBegin() override;
-
 private:
-    int intensityHandle;
     GLuint lutTexture;
 };
 
