@@ -2,6 +2,7 @@
 // Created by CainHuang on 2019/3/19.
 //
 
+#include <cstring>
 #include "FilterManager.h"
 #include "Filter.h"
 
@@ -46,13 +47,37 @@ GLFilter *FilterManager::getFilter(FilterInfo *filterInfo) {
 }
 
 GLFilter *FilterManager::getFilter(const char *name) {
+
+    // 分屏特效
+    if (!strcmp("模糊分屏", name)) {
+        return new GLFrameBlurFilter();
+    }
+    if (!strcmp("黑白三屏", name)) {
+        return new GLFrameBlackWhiteThreeFilter();
+    }
+    if (!strcmp("两屏", name)) {
+        return new GLFrameTwoFilter();
+    }
+    if (!strcmp("三屏", name)) {
+        return new GLFrameThreeFilter();
+    }
+    if (!strcmp("四屏", name)) {
+        return new GLFrameFourFilter();
+    }
+    if (!strcmp("六屏", name)) {
+        return new GLFrameSixFilter();
+    }
+    if (!strcmp("九屏", name)){
+        return new GLFrameNineFilter();
+    }
     return nullptr;
 }
 
 GLFilter *FilterManager::getFilter(const int id) {
     switch (id) {
 
-        case 0x200: {
+        // 分屏特效
+        case 0x200: { // 模糊分屏特效
             return new GLFrameBlurFilter();
         }
 
