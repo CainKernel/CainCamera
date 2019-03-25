@@ -26,8 +26,8 @@ GLESDevice::GLESDevice() {
     filterInfo.id = -1;
     filterChange = false;
 
-    vertices = CoordinateUtils::getVertexCoordinates();
-    textureVetrices = CoordinateUtils::getTextureCoordinates(ROTATE_NONE);
+    resetVertices();
+    resetTexVertices();
 }
 
 GLESDevice::~GLESDevice() {
@@ -71,8 +71,8 @@ void GLESDevice::terminate(bool releaseContext) {
         mHaveEGlContext = false;
     }
 }
-
-void GLESDevice::onInitTexture(int width, int height, TextureFormat format, BlendMode blendMode) {
+void GLESDevice::onInitTexture(int width, int height, TextureFormat format, BlendMode blendMode,
+                               int rotate) {
     mMutex.lock();
 
     // 创建EGLContext
@@ -116,6 +116,7 @@ void GLESDevice::onInitTexture(int width, int height, TextureFormat format, Blen
             ANativeWindow_setBuffersGeometry(mWindow, mSurfaceWidth, mSurfaceHeight, windowFormat);
         }
     }
+    mVideoTexture->rotate = rotate;
     mVideoTexture->frameWidth = width;
     mVideoTexture->frameHeight = height;
     mVideoTexture->height = height;
@@ -192,6 +193,7 @@ int GLESDevice::onRequestRender(FlipDirection direction) {
         if (mSurfaceWidth != 0 && mSurfaceHeight != 0) {
             nodeList->setDisplaySize(mSurfaceWidth, mSurfaceHeight);
         }
+        cropTexVertices(mVideoTexture);
         nodeList->drawFrame(texture, vertices, textureVetrices);
         eglHelper->swapBuffers(eglSurface);
     }
@@ -220,4 +222,44 @@ void GLESDevice::changeFilter(RenderNodeType type, const int id) {
     filterInfo.id = id;
     filterChange = true;
     mMutex.unlock();
+}
+
+void GLESDevice::resetVertices() {
+    vertices[0] = -1.0f;
+    vertices[1] = -1.0f;
+    vertices[2] =  1.0f;
+    vertices[3] = -1.0f;
+    vertices[4] = -1.0f;
+    vertices[5] =  1.0f;
+    vertices[6] =  1.0f;
+    vertices[7] =  1.0f;
+}
+
+void GLESDevice::resetTexVertices() {
+    textureVetrices[0] = 0.0f;
+    textureVetrices[1] = 0.0f;
+    textureVetrices[2] = 1.0f;
+    textureVetrices[3] = 0.0f;
+    textureVetrices[4] = 0.0f;
+    textureVetrices[5] = 1.0f;
+    textureVetrices[6] = 1.0f;
+    textureVetrices[7] = 1.0f;
+}
+
+void GLESDevice::cropTexVertices(Texture *texture) {
+    // 帧宽度和linesize宽度不一致，需要裁掉多余的地方，否则会出现绿屏的情况
+    if (texture->frameWidth != texture->width) {
+        GLsizei padding = texture->width - texture->frameWidth;
+        GLfloat normalized = ((GLfloat)padding + 0.5f) / (GLfloat)texture->width;
+        textureVetrices[0] = 0.0f;
+        textureVetrices[1] = 0.0f;
+        textureVetrices[2] = 1.0f - normalized;
+        textureVetrices[3] = 0.0f;
+        textureVetrices[4] = 0.0f;
+        textureVetrices[5] = 1.0f;
+        textureVetrices[6] = 1.0f - normalized;
+        textureVetrices[7] = 1.0f;
+    } else {
+        resetTexVertices();
+    }
 }

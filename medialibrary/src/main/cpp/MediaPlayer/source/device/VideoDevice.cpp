@@ -16,7 +16,8 @@ void VideoDevice::terminate() {
 
 }
 
-void VideoDevice::onInitTexture(int width, int height, TextureFormat format, BlendMode blendMode) {
+void VideoDevice::onInitTexture(int width, int height, TextureFormat format, BlendMode blendMode,
+                                int rotate) {
 
 }
 

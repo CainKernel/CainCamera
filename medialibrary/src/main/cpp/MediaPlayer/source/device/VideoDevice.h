@@ -17,7 +17,7 @@ public:
     virtual void terminate();
 
     // 初始化视频纹理宽高
-    virtual void onInitTexture(int width, int height, TextureFormat format, BlendMode blendMode);
+    virtual void onInitTexture(int width, int height, TextureFormat format, BlendMode blendMode, int rotate = 0);
 
     // 更新YUV数据
     virtual int onUpdateYUV(uint8_t *yData, int yPitch,

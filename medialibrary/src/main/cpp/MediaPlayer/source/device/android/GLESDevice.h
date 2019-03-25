@@ -24,7 +24,8 @@ public:
 
     void terminate(bool releaseContext);
 
-    void onInitTexture(int width, int height, TextureFormat format, BlendMode blendMode) override;
+    void onInitTexture(int width, int height, TextureFormat format, BlendMode blendMode,
+                       int rotate) override;
 
     int onUpdateYUV(uint8_t *yData, int yPitch, uint8_t *uData, int uPitch,
                     uint8_t *vData, int vPitch) override;
@@ -37,6 +38,12 @@ public:
 
     void changeFilter(RenderNodeType type, const int id);
 
+private:
+    void resetVertices();
+
+    void resetTexVertices();
+
+    void cropTexVertices(Texture *texture);
 private:
     Mutex mMutex;
     Condition mCondition;
@@ -56,8 +63,8 @@ private:
     RenderNodeList *nodeList;           // 滤镜链
     FilterInfo filterInfo;              // 滤镜信息
     bool filterChange;                  // 切换滤镜
-    const float *vertices;                  // 顶点坐标
-    const float *textureVetrices;           // 纹理坐标
+    GLfloat vertices[8];                // 顶点坐标
+    GLfloat textureVetrices[8];         // 纹理坐标
 };
 
 #endif //GLESDEVICE_H
