@@ -412,7 +412,7 @@ void CainMediaPlayer_setMute(JNIEnv *env, jobject thiz, jboolean mute) {
     mp->setMute(mute);
 }
 
-void CainMediaPlayer_setVolume(JNIEnv *env, jobject thiz, jint leftVolume, jfloat rightVolume) {
+void CainMediaPlayer_setVolume(JNIEnv *env, jobject thiz, jfloat leftVolume, jfloat rightVolume) {
     CainMediaPlayer *mp = getMediaPlayer(env, thiz);
     if (mp == NULL) {
         jniThrowException(env, "java/lang/IllegalStateException");
