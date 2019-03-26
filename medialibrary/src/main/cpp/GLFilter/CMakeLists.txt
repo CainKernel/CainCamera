@@ -55,7 +55,14 @@ add_library( gl_filter
         filter/beauty/GLBeautyFilter.cpp
         filter/beauty/GLBeautyHighPassFilter.cpp
 
-        # 特效滤镜
+        # 特效
+        # 滤镜特效
+        filter/effect/GLEffectGlitterWhiteFilter.cpp
+        filter/effect/GLEffectIllusionFilter.cpp
+        filter/effect/GLEffectScaleFilter.cpp
+        filter/effect/GLEffectShakeFilter.cpp
+        filter/effect/GLEffectSoulStuffFilter.cpp
+        # 分屏特效
         filter/effect/GLFrameBlackWhiteThreeFilter.cpp
         filter/effect/GLFrameBlurFilter.cpp
         filter/effect/GLFrameBlurMixFilter.cpp

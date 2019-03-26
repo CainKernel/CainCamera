@@ -24,6 +24,8 @@ public:
 
     void terminate(bool releaseContext);
 
+    void setTimeStamp(double timeStamp) override;
+
     void onInitTexture(int width, int height, TextureFormat format, BlendMode blendMode,
                        int rotate) override;
 

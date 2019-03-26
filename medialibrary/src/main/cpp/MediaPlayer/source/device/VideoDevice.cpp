@@ -16,6 +16,10 @@ void VideoDevice::terminate() {
 
 }
 
+void VideoDevice::setTimeStamp(double timeStamp) {
+
+}
+
 void VideoDevice::onInitTexture(int width, int height, TextureFormat format, BlendMode blendMode,
                                 int rotate) {
 

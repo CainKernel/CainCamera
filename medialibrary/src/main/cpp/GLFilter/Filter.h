@@ -28,6 +28,12 @@
 // 美颜滤镜
 #include "filter/beauty/GLBeautyFilter.h"
 
+// 滤镜特效
+#include "filter/effect/GLEffectGlitterWhiteFilter.h"
+#include "filter/effect/GLEffectIllusionFilter.h"
+#include "filter/effect/GLEffectScaleFilter.h"
+#include "filter/effect/GLEffectShakeFilter.h"
+#include "filter/effect/GLEffectSoulStuffFilter.h"
 // 分屏特效滤镜
 #include "filter/effect/GLFrameBlackWhiteThreeFilter.h"
 #include "filter/effect/GLFrameBlurFilter.h"

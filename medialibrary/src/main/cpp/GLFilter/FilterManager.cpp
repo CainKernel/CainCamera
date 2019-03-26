@@ -48,6 +48,23 @@ GLFilter *FilterManager::getFilter(FilterInfo *filterInfo) {
 
 GLFilter *FilterManager::getFilter(const char *name) {
 
+    // 滤镜特效
+    if (!strcmp("灵魂出窍", name)) {
+        return new GLEffectSoulStuffFilter();
+    }
+    if (!strcmp("抖动", name)) {
+        return new GLEffectShakeFilter();
+    }
+    if (!strcmp("幻觉", name)) {
+        return new GLEffectIllusionFilter();
+    }
+    if (!strcmp("缩放", name)) {
+        return new GLEffectScaleFilter();
+    }
+    if (!strcmp("闪白", name)) {
+        return new GLEffectGlitterWhiteFilter();
+    }
+
     // 分屏特效
     if (!strcmp("模糊分屏", name)) {
         return new GLFrameBlurFilter();
@@ -75,12 +92,27 @@ GLFilter *FilterManager::getFilter(const char *name) {
 
 GLFilter *FilterManager::getFilter(const int id) {
     switch (id) {
+        // 滤镜特效
+        case 0x000: { // 灵魂出窍
+            return new GLEffectSoulStuffFilter();
+        }
+        case 0x001: { // 抖动
+            return new GLEffectShakeFilter();
+        }
+        case 0x002: { // 幻觉
+            return new GLEffectIllusionFilter();
+        }
+        case 0x003: { // 缩放
+            return new GLEffectScaleFilter();
+        }
+        case 0x004: { // 闪白
+            return new GLEffectGlitterWhiteFilter();
+        }
 
         // 分屏特效
         case 0x200: { // 模糊分屏特效
             return new GLFrameBlurFilter();
         }
-
         case 0x201:{ // 黑白三屏特效
             return new GLFrameBlackWhiteThreeFilter();
         }

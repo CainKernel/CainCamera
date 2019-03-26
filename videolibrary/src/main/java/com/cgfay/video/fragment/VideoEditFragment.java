@@ -414,6 +414,9 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         resetBottomView();
         if (mEffectShowing) {
             showChangeEffectLayout(false);
+            if (mCainMediaPlayer != null) {
+                mCainMediaPlayer.changeEffect(-1);
+            }
         }
     }
 

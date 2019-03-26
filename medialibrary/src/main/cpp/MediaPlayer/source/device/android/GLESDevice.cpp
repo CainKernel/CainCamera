@@ -71,6 +71,15 @@ void GLESDevice::terminate(bool releaseContext) {
         mHaveEGlContext = false;
     }
 }
+
+void GLESDevice::setTimeStamp(double timeStamp) {
+    mMutex.lock();
+    if (nodeList) {
+        nodeList->setTimeStamp(timeStamp);
+    }
+    mMutex.unlock();
+}
+
 void GLESDevice::onInitTexture(int width, int height, TextureFormat format, BlendMode blendMode,
                                int rotate) {
     mMutex.lock();

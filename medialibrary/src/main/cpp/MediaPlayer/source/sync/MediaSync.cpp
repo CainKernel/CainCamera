@@ -425,6 +425,7 @@ void MediaSync::renderVideo() {
     }
     // 请求渲染视频
     if (videoDevice != NULL) {
+        videoDevice->setTimeStamp(isnan(vp->pts) ? 0 : vp->pts);
         videoDevice->onRequestRender(vp->frame->linesize[0] < 0 ? FLIP_VERTICAL : FLIP_NONE);
     }
     mMutex.unlock();
