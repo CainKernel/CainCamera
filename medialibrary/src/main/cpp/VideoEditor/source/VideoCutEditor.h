@@ -5,7 +5,7 @@
 #ifndef VIDEOCUTEDITOR_H
 #define VIDEOCUTEDITOR_H
 
-#include <editor/Editor.h>
+#include <Editor.h>
 #include <Mutex.h>
 
 
@@ -24,14 +24,6 @@ public:
     void setSpeed(float speed);
 
     int process() override;
-
-private:
-    int initResampler(AVCodecContext *input_codec_context,
-                      AVCodecContext *output_codec_context,
-                      SwrContext **resample_context);
-
-    int initConvertedSamples(uint8_t ***converted_input_samples,
-                             AVCodecContext *output_codec_context, int frame_size);
 
 private:
     Mutex *mMutex;

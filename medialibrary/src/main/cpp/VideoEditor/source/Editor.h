@@ -5,7 +5,7 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
-#include <editor_log.h>
+#include "editor_log.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>

@@ -5,7 +5,7 @@
 #ifndef AUDIOCUTEDITOR_H
 #define AUDIOCUTEDITOR_H
 
-#include <editor/Editor.h>
+#include <Editor.h>
 
 class AudioCutEditor : public Editor {
 

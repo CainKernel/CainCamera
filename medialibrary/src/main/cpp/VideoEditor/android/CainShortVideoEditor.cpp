@@ -6,8 +6,8 @@ extern "C" {
 };
 
 #include <editor_log.h>
-#include <editor/VideoCutEditor.h>
-#include <editor/AudioCutEditor.h>
+#include <VideoCutEditor.h>
+#include <AudioCutEditor.h>
 #include "CainShortVideoEditor.h"
 
 static void processCallback(void *opaque, int type, int time) {
