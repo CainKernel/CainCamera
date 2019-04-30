@@ -73,8 +73,6 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
     // 上下文
     private Context mContext;
 
-//    // 正在拍照
-//    private volatile boolean mTakingPicture;
     // 预览参数
     private CameraParam mCameraParam;
 
@@ -172,7 +170,6 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
      * Surface销毁
      */
     void surfaceDestroyed() {
-//        mTakingPicture = false;
         mRenderManager.release();
         releaseCamera();
         if (mSurfaceTexture != null) {
@@ -193,50 +190,43 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
      * 绘制帧
      */
     void drawFrame() {
-        // 如果存在新的帧，则更新帧
-        synchronized (mSyncFrameNum) {
-            synchronized (mSyncFence) {
-                if (mSurfaceTexture != null) {
-                    while (mFrameNum != 0) {
-                        mSurfaceTexture.updateTexImage();
-                        --mFrameNum;
-                    }
-                } else {
-                    return;
+        if (mSurfaceTexture == null || mDisplaySurface == null) {
+            return;
+        }
+        // 当记录的请求帧数不为时，更新画面
+        while (mFrameNum > 0) {
+            mSurfaceTexture.updateTexImage();
+            --mFrameNum;
+
+            // 切换渲染上下文
+            mDisplaySurface.makeCurrent();
+            mSurfaceTexture.getTransformMatrix(mMatrix);
+
+            // 绘制渲染
+            mCurrentTexture = mRenderManager.drawFrame(mInputTexture, mMatrix);
+
+            // 是否绘制人脸关键点
+            mRenderManager.drawFacePoint(mCurrentTexture);
+
+            // 执行拍照
+            if (mCameraParam.isTakePicture) {
+                synchronized (mSyncFence) {
+                    ByteBuffer buffer = mDisplaySurface.getCurrentFrame();
+                    mCameraParam.captureCallback.onCapture(buffer,
+                            mDisplaySurface.getWidth(), mDisplaySurface.getHeight());
+                    mCameraParam.isTakePicture = false;
                 }
             }
-        }
 
-        // 切换渲染上下文
-        mDisplaySurface.makeCurrent();
-        mSurfaceTexture.getTransformMatrix(mMatrix);
+            // 显示到屏幕
+            mDisplaySurface.swapBuffers();
 
-        // 绘制渲染
-        mCurrentTexture = mRenderManager.drawFrame(mInputTexture, mMatrix);
-
-        // 是否绘制人脸关键点
-        mRenderManager.drawFacePoint(mCurrentTexture);
-
-        // 执行拍照
-        if (mCameraParam.isTakePicture) {
-            synchronized (mSyncFence) {
-//                mTakingPicture = true;
-//                mRenderHandler.sendEmptyMessage(RenderHandler.MSG_TAKE_PICTURE);
-                ByteBuffer buffer = mDisplaySurface.getCurrentFrame();
-                mCameraParam.captureCallback.onCapture(buffer,
-                        mDisplaySurface.getWidth(), mDisplaySurface.getHeight());
-                mCameraParam.isTakePicture = false;
+            // 是否处于录制状态
+            if (isRecording && !isRecordingPause) {
+                HardcodeEncoder.getInstance().frameAvailable();
+                HardcodeEncoder.getInstance()
+                        .drawRecorderFrame(mCurrentTexture, mSurfaceTexture.getTimestamp());
             }
-        }
-
-        // 显示到屏幕
-        mDisplaySurface.swapBuffers();
-
-        // 是否处于录制状态
-        if (isRecording && !isRecordingPause) {
-            HardcodeEncoder.getInstance().frameAvailable();
-            HardcodeEncoder.getInstance()
-                    .drawRecorderFrame(mCurrentTexture, mSurfaceTexture.getTimestamp());
         }
     }
 
@@ -248,7 +238,6 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
             ByteBuffer buffer = mDisplaySurface.getCurrentFrame();
             mCameraParam.captureCallback.onCapture(buffer,
                     mDisplaySurface.getWidth(), mDisplaySurface.getHeight());
-//            mTakingPicture = false;
             mCameraParam.isTakePicture = false;
         }
     }

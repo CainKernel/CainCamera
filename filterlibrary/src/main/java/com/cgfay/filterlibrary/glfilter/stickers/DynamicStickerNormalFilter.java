@@ -146,6 +146,7 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
                     }
                 }
             }
+            GLES30.glFlush();
         }
         return mFrameBufferTextures[0];
     }
