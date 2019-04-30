@@ -3,7 +3,8 @@
     package="com.cgfay.imagelibrary">
 
     <application>
-        <activity android:name=".activity.ImageEditActivity"/>
+        <activity android:name=".activity.ImagePreviewActivity"></activity>
+        <activity android:name=".activity.ImageEditActivity" />
     </application>
 
 </manifest>

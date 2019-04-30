@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.cgfay.filterlibrary.glfilter.base.GLImageFilter;
 import com.cgfay.filterlibrary.glfilter.base.GLImageInputFilter;
@@ -59,6 +60,10 @@ public class GLImageSurfaceView extends GLSurfaceView implements GLSurfaceView.R
     // UI线程Handler，主要用于更新UI等
     protected Handler mMainHandler;
 
+    boolean takePicture;
+
+    CaptureCallback mCaptureCallback;
+
     public GLImageSurfaceView(Context context) {
         this(context, null);
     }
@@ -71,6 +76,14 @@ public class GLImageSurfaceView extends GLSurfaceView implements GLSurfaceView.R
         mMainHandler = new Handler(Looper.getMainLooper());
         mVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
         mTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        if (mCaptureCallback != null) {
+            mCaptureCallback = null;
+        }
+        super.finalize();
     }
 
     @Override
@@ -171,6 +184,20 @@ public class GLImageSurfaceView extends GLSurfaceView implements GLSurfaceView.R
             currentTexture = mColorFilter.drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
         }
         mDisplayFilter.drawFrame(currentTexture, mVertexBuffer, mTextureBuffer);
+        if (takePicture) {
+            int width = getWidth();
+            int height = getHeight();
+            ByteBuffer buf = ByteBuffer.allocateDirect(width * height * 4);
+            buf.order(ByteOrder.LITTLE_ENDIAN);
+            GLES30.glReadPixels(0, 0, width, height,
+                    GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buf);
+            OpenGLUtils.checkGlError("glReadPixels");
+            buf.rewind();
+            takePicture = false;
+            if (mCaptureCallback != null) {
+                mCaptureCallback.onCapture(buf, width, height);
+            }
+        }
     }
 
     /**
@@ -194,25 +221,23 @@ public class GLImageSurfaceView extends GLSurfaceView implements GLSurfaceView.R
     }
 
     /**
+     * 截屏回调
+     * @param captureCallback
+     */
+    public void setCaptureCallback(CaptureCallback captureCallback) {
+        this.mCaptureCallback = captureCallback;
+    }
+
+    /**
      * 拍照
      */
-    public void getCaptureFrame(final CaptureCallback captureCallback) {
-        queueEvent(new Runnable() {
-            @Override
-            public void run() {
-                int width = getWidth();
-                int height = getHeight();
-                ByteBuffer buf = ByteBuffer.allocateDirect(width * height * 4);
-                buf.order(ByteOrder.LITTLE_ENDIAN);
-                GLES30.glReadPixels(0, 0, width, height,
-                        GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, buf);
-                OpenGLUtils.checkGlError("glReadPixels");
-                buf.rewind();
-                if (captureCallback != null) {
-                    captureCallback.onCapture(buf, width, height);
-                }
-            }
-        });
+    public synchronized void getCaptureFrame() {
+        if (takePicture) {
+            Toast.makeText(getContext(), "正在保存图片", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        takePicture = true;
+        requestRender();
     }
 
     /**

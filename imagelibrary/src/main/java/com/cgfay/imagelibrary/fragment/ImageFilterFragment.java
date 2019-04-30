@@ -2,6 +2,7 @@ package com.cgfay.imagelibrary.fragment;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import com.cgfay.filterlibrary.glfilter.resource.FilterHelper;
 import com.cgfay.filterlibrary.glfilter.resource.bean.ResourceData;
 import com.cgfay.filterlibrary.widget.GLImageSurfaceView;
 import com.cgfay.imagelibrary.R;
+import com.cgfay.imagelibrary.activity.ImagePreviewActivity;
 import com.cgfay.imagelibrary.adapter.ImageFilterAdapter;
 import com.cgfay.utilslibrary.utils.BitmapUtils;
 
@@ -91,6 +93,7 @@ public class ImageFilterFragment extends Fragment implements View.OnClickListene
     private void initView(View view) {
         // 图片内容布局
         mCainImageView = (GLImageSurfaceView) view.findViewById(R.id.glImageView);
+        mCainImageView.setCaptureCallback(mCaptureCallback);
         if (mBitmap != null) {
             mCainImageView.setBitmap(mBitmap);
         }
@@ -154,7 +157,7 @@ public class ImageFilterFragment extends Fragment implements View.OnClickListene
 
         } else if (id == R.id.btn_save) {
             if (mCainImageView != null) {
-                mCainImageView.getCaptureFrame(mCaptureCallback);
+                mCainImageView.getCaptureFrame();
             }
         }
     }
@@ -231,6 +234,9 @@ public class ImageFilterFragment extends Fragment implements View.OnClickListene
                     String filePath = getDCIMImagePath(mActivity);
                     BitmapUtils.saveBitmap(filePath, buffer, width, height);
                     Log.d("hahaha", "run: " + filePath);
+                    Intent intent = new Intent(mActivity, ImagePreviewActivity.class);
+                    intent.putExtra(ImagePreviewActivity.PATH, filePath);
+                    startActivity(intent);
                 }
             });
         }
