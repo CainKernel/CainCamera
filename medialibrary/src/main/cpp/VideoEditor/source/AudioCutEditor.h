@@ -10,7 +10,7 @@
 class AudioCutEditor : public Editor {
 
 public:
-    AudioCutEditor(const char *srcUrl, const char *dstUrl, MessageHandle *messageHandle);
+    AudioCutEditor(const char *srcUrl, const char *dstUrl);
 
     virtual ~AudioCutEditor();
 

@@ -1,4 +1,4 @@
-package com.cgfay.caincamera;
+package com.cgfay.caincamera.activity;
 
 import android.Manifest;
 import android.content.Intent;
@@ -8,6 +8,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import com.cgfay.caincamera.R;
 import com.cgfay.cameralibrary.engine.PreviewEngine;
 import com.cgfay.cameralibrary.engine.model.AspectRatio;
 import com.cgfay.cameralibrary.engine.model.GalleryType;
@@ -64,6 +65,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_camera).setOnClickListener(this);
         findViewById(R.id.btn_edit_video).setOnClickListener(this);
         findViewById(R.id.btn_edit_picture).setOnClickListener(this);
+        findViewById(R.id.btn_edit_music_merge).setOnClickListener(this);
+        findViewById(R.id.btn_edit_gif_make).setOnClickListener(this);
     }
 
     @Override
@@ -91,6 +94,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_edit_picture: {
                 scanMedia(false, true, false);
+                break;
+            }
+
+            case R.id.btn_edit_music_merge: {
+                musicMerge();
+                break;
+            }
+
+            case R.id.btn_edit_gif_make: {
+                videoConvertGif();
                 break;
             }
         }
@@ -179,6 +192,66 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         } else {
                             Intent intent = new Intent(MainActivity.this, ImageEditActivity.class);
                             intent.putExtra(ImageEditActivity.PATH, pathList.get(0));
+                            startActivity(intent);
+                        }
+                    }
+                })
+                .scanMedia();
+    }
+
+    private void musicMerge() {
+        MediaScanEngine.from(this)
+                .setMimeTypes(MimeType.ofAll())
+                .ImageLoader(new GlideMediaLoader())
+                .spanCount(4)
+                .showCapture(true)
+                .showImage(false)
+                .showVideo(true)
+                .enableSelectGif(false)
+                .setCaptureListener(new OnCaptureListener() {
+                    @Override
+                    public void onCapture() {
+                        previewCamera();
+                    }
+                })
+                .setMediaSelectedListener(new OnMediaSelectedListener() {
+                    @Override
+                    public void onSelected(List<Uri> uriList, List<String> pathList, boolean isVideo) {
+                        if (isVideo) {
+                            Intent intent = new Intent(MainActivity.this, MusicMergeActivity.class);
+                            intent.putExtra(MusicMergeActivity.PATH, pathList.get(0));
+                            startActivity(intent);
+                        }
+                    }
+                })
+                .scanMedia();
+    }
+
+    /**
+     * 视频转GIF
+     * 备注：目前so没有把gif的encoder 和 muxer编译进去，这里没做完整的测试
+     */
+    private void videoConvertGif() {
+        MediaScanEngine.from(this)
+                .setMimeTypes(MimeType.ofAll())
+                .ImageLoader(new GlideMediaLoader())
+                .spanCount(4)
+                .showCapture(true)
+                .showImage(false)
+                .showVideo(true)
+                .enableSelectGif(false)
+                .setCaptureListener(new OnCaptureListener() {
+                    @Override
+                    public void onCapture() {
+                        previewCamera();
+                    }
+                })
+                .setMediaSelectedListener(new OnMediaSelectedListener() {
+                    @Override
+                    public void onSelected(List<Uri> uriList, List<String> pathList, boolean isVideo) {
+                        if (isVideo) {
+                            Intent intent = new Intent(MainActivity.this, VideoGifMakeActivity.class);
+                            intent.putExtra(VideoGifMakeActivity.PATH, pathList.get(0));
                             startActivity(intent);
                         }
                     }

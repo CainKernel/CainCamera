@@ -186,6 +186,29 @@ CainShortVideoEditor_audioCut(JNIEnv *env, jobject thiz, jstring srcPath_, jstri
     return ret;
 }
 
+static int
+CainShortVideoEditor_videoConvertGif(JNIEnv *env, jobject thiz, jstring srcPath_, jstring videoDstPath_,
+                              jfloat start, jfloat duration) {
+    CainShortVideoEditor *editor = getVideoEditor(env, thiz);
+    if (editor == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException");
+        return -1;
+    }
+    const char *srcPath = env->GetStringUTFChars(srcPath_, 0);
+    const char *videoDstPath = env->GetStringUTFChars(videoDstPath_, 0);
+    if (srcPath == nullptr || videoDstPath == nullptr) {
+        jniThrowException(env, "java/lang/NullPointerException");
+        return -1;
+    }
+
+    int ret = editor->videoConvertGif(srcPath, videoDstPath, start, duration);
+
+    env->ReleaseStringUTFChars(srcPath_, srcPath);
+    env->ReleaseStringUTFChars(videoDstPath_, videoDstPath);
+
+    return ret;
+}
+
 static void
 CainShortVideoEditor_init(JNIEnv *env) {
     jclass clazz = env->FindClass(EDITOR_CLASS_NAME);
@@ -249,6 +272,7 @@ static JNINativeMethod nativeMethods[] = {
         {"execute", "([Ljava/lang/String;)I", (void *)CainShortVideoEditor_execute},
         {"_videoCut", "(Ljava/lang/String;Ljava/lang/String;FFF)I", (void *)CainShortVideoEditor_videoCut},
         {"_audioCut", "(Ljava/lang/String;Ljava/lang/String;FF)I", (void *)CainShortVideoEditor_audioCut},
+        {"_videoConvertGif", "(Ljava/lang/String;Ljava/lang/String;FF)I", (void *)CainShortVideoEditor_videoConvertGif},
         {"_release", "()V", (void *)CainShortVideoEditor_release},
         {"native_setup", "(Ljava/lang/Object;)V", (void *)CainShortVideoEditor_setup},
         {"native_init", "()V", (void *)CainShortVideoEditor_init},

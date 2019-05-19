@@ -8,6 +8,7 @@ extern "C" {
 #include <editor_log.h>
 #include <VideoCutEditor.h>
 #include <AudioCutEditor.h>
+#include <GifMakeEditor.h>
 #include "CainShortVideoEditor.h"
 
 static void processCallback(void *opaque, int type, int time) {
@@ -99,11 +100,7 @@ static void handleMessage(void *opaque, int what, int arg1, int arg2, void *obj,
 int CainShortVideoEditor::videoCut(const char *srcPath, const char *dstPath, long start, long duration,float speed) {
     Mutex::Autolock lock(mMutex);
     LOGD("video cut start");
-    MessageHandle messageHandle;
-    memset(&messageHandle, 0, sizeof(MessageHandle));
-    messageHandle.opaque = this;
-    messageHandle.callback = handleMessage;
-    VideoCutEditor editor = VideoCutEditor(srcPath, dstPath, &messageHandle);
+    VideoCutEditor editor = VideoCutEditor(srcPath, dstPath);
     editor.setDuration(start, duration);
     editor.setSpeed(speed);
     return editor.process();
@@ -113,11 +110,15 @@ int CainShortVideoEditor::audioCut(const char *srcPath, const char *dstPath, lon
                                    long duration) {
     Mutex::Autolock lock(mMutex);
     LOGD("video cut start");
-    MessageHandle messageHandle;
-    memset(&messageHandle, 0, sizeof(MessageHandle));
-    messageHandle.opaque = this;
-    messageHandle.callback = handleMessage;
-    AudioCutEditor editor = AudioCutEditor(srcPath, dstPath, &messageHandle);
+    AudioCutEditor editor = AudioCutEditor(srcPath, dstPath);
+    editor.setDuration(start, duration);
+    return editor.process();
+}
+
+int CainShortVideoEditor::videoConvertGif(const char *srcPath, const char *dstPath, long start,
+                                          long duration) {
+    Mutex::Autolock lock(mMutex);
+    GifMakeEditor editor = GifMakeEditor(srcPath, dstPath);
     editor.setDuration(start, duration);
     return editor.process();
 }

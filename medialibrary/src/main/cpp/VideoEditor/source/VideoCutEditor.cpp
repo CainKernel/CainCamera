@@ -4,8 +4,8 @@
 
 #include "VideoCutEditor.h"
 
-VideoCutEditor::VideoCutEditor(const char *srcUrl, const char *videoUrl, MessageHandle *messageHandle)
-                : Editor(messageHandle), srcUrl(srcUrl), dstUrl(videoUrl),
+VideoCutEditor::VideoCutEditor(const char *srcUrl, const char *videoUrl)
+                : Editor(), srcUrl(srcUrl), dstUrl(videoUrl),
                 start(0), duration(0), speed(1.0) {
     mMutex = new Mutex();
 }
@@ -35,6 +35,8 @@ int VideoCutEditor::process() {
     int *stream_mapping = NULL;
     int stream_mapping_size = 0;
     int seekFlag = 0;
+    int audio_index = -1;
+    int video_index = -1;
 
     av_register_all();
 
@@ -79,6 +81,13 @@ int VideoCutEditor::process() {
             continue;
         }
         stream_mapping[i] = stream_index++;
+
+        // 查找音频和视频媒体流索引
+        if (in_codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
+            audio_index = i;
+        } else if (in_codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+            video_index = i;
+        }
 
         if (!out_stream) {
             LOGE("Failed to create output stream");
@@ -184,7 +193,21 @@ int VideoCutEditor::process() {
                                        out_stream->time_base);
         packet.pos = -1;
 
-        //
+        // 计算裁剪进度，优先使用视频索引
+        int index = video_index >= 0 ? video_index : audio_index;
+        if (index == packet.stream_index) {
+            double timeStamp = packet.pts * av_q2d(out_stream->time_base);
+            double percent = timeStamp * 1000 / duration;
+            if (percent < 0) {
+                percent = 0;
+            } else if (percent > 1.0) {
+                percent = 1.0;
+            }
+            LOGD("process percent: %f", percent);
+            // TODO 回调到Java层处理，之前的MessageHandle有BUG
+        }
+
+        // 将数据包写入复用器
         if ((ret = av_interleaved_write_frame(ofmt_ctx, &packet)) < 0) {
             return ret;
         }

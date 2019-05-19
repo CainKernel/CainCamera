@@ -45,6 +45,9 @@ public:
     // 音频剪辑
     int audioCut(const char *srcPath, const char *dstPath, long start, long duration);
 
+    // 视频转gif
+    int videoConvertGif(const char *srcPath, const char *dstPath, long start, long duration);
+
     void postMessage(int what, int arg1 = 0, int arg2 = 0, void *obj = NULL, int len = 0);
 
 protected:

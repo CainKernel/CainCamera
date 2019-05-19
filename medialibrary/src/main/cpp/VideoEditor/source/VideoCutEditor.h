@@ -15,7 +15,7 @@
 class VideoCutEditor : public Editor {
 
 public:
-    VideoCutEditor(const char *srcUrl, const char *videoUrl, MessageHandle *messageHandle);
+    VideoCutEditor(const char *srcUrl, const char *videoUrl);
 
     virtual ~VideoCutEditor();
 

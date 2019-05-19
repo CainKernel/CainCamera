@@ -4,8 +4,8 @@
 
 #include "AudioCutEditor.h"
 
-AudioCutEditor::AudioCutEditor(const char *srcUrl, const char *dstUrl, MessageHandle *messageHandle)
-           : Editor(messageHandle), srcUrl(srcUrl), dstUrl(dstUrl) {
+AudioCutEditor::AudioCutEditor(const char *srcUrl, const char *dstUrl)
+           : Editor(), srcUrl(srcUrl), dstUrl(dstUrl) {
 
 }
 
@@ -569,6 +569,12 @@ int AudioCutEditor::encodeAudioFrame(AVFrame *frame, AVFormatContext *output_for
     }
 
     if (*data_present) {
+
+        // 计算裁剪进度
+        double timeStamp = output_packet.pts * av_q2d(output_codec_context->time_base);
+        double percent = timeStamp * 1000 / duration;
+        LOGD("processing percent: %f", percent);
+
         if ((ret = av_write_frame(output_format_context, &output_packet)) < 0) {
             LOGE("Could not write frame (error '%s')\n", av_err2str(ret));
             av_packet_unref(&output_packet);

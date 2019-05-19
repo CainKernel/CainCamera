@@ -1,9 +1,5 @@
 package com.cgfay.media;
 
-import android.media.MediaCodec;
-import android.media.MediaExtractor;
-import android.media.MediaFormat;
-import android.media.MediaMuxer;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -15,7 +11,6 @@ import com.cgfay.utilslibrary.utils.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -643,154 +638,6 @@ public class CainShortVideoEditor {
     }
 
     /**
-     * 裁剪视频的并调整速度，这里是用MediaCodec对视频转码处理的，速度非常快，但支持的格式比较少
-     * @param srcPath
-     * @param start
-     * @param duration
-     * @param speed
-     */
-    public String videoCut(String srcPath, float start, float duration, float speed)
-            throws IllegalStateException {
-
-        if (FileUtils.fileExists(srcPath)) {
-
-            String tmpVideo = videoCut(srcPath, start, duration);
-
-            if (tmpVideo == null) {
-                return null;
-            }
-            // 获取倍速调整后的音频文件，这里不是性能瓶颈
-            String audioPath = adjustAudioSpeed(tmpVideo, speed);
-            // 分离视频流文件
-            String videoTmpPath = splitVideoTrack(tmpVideo);
-            // 删除裁剪中间文件
-            FileUtils.deleteFile(tmpVideo);
-
-            if (videoTmpPath == null && audioPath == null) {
-                return null;
-            }
-
-            // 采用MediaExtractor、MediaCodec和MediaMuxer来对视频流进行倍速转码处理
-            String videoPath = null;
-            if (videoTmpPath != null) {
-                boolean hasVideo = true;
-                MediaExtractor extractor = new MediaExtractor();
-                try {
-                    extractor.setDataSource(videoTmpPath);
-                } catch (Exception e) {
-                    hasVideo = false;
-                }
-                int videoTrack = selectTrack(extractor, "video/");
-                if (videoTrack < 0) {
-                    hasVideo = false;
-                }
-                if (!hasVideo) {
-                    FileUtils.deleteFile(audioPath);
-                    FileUtils.deleteFile(videoTmpPath);
-                    return null;
-                }
-                extractor.selectTrack(videoTrack);
-                MediaFormat videoFormat = extractor.getTrackFormat(videoTrack);
-                ByteBuffer mReadBuf = ByteBuffer.allocate(MAX_BUFF_SIZE);
-                videoPath = VideoEditorUtil.createFileInBox("mp4");
-                MediaMuxer muxer = null;
-                int outVideoTrack = -1;
-                try {
-                    muxer = new MediaMuxer(videoPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-                    outVideoTrack = muxer.addTrack(videoFormat);
-                } catch (IOException e) {
-                    FileUtils.deleteFile(videoPath);
-                    return null;
-                }
-                int framSize;
-                MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
-                muxer.start();
-                long pts = 0;
-                // 读取数据处理
-                while (true) {
-
-                    if (!hasVideo) {
-                        break;
-                    }
-
-                    mReadBuf.rewind();
-                    framSize = extractor.readSampleData(mReadBuf, 0);
-                    if (framSize < 0) {
-                        hasVideo = false;
-                    } else {
-                        if (extractor.getSampleTrackIndex() == videoTrack) {
-                            info.offset = 0;
-                            info.size = framSize;
-                            // 调整pts
-                            pts = extractor.getSampleTime();
-                            info.presentationTimeUs = (long)(pts / speed);
-                            // 设置关键帧
-                            if ((extractor.getSampleFlags() & MediaCodec.BUFFER_FLAG_KEY_FRAME) != 0) {
-                                info.flags = MediaCodec.BUFFER_FLAG_KEY_FRAME;
-                            }
-                            mReadBuf.rewind();
-                            // 写入文件
-                            muxer.writeSampleData(outVideoTrack, mReadBuf, info);
-                            extractor.advance();
-                            Message msg = mEventHandler.obtainMessage(EDITOR_PROCESSING, (int)(pts / 1000000), 0, null);
-                            mEventHandler.sendMessage(msg);
-                        }
-                    }
-                }
-                extractor.release();
-                if (muxer != null) {
-                    try {
-                        muxer.stop();
-                        muxer.release();
-                    } catch (Exception e) {
-                        Log.e(TAG, "Muxer close error. No data was written");
-                    } finally {
-                        muxer = null;
-                    }
-                }
-
-                // 音视频混合
-                String dstPath = audioVideoMix(videoPath, audioPath, 0.0f, 1.0f);
-                // 删除缓存文件
-                FileUtils.deleteFile(videoTmpPath);
-                FileUtils.deleteFile(videoPath);
-                FileUtils.deleteFile(audioPath);
-                return dstPath;
-
-            } else {
-                FileUtils.deleteFile(audioPath);
-                return null;
-            }
-        } else {
-            return null;
-        }
-
-    }
-
-    private static final int MAX_BUFF_SIZE = 1048576;
-
-    /**
-     * 选择轨道
-     * @param extractor
-     * @param mimePrefix
-     * @return
-     */
-    private int selectTrack(MediaExtractor extractor, String mimePrefix) {
-        // 获取轨道总数
-        int numTracks = extractor.getTrackCount();
-        // 遍历查找包含mimePrefix的轨道
-        for(int i = 0; i < numTracks; ++i) {
-            MediaFormat format = extractor.getTrackFormat(i);
-            String mime = format.getString("mime");
-            if (mime.startsWith(mimePrefix)) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    /**
      * 带速度调整的裁剪方法
      * @param srcPath
      * @param start
@@ -817,55 +664,9 @@ public class CainShortVideoEditor {
      */
     private native int _videoCut(String srcPath, String dstPath, float start, float duration, float speed);
 
-//    /**
-//     * 音频裁剪，输出后缀跟输入后缀一致
-//     * @param srcPath
-//     * @param start     起始秒
-//     * @param duration  结束秒
-//     * @return
-//     */
-//    public String audioCut(String srcPath, float start, float duration) {
-//
-//        if (FileUtils.fileExists(srcPath)) {
-//
-//            List<String> cmdList = new ArrayList<String>();
-//
-//            String dstFile = VideoEditorUtil.createFileInBox(FileUtils.extractFileSuffix(srcPath));
-//            cmdList.add("ffmpeg");
-//
-//            cmdList.add("-i");
-//            cmdList.add(srcPath);
-//
-//            cmdList.add("-ss");
-//            cmdList.add(String.valueOf(start));
-//
-//            cmdList.add("-t");
-//            cmdList.add(String.valueOf(duration));
-//
-//            cmdList.add("-acodec");
-//            cmdList.add("copy");
-//
-//            cmdList.add("-y");
-//            cmdList.add(dstFile);
-//
-//            String[] command = new String[cmdList.size()];
-//            for (int i = 0; i < cmdList.size(); i++) {
-//                command[i] = (String) cmdList.get(i);
-//            }
-//            int ret = execute(command);
-//            if (ret == 0) {
-//                return dstFile;
-//            } else {
-//                FileUtils.deleteFile(dstFile);
-//                return null;
-//            }
-//        } else {
-//            return null;
-//        }
-//    }
-
     /**
      * 音频裁剪
+     * 音频文件结尾处是空的时候，似乎会失败，提前终止了，后续这里可以做优化
      * @param srcPath
      * @param dstPath
      * @param start
@@ -885,6 +686,28 @@ public class CainShortVideoEditor {
      * @return
      */
     private native int _audioCut(String srcPath, String dstPath, float start, float duration);
+
+    /**
+     * 视频转gif
+     * @param srcPath
+     * @param dstPath
+     * @param start
+     * @param duration
+     * @return
+     */
+    public int videoConvertGif(String srcPath, String dstPath, float start, float duration) {
+        return _videoConvertGif(srcPath, dstPath, start, duration);
+    }
+
+    /**
+     * native层的视频转gif
+     * @param srcPath
+     * @param dstPath
+     * @param start
+     * @param duration
+     * @return
+     */
+    private native int _videoConvertGif(String srcPath, String dstPath, float start, float duration);
 
     /**
      * 将图片转成视频
@@ -1298,7 +1121,7 @@ public class CainShortVideoEditor {
     private native void native_setup(Object editor_this);
     private static native void native_init();
 
-    private native final void native_finalize();
+    private native void native_finalize();
 
     @Override
     protected void finalize() throws Throwable {
@@ -1411,7 +1234,7 @@ public class CainShortVideoEditor {
             name += String.valueOf(minute);
             name += String.valueOf(second);
             name += String.valueOf(millisecond);
-            if (suffix.startsWith(".") == false) {
+            if (!suffix.startsWith(".")) {
                 name += ".";
             }
             name += suffix;
@@ -1424,7 +1247,7 @@ public class CainShortVideoEditor {
             }
 
             File file = new File(name);
-            if (file.exists() == false) {
+            if (!file.exists()) {
                 try {
                     file.createNewFile();
                 } catch (IOException e) {
