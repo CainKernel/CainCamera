@@ -156,9 +156,11 @@ int VideoCutEditor::process() {
         av_dict_copy(&(out_stream->metadata), in_stream->metadata, AV_DICT_IGNORE_SUFFIX);
 
         //  计算是否超过时长
-        if (av_q2d(in_stream->time_base) * packet.pts > (start + duration) / 1000 * AV_TIME_BASE) {
-            av_packet_unref(&packet);
-            break;
+        if (packet.stream_index == audio_index || packet.stream_index == video_index) {
+            if (av_q2d(in_stream->time_base) * packet.pts > (start + duration) / 1000) {
+                av_packet_unref(&packet);
+                break;
+            }
         }
 
         // 记录首次dts
