@@ -11,7 +11,8 @@ public class ImageEditActivity extends AppCompatActivity {
 
     private static final String FRAGMENT_IMAGE = "fragment_image";
 
-    public static final String PATH = "Path";
+    public static final String IMAGE_PATH = "image_path";
+    public static final String DELETE_INPUT_FILE = "delete_input_file";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,7 +20,7 @@ public class ImageEditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_image_edit);
         if (null == savedInstanceState) {
             ImageEditedFragment fragment = new ImageEditedFragment();
-            fragment.setImagePath(getIntent().getStringExtra(PATH));
+            fragment.setImagePath(getIntent().getStringExtra(IMAGE_PATH), getIntent().getBooleanExtra(DELETE_INPUT_FILE, false));
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.container, fragment, FRAGMENT_IMAGE)

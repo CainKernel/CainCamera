@@ -323,6 +323,7 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        mCainMediaPlayer.start();
     }
 
 

@@ -26,6 +26,7 @@ import com.cgfay.scan.loader.impl.GlideMediaLoader;
 import com.cgfay.scan.model.MimeType;
 import com.cgfay.utilslibrary.utils.PermissionUtils;
 import com.cgfay.video.activity.VideoCutActivity;
+import com.cgfay.video.activity.VideoEditActivity;
 
 import java.util.List;
 
@@ -142,11 +143,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void onMediaSelectedListener(String path, GalleryType type) {
                         if (type == GalleryType.PICTURE) {
                             Intent intent = new Intent(MainActivity.this, ImageEditActivity.class);
-                            intent.putExtra(ImageEditActivity.PATH, path);
+                            intent.putExtra(ImageEditActivity.IMAGE_PATH, path);
+                            intent.putExtra(ImageEditActivity.DELETE_INPUT_FILE, true);
                             startActivity(intent);
                         } else if (type == GalleryType.VIDEO) {
-                            Intent intent = new Intent(MainActivity.this, VideoCutActivity.class);
-                            intent.putExtra(VideoCutActivity.PATH, path);
+                            Intent intent = new Intent(MainActivity.this, VideoEditActivity.class);
+                            intent.putExtra(VideoEditActivity.VIDEO_PATH, path);
                             startActivity(intent);
                         }
                     }
@@ -191,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             startActivity(intent);
                         } else {
                             Intent intent = new Intent(MainActivity.this, ImageEditActivity.class);
-                            intent.putExtra(ImageEditActivity.PATH, pathList.get(0));
+                            intent.putExtra(ImageEditActivity.IMAGE_PATH, pathList.get(0));
                             startActivity(intent);
                         }
                     }

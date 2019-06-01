@@ -2,7 +2,10 @@ package com.cgfay.imagelibrary.fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -11,6 +14,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -27,6 +31,7 @@ import com.cgfay.utilslibrary.fragment.BackPressedDialogFragment;
 import com.cgfay.utilslibrary.fragment.PermissionConfirmDialogFragment;
 import com.cgfay.utilslibrary.fragment.PermissionErrorDialogFragment;
 import com.cgfay.utilslibrary.utils.BitmapUtils;
+import com.cgfay.utilslibrary.utils.FileUtils;
 import com.cgfay.utilslibrary.utils.PermissionUtils;
 
 import java.io.File;
@@ -96,6 +101,7 @@ public class ImageEditedFragment extends Fragment implements View.OnClickListene
     // 图片路径
     private String mImagePath;
     private Bitmap mBitmap;
+    private boolean mDeleteInputFile;
 
     @Override
     public void onAttach(Context context) {
@@ -153,6 +159,14 @@ public class ImageEditedFragment extends Fragment implements View.OnClickListene
     public void onDetach() {
         mActivity = null;
         super.onDetach();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mDeleteInputFile) {
+            FileUtils.deleteFile(mImagePath);
+        }
     }
 
     public void onBackPressed() {
@@ -316,8 +330,9 @@ public class ImageEditedFragment extends Fragment implements View.OnClickListene
      * 设置图片路径
      * @param path
      */
-    public void setImagePath(String path) {
+    public void setImagePath(String path, boolean deleteInputFile) {
         mImagePath = path;
+        mDeleteInputFile = deleteInputFile;
         mBitmap = BitmapUtils.getBitmapFromFile(new File(mImagePath), 0, 0, true);
     }
 
