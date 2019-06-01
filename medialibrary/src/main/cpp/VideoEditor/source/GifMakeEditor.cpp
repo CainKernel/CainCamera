@@ -9,7 +9,7 @@ GifMakeEditor::GifMakeEditor(const char *srcUrl, const char *dstUrl)
     abort_request = false;
     frame_count = 0;
     out_fmt = AV_PIX_FMT_RGB8;
-
+    time_base = (AVRational) {1, AV_TIME_BASE};
 }
 
 GifMakeEditor::~GifMakeEditor() {
@@ -65,12 +65,11 @@ int GifMakeEditor::openInput(const char *url) {
         LOGE("Failed to get video codec context");
         return -1;
     }
-    video_index = ret;
     return ret;
 }
 
 int GifMakeEditor::openOutput(const char *url) {
-    int ret;
+    int ret, out_video_index;
     ofmt_ctx = NULL;
     ret = initOutput(url, &ofmt_ctx);
     if (ret < 0) {
@@ -82,11 +81,11 @@ int GifMakeEditor::openOutput(const char *url) {
     codecpar->height = out_height;
     codecpar->format = out_fmt;
     ret = addVideoStream(ofmt_ctx, &enc_ctx, *codecpar);
+    avcodec_parameters_free(&codecpar);
     if (ret < 0) {
         LOGE("Failed to add video stream");
         return -1;
     }
-    avcodec_parameters_free(&codecpar);
     out_video_index = ret;
     ret = writeHeader(ofmt_ctx, url);
     if (ret < 0) {
@@ -94,11 +93,12 @@ int GifMakeEditor::openOutput(const char *url) {
         return -1;
     }
     frame_duration = AV_TIME_BASE / out_frame_rate;
-    return ret;
+    return out_video_index;
 }
 
 int GifMakeEditor::process() {
-    int ret, seekFlag;
+    int ret, seekFlag, video_index;
+    int out_video_index;
     AVPacket *pkt;
     AVFrame *oframe;
     av_register_all();
@@ -107,6 +107,8 @@ int GifMakeEditor::process() {
         LOGE("Failed to open input file");
         return ret;
     }
+    video_index = ret;
+
     LOGD("output path: %s", dstUrl);
     out_width = dec_ctx->width;
     out_height = dec_ctx->height;
@@ -115,6 +117,7 @@ int GifMakeEditor::process() {
         LOGE("Failed to open output file");
         return ret;
     }
+    out_video_index = ret;
     ret = initSwsContext(dec_ctx->width, dec_ctx->height, dec_ctx->pix_fmt);
     if (ret < 0) {
         LOGE("Failed to init SwsContext");
@@ -195,6 +198,6 @@ int GifMakeEditor::process() {
 
     av_packet_free(&pkt);
     av_frame_free(&oframe);
-    writeTailer(ofmt_ctx);
+    writeTrailer(ofmt_ctx);
     return 0;
 }

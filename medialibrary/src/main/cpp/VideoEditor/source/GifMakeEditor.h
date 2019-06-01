@@ -44,6 +44,7 @@ private:
     AVPixelFormat out_fmt;
     long start;
     long duration;
+    AVRational time_base;
 };
 
 

@@ -39,9 +39,8 @@ public:
 
     }
 
-    virtual void reset() {
-
-    }
+    // 设置输出帧率
+    void setOutFrameRate(int frame_rate);
 
     // 处理方法
     virtual int process() = 0;
@@ -59,10 +58,6 @@ protected:
     AVFrame *decodePacket(AVCodecContext *codec_ctx, AVPacket *packet);
     // 编码一帧数据
     AVPacket *encodeFrame(AVCodecContext *codec_ctx, AVFrame *frame);
-    // 获取音频索引
-    int getAudioIndex(AVFormatContext *fmt_ctx);
-    // 获取视频索引
-    int getVideoIndex(AVFormatContext *fmt_ctx);
 
     // 初始化输出上下文
     int initOutput(const char *url, AVFormatContext **fmt_ctx);
@@ -75,19 +70,10 @@ protected:
     // 写入文件头部信息
     int writeHeader(AVFormatContext *fmt_ctx, const char *url);
     // 写入文件尾部信息
-    int writeTailer(AVFormatContext *fmt_ctx);
-    // 获取输出音频流索引
-    int getOutAudioIndex();
-    // 获取输出视频流索引
-    int getOutVideoIndex();
+    int writeTrailer(AVFormatContext *fmt_ctx);
 
 protected:
-    int audio_index;
-    int video_index;
-    int out_audio_index;
-    int out_video_index;
-    int out_frame_rate;
-    AVRational time_base;
+    int out_frame_rate; // 输出帧率
 };
 
 #endif //EDITOR_H

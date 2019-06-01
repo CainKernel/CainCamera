@@ -6,14 +6,16 @@
 
 
 Editor::Editor() {
-    audio_index = -1;
-    video_index = -1;
-    out_audio_index = -1;
-    out_video_index = -1;
     out_frame_rate = 25;
-    time_base = (AVRational) {1, AV_TIME_BASE};
 }
 
+/**
+ * 设置输出帧率
+ * @param frame_rate
+ */
+void Editor::setOutFrameRate(int frame_rate) {
+    out_frame_rate = frame_rate;
+}
 
 /**
  * 打开输入文件
@@ -67,13 +69,12 @@ int Editor::getDecodeContext(AVFormatContext *fmt_ctx, AVCodecContext **dec_ctx,
  * @return 返回音频流索引，失败返回小于0
  */
 int Editor::getAudioDecodeContext(AVFormatContext *fmt_ctx, AVCodecContext **dec_ctx) {
-    int ret;
+    int ret, audio_index;
     AVCodec *codec = NULL;
     // 查找音频流索引和解码器
     ret = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_AUDIO, -1, -1, &codec, 0);
     if (ret < 0) {
         LOGE("Failed to call av_find_best_stream");
-        audio_index = -1;
         return -1;
     }
     audio_index = ret;
@@ -105,13 +106,12 @@ int Editor::getAudioDecodeContext(AVFormatContext *fmt_ctx, AVCodecContext **dec
  * @return 返回视频流索引，失败返回小于0
  */
 int Editor::getVideoDecodeContext(AVFormatContext *fmt_ctx, AVCodecContext **dec_ctx) {
-    int ret;
+    int ret, video_index;
     AVCodec *codec = NULL;
     // 查找视频流索引和解码器
     ret = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &codec, NULL);
     if (ret < 0) {
         LOGE("Failed to call av_find_best_stream");
-        video_index = -1;
         return ret;
     }
     video_index = ret;
@@ -207,20 +207,6 @@ AVPacket* Editor::encodeFrame(AVCodecContext *codec_ctx, AVFrame *frame) {
     return NULL;
 }
 
-int Editor::getAudioIndex(AVFormatContext *fmt_ctx) {
-    if (audio_index == -1 && !fmt_ctx) {
-        audio_index = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
-    }
-    return audio_index;
-}
-
-int Editor::getVideoIndex(AVFormatContext *fmt_ctx) {
-    if (video_index == -1 && !fmt_ctx) {
-        video_index = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
-    }
-    return video_index;
-}
-
 /**
  * 初始化输出上下文
  * @param url
@@ -269,7 +255,7 @@ int Editor::initOutput(const char *url, AVFormatContext **fmt_ctx, const char *f
  */
 int Editor::addVideoStream(AVFormatContext *fmt_ctx, AVCodecContext **codec_ctx,
                            AVCodecParameters codecpar) {
-    int ret;
+    int ret, out_video_index;
     if (!fmt_ctx) {
         LOGE("AVFormatContext is NULL");
         return -1;
@@ -354,7 +340,7 @@ int Editor::addVideoStream(AVFormatContext *fmt_ctx, AVCodecContext **codec_ctx,
  */
 int Editor::addAudioStream(AVFormatContext *fmt_ctx, AVCodecContext **codec_ctx,
                            AVCodecParameters codecpar) {
-    int ret;
+    int ret, out_audio_index;
     if (!fmt_ctx) {
         LOGE("AVFormatContext is NULL");
         return -1;
@@ -445,27 +431,16 @@ int Editor::writeHeader(AVFormatContext *fmt_ctx, const char *url) {
     return 0;
 }
 
-int Editor::writeTailer(AVFormatContext *fmt_ctx) {
+/**
+ * 写入文件尾
+ * @param fmt_ctx
+ * @return
+ */
+int Editor::writeTrailer(AVFormatContext *fmt_ctx) {
     if (!fmt_ctx) {
         LOGE("AVFormatContext is NULL");
         return -1;
     }
     return av_write_trailer(fmt_ctx);
-}
-
-/**
- * 获取输出音频流索引
- * @return
- */
-int Editor::getOutAudioIndex() {
-    return out_audio_index;
-}
-
-/**
- * 获取输出视频流索引
- * @return
- */
-int Editor::getOutVideoIndex() {
-    return out_video_index;
 }
 
