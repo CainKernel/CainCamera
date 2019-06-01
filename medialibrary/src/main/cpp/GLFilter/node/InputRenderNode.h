@@ -35,13 +35,15 @@ private:
 
     void resetVertices();
 
-    void resetTextureVertices();
+    void resetTextureVertices(Texture *texture);
+
+    RotationMode getRotateMode(Texture *texture);
 
     void cropTexVertices(Texture *texture);
 
 private:
     GLfloat vertices[8];                    // 顶点坐标
-    GLfloat textureVetrices[8];                 // 纹理坐标
+    GLfloat textureVertices[8];                 // 纹理坐标
 };
 
 

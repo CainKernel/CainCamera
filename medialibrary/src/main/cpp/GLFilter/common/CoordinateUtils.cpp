@@ -23,11 +23,25 @@ static const float texture_vertices_none[] = {
         1.0f, 1.0f, // right, top
 };
 
+static const float texture_vertices_none_input[] = {
+        0.0f, 1.0f, // left, top
+        1.0f, 1.0f, // right, top
+        0.0f, 0.0f, // left, bottom
+        1.0f, 0.0f, // right, bottom
+};
+
 static const float texture_vertices_90[] = {
         1.0f, 0.0f, // right, bottom
         1.0f, 1.0f, // right, top
         0.0f, 0.0f, // left,  bottom
         0.0f, 1.0f, // left,  top
+};
+
+static const float texture_vertices_90_input[] = {
+        1.0f, 1.0f, // right, top
+        1.0f, 0.0f, // right, bottom
+        0.0f, 1.0f, // left,  top
+        0.0f, 0.0f, // left,  bottom
 };
 
 static const float texture_vertices_180[] = {
@@ -37,11 +51,25 @@ static const float texture_vertices_180[] = {
         0.0f, 0.0f, // left,  bottom
 };
 
+static const float texture_vertices_180_input[] = {
+        1.0f, 0.0f, // right, bottom
+        0.0f, 0.0f, // left,  bottom
+        1.0f, 1.0f, // right, top
+        0.0f, 1.0f, // left,  top
+};
+
 static const float texture_vertices_270[] = {
         0.0f, 1.0f, // left,  top
         0.0f, 0.0f, // left,  bottom
         1.0f, 1.0f, // right, top
         1.0f, 0.0f, // right, bottom
+};
+
+static const float texture_vertices_270_input[] = {
+        0.0f, 0.0f, // left,  bottom
+        0.0f, 1.0f, // left,  top
+        1.0f, 0.0f, // right, bottom
+        1.0f, 1.0f, // right, top
 };
 
 static const float texture_vertices_flip_vertical[] = {
@@ -92,4 +120,33 @@ const float *CoordinateUtils::getTextureCoordinates(const RotationMode &rotation
         }
     }
     return texture_vertices_none;
+}
+
+
+const float *CoordinateUtils::getInputTextureCoordinates(const RotationMode &rotationMode) {
+    switch (rotationMode) {
+        case ROTATE_NONE: {
+            return texture_vertices_none_input;
+        }
+        case ROTATE_90: {
+            return texture_vertices_90_input;
+        }
+
+        case ROTATE_180: {
+            return texture_vertices_180_input;
+        }
+
+        case ROTATE_270: {
+            return texture_vertices_270_input;
+        }
+
+        case ROTATE_FLIP_VERTICAL: {
+            return texture_vertices_flip_vertical;
+        }
+
+        case ROTATE_FLIP_HORIZONTAL: {
+            return texture_vertices_flip_horizontal;
+        }
+    }
+    return texture_vertices_none_input;
 }

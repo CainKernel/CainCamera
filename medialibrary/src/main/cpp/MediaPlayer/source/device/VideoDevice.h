@@ -31,7 +31,7 @@ public:
     virtual int onUpdateARGB(uint8_t *rgba, int pitch);
 
     // 请求渲染
-    virtual int onRequestRender(FlipDirection direction);
+    virtual int onRequestRender(bool flip);
 
 };
 

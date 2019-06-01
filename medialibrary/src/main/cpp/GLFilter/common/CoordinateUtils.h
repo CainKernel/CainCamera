@@ -32,6 +32,9 @@ public:
     // 获取纹理坐标
     static const float *getTextureCoordinates(const RotationMode &rotationMode);
 
+    // 获取纹理坐标
+    static const float *getInputTextureCoordinates(const RotationMode &rotationMode);
+
 private:
     CoordinateUtils() = default;
     virtual ~CoordinateUtils(){}

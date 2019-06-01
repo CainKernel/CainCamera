@@ -7,7 +7,7 @@
 
 InputRenderNode::InputRenderNode() : RenderNode(NODE_INPUT) {
     resetVertices();
-    resetTextureVertices();
+    resetTextureVertices(NULL);
 }
 
 InputRenderNode::~InputRenderNode() {
@@ -42,7 +42,7 @@ bool InputRenderNode::uploadTexture(Texture *texture) {
 bool InputRenderNode::drawFrame(Texture *texture) {
     cropTexVertices(texture);
     if (glFilter != nullptr) {
-        return ((GLInputFilter *) glFilter)->renderTexture(texture, vertices, textureVetrices);
+        return ((GLInputFilter *) glFilter)->renderTexture(texture, vertices, textureVertices);
     }
     return false;
 }
@@ -55,7 +55,7 @@ int InputRenderNode::drawFrameBuffer(Texture *texture) {
 
     frameBuffer->bindBuffer();
     cropTexVertices(texture);
-    ((GLInputFilter *) glFilter)->renderTexture(texture, vertices, textureVetrices);
+    ((GLInputFilter *) glFilter)->renderTexture(texture, vertices, textureVertices);
     frameBuffer->unbindBuffer();
 
     return frameBuffer->getTexture();
@@ -70,25 +70,32 @@ int InputRenderNode::drawFrameBuffer(GLuint texture, const float *vertices, cons
 }
 
 void InputRenderNode::resetVertices() {
-    vertices[0] = -1.0f;
-    vertices[1] = -1.0f;
-    vertices[2] =  1.0f;
-    vertices[3] = -1.0f;
-    vertices[4] = -1.0f;
-    vertices[5] =  1.0f;
-    vertices[6] =  1.0f;
-    vertices[7] =  1.0f;
+    const float *verticesCoord = CoordinateUtils::getVertexCoordinates();
+    for (int i = 0; i < 8; ++i) {
+        vertices[i] = verticesCoord[i];
+    }
 }
 
-void InputRenderNode::resetTextureVertices() {
-    textureVetrices[0] = 0.0f;
-    textureVetrices[1] = 1.0f;
-    textureVetrices[2] = 1.0f;
-    textureVetrices[3] = 1.0f;
-    textureVetrices[4] = 0.0f;
-    textureVetrices[5] = 0.0f;
-    textureVetrices[6] = 1.0f;
-    textureVetrices[7] = 0.0f;
+void InputRenderNode::resetTextureVertices(Texture *texture) {
+    const float *vertices = CoordinateUtils::getInputTextureCoordinates(getRotateMode(texture));
+    for (int i = 0; i < 8; ++i) {
+        textureVertices[i] = vertices[i];
+    }
+}
+
+RotationMode InputRenderNode::getRotateMode(Texture *texture) {
+    if (texture == nullptr) {
+        return ROTATE_NONE;
+    }
+    RotationMode mode = ROTATE_NONE;
+    if (texture->rotate == 90) {
+        mode = ROTATE_90;
+    } else if (texture->rotate == 180) {
+        mode = ROTATE_180;
+    } else if (texture->rotate == 270) {
+        mode = ROTATE_270;
+    }
+    return mode;
 }
 
 void InputRenderNode::cropTexVertices(Texture *texture) {
@@ -96,15 +103,16 @@ void InputRenderNode::cropTexVertices(Texture *texture) {
     if (texture && texture->frameWidth != texture->width) {
         GLsizei padding = texture->width - texture->frameWidth;
         GLfloat normalized = ((GLfloat)padding + 0.5f) / (GLfloat)texture->width;
-        textureVetrices[0] = 0.0f;
-        textureVetrices[1] = 1.0f;
-        textureVetrices[2] = 1.0f - normalized;
-        textureVetrices[3] = 1.0f;
-        textureVetrices[4] = 0.0f;
-        textureVetrices[5] = 0.0f;
-        textureVetrices[6] = 1.0f - normalized;
-        textureVetrices[7] = 0.0f;
+        const float *vertices = CoordinateUtils::getInputTextureCoordinates(getRotateMode(texture));
+        textureVertices[0] = vertices[0];
+        textureVertices[1] = vertices[1];
+        textureVertices[2] = vertices[2] - normalized;
+        textureVertices[3] = vertices[3];
+        textureVertices[4] = vertices[4];
+        textureVertices[5] = vertices[5];
+        textureVertices[6] = vertices[6] - normalized;
+        textureVertices[7] = vertices[7];
     } else {
-        resetTextureVertices();
+        resetTextureVertices(texture);
     }
 }

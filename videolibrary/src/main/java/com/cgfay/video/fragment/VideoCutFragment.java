@@ -269,8 +269,11 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
         mCainMediaPlayer.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener() {
             @Override
             public void onVideoSizeChanged(IMediaPlayer mediaPlayer, int width, int height) {
-                mVideoPlayerView.setVideoSize(width, height);
-                mVideoPlayerView.setRotation(mediaPlayer.getRotate());
+                if (mediaPlayer.getRotate() % 180 != 0) {
+                    mVideoPlayerView.setVideoSize(height, width);
+                } else {
+                    mVideoPlayerView.setVideoSize(width, height);
+                }
             }
         });
         mCainMediaPlayer.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {

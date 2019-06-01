@@ -701,8 +701,11 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         mCainMediaPlayer.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener() {
             @Override
             public void onVideoSizeChanged(IMediaPlayer mediaPlayer, int width, int height) {
-                mVideoPlayerView.setVideoSize(width, height);
-                mVideoPlayerView.setRotation(mediaPlayer.getRotate());
+                if (mediaPlayer.getRotate() % 180 != 0) {
+                    mVideoPlayerView.setVideoSize(height, width);
+                } else {
+                    mVideoPlayerView.setVideoSize(width, height);
+                }
             }
         });
         mCainMediaPlayer.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {
@@ -720,6 +723,17 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             }
         });
 
+        mCainMediaPlayer.setOnCurrentPositionListener(new CainMediaPlayer.OnCurrentPositionListener() {
+            @Override
+            public void onCurrentPosition(long current, long duration) {
+                if (mTvVideoCurrent != null) {
+                    mTvVideoCurrent.setText(StringUtils.generateStandardTime((int)current));
+                }
+                if (mSbEffectSelected != null) {
+                    mSbEffectSelected.setProgress((float)current);
+                }
+            }
+        });
         try {
             mCainMediaPlayer.setDataSource(mVideoPath);
             if (mSurface == null) {

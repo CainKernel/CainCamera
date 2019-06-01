@@ -12,8 +12,7 @@ if(CMAKE_COMPILER_IS_CLANG)
 endif(CMAKE_COMPILER_IS_CLANG)
 
 # 添加include目录路径
-include_directories( common
-                     include )
+include_directories( include )
 
 # 添加ffmpeg库
 add_library( ffmpeg SHARED IMPORTED )
