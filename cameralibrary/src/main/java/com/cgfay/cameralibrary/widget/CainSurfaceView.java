@@ -4,18 +4,24 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Outline;
+import android.graphics.Rect;
+import android.os.Build;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
 import android.widget.ImageView;
 
 import com.cgfay.cameralibrary.R;
 import com.cgfay.cameralibrary.engine.render.PreviewRenderer;
 import com.cgfay.filterlibrary.glfilter.stickers.StaticStickerNormalFilter;
+import com.cgfay.utilslibrary.utils.DensityUtils;
 
 
 /**
@@ -141,6 +147,12 @@ public class CainSurfaceView extends SurfaceView {
             }
         });
         mGestureDetector.setOnDoubleTapListener(mDoubleTapListener);
+
+        // 添加圆角显示
+        if (Build.VERSION.SDK_INT >= 21) {
+            setOutlineProvider(new RoundOutlineProvider(DensityUtils.dp2px(getContext(), 7.5f)));
+            setClipToOutline(true);
+        }
     }
 
     @Override
@@ -169,13 +181,8 @@ public class CainSurfaceView extends SurfaceView {
                 public void onAnimationUpdate(ValueAnimator animation) {
                     if(mFocusImageView != null) {
                         float value = (float) animation.getAnimatedValue();
-                        if (value <= 0.5f) {
-                            mFocusImageView.setScaleX(1 + value);
-                            mFocusImageView.setScaleY(1 + value);
-                        } else {
-                            mFocusImageView.setScaleX(2 - value);
-                            mFocusImageView.setScaleY(2 - value);
-                        }
+                        mFocusImageView.setScaleX(2 - value);
+                        mFocusImageView.setScaleY(2 - value);
                     }
                 }
             });
@@ -229,6 +236,27 @@ public class CainSurfaceView extends SurfaceView {
         }
     };
 
+
+    /**
+     * 添加视频圆角功能
+     */
+    private static class RoundOutlineProvider extends ViewOutlineProvider {
+        private float mRadius;
+        RoundOutlineProvider(float radius) {
+            mRadius = radius;
+        }
+
+        @Override
+        public void getOutline(View view, Outline outline) {
+            Rect rect = new Rect();
+            view.getGlobalVisibleRect(rect);
+            int leftMargin = 0;
+            int topMargin = 0;
+            Rect selfRect = new Rect(leftMargin, topMargin,
+                    rect.right - rect.left - leftMargin, rect.bottom - rect.top - topMargin);
+            outline.setRoundRect(selfRect, mRadius);
+        }
+    }
 
     /**
      * 添加滑动回调

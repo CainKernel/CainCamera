@@ -24,9 +24,6 @@ public class CameraActivity extends AppCompatActivity implements OnPageOperation
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_camera);
         if (null == savedInstanceState) {
             CameraPreviewFragment fragment = new CameraPreviewFragment();
@@ -71,6 +68,7 @@ public class CameraActivity extends AppCompatActivity implements OnPageOperation
             if (fragment != null) {
                 if (!fragment.onBackPressed()) {
                     finish();
+                    overridePendingTransition(0, R.anim.anim_slide_down);
                 }
             }
         } else {
@@ -104,4 +102,11 @@ public class CameraActivity extends AppCompatActivity implements OnPageOperation
         Intent intent = new Intent(CameraActivity.this, CameraSettingActivity.class);
         startActivity(intent);
     }
+
+    @Override
+    public void onOpenMusicSelectPage() {
+
+    }
+
+
 }

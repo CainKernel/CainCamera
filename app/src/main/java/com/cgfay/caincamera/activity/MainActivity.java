@@ -132,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setCameraRatio(AspectRatio.Ratio_16_9)
                 .showFacePoints(false)
                 .showFps(true)
+                .backCamera(true)
                 .setGalleryListener(new OnGallerySelectedListener() {
                     @Override
                     public void onGalleryClickListener(GalleryType type) {

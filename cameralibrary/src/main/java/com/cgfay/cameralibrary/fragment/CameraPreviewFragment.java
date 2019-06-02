@@ -22,7 +22,10 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.cgfay.cameralibrary.R;
@@ -43,6 +46,7 @@ import com.cgfay.cameralibrary.widget.CainSurfaceView;
 import com.cgfay.cameralibrary.widget.HorizontalIndicatorView;
 import com.cgfay.cameralibrary.widget.PopupSettingView;
 import com.cgfay.cameralibrary.widget.RatioImageView;
+import com.cgfay.cameralibrary.widget.RecordSpeedLevelBar;
 import com.cgfay.cameralibrary.widget.ShutterButton;
 import com.cgfay.facedetectlibrary.engine.FaceTracker;
 import com.cgfay.facedetectlibrary.listener.FaceTrackerCallback;
@@ -102,26 +106,39 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     // 预览部分
     private AspectFrameLayout mAspectLayout;
     private CainSurfaceView mCameraSurfaceView;
+    // 顶部布局
+    private RelativeLayout mPreviewTop;
     // fps显示
     private TextView mFpsView;
     // 对比按钮
     private Button mBtnCompare;
+    // 右上角列表
+    private LinearLayout mPreviewRightTop;
     // 顶部Button
-    private Button mBtnSetting;
-    private Button mBtnViewPhoto;
-    private Button mBtnSwitch;
+    private LinearLayout mBtnSetting;
+    // 翻转按钮
+    private LinearLayout mBtnSwitch;
+    // 速度按钮
+    private LinearLayout mBtnSpeed;
+    // 滤镜按钮
+    private LinearLayout mBtnEffect;
     // 预览尺寸切换
     private RatioImageView mRatioView;
     // 设置的PopupView
     private PopupSettingView mSettingView;
+
+    private LinearLayout mLayoutBottom;
+    // 速度选择条
+    private RecordSpeedLevelBar mSpeedBar;
+    private boolean mSpeedBarShowing;
     // 倒计时
     private TextView mCountDownView;
     // 贴纸按钮
     private Button mBtnStickers;
     // 快门按钮
     private ShutterButton mBtnShutter;
-    // 滤镜按钮
-    private Button mBtnEffect;
+    // 媒体库按钮
+    private Button mBtnViewPhoto;
     // 视频删除按钮
     private Button mBtnRecordDelete;
     // 视频预览按钮
@@ -198,7 +215,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
      */
     private void initView(View view) {
         mAspectLayout = (AspectFrameLayout) view.findViewById(R.id.layout_aspect);
-        mAspectLayout.setAspectRatio(mCameraParam.currentRatio);
+//        mAspectLayout.setAspectRatio(mCameraParam.currentRatio);
         mCameraSurfaceView = new CainSurfaceView(mActivity);
         mCameraSurfaceView.addOnTouchScroller(mTouchScroller);
         mCameraSurfaceView.addMultiClickListener(mMultiClickListener);
@@ -206,6 +223,10 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         mAspectLayout.requestLayout();
         // 绑定需要渲染的SurfaceView
         PreviewRenderer.getInstance().setSurfaceView(mCameraSurfaceView);
+
+        mPreviewTop = (RelativeLayout) view.findViewById(R.id.layout_preview_top);
+        view.findViewById(R.id.btn_close).setOnClickListener(this);
+        view.findViewById(R.id.btn_select_music).setOnClickListener(this);
 
         mFpsView = (TextView) view.findViewById(R.id.tv_fps);
         mBtnCompare = (Button) view.findViewById(R.id.btn_compare);
@@ -227,21 +248,29 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                 return true;
             }
         });
-        mBtnSetting = (Button)view.findViewById(R.id.btn_setting);
+
+        mPreviewRightTop = (LinearLayout) view.findViewById(R.id.layout_preview_right_top);
+        mBtnSetting = (LinearLayout)view.findViewById(R.id.btn_setting);
         mBtnSetting.setOnClickListener(this);
-        mBtnViewPhoto = (Button) view.findViewById(R.id.btn_view_photo);
-        mBtnViewPhoto.setOnClickListener(this);
-        mBtnSwitch = (Button) view.findViewById(R.id.btn_switch);
+        mBtnSwitch = (LinearLayout) view.findViewById(R.id.btn_switch);
         mBtnSwitch.setOnClickListener(this);
+        mBtnSpeed = (LinearLayout) view.findViewById(R.id.btn_speed);
+        mBtnSpeed.setOnClickListener(this);
+        mBtnEffect = (LinearLayout) view.findViewById(R.id.btn_effects);
+        mBtnEffect.setOnClickListener(this);
         mRatioView = (RatioImageView) view.findViewById(R.id.iv_ratio);
         mRatioView.setRatioType(mCameraParam.aspectRatio);
         mRatioView.addRatioChangedListener(mRatioChangedListener);
 
+        mLayoutBottom = (LinearLayout) view.findViewById(R.id.layout_bottom);
+        mSpeedBar = (RecordSpeedLevelBar) view.findViewById(R.id.record_speed_bar);
+        mSpeedBar.setOnSpeedChangedListener(mSpeedChangedListener);
+
         mCountDownView = (TextView) view.findViewById(R.id.tv_countdown);
         mBtnStickers = (Button) view.findViewById(R.id.btn_stickers);
         mBtnStickers.setOnClickListener(this);
-        mBtnEffect = (Button) view.findViewById(R.id.btn_effects);
-        mBtnEffect.setOnClickListener(this);
+        mBtnViewPhoto = (Button) view.findViewById(R.id.btn_view_photo);
+        mBtnViewPhoto.setOnClickListener(this);
         mBottomIndicator = (HorizontalIndicatorView) view.findViewById(R.id.bottom_indicator);
         String[] galleryIndicator = getResources().getStringArray(R.array.gallery_indicator);
         mIndicatorText.addAll(Arrays.asList(galleryIndicator));
@@ -266,7 +295,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private void adjustBottomView() {
         boolean result = mCameraParam.currentRatio < CameraParam.Ratio_4_3;
         mBtnStickers.setBackgroundResource(result ? R.drawable.ic_camera_sticker_light : R.drawable.ic_camera_sticker_dark);
-        mBtnEffect.setBackgroundResource(result ? R.drawable.ic_camera_effect_light : R.drawable.ic_camera_effect_dark);
         mBtnRecordDelete.setBackgroundResource(result ? R.drawable.ic_camera_record_delete_light : R.drawable.ic_camera_record_delete_dark);
         mBtnRecordPreview.setBackgroundResource(result ? R.drawable.ic_camera_record_done_light : R.drawable.ic_camera_record_done_dark);
         mBtnShutter.setOuterBackgroundColor(result ? R.color.shutter_gray_light : R.color.shutter_gray_dark);
@@ -326,32 +354,39 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
      * @return
      */
     public boolean onBackPressed() {
-        if (isShowingFilters) {
-            hideEffectView();
-            return true;
-        } else if (isShowingStickers) {
-            hideStickerView();
-            return true;
-        }
+//        if (isShowingFilters) {
+//            hideEffectView();
+//            return true;
+//        } else if (isShowingStickers) {
+//            hideStickerView();
+//            return true;
+//        }
         return false;
     }
 
     @Override
     public void onClick(View v) {
-        if (mSettingView != null) {
-            mSettingView.dismiss();
+        if (mSettingView != null && mSettingView.isShowing()) {
+            setShowingSpeedBar(mSpeedBarShowing);
         }
         int i = v.getId();
-        if (i == R.id.btn_view_photo) {
-            openGallery();
+        if (i == R.id.btn_close) {
+            mActivity.finish();
+            mActivity.overridePendingTransition(0, R.anim.anim_slide_down);
+        } else if (i == R.id.btn_select_music) {
+            selectMusic();
         } else if (i == R.id.btn_switch) {
             switchCamera();
+        } else if (i == R.id.btn_speed) {
+            setShowingSpeedBar(mSpeedBar.getVisibility() != View.VISIBLE);
+        } else if (i == R.id.btn_effects) {
+            showEffectView();
         } else if (i == R.id.btn_setting) {
             showSettingPopView();
         } else if (i == R.id.btn_stickers) {
             showStickers();
-        } else if (i == R.id.btn_effects) {
-            showEffectView();
+        } else if (i == R.id.btn_view_photo) {
+            openGallery();
         } else if (i == R.id.btn_shutter) {
             takePicture();
         } else if (i == R.id.btn_record_delete) {
@@ -382,12 +417,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                 requestRecordSoundPermission();
             }
         }
-        // 显示时间
-        if (currentIndex == 2) {
-            mCountDownView.setVisibility(View.VISIBLE);
-        } else {
-            mCountDownView.setVisibility(View.GONE);
-        }
     }
 
     /**
@@ -411,6 +440,30 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     }
 
     /**
+     * 选择音乐
+     */
+    private void selectMusic() {
+
+    }
+
+    /**
+     * 是否显示速度条
+     * @param show
+     */
+    private void setShowingSpeedBar(boolean show) {
+        mSpeedBarShowing = show;
+        mSpeedBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        ((TextView)mContentView.findViewById(R.id.tv_speed_status)).setText(show ? "速度开" : "速度关");
+        if (show) {
+            if (mSettingView != null) {
+                mSettingView.dismiss();
+            }
+            hideStickerView();
+            hideEffectView();
+        }
+    }
+
+    /**
      * 显示下拉设置页面
      */
     private void showSettingPopView() {
@@ -420,6 +473,9 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         mSettingView.addStateChangedListener(mStateChangedListener);
         mSettingView.showAsDropDown(mBtnSetting, Gravity.BOTTOM, 0, 0);
         mSettingView.setEnableChangeFlash(mCameraParam.supportFlash);
+
+        mSpeedBar.setVisibility(View.GONE);
+        ((TextView)mContentView.findViewById(R.id.tv_speed_status)).setText("速度关");
     }
 
     /**
@@ -436,6 +492,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         }
         ft.commit();
         hideBottomLayout();
+
     }
 
     /**
@@ -485,38 +542,28 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             }
         }
         resetBottomLayout();
+
+        mPreviewRightTop.setVisibility(View.VISIBLE);
+        mPreviewTop.setVisibility(View.VISIBLE);
+        mSpeedBar.setVisibility(mSpeedBarShowing ? View.VISIBLE : View.GONE);
     }
 
     /**
      * 隐藏底部布局按钮
      */
     private void hideBottomLayout() {
-        mBtnEffect.setVisibility(View.GONE);
-        mBtnStickers.setVisibility(View.GONE);
-        mBottomIndicator.setVisibility(View.GONE);
-        ViewGroup.LayoutParams layoutParams = mBtnShutter.getLayoutParams();
-        layoutParams.width = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                60, mActivity.getResources().getDisplayMetrics());
-        layoutParams.height = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                60, mActivity.getResources().getDisplayMetrics());
-        mBtnShutter.setLayoutParams(layoutParams);
+        mLayoutBottom.setVisibility(View.GONE);
+        mPreviewRightTop.setVisibility(View.GONE);
+        mPreviewTop.setVisibility(View.GONE);
     }
 
     /**
      * 恢复底部布局
      */
     private void resetBottomLayout() {
-        mBtnShutter.setOuterBackgroundColor(mCameraParam.currentRatio < CameraParam.Ratio_4_3
-                ? R.color.shutter_gray_light : R.color.shutter_gray_dark);
-        ViewGroup.LayoutParams layoutParams = mBtnShutter.getLayoutParams();
-        layoutParams.width = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                100, mActivity.getResources().getDisplayMetrics());
-        layoutParams.height = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                100, mActivity.getResources().getDisplayMetrics());
-        mBtnShutter.setLayoutParams(layoutParams);
-        mBtnEffect.setVisibility(View.VISIBLE);
-        mBtnStickers.setVisibility(View.VISIBLE);
-        mBottomIndicator.setVisibility(View.VISIBLE);
+        mLayoutBottom.setVisibility(View.VISIBLE);
+        mPreviewRightTop.setVisibility(View.VISIBLE);
+        mPreviewTop.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -815,6 +862,16 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         }
     };
 
+    /**
+     * 速度切换回调
+     */
+    private RecordSpeedLevelBar.OnSpeedChangedListener mSpeedChangedListener = new RecordSpeedLevelBar.OnSpeedChangedListener() {
+        @Override
+        public void onSpeedChanged(RecordSpeedLevelBar.RecordSpeed speed) {
+
+        }
+    };
+
     // ------------------------------------ 录制回调 -------------------------------------------
     private ShutterButton.OnShutterListener mShutterListener = new ShutterButton.OnShutterListener() {
 
@@ -823,6 +880,11 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             if (mCameraParam.mGalleryType == GalleryType.PICTURE) {
                 return;
             }
+
+            // 隐藏顶部视图
+            mPreviewTop.setVisibility(View.GONE);
+            mPreviewRightTop.setVisibility(View.GONE);
+            mSpeedBar.setVisibility(View.GONE);
 
             // 隐藏删除按钮
             if (mCameraParam.mGalleryType == GalleryType.VIDEO) {
@@ -857,6 +919,11 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         @Override
         public void onStopRecord() {
             PreviewRecorder.getInstance().stopRecord();
+
+            // 隐藏顶部视图
+            mPreviewTop.setVisibility(View.VISIBLE);
+            mPreviewRightTop.setVisibility(View.VISIBLE);
+            setShowingSpeedBar(mSpeedBarShowing);
         }
 
         @Override

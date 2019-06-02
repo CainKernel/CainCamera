@@ -38,7 +38,7 @@ public class VideoCutActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        hideNavigationBar();
+//        hideNavigationBar();
         setContentView(R.layout.activity_video_crop);
         if (null == savedInstanceState) {
             String videoPath = getIntent().getStringExtra(PATH);

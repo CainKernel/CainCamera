@@ -16,4 +16,7 @@ public interface OnPageOperationListener {
 
     // 打开相机设置页面
     void onOpenCameraSettingPage();
+
+    // 打开音乐选择页面
+    void onOpenMusicSelectPage();
 }

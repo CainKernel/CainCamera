@@ -42,7 +42,7 @@ public class VideoEditActivity extends AppCompatActivity implements VideoEditFra
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        hideNavigationBar();
+//        hideNavigationBar();
         setContentView(R.layout.activity_video_edit);
         if (null == savedInstanceState) {
             String videoPath = getIntent().getStringExtra(VIDEO_PATH);
@@ -91,6 +91,7 @@ public class VideoEditActivity extends AppCompatActivity implements VideoEditFra
         fragment.addOnMusicSelectedListener(this);
         getSupportFragmentManager()
                 .beginTransaction()
+                .setCustomAnimations(R.anim.anim_slide_up, 0)
                 .add(R.id.fragment_content, fragment)
                 .addToBackStack(FRAGMENT_MUSIC_SELECT)
                 .commit();

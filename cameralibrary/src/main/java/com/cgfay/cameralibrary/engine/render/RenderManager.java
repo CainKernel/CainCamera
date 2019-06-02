@@ -394,19 +394,19 @@ public final class RenderManager {
         float ratioHeight = (float) imageHeight / (float) mViewHeight;
         if (mScaleType == ScaleType.CENTER_INSIDE) {
             vertexCoord = new float[] {
-                    vertexVertices[0] / ratioHeight, vertexVertices[1] / ratioWidth, vertexVertices[2],
-                    vertexVertices[3] / ratioHeight, vertexVertices[4] / ratioWidth, vertexVertices[5],
-                    vertexVertices[6] / ratioHeight, vertexVertices[7] / ratioWidth, vertexVertices[8],
-                    vertexVertices[9] / ratioHeight, vertexVertices[10] / ratioWidth, vertexVertices[11],
+                    vertexVertices[0] / ratioHeight, vertexVertices[1] / ratioWidth,
+                    vertexVertices[2] / ratioHeight, vertexVertices[3] / ratioWidth,
+                    vertexVertices[4] / ratioHeight, vertexVertices[5] / ratioWidth,
+                    vertexVertices[6] / ratioHeight, vertexVertices[7] / ratioWidth,
             };
         } else if (mScaleType == ScaleType.CENTER_CROP) {
             float distHorizontal = (1 - 1 / ratioWidth) / 2;
             float distVertical = (1 - 1 / ratioHeight) / 2;
             textureCoord = new float[] {
-                    addDistance(textureVertices[0], distVertical), addDistance(textureVertices[1], distHorizontal),
-                    addDistance(textureVertices[2], distVertical), addDistance(textureVertices[3], distHorizontal),
-                    addDistance(textureVertices[4], distVertical), addDistance(textureVertices[5], distHorizontal),
-                    addDistance(textureVertices[6], distVertical), addDistance(textureVertices[7], distHorizontal),
+                    addDistance(textureVertices[0], distHorizontal), addDistance(textureVertices[1], distVertical),
+                    addDistance(textureVertices[2], distHorizontal), addDistance(textureVertices[3], distVertical),
+                    addDistance(textureVertices[4], distHorizontal), addDistance(textureVertices[5], distVertical),
+                    addDistance(textureVertices[6], distHorizontal), addDistance(textureVertices[7], distVertical),
             };
         }
         if (vertexCoord == null) {

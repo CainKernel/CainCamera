@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.hardware.Camera;
 import android.support.v4.app.Fragment;
 
+import com.cgfay.cameralibrary.R;
 import com.cgfay.cameralibrary.activity.CameraActivity;
 import com.cgfay.cameralibrary.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.listener.OnGallerySelectedListener;
@@ -207,6 +208,7 @@ public final class PreviewBuilder {
             fragment.startActivity(intent);
         } else {
             activity.startActivity(intent);
+            activity.overridePendingTransition(R.anim.anim_slide_up, 0);
         }
     }
 }
