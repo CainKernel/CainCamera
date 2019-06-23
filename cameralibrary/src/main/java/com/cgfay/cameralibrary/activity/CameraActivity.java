@@ -2,8 +2,11 @@
 package com.cgfay.cameralibrary.activity;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -13,6 +16,7 @@ import com.cgfay.cameralibrary.engine.model.GalleryType;
 import com.cgfay.cameralibrary.fragment.CameraPreviewFragment;
 import com.cgfay.cameralibrary.listener.OnPageOperationListener;
 import com.cgfay.facedetectlibrary.engine.FaceTracker;
+import com.cgfay.utilslibrary.utils.NotchUtils;
 
 /**
  * 相机预览页面
@@ -52,8 +56,19 @@ public class CameraActivity extends AppCompatActivity implements OnPageOperation
     @Override
     protected void onResume() {
         super.onResume();
+        handleFullScreen();
+    }
+
+    private void handleFullScreen() {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+        // 是否全面屏
+        if (NotchUtils.hasNotchScreen(this)) {
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            WindowManager.LayoutParams lp = getWindow().getAttributes();
+            lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            getWindow().setAttributes(lp);
+        }
     }
 
     @Override

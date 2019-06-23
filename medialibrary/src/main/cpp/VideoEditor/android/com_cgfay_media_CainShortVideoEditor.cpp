@@ -123,24 +123,6 @@ static void setVideoEditor(JNIEnv *env, jobject thiz, long editor) {
 
 // -------------------------------------------------------------------------------------------------
 static int
-CainShortVideoEditor_execute(JNIEnv *env, jobject thiz, jobjectArray command) {
-    CainShortVideoEditor *editor = getVideoEditor(env, thiz);
-    if (editor == NULL) {
-        jniThrowException(env, "java/lang/IllegalStateException");
-        return -1;
-    }
-    int argc = env->GetArrayLength(command);
-    char *argv[argc];
-    for (int i = 0; i < argc; ++i) {
-        jstring commandStr = (jstring) env->GetObjectArrayElement(command, i);
-        argv[i] = (char*) env->GetStringUTFChars(commandStr, 0);
-    }
-    int result = editor->execute(argc, argv);
-    process_media_retriever_call(env, result, "java/lang/IllegalStateException", "command execute failed.");
-    return result;
-}
-
-static int
 CainShortVideoEditor_videoCut(JNIEnv *env, jobject thiz, jstring srcPath_, jstring videoDstPath_,
                               jfloat start, jfloat duration, jfloat speed) {
     CainShortVideoEditor *editor = getVideoEditor(env, thiz);
@@ -269,7 +251,6 @@ CainShortVideoEditor_finalize(JNIEnv *env, jobject thiz) {
 // -------------------------------------------------------------------------------------------------
 
 static JNINativeMethod nativeMethods[] = {
-        {"execute", "([Ljava/lang/String;)I", (void *)CainShortVideoEditor_execute},
         {"_videoCut", "(Ljava/lang/String;Ljava/lang/String;FFF)I", (void *)CainShortVideoEditor_videoCut},
         {"_audioCut", "(Ljava/lang/String;Ljava/lang/String;FF)I", (void *)CainShortVideoEditor_audioCut},
         {"_videoConvertGif", "(Ljava/lang/String;Ljava/lang/String;FF)I", (void *)CainShortVideoEditor_videoConvertGif},

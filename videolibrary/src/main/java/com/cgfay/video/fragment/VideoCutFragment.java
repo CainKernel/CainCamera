@@ -1,11 +1,18 @@
 package com.cgfay.video.fragment;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Matrix;
+import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -25,7 +32,6 @@ import com.cgfay.media.CainMediaPlayer;
 import com.cgfay.media.CainShortVideoEditor;
 import com.cgfay.media.IMediaPlayer;
 import com.cgfay.utilslibrary.utils.FileUtils;
-import com.cgfay.utilslibrary.utils.StringUtils;
 import com.cgfay.video.R;
 import com.cgfay.video.activity.VideoEditActivity;
 import com.cgfay.video.bean.VideoSpeed;
@@ -208,10 +214,65 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
                 mVideoSpeedLevelBar.setVisibility(View.VISIBLE);
             }
         } else if (id == R.id.tv_video_cut_rotation) {
-            // TODO it has a bug here, fix it in future.
-//            float nextRotation = mVideoPlayerView.getRotation() + 90f;
-//            mVideoPlayerView.setRotation(nextRotation);
+            rotateVideo();
         }
+    }
+
+    /**
+     * 旋转视频
+     */
+    private boolean mRotating;
+    private float mCurrentRotate;
+    private void rotateVideo() {
+        if (mRotating) {
+            return;
+        }
+        // 原始宽高
+        final int width = mVideoPlayerView.getWidth();
+        final int height = mVideoPlayerView.getHeight();
+
+        // 添加旋转动画
+        AnimatorSet animatorSet = new AnimatorSet();
+        ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+        animator.setDuration(400);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float rotate = (float)animation.getAnimatedValue() * 90;
+                // 设置旋转矩阵
+                setupMatrix(width, height, (int) (mCurrentRotate + rotate));
+            }
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation, boolean isReverse) {
+                mRotating = true;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation, boolean isReverse) {
+                mRotating = false;
+                mCurrentRotate += 90;
+            }
+        });
+        animatorSet.playSequentially(animator);
+        animatorSet.start();
+    }
+
+    private void setupMatrix(int width, int height, int degree) {
+        Matrix matrix = new Matrix();
+        RectF src = new RectF(0, 0, width, height);
+        RectF dst = new RectF(0, 0, width, height);
+        RectF screen = new RectF(dst);
+        matrix.postRotate(degree, screen.centerX(), screen.centerY());
+        matrix.mapRect(dst);
+
+        matrix.setRectToRect(src, dst, Matrix.ScaleToFit.CENTER);
+        matrix.mapRect(src);
+
+        matrix.setRectToRect(screen, src, Matrix.ScaleToFit.CENTER);
+        matrix.postRotate(degree, screen.centerX(), screen.centerY());
+        mVideoPlayerView.setTransform(matrix);
     }
 
     public void setVideoPath(String videoPath) {

@@ -20,7 +20,7 @@ public class VideoSpeedLevelBar extends LinearLayout {
 
     private String[] mSpeedStr;
     private SparseArray<TextView> mSpeedTexts;
-    private int mCurrentPosition = 2;
+    private int mCurrentPosition = 1;
     private boolean touchEnable = true;
 
     public VideoSpeedLevelBar(Context context) {
@@ -77,13 +77,7 @@ public class VideoSpeedLevelBar extends LinearLayout {
             TextView textView = mSpeedTexts.get(i);
             if (i == mCurrentPosition) {
                 textView.setTextColor(0x80000000);
-                if (i == 0) {
-                    textView.setBackgroundResource(R.drawable.bg_video_speed_select_left);
-                } else if (i == mSpeedTexts.size() - 1) {
-                    textView.setBackgroundResource(R.drawable.bg_video_speed_select_right);
-                } else {
-                    textView.setBackgroundColor(0xFFFFFFFF);
-                }
+                textView.setBackgroundResource(R.drawable.bg_video_speed_select);
             } else {
                 textView.setBackgroundColor(0x000000);
                 textView.setTextColor(0x80FFFFFF);
@@ -98,39 +92,27 @@ public class VideoSpeedLevelBar extends LinearLayout {
     public VideoSpeed getSpeed() {
         switch (mCurrentPosition) {
             case 0:
-                return VideoSpeed.SPEED_L0;
-            case 1:
                 return VideoSpeed.SPEED_L1;
-            case 2:
+            case 1:
                 return VideoSpeed.SPEED_L2;
-            case 3:
+            case 2:
                 return VideoSpeed.SPEED_L3;
-            case 4:
-                return VideoSpeed.SPEED_L4;
         }
         return VideoSpeed.SPEED_L2;
     }
 
     public void setSpeed(VideoSpeed speed) {
         switch (speed) {
-            case SPEED_L0:
+            case SPEED_L1:
                 mCurrentPosition = 0;
                 break;
 
-            case SPEED_L1:
+            case SPEED_L2:
                 mCurrentPosition = 1;
                 break;
 
-            case SPEED_L2:
-                mCurrentPosition = 2;
-                break;
-
             case SPEED_L3:
-                mCurrentPosition = 3;
-                break;
-
-            case SPEED_L4:
-                mCurrentPosition = 4;
+                mCurrentPosition = 2;
                 break;
         }
         invalidateSpeed();

@@ -119,13 +119,13 @@ public class OpenGLUtils {
      * @param fragmentSource
      * @return
      */
-    public static int createProgram(String vertexSource, String fragmentSource) {
+    public static synchronized int createProgram(String vertexSource, String fragmentSource) {
         int vertexShader = loadShader(GLES30.GL_VERTEX_SHADER, vertexSource);
         if (vertexShader == 0) {
             return 0;
         }
-        int pixelShader = loadShader(GLES30.GL_FRAGMENT_SHADER, fragmentSource);
-        if (pixelShader == 0) {
+        int fragmentShader = loadShader(GLES30.GL_FRAGMENT_SHADER, fragmentSource);
+        if (fragmentShader == 0) {
             return 0;
         }
 
@@ -136,7 +136,7 @@ public class OpenGLUtils {
         }
         GLES30.glAttachShader(program, vertexShader);
         checkGlError("glAttachShader");
-        GLES30.glAttachShader(program, pixelShader);
+        GLES30.glAttachShader(program, fragmentShader);
         checkGlError("glAttachShader");
         GLES30.glLinkProgram(program);
         int[] linkStatus = new int[1];
@@ -146,6 +146,14 @@ public class OpenGLUtils {
             Log.e(TAG, GLES30.glGetProgramInfoLog(program));
             GLES30.glDeleteProgram(program);
             program = 0;
+        }
+        if (vertexShader > 0) {
+            GLES30.glDetachShader(program, vertexShader);
+            GLES30.glDeleteShader(vertexShader);
+        }
+        if (fragmentShader > 0) {
+            GLES30.glDetachShader(program, fragmentShader);
+            GLES30.glDeleteShader(fragmentShader);
         }
         return program;
     }
@@ -181,7 +189,7 @@ public class OpenGLUtils {
         if (error != GLES30.GL_NO_ERROR) {
             String msg = op + ": glError 0x" + Integer.toHexString(error);
             Log.e(TAG, msg);
-            throw new RuntimeException(msg);
+//            throw new RuntimeException(msg);
         }
     }
 

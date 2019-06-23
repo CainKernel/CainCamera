@@ -49,8 +49,6 @@
             android:id="@+id/btn_shutter"
             android:layout_width="@dimen/record_width_height_normal"
             android:layout_height="@dimen/record_width_height_normal"
-            android:layout_marginTop="@dimen/bottom_layout_margin"
-            android:layout_marginBottom="@dimen/bottom_layout_margin"
             android:layout_centerInParent="true"
             android:layout_gravity="center" />
 

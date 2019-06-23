@@ -6,11 +6,6 @@ add_library( video_editor
 
              SHARED
 
-             # FFmpeg命令行
-             source/command/cmdutils.c
-             source/command/ffmpeg.c
-             source/command/ffmpeg_filter.c
-             source/command/ffmpeg_opt.c
              # 使用代码编辑视频
              source/AudioCutEditor.cpp
              source/Editor.cpp

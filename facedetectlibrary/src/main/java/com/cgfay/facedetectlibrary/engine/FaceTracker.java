@@ -60,6 +60,7 @@ public final class FaceTracker {
         synchronized (mSyncFence) {
             mTrackerThread = new TrackerThread("FaceTrackerThread");
             mTrackerThread.start();
+            mTrackerThread.waitUntilReady();
         }
     }
 
@@ -233,6 +234,9 @@ public final class FaceTracker {
      */
     private static class TrackerThread extends Thread {
 
+        private final Object mStartLock = new Object();
+        private boolean mReady = false;
+
         // 人脸检测实体
         private Facepp facepp;
         // 传感器监听器
@@ -253,11 +257,33 @@ public final class FaceTracker {
                 notifyAll();
                 mHandler = new Handler(mLooper);
             }
+            synchronized (mStartLock) {
+                mReady = true;
+                mStartLock.notify();
+            }
             Looper.loop();
             synchronized (this) {
                 release();
                 mHandler.removeCallbacksAndMessages(null);
                 mHandler = null;
+            }
+            synchronized (mStartLock) {
+                mReady = false;
+            }
+        }
+
+        /**
+         * 等待线程准备完成
+         */
+        public void waitUntilReady() {
+            synchronized (mStartLock) {
+                while (!mReady) {
+                    try {
+                        mStartLock.wait();
+                    } catch (InterruptedException e) {
+
+                    }
+                }
             }
         }
 
@@ -294,14 +320,6 @@ public final class FaceTracker {
         }
 
         /**
-         * 获取线程Handler
-         * @return
-         */
-        public Handler getThreadHandler() {
-            return mHandler;
-        }
-
-        /**
          * 初始化人脸检测
          * @param context       上下文
          * @param orientation   图像角度
@@ -310,6 +328,7 @@ public final class FaceTracker {
          */
         public void prepareFaceTracker(final Context context, final int orientation,
                                        final int width, final int height) {
+            waitUntilReady();
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -326,6 +345,7 @@ public final class FaceTracker {
          * @return          是否检测成功
          */
         public void trackFace(final byte[] data, final int width, final int height) {
+            waitUntilReady();
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {

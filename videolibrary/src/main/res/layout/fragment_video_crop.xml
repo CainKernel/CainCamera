@@ -9,7 +9,7 @@
     <com.cgfay.video.widget.VideoTextureView
         android:id="@+id/video_player_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_centerInParent="true"/>
 
     <!-- back -->
@@ -44,16 +44,15 @@
         <!-- 速度选择条 -->
         <com.cgfay.video.widget.VideoSpeedLevelBar
             android:id="@+id/video_crop_speed_bar"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp40"
-            android:layout_marginStart="@dimen/dp25"
-            android:layout_marginEnd="@dimen/dp25"
+            android:layout_width="@dimen/dp200"
+            android:layout_height="35dp"
+            android:layout_gravity="center_horizontal"
             android:visibility="gone"/>
         
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dp10"
+            android:layout_marginTop="@dimen/dp20"
             android:layout_marginBottom="@dimen/dp10">
             <TextView
                 android:id="@+id/tv_video_cut_selected"
@@ -86,37 +85,8 @@
             android:id="@+id/video_crop_view_bar"
             android:layout_width="match_parent"
             android:layout_height="70dp"
-            android:layout_marginBottom="70dp"
+            android:layout_marginBottom="20dp"
             android:background="@color/video_cut_bar_background"/>
-    </LinearLayout>
-
-    <!-- 视频裁剪时长选择 -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="20dp"
-        android:orientation="horizontal"
-        android:background="@drawable/bg_video_speed">
-
-        <TextView
-            android:id="@+id/video_crop_time_15"
-            android:layout_width="76dp"
-            android:layout_height="30dp"
-            android:gravity="center"
-            android:textColor="@color/video_speed_background"
-            android:text="@string/video_crop_time_15"
-            android:background="@drawable/bg_video_speed_select_left"/>
-
-        <TextView
-            android:id="@+id/video_crop_time_120"
-            android:layout_width="76dp"
-            android:layout_height="30dp"
-            android:gravity="center"
-            android:textColor="@color/white"
-            android:text="@string/video_crop_time_120"
-            android:background="@color/transparent"/>
     </LinearLayout>
 
     <LinearLayout

@@ -15,6 +15,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -24,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -59,6 +61,7 @@ import com.cgfay.utilslibrary.fragment.PermissionConfirmDialogFragment;
 import com.cgfay.utilslibrary.fragment.PermissionErrorDialogFragment;
 import com.cgfay.utilslibrary.utils.BitmapUtils;
 import com.cgfay.utilslibrary.utils.BrightnessUtils;
+import com.cgfay.utilslibrary.utils.DisplayUtils;
 import com.cgfay.utilslibrary.utils.PermissionUtils;
 import com.cgfay.utilslibrary.utils.StringUtils;
 
@@ -220,6 +223,16 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         mCameraSurfaceView.addOnTouchScroller(mTouchScroller);
         mCameraSurfaceView.addMultiClickListener(mMultiClickListener);
         mAspectLayout.addView(mCameraSurfaceView);
+
+        // 全面屏比例处理
+        if (DisplayUtils.isAllScreenDevice(mActivity)) {
+            DisplayMetrics outMetrics = new DisplayMetrics();
+            mActivity.getWindowManager().getDefaultDisplay().getRealMetrics(outMetrics);
+            int widthPixel = outMetrics.widthPixels;
+            int heightPixel = outMetrics.heightPixels;
+            float height = mActivity.getResources().getDimension(R.dimen.bottom_indicator_height);
+            mAspectLayout.setAspectRatio(widthPixel / (heightPixel - height));
+        }
         mAspectLayout.requestLayout();
         // 绑定需要渲染的SurfaceView
         PreviewRenderer.getInstance().setSurfaceView(mCameraSurfaceView);

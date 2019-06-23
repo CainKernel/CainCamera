@@ -85,7 +85,7 @@ public class CainShortVideoEditor {
         for (int i = 0; i < cmdList.size(); i++) {
             command[i] = (String) cmdList.get(i);
         }
-        int ret = execute(command);
+        int ret = FFmpegUtils.execute(command);
         if (ret == 0) {
             return dstPath;
         }else{
@@ -152,7 +152,7 @@ public class CainShortVideoEditor {
         for (int i = 0; i < cmdList.size(); i++) {
             command[i] = (String) cmdList.get(i);
         }
-        int  ret= execute(command);
+        int  ret= FFmpegUtils.execute(command);
         if(ret==0){
             return dstPath;
         }else{
@@ -198,7 +198,7 @@ public class CainShortVideoEditor {
         for (int i = 0; i < cmdList.size(); i++) {
             command[i] = (String) cmdList.get(i);
         }
-        int ret = execute(command);
+        int ret = FFmpegUtils.execute(command);
         if (ret == 0) {
             return dstPath;
         } else {
@@ -244,7 +244,7 @@ public class CainShortVideoEditor {
         for (int i = 0; i < cmdList.size(); i++) {
             command[i] = (String) cmdList.get(i);
         }
-        int ret = execute(command);
+        int ret = FFmpegUtils.execute(command);
         if (ret == 0) {
             return dstPath;
         } else {
@@ -297,7 +297,7 @@ public class CainShortVideoEditor {
         for (int i = 0; i < cmdList.size(); i++) {
             command[i] = (String) cmdList.get(i);
         }
-        int ret = execute(command);
+        int ret = FFmpegUtils.execute(command);
         if (ret == 0) {
             return dstPath;
         } else {
@@ -379,7 +379,7 @@ public class CainShortVideoEditor {
             for (int i = 0; i < cmdList.size(); i++) {
                 command[i] = (String) cmdList.get(i);
             }
-            int ret = execute(command);
+            int ret = FFmpegUtils.execute(command);
             if (ret == 0) {
                 return dstPath;
             } else {
@@ -427,7 +427,7 @@ public class CainShortVideoEditor {
         for (int i = 0; i < cmdList.size(); i++) {
             command[i] = (String) cmdList.get(i);
         }
-        int ret = execute(command);
+        int ret = FFmpegUtils.execute(command);
         if (ret == 0) {
             return audioPath;
         } else {
@@ -461,7 +461,7 @@ public class CainShortVideoEditor {
         for (int i = 0; i < cmdList.size(); i++) {
             command[i] = (String) cmdList.get(i);
         }
-        int ret = execute(command);
+        int ret = FFmpegUtils.execute(command);
         if (ret == 0) {
             return videoPath;
         } else {
@@ -507,7 +507,7 @@ public class CainShortVideoEditor {
             for (int i = 0; i < cmdList.size(); i++) {
                 command[i] = (String) cmdList.get(i);
             }
-            int ret = execute(command);
+            int ret = FFmpegUtils.execute(command);
             if (ret == 0) {
                 return dstFile;
             } else {
@@ -571,7 +571,7 @@ public class CainShortVideoEditor {
             for (int i = 0; i < cmdList.size(); i++) {
                 command[i] = (String) cmdList.get(i);
             }
-            int ret = execute(command);
+            int ret = FFmpegUtils.execute(command);
             if (ret == 0) {
                 return dstPath;
             } else {
@@ -625,7 +625,7 @@ public class CainShortVideoEditor {
             for (int i = 0; i < cmdList.size(); i++) {
                 command[i] = (String) cmdList.get(i);
             }
-            int ret = execute(command);
+            int ret = FFmpegUtils.execute(command);
             if (ret == 0) {
                 return dstPath;
             } else {
@@ -744,7 +744,7 @@ public class CainShortVideoEditor {
             for (int i = 0; i < cmdList.size(); i++) {
                 command[i] = (String) cmdList.get(i);
             }
-            int ret = execute(command);
+            int ret = FFmpegUtils.execute(command);
             if (ret == 0) {
                 return dstFile;
             } else {
@@ -786,7 +786,7 @@ public class CainShortVideoEditor {
             for (int i = 0; i < cmdList.size(); i++) {
                 command[i] = (String) cmdList.get(i);
             }
-            int ret= execute(command);
+            int ret= FFmpegUtils.execute(command);
             if (ret == 0) {
                 return pngPath;
             } else {
@@ -838,7 +838,7 @@ public class CainShortVideoEditor {
             for (int i = 0; i < cmdList.size(); i++) {
                 command[i] = (String) cmdList.get(i);
             }
-            int ret = execute(command);
+            int ret = FFmpegUtils.execute(command);
             if (ret == 0) {
                 return pngPath;
             } else {
@@ -875,7 +875,7 @@ public class CainShortVideoEditor {
             for (int i = 0; i < cmdList.size(); i++) {
                 command[i] = (String) cmdList.get(i);
             }
-            int ret = execute(command);
+            int ret = FFmpegUtils.execute(command);
             if (ret == 0) {
                 return dstFile;
             } else {
@@ -921,7 +921,7 @@ public class CainShortVideoEditor {
             for (int i = 0; i < cmdList.size(); i++) {
                 command[i] = (String) cmdList.get(i);
             }
-            int ret = execute(command);
+            int ret = FFmpegUtils.execute(command);
             if (ret == 0) {
                 return dstPath;
             } else {
@@ -965,7 +965,7 @@ public class CainShortVideoEditor {
             for (int i = 0; i < cmdList.size(); i++) {
                 command[i] = (String) cmdList.get(i);
             }
-            int ret = execute(command);
+            int ret = FFmpegUtils.execute(command);
             if (ret == 0) {
                 return dstTs;
             } else {
@@ -1011,7 +1011,7 @@ public class CainShortVideoEditor {
             for (int i = 0; i < cmdList.size(); i++) {
                 command[i] = (String) cmdList.get(i);
             }
-            int ret = execute(command);
+            int ret = FFmpegUtils.execute(command);
             if (ret == 0) {
                 return dstPath;
             } else {
@@ -1098,14 +1098,6 @@ public class CainShortVideoEditor {
         // TODO 只能解码然后在做处理。
         return null;
     }
-
-
-    /**
-     * 执行命令行，执行成功返回0，失败返回错误码。
-     * @param command  命令行数组
-     * @return  执行结果
-     */
-    private native int execute(String[] command);
 
     /**
      * Call it when one is done with the object. This method releases the memory

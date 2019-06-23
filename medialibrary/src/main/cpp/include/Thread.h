@@ -144,10 +144,8 @@ inline void* Thread::threadEntry(void *arg) {
     Thread *thread = (Thread *) arg;
 
     if (thread != NULL) {
-        thread->mMutex.lock();
         thread->mRunning = true;
         thread->mCondition.signal();
-        thread->mMutex.unlock();
 
         thread->schedPriority(thread->mPriority);
 
@@ -158,10 +156,8 @@ inline void* Thread::threadEntry(void *arg) {
             thread->run();
         }
 
-        thread->mMutex.lock();
         thread->mRunning = false;
         thread->mCondition.signal();
-        thread->mMutex.unlock();
     }
 
     pthread_exit(NULL);
