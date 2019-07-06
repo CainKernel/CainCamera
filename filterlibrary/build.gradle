@@ -40,9 +40,9 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':landmarklibrary')
+    implementation project(':medialibrary')
     implementation project(':utilslibrary')
     implementation project(':gdxlibrary')
     implementation 'com.android.support:appcompat-v7:27.1.1'

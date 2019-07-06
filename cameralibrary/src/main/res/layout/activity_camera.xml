@@ -6,6 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/video_window_background"
-    tools:context=".activity.CameraActivity">
+    tools:context="com.cgfay.camera.activity.CameraActivity">
 
 </android.support.constraint.ConstraintLayout>

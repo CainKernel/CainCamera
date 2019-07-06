@@ -11,8 +11,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.cgfay.filterlibrary.glfilter.resource.bean.ResourceData;
-import com.cgfay.utilslibrary.utils.BitmapUtils;
+import com.cgfay.filter.glfilter.resource.bean.ResourceData;
+import com.cgfay.uitls.utils.BitmapUtils;
 import com.cgfay.video.R;
 
 import java.util.ArrayList;

@@ -20,7 +20,7 @@ import android.widget.VideoView;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.media.CainShortVideoEditor;
-import com.cgfay.utilslibrary.utils.FileUtils;
+import com.cgfay.uitls.utils.FileUtils;
 import com.cgfay.video.activity.VideoEditActivity;
 import com.cgfay.video.widget.CircleProgressView;
 

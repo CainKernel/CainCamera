@@ -10,7 +10,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.utilslibrary.utils.DensityUtils;
+import com.cgfay.uitls.utils.DensityUtils;
 
 /**
  * 视频剪辑SeekBar

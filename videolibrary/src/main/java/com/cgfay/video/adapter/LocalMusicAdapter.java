@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.cgfay.utilslibrary.utils.StringUtils;
+import com.cgfay.uitls.utils.StringUtils;
 import com.cgfay.video.R;
 import com.cgfay.video.bean.Music;
 

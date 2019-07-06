@@ -6,10 +6,9 @@ import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.util.Log;
 
 import com.cgfay.media.annotations.AccessedByNative;
-import com.cgfay.utilslibrary.utils.BitmapUtils;
+import com.cgfay.uitls.utils.BitmapUtils;
 
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;

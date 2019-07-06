@@ -9,22 +9,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.cameralibrary.engine.PreviewEngine;
-import com.cgfay.cameralibrary.engine.model.AspectRatio;
-import com.cgfay.cameralibrary.engine.model.GalleryType;
-import com.cgfay.cameralibrary.listener.OnGallerySelectedListener;
-import com.cgfay.cameralibrary.listener.OnPreviewCaptureListener;
+import com.cgfay.camera.engine.PreviewEngine;
+import com.cgfay.camera.engine.model.AspectRatio;
+import com.cgfay.camera.engine.model.GalleryType;
+import com.cgfay.camera.listener.OnGallerySelectedListener;
+import com.cgfay.camera.listener.OnPreviewCaptureListener;
 
-import com.cgfay.filterlibrary.glfilter.resource.FilterHelper;
-import com.cgfay.filterlibrary.glfilter.resource.MakeupHelper;
-import com.cgfay.filterlibrary.glfilter.resource.ResourceHelper;
-import com.cgfay.imagelibrary.activity.ImageEditActivity;
+import com.cgfay.filter.glfilter.resource.FilterHelper;
+import com.cgfay.filter.glfilter.resource.MakeupHelper;
+import com.cgfay.filter.glfilter.resource.ResourceHelper;
+import com.cgfay.image.activity.ImageEditActivity;
 import com.cgfay.scan.engine.MediaScanEngine;
 import com.cgfay.scan.listener.OnCaptureListener;
 import com.cgfay.scan.listener.OnMediaSelectedListener;
 import com.cgfay.scan.loader.impl.GlideMediaLoader;
 import com.cgfay.scan.model.MimeType;
-import com.cgfay.utilslibrary.utils.PermissionUtils;
+import com.cgfay.uitls.utils.PermissionUtils;
 import com.cgfay.video.activity.VideoCutActivity;
 import com.cgfay.video.activity.VideoEditActivity;
 

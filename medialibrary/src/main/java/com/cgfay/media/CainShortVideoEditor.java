@@ -6,7 +6,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.cgfay.media.annotations.AccessedByNative;
-import com.cgfay.utilslibrary.utils.FileUtils;
+import com.cgfay.uitls.utils.FileUtils;
 
 import java.io.File;
 import java.io.IOException;

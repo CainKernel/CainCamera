@@ -4,15 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/video_window_background"
-    tools:context=".fragment.CameraPreviewFragment">
+    tools:context="com.cgfay.camera.fragment.CameraPreviewFragment">
 
     <!-- 预览视图 -->
-    <com.cgfay.cameralibrary.widget.AspectFrameLayout
+    <com.cgfay.camera.widget.AspectFrameLayout
         android:id="@+id/layout_aspect"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="top">
-    </com.cgfay.cameralibrary.widget.AspectFrameLayout>
+    </com.cgfay.camera.widget.AspectFrameLayout>
 
     <!-- 顶部视图 -->
     <RelativeLayout

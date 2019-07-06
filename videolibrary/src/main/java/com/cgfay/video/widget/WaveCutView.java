@@ -15,7 +15,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.cgfay.utilslibrary.utils.DensityUtils;
+import com.cgfay.uitls.utils.DensityUtils;
 import com.cgfay.video.R;
 
 /**

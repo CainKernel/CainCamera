@@ -2,8 +2,8 @@
 // Created by admin on 2018/4/10.
 //
 
-#ifndef CAINMUSICPLAYER_SOUNDTOUCHWRAPPER_H
-#define CAINMUSICPLAYER_SOUNDTOUCHWRAPPER_H
+#ifndef SOUNDTOUCHWRAPPER_H
+#define SOUNDTOUCHWRAPPER_H
 
 #include <stdint.h>
 #include "include/SoundTouch.h"
@@ -32,4 +32,4 @@ private:
 };
 
 
-#endif //CAINMUSICPLAYER_SOUNDTOUCHWRAPPER_H
+#endif //SOUNDTOUCHWRAPPER_H

@@ -87,20 +87,4 @@
             android:text="更多" />
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone"
-        android:layout_marginTop="@dimen/dp20">
-
-        <com.cgfay.cameralibrary.widget.RatioImageView
-            android:id="@+id/iv_ratio"
-            android:layout_width="@dimen/top_button_width_height"
-            android:layout_height="@dimen/top_button_width_height"
-            android:background="@drawable/ic_camera_ratio_34_light" />
-    </LinearLayout>
-
 </LinearLayout>
