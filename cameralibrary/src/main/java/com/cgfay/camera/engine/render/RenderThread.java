@@ -56,8 +56,8 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
     // 矩阵
     private final float[] mMatrix = new float[16];
 
-    // 预览回调
-    private byte[] mPreviewBuffer;
+//    // 预览回调
+//    private byte[] mPreviewBuffer;
     // 输入图像大小
     private int mTextureWidth, mTextureHeight;
 
@@ -109,9 +109,9 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
                         .obtainMessage(RenderHandler.MSG_PREVIEW_CALLBACK, data));
             }
         }
-        if (mPreviewBuffer != null) {
-            camera.addCallbackBuffer(mPreviewBuffer);
-        }
+//        if (mPreviewBuffer != null) {
+//            camera.addCallbackBuffer(mPreviewBuffer);
+//        }
         // 计算fps
         if (mRenderHandler != null && mCameraParam.showFps) {
             mRenderHandler.sendEmptyMessage(RenderHandler.MSG_CALCULATE_FPS);
@@ -392,8 +392,10 @@ class RenderThread extends HandlerThread implements SurfaceTexture.OnFrameAvaila
         CameraEngine.getInstance().openCamera(mContext);
         CameraEngine.getInstance().setPreviewSurface(mSurfaceTexture);
         calculateImageSize();
-        mPreviewBuffer = new byte[mTextureWidth * mTextureHeight * 3/ 2];
-        CameraEngine.getInstance().setPreviewCallbackWithBuffer(this, mPreviewBuffer);
+//        // 慎用setPreviewCallbackWidthBuffer，在华为、VIVO等设备上会出现帧率下降等问题
+//        mPreviewBuffer = new byte[mTextureWidth * mTextureHeight * 3/ 2];
+//        CameraEngine.getInstance().setPreviewCallbackWithBuffer(this, mPreviewBuffer);
+        CameraEngine.getInstance().setPreviewCallback(this);
         // 相机打开回调
         if (mCameraParam.cameraCallback != null) {
             mCameraParam.cameraCallback.onCameraOpened();
