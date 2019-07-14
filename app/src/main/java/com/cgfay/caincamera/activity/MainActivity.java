@@ -46,26 +46,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void checkPermissions() {
-        boolean cameraEnable = PermissionUtils.permissionChecking(this,
-                Manifest.permission.CAMERA);
-        boolean storageWriteEnable = PermissionUtils.permissionChecking(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        boolean recordAudio = PermissionUtils.permissionChecking(this,
-                Manifest.permission.RECORD_AUDIO);
-        if (!cameraEnable || !storageWriteEnable || !recordAudio) {
-            ActivityCompat.requestPermissions(this,
-                    new String[] {
+        PermissionUtils.requestPermissions(this, new String[] {
                             Manifest.permission.CAMERA,
                             Manifest.permission.WRITE_EXTERNAL_STORAGE,
                             Manifest.permission.RECORD_AUDIO
                     }, REQUEST_CODE);
-        }
     }
 
     private void initView() {
         findViewById(R.id.btn_camera).setOnClickListener(this);
         findViewById(R.id.btn_edit_video).setOnClickListener(this);
         findViewById(R.id.btn_edit_picture).setOnClickListener(this);
+        findViewById(R.id.btn_speed_record).setOnClickListener(this);
         findViewById(R.id.btn_edit_music_merge).setOnClickListener(this);
         findViewById(R.id.btn_edit_gif_make).setOnClickListener(this);
     }
@@ -95,6 +87,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_edit_picture: {
                 scanMedia(false, true, false);
+                break;
+            }
+
+            case R.id.btn_speed_record: {
+                Intent intent = new Intent(MainActivity.this, SpeedRecordActivity.class);
+                startActivity(intent);
+                finish();
                 break;
             }
 
@@ -202,6 +201,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .scanMedia();
     }
 
+    /**
+     * 音视频混合
+     */
     private void musicMerge() {
         MediaScanEngine.from(this)
                 .setMimeTypes(MimeType.ofAll())

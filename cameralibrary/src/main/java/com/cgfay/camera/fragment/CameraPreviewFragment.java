@@ -21,6 +21,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -42,7 +43,9 @@ import com.cgfay.filter.multimedia.VideoCombiner;
 import com.cgfay.uitls.fragment.PermissionErrorDialogFragment;
 import com.cgfay.uitls.utils.BrightnessUtils;
 import com.cgfay.uitls.utils.DisplayUtils;
+import com.cgfay.uitls.utils.NotchUtils;
 import com.cgfay.uitls.utils.PermissionUtils;
+import com.cgfay.uitls.utils.StatusBarUtils;
 import com.cgfay.uitls.utils.StringUtils;
 
 import java.util.ArrayList;
@@ -193,6 +196,10 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             int widthPixel = outMetrics.widthPixels;
             int heightPixel = outMetrics.heightPixels;
             float height = mActivity.getResources().getDimension(R.dimen.bottom_indicator_height);
+            // 是否刘海屏
+            if (NotchUtils.hasNotchScreen(mActivity)) {
+                height += StatusBarUtils.getStatusBarHeight(mActivity);
+            }
             mAspectLayout.setAspectRatio(widthPixel / (heightPixel - height));
         }
         mAspectLayout.requestLayout();
@@ -558,6 +565,10 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             // 更新时间
             mCountDownView.setText(mPreviewPresenter.getVideoVisibleTimeString());
         }
+    }
+
+    public void setMusicPath(String path) {
+        mPreviewPresenter.setMusicPath(path);
     }
 
     // ------------------------------- SurfaceView 滑动、点击回调 ----------------------------------

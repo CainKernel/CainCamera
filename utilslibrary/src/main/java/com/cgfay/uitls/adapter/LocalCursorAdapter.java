@@ -1,4 +1,4 @@
-package com.cgfay.video.adapter;
+package com.cgfay.uitls.adapter;
 
 import android.database.Cursor;
 import android.provider.MediaStore;

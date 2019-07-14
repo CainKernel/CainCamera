@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -435,6 +436,25 @@ public class FileUtils {
                 }
             }
         }
+    }
+
+    /**
+     * 剪切文件
+     * @param oldPath
+     * @param newPath
+     * @return
+     */
+    public static boolean moveFile(String oldPath, String newPath) {
+        if (TextUtils.isEmpty(oldPath)) {
+            return false;
+        }
+
+        if (TextUtils.isEmpty(newPath)) {
+            return false;
+        }
+
+        File file = new File(oldPath);
+        return file.renameTo(new File(newPath));
     }
 
 

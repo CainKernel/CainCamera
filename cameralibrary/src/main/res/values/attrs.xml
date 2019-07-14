@@ -6,8 +6,16 @@
         <!--默认文字大小和颜色-->
         <attr name="TextSize" format="float"></attr>
         <attr name="TextColor" format="color|reference"></attr>
-        <!--选中大小和颜色-->
         <attr name="SelectedTextSize" format="float"></attr>
         <attr name="SelectedTextColor" format="color|reference"></attr>
     </declare-styleable>
+
+    <declare-styleable name="RecordProgressView">
+        <attr name="radius" format="dimension|reference" />
+        <attr name="bg_color" format="color|reference" />
+        <attr name="content_color" format="color|reference" />
+        <attr name="divider_color" format="color|reference" />
+        <attr name="divider_width" format="dimension|reference" />
+    </declare-styleable>
+
 </resources>

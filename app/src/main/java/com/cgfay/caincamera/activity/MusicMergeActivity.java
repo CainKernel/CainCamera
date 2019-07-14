@@ -8,8 +8,8 @@ import android.view.WindowManager;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.fragment.MusicMergeFragment;
-import com.cgfay.video.bean.Music;
-import com.cgfay.video.fragment.MusicSelectFragment;
+import com.cgfay.uitls.bean.Music;
+import com.cgfay.uitls.fragment.MusicSelectFragment;
 
 /**
  * 视频音乐合成

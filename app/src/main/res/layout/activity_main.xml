@@ -40,6 +40,14 @@
             android:text="@string/btn_edit_picture"/>
 
         <Button
+            android:id="@+id/btn_speed_record"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/btn_speed_record"/>
+
+        <Button
             android:id="@+id/btn_edit_music_merge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

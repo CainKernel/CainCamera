@@ -55,6 +55,9 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
 
     private Activity mActivity;
 
+    // 背景音乐
+    private String mMusicPath;
+
     public CameraPreviewPresenter(CameraPreviewFragment target) {
         super(target);
         mCameraParam = CameraParam.getInstance();
@@ -364,7 +367,9 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
      * 打开音乐选择页面
      */
     public void onOpenMusicSelectPage() {
-
+        if (mCameraParam.musicSelectListener != null) {
+            mCameraParam.musicSelectListener.openMusicSelectPage();
+        }
     }
 
     /**
@@ -427,6 +432,14 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
      */
     public void setSpeed(float speed) {
 
+    }
+
+    /**
+     * 设置背景音乐
+     * @param path
+     */
+    public void setMusicPath(String path) {
+        mMusicPath = path;
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.cgfay.video.fragment;
+package com.cgfay.uitls.fragment;
 
 import android.database.Cursor;
 import android.os.Bundle;
@@ -11,10 +11,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.cgfay.video.R;
-import com.cgfay.video.adapter.LocalMusicAdapter;
-import com.cgfay.video.bean.Music;
-import com.cgfay.video.scanner.LocalMusicScanner;
+import com.cgfay.uitls.adapter.LocalMusicAdapter;
+import com.cgfay.uitls.bean.Music;
+import com.cgfay.uitls.scanner.LocalMusicScanner;
+import com.cgfay.utilslibrary.R;
 
 /**
  * 音乐选择页面

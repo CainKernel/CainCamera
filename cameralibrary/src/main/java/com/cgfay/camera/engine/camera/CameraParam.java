@@ -8,6 +8,7 @@ import com.cgfay.camera.engine.listener.OnFpsListener;
 import com.cgfay.camera.engine.model.AspectRatio;
 import com.cgfay.camera.engine.model.GalleryType;
 import com.cgfay.camera.listener.OnGallerySelectedListener;
+import com.cgfay.camera.listener.OnMusicSelectListener;
 import com.cgfay.camera.listener.OnPreviewCaptureListener;
 import com.cgfay.filter.glfilter.beauty.bean.BeautyParam;
 
@@ -91,6 +92,8 @@ public final class CameraParam {
     public OnGallerySelectedListener gallerySelectedListener;
     // 拍摄监听器
     public OnPreviewCaptureListener captureListener;
+    // 选音乐监听器
+    public OnMusicSelectListener musicSelectListener;
 
     // 预览回调
     public OnCameraCallback cameraCallback;
@@ -147,6 +150,7 @@ public final class CameraParam {
         mGalleryType = GalleryType.PICTURE;
         gallerySelectedListener = null;
         captureListener = null;
+        musicSelectListener = null;
         cameraCallback = null;
         captureCallback = null;
         fpsCallback = null;
@@ -179,6 +183,19 @@ public final class CameraParam {
             expectWidth = DEFAULT_4_3_WIDTH;
             expectHeight = DEFAULT_4_3_HEIGHT;
             currentRatio = Ratio_4_3;
+        }
+    }
+
+    /**
+     * 设置是否后置相机
+     * @param backCamera
+     */
+    public void setBackCamera(boolean backCamera) {
+        this.backCamera = backCamera;
+        if (backCamera) {
+            cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+        } else {
+            cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
         }
     }
 

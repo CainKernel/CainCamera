@@ -7,8 +7,8 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.cgfay.video.R;
-import com.cgfay.video.bean.Music;
-import com.cgfay.video.fragment.MusicSelectFragment;
+import com.cgfay.uitls.bean.Music;
+import com.cgfay.uitls.fragment.MusicSelectFragment;
 import com.cgfay.video.fragment.VideoEditFragment;
 
 public class VideoEditActivity extends AppCompatActivity implements VideoEditFragment.OnSelectMusicListener,

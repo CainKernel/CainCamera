@@ -6,15 +6,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 
+import com.cgfay.camera.engine.camera.CameraParam;
 import com.cgfay.cameralibrary.R;
 import com.cgfay.camera.fragment.CameraPreviewFragment;
 import com.cgfay.facedetect.engine.FaceTracker;
+import com.cgfay.uitls.fragment.MusicSelectFragment;
 import com.cgfay.uitls.utils.NotchUtils;
+import com.cgfay.uitls.utils.StatusBarUtils;
 
 /**
  * 相机预览页面
@@ -22,6 +27,7 @@ import com.cgfay.uitls.utils.NotchUtils;
 public class CameraActivity extends AppCompatActivity {
 
     private static final String FRAGMENT_CAMERA = "fragment_camera";
+    private static final String FRAGMENT_MUSIC = "fragment_music";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +42,32 @@ public class CameraActivity extends AppCompatActivity {
                     .commit();
         }
         faceTrackerRequestNetwork();
+
+        // 选择音乐监听器
+        CameraParam.getInstance().musicSelectListener = () -> {
+            MusicSelectFragment musicFragment = new MusicSelectFragment();
+            musicFragment.addOnMusicSelectedListener((music) -> {
+                getSupportFragmentManager().popBackStack();
+
+                CameraPreviewFragment cameraFragment = (CameraPreviewFragment)getSupportFragmentManager().findFragmentByTag(FRAGMENT_CAMERA);
+                if (cameraFragment != null) {
+                    cameraFragment.setMusicPath(music.getSongUrl());
+                }
+            });
+            this.getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.container, musicFragment)
+                    .addToBackStack(FRAGMENT_MUSIC)
+                    .commit();
+        };
+
+        // 判断是否存在刘海屏
+        if (NotchUtils.hasNotchScreen(this)) {
+            View view = findViewById(R.id.view_safety_area);
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) view.getLayoutParams();
+            params.height = StatusBarUtils.getStatusBarHeight(this);
+            view.setLayoutParams(params);
+        }
     }
 
     /**
@@ -61,6 +93,12 @@ public class CameraActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         unRegisterHomeReceiver();
+    }
+
+    @Override
+    protected void onDestroy() {
+        CameraParam.getInstance().musicSelectListener = null;
+        super.onDestroy();
     }
 
     private void handleFullScreen() {

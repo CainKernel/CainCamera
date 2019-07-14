@@ -1,4 +1,4 @@
-package com.cgfay.video.bean;
+package com.cgfay.uitls.bean;
 
 import android.database.Cursor;
 import android.os.Parcel;

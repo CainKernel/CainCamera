@@ -1,4 +1,4 @@
-package com.cgfay.video.scanner;
+package com.cgfay.uitls.scanner;
 
 import android.content.Context;
 import android.net.Uri;

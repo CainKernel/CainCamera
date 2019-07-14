@@ -1,4 +1,4 @@
-package com.cgfay.video.adapter;
+package com.cgfay.uitls.adapter;
 
 import android.database.Cursor;
 import android.support.annotation.NonNull;
@@ -9,9 +9,10 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.cgfay.uitls.bean.Music;
 import com.cgfay.uitls.utils.StringUtils;
-import com.cgfay.video.R;
-import com.cgfay.video.bean.Music;
+import com.cgfay.utilslibrary.R;
+
 
 /**
  * 本地音乐适配器
@@ -27,7 +28,7 @@ public class LocalMusicAdapter extends LocalCursorAdapter<RecyclerView.ViewHolde
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_video_music_select_view, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_music_select_view, parent, false);
         return new MusicViewHolder(view);
     }
 

@@ -50,30 +50,26 @@ public class PermissionConfirmDialogFragment extends DialogFragment {
         mErrorForceClose = getArguments().getBoolean(ERROR_CLOSE);
         return new AlertDialog.Builder(getActivity())
                 .setMessage(getArguments().getString(ARG_MESSAGE))
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (mRequestCode == PermissionUtils.REQUEST_CAMERA_PERMISSION) {
-                            parent.requestPermissions(new String[]{Manifest.permission.CAMERA},
-                                    PermissionUtils.REQUEST_CAMERA_PERMISSION);
-                        } else if (mRequestCode == PermissionUtils.REQUEST_STORAGE_PERMISSION) {
-                            parent.requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                    PermissionUtils.REQUEST_STORAGE_PERMISSION);
-                        } else if (mRequestCode == PermissionUtils.REQUEST_SOUND_PERMISSION) {
-                            parent.requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},
-                                    PermissionUtils.REQUEST_SOUND_PERMISSION);
-                        }
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    dialog.dismiss();
+                    if (mRequestCode == PermissionUtils.REQUEST_CAMERA_PERMISSION) {
+                        parent.requestPermissions(new String[]{Manifest.permission.CAMERA},
+                                PermissionUtils.REQUEST_CAMERA_PERMISSION);
+                    } else if (mRequestCode == PermissionUtils.REQUEST_STORAGE_PERMISSION) {
+                        parent.requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                PermissionUtils.REQUEST_STORAGE_PERMISSION);
+                    } else if (mRequestCode == PermissionUtils.REQUEST_SOUND_PERMISSION) {
+                        parent.requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},
+                                PermissionUtils.REQUEST_SOUND_PERMISSION);
                     }
                 })
                 .setNegativeButton(android.R.string.cancel,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                if (mErrorForceClose) {
-                                    Activity activity = parent.getActivity();
-                                    if (activity != null) {
-                                        activity.finish();
-                                    }
+                        (dialog, which) -> {
+                            dialog.dismiss();
+                            if (mErrorForceClose) {
+                                Activity activity = parent.getActivity();
+                                if (activity != null) {
+                                    activity.finish();
                                 }
                             }
                         })
