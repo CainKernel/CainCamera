@@ -260,6 +260,9 @@ public class SpeedRecordActivity extends AppCompatActivity implements View.OnCli
         @Override
         public void swipeBack() {
             mFilterIndex++;
+            if (mFilterIndex >= FilterHelper.getFilterList().size()) {
+                mFilterIndex = 0;
+            }
             changeDynamicFilter(mFilterIndex);
         }
 

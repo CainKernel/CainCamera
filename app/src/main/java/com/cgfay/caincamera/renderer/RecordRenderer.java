@@ -106,7 +106,9 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
         int currentTexture = mInputTexture;
         currentTexture = mInputFilter.drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
         // 将德罗斯特滤镜绘制到FBO中
-        currentTexture = mColorFilter.drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
+        if (mColorFilter != null) {
+            currentTexture = mColorFilter.drawFrameBuffer(currentTexture, mVertexBuffer, mTextureBuffer);
+        }
         // 将最终的结果会是预览
         mImageFilter.drawFrame(currentTexture, mDisplayVertexBuffer, mDisplayTextureBuffer);
         // 录制视频
