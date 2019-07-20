@@ -16,10 +16,18 @@ public class TextureRotationUtils {
     };
 
     public static final float TextureVertices[] = {
-            0.0f, 0.0f,     // 0 bottom left
-            1.0f, 0.0f,     // 1 bottom right
-            0.0f, 1.0f,     // 2 top left
-            1.0f, 1.0f      // 3 top right
+            0.0f, 0.0f,     // 0 left bottom
+            1.0f, 0.0f,     // 1 right bottom
+            0.0f, 1.0f,     // 2 left top
+            1.0f, 1.0f      // 3 right top
+    };
+
+    // x轴反过来
+    public static final float TextureVertices_flipx[] = {
+            1.0f, 0.0f,     // 0 right bottom
+            0.0f, 0.0f,     // 1 left  bottom
+            1.0f, 1.0f,     // 2 right top
+            0.0f, 1.0f      // 3 left  top
     };
 
     public static final float TextureVertices_90[] = {

@@ -74,7 +74,8 @@ public class DynamicStickerNormalFilter extends DynamicStickerBaseFilter {
     private void initBuffer() {
         releaseBuffer();
         mVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
-        mTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
+        // 备注：由于后面的透视变换计算把贴纸纹理的左右反过来了，这里用纹理坐标做个纠正
+        mTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices_flipx);
     }
 
     /**
