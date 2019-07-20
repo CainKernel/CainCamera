@@ -497,7 +497,11 @@ public final class FaceTracker {
 
                     // 姿态角和置信度
                     oneFace.pitch = face.pitch;
-                    oneFace.yaw = face.yaw;
+                    if (faceTrackParam.isBackCamera) {
+                        oneFace.yaw = -face.yaw;
+                    } else {
+                        oneFace.yaw = face.yaw;
+                    }
                     oneFace.roll = face.roll;
                     if (faceTrackParam.previewTrack) {
 
