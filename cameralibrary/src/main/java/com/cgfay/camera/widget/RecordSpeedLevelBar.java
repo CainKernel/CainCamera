@@ -145,11 +145,11 @@ public class RecordSpeedLevelBar extends LinearLayout {
      */
     public enum RecordSpeed {
 
-        SPEED_L0(-2, 0.50f),    // L0 : 极慢 (倍速: 0.50)
-        SPEED_L1(-1, 0.75f),     // L1 : 较慢 (倍速: 0.75)
+        SPEED_L0(-2, 1/3f),     // L0 : 极慢 (倍速: 1/3)
+        SPEED_L1(-1, 1/2f),     // L1 : 较慢 (倍速: 1/2)
         SPEED_L2(0, 1.0f),      // L2 : 标准 (倍速: 1.0, 默认速度)
         SPEED_L3(1, 2.0f),      // L3 : 较快 (倍速: 2.0)
-        SPEED_L4(2, 4.0f);      // L4 : 极快 (倍速: 4.0)
+        SPEED_L4(2, 3.0f);      // L4 : 极快 (倍速: 3.0)
 
         private int type;
         private float speed;

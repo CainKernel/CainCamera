@@ -123,20 +123,14 @@ public class VideoEncoder {
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
                 encoderOutputBuffers = mMediaCodec.getOutputBuffers();
             } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-//                if (mMuxerStarted) {
-//                    throw new RuntimeException("format changed twice");
-//                }
-//                MediaFormat newFormat = mMediaCodec.getOutputFormat();
-//                if (VERBOSE) {
-//                    Log.d(TAG, "encoder output format changed: " + newFormat.getString(MediaFormat.KEY_MIME));
-//                }
-//                // 提取视频轨道并打开复用器
-//                mTrackIndex = mMediaMuxer.addTrack(newFormat);
-//                mMediaMuxer.start();
-//                mMuxerStarted = true;
-
+                if (mMuxerStarted) {
+                    throw new RuntimeException("format changed twice");
+                }
                 MediaFormat newFormat = mMediaCodec.getOutputFormat();
-                Log.d(TAG, "encoder output format changed: " + newFormat.getString(MediaFormat.KEY_MIME));
+                if (VERBOSE) {
+                    Log.d(TAG, "encoder output format changed: " + newFormat.getString(MediaFormat.KEY_MIME));
+                }
+                // 提取视频轨道并打开复用器
                 mTrackIndex = mMediaMuxer.addTrack(newFormat);
                 mMediaMuxer.start();
                 mMuxerStarted = true;
@@ -202,7 +196,6 @@ public class VideoEncoder {
      * @param info
      */
     private void calculateTimeUs(MediaCodec.BufferInfo info) {
-        info.presentationTimeUs = (long) (info.presentationTimeUs / mVideoParams.getSpeedMode().getSpeed());
         if (mStartTimeStamp == 0) {
             mStartTimeStamp = info.presentationTimeUs;
         } else {

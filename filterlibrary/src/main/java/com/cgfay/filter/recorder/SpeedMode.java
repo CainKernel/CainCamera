@@ -6,11 +6,11 @@ package com.cgfay.filter.recorder;
  * @date 2019/6/30
  */
 public enum SpeedMode {
-    MODE_EXTRA_SLOW(1, 0.50f),  // 极慢
-    MODE_SLOW(2, 0.75f),         // 慢
+    MODE_EXTRA_SLOW(1, 1/3f),  // 极慢
+    MODE_SLOW(2, 0.5f),         // 慢
     MODE_NORMAL(3, 1.0f),       // 标准
     MODE_FAST(4, 2.0f),         // 快
-    MODE_EXTRA_FAST(5, 4.0f);   // 极快
+    MODE_EXTRA_FAST(5, 3.0f);   // 极快
 
     private int type;
     private float speed;
@@ -45,15 +45,15 @@ public enum SpeedMode {
     }
 
     public static SpeedMode valueOf(float speed) {
-        if (speed == 0.50f) {
+        if (speed == 1/3f) {
             return MODE_EXTRA_SLOW;
-        } else if (speed == 0.75f) {
+        } else if (speed == 1/2f) {
             return MODE_SLOW;
         } else if (speed == 1.0f) {
             return MODE_NORMAL;
         } else if (speed == 2.0f) {
             return MODE_FAST;
-        } else if (speed == 4.0f) {
+        } else if (speed == 3.0f) {
             return MODE_EXTRA_FAST;
         } else {
             return MODE_NORMAL;

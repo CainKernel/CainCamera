@@ -56,6 +56,10 @@ public class VideoRecorder implements Runnable, VideoEncoder.OnEncodingListener 
     // 录制监听器
     private OnRecordListener mRecordListener;
 
+    // 倍速录制索引你
+    private int mDrawFrameIndex;  // 绘制帧索引，用于表示预览的渲染次数，用于大于1.0倍速录制的丢帧操作
+    private long mFirstTime; // 录制开始的时间，方便开始录制
+
     /**
      * 设置录制监听器
      * @param listener
@@ -88,6 +92,8 @@ public class VideoRecorder implements Runnable, VideoEncoder.OnEncodingListener 
             }
         }
 
+        mDrawFrameIndex = 0;
+        mFirstTime = -1;
         mHandler.sendMessage(mHandler.obtainMessage(MSG_START_RECORDING, params));
     }
 
@@ -293,11 +299,50 @@ public class VideoRecorder implements Runnable, VideoEncoder.OnEncodingListener 
         if (mVideoEncoder == null) {
             return;
         }
+        SpeedMode mode = mVideoEncoder.getVideoParams().getSpeedMode();
+        // 快速录制的时候，需要做丢帧处理
+        if (mode == SpeedMode.MODE_FAST || mode == SpeedMode.MODE_EXTRA_FAST) {
+            int interval = 2;
+            if (mode == SpeedMode.MODE_EXTRA_FAST) {
+                interval = 3;
+            }
+            if (mDrawFrameIndex % interval == 0) {
+                drawFrame(texture, timestampNanos);
+            }
+        } else {
+            drawFrame(texture, timestampNanos);
+        }
+        mDrawFrameIndex++;
+    }
+
+    /**
+     * 绘制编码一帧数据
+     * @param texture
+     * @param timestampNanos
+     */
+    private void drawFrame(int texture, long timestampNanos) {
         mInputWindowSurface.makeCurrent();
         mImageFilter.drawFrame(texture, mVertexBuffer, mTextureBuffer);
-        mInputWindowSurface.setPresentationTime(timestampNanos);
+        mInputWindowSurface.setPresentationTime(getPTS(timestampNanos));
         mInputWindowSurface.swapBuffers();
         mVideoEncoder.drainEncoder(false);
     }
 
+
+    /**
+     * 计算时间戳
+     * @return
+     */
+    private long getPTS(long timestameNanos) {
+        SpeedMode mode = mVideoEncoder.getVideoParams().getSpeedMode();
+        if (mode == SpeedMode.MODE_NORMAL) { // 正常录制的时候，使用SurfaceTexture传递过来的时间戳
+            return timestameNanos;
+        } else { // 倍速状态下，需要根据帧间间隔来算实际的时间戳
+            long time = System.nanoTime();
+            if (mFirstTime <= 0) {
+                mFirstTime = time;
+            }
+            return (long) (mFirstTime + (time - mFirstTime) / mode.getSpeed());
+        }
+    }
 }
