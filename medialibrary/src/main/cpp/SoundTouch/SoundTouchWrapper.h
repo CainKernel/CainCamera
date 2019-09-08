@@ -22,6 +22,8 @@ public:
     void create();
     // 转换
     int translate(short* data, float speed, float pitch, int len, int bytes_per_sample, int n_channel, int n_sampleRate);
+    // 清空
+    void flush();
     // 销毁
     void destroy();
     // 获取SoundTouch对象

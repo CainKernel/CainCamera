@@ -8,16 +8,11 @@ import android.opengl.EGLContext;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.cgfay.caincamera.activity.SpeedRecordActivity;
-import com.cgfay.filter.glfilter.color.bean.DynamicColor;
-import com.cgfay.filter.glfilter.resource.FilterHelper;
-import com.cgfay.filter.glfilter.resource.ResourceJsonCodec;
 import com.cgfay.filter.recorder.MediaInfo;
-import com.cgfay.filter.recorder.VideoCommandQueue;
 import com.cgfay.filter.recorder.AudioParams;
-import com.cgfay.filter.recorder.MediaRecorder;
+import com.cgfay.filter.recorder.HWMediaRecorder;
 import com.cgfay.camera.engine.camera.CameraEngine;
 import com.cgfay.camera.engine.camera.CameraParam;
 import com.cgfay.camera.utils.PathConstraints;
@@ -26,13 +21,12 @@ import com.cgfay.filter.recorder.OnRecordStateListener;
 import com.cgfay.filter.recorder.RecordInfo;
 import com.cgfay.filter.recorder.SpeedMode;
 import com.cgfay.filter.recorder.VideoParams;
+import com.cgfay.media.CainCommandEditor;
 import com.cgfay.uitls.utils.FileUtils;
 import com.cgfay.video.activity.VideoEditActivity;
 
 import java.io.File;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.IllegalFormatCodePointException;
 import java.util.List;
 
 /**
@@ -60,7 +54,7 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
     private long mRemainDuration;
 
     // 视频编码器
-    private MediaRecorder mMediaRecorder;
+    private HWMediaRecorder mHWMediaRecorder;
 
     // 视频列表
     private List<MediaInfo> mVideoList = new ArrayList<>();
@@ -70,14 +64,14 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
     // 录制视频信息
     private RecordInfo mVideoInfo;
 
-    // 视频合成命令队列
-    private VideoCommandQueue mCommandQueue;
+    // 命令行编辑器
+    private CainCommandEditor mCommandEditor;
 
     public RecordPresenter(SpeedRecordActivity activity) {
         mActivity = activity;
 
         // 创建视频流
-        mMediaRecorder = new MediaRecorder(this);
+        mHWMediaRecorder = new HWMediaRecorder(this);
 
         // 视频参数
         mVideoParams = new VideoParams();
@@ -87,8 +81,8 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
         mAudioParams = new AudioParams();
         mAudioParams.setAudioPath(getAudioTempPath(mActivity));
 
-        // 命令队列
-        mCommandQueue = new VideoCommandQueue();
+        // 命令行编辑器
+        mCommandEditor = new CainCommandEditor();
     }
 
     /**
@@ -110,12 +104,12 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
      */
     public void release() {
         mActivity = null;
-        if (mMediaRecorder != null) {
-            mMediaRecorder.release();
+        if (mHWMediaRecorder != null) {
+            mHWMediaRecorder.release();
         }
-        if (mCommandQueue != null) {
-            mCommandQueue.release();
-            mCommandQueue = null;
+        if (mCommandEditor != null) {
+            mCommandEditor.release();
+            mCommandEditor = null;
         }
     }
 
@@ -133,7 +127,7 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
      * @param seconds
      */
     public void setRecordSeconds(int seconds) {
-        mMaxDuration = mRemainDuration = seconds * MediaRecorder.SECOND_IN_US;
+        mMaxDuration = mRemainDuration = seconds * HWMediaRecorder.SECOND_IN_US;
         mVideoParams.setMaxDuration(mMaxDuration);
         mAudioParams.setMaxDuration(mMaxDuration);
     }
@@ -143,8 +137,8 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
      * @param enable
      */
     public void setAudioEnable(boolean enable) {
-        if (mMediaRecorder != null) {
-            mMediaRecorder.setEnableAudio(enable);
+        if (mHWMediaRecorder != null) {
+            mHWMediaRecorder.setEnableAudio(enable);
         }
     }
 
@@ -155,7 +149,7 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
         if (mOperateStarted) {
             return;
         }
-        mMediaRecorder.startRecord(mVideoParams, mAudioParams);
+        mHWMediaRecorder.startRecord(mVideoParams, mAudioParams);
         mOperateStarted = true;
     }
 
@@ -167,7 +161,7 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
             return;
         }
         mOperateStarted = false;
-        mMediaRecorder.stopRecord();
+        mHWMediaRecorder.stopRecord();
     }
 
     @Override
@@ -193,13 +187,13 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
             mCurrentProgress = info.getDuration() * 1.0f / mVideoParams.getMaxDuration();
         }
         mActivity.showViews();
-        if (mMediaRecorder.enableAudio() && (mAudioInfo == null || mVideoInfo == null)) {
+        if (mHWMediaRecorder.enableAudio() && (mAudioInfo == null || mVideoInfo == null)) {
             return;
         }
-        if (mMediaRecorder.enableAudio()) {
+        if (mHWMediaRecorder.enableAudio()) {
             final String currentFile = generateOutputPath();
             FileUtils.createFile(currentFile);
-            mCommandQueue.execCommand(VideoCommandQueue.mergeAudioVideo(mVideoInfo.getFileName(),
+            mCommandEditor.execCommand(CainCommandEditor.mergeAudioVideo(mVideoInfo.getFileName(),
                     mAudioInfo.getFileName(), currentFile),
                     (result) -> {
                         if (result == 0) {
@@ -260,8 +254,8 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
      * @param timestamp
      */
     public void onRecordFrameAvailable(int texture, long timestamp) {
-        if (mOperateStarted && mMediaRecorder != null && mMediaRecorder.isRecording()) {
-            mMediaRecorder.frameAvailable(texture, timestamp);
+        if (mOperateStarted && mHWMediaRecorder != null && mHWMediaRecorder.isRecording()) {
+            mHWMediaRecorder.frameAvailable(texture, timestamp);
         }
     }
 
@@ -346,7 +340,7 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
                 }
             }
             String finalPath = generateOutputPath();
-            mCommandQueue.execCommand(VideoCommandQueue.mergeVideo(mActivity, videos, finalPath),
+            mCommandEditor.execCommand(CainCommandEditor.concatVideo(mActivity, videos, finalPath),
                     (result) -> {
                         mActivity.hideProgressDialog();
                         if (result == 0) {
@@ -414,7 +408,7 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
     private static String getVideoTempPath(@NonNull Context context) {
         String directoryPath;
         // 判断外部存储是否可用，如果不可用则使用内部存储路径
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) && context.getExternalCacheDir() != null) {
             directoryPath = context.getExternalCacheDir().getAbsolutePath();
         } else { // 使用内部存储缓存目录
             directoryPath = context.getCacheDir().getAbsolutePath();

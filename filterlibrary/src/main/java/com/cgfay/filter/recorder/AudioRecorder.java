@@ -17,11 +17,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
- * 音频录制器
+ * 音频AAC录制器
  * @author CainHuang
  * @date 2019/6/30
  */
-public class AudioRecorder implements Runnable {
+public final class AudioRecorder implements Runnable {
 
     private static final int SECOND_IN_US = 1000000;
 
@@ -54,7 +54,7 @@ public class AudioRecorder implements Runnable {
         return MediaType.AUDIO;
     }
 
-    public void setOnRecordListner(OnRecordListener listener) {
+    public void setOnRecordListener(OnRecordListener listener) {
         mRecordListener = listener;
     }
 
@@ -305,7 +305,7 @@ public class AudioRecorder implements Runnable {
      */
     private void addADTSHeader(byte[] packet, int length) {
         int audioType = 2;  // AAC LC, Audio Object Type
-        int freqIndex = 4;  // 48KHz, Sampling Frequency Index
+        int freqIndex = 4;  // 44.1KHz, Sampling Frequency Index
         int channels = 1;   // 1 channel, Channel Configuration
         packet[0] = (byte) 0xFF;
         packet[1] = (byte) 0xF9;

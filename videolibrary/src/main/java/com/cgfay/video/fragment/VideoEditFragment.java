@@ -30,7 +30,7 @@ import android.widget.TextView;
 import com.cgfay.filter.glfilter.resource.FilterHelper;
 import com.cgfay.filter.glfilter.resource.bean.ResourceData;
 import com.cgfay.media.CainMediaPlayer;
-import com.cgfay.media.CainShortVideoEditor;
+import com.cgfay.media.CainMediaEditor;
 import com.cgfay.media.IMediaPlayer;
 import com.cgfay.uitls.fragment.BackPressedDialogFragment;
 import com.cgfay.uitls.utils.DensityUtils;
@@ -110,7 +110,7 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     private MediaPlayer mAudioPlayer;
     private CainMediaPlayer mCainMediaPlayer;
     private AudioManager mAudioManager;
-    private CainShortVideoEditor mVideoEditor;
+    private CainMediaEditor mMediaEditor;
     private int mPlayViewWidth;
     private int mPlayViewHeight;
     private int mVideoWidth;

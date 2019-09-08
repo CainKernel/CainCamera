@@ -28,8 +28,8 @@ import android.widget.Toast;
 
 
 import com.cgfay.media.CainMediaPlayer;
-import com.cgfay.media.CainShortVideoEditor;
-import com.cgfay.media.IMediaPlayer;
+import com.cgfay.media.CainMediaEditor;
+import com.cgfay.media.VideoEditorUtil;
 import com.cgfay.uitls.utils.FileUtils;
 import com.cgfay.video.R;
 import com.cgfay.video.activity.VideoEditActivity;
@@ -73,7 +73,7 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
     private boolean mSeeking = false;
     private CainMediaPlayer mCainMediaPlayer;
     private AudioManager mAudioManager;
-    private CainShortVideoEditor mVideoEditor;
+    private CainMediaEditor mMediaEditor;
 
     public static VideoCutFragment newInstance() {
         return new VideoCutFragment();
@@ -103,8 +103,10 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
         super.onActivityCreated(savedInstanceState);
 
         if (mAudioManager == null) {
-            mAudioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
-            mAudioManager.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            mAudioManager = (AudioManager) mActivity.getSystemService(Context.AUDIO_SERVICE);
+            if (mAudioManager != null) {
+                mAudioManager.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            }
         }
 
         mContentView.findViewById(R.id.video_crop_back).setOnClickListener(this);
@@ -114,19 +116,16 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
         mVideoPlayerView.setSurfaceTextureListener(mSurfaceTextureListener);
 
         mVideoSpeedLevelBar = mContentView.findViewById(R.id.video_crop_speed_bar);
-        mVideoSpeedLevelBar.setOnSpeedChangedListener(new VideoSpeedLevelBar.OnSpeedChangedListener() {
-            @Override
-            public void onSpeedChanged(VideoSpeed speed) {
-                if (mCainMediaPlayer != null) {
-                    mVideoSpeed = speed;
-                    float rate = speed.getSpeed();
-                    float pitch = 1.0f / rate;
-                    mCainMediaPlayer.setRate(rate);
-                    mCainMediaPlayer.setPitch(pitch);
-                    mCainMediaPlayer.seekTo(mCutStart);
-                    if (mVideoCutViewBar != null) {
-                        mVideoCutViewBar.setSpeed(mVideoSpeed);
-                    }
+        mVideoSpeedLevelBar.setOnSpeedChangedListener(speed -> {
+            if (mCainMediaPlayer != null) {
+                mVideoSpeed = speed;
+                float rate = speed.getSpeed();
+                float pitch = 1.0f / rate;
+                mCainMediaPlayer.setRate(rate);
+                mCainMediaPlayer.setPitch(pitch);
+                mCainMediaPlayer.seekTo(mCutStart);
+                if (mVideoCutViewBar != null) {
+                    mVideoCutViewBar.setSpeed(mVideoSpeed);
                 }
             }
         });
@@ -151,18 +150,23 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onStart() {
         super.onStart();
+        Log.d(TAG, "onStart: ");
         initMediaPlayer();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        openMediaPlayer();
+        Log.d(TAG, "onResume: ");
+        if (mCainMediaPlayer != null) {
+            mCainMediaPlayer.resume();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        Log.d(TAG, "onPause: ");
         if (mCainMediaPlayer != null) {
             mCainMediaPlayer.pause();
         }
@@ -234,13 +238,10 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
         AnimatorSet animatorSet = new AnimatorSet();
         ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
         animator.setDuration(400);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float rotate = (float)animation.getAnimatedValue() * 90;
-                // 设置旋转矩阵
-                setupMatrix(width, height, (int) (mCurrentRotate + rotate));
-            }
+        animator.addUpdateListener(animation -> {
+            float rotate = (float)animation.getAnimatedValue() * 90;
+            // 设置旋转矩阵
+            setupMatrix(width, height, (int) (mCurrentRotate + rotate));
         });
         animator.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -319,53 +320,35 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
 
     private void openMediaPlayer() {
         mContentView.setKeepScreenOn(true);
-        mCainMediaPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(IMediaPlayer mp) {
-                mVideoDuration = mCainMediaPlayer.getDuration();
-                mp.start();
+        mCainMediaPlayer.setOnPreparedListener(mp -> {
+            mVideoDuration = mCainMediaPlayer.getDuration();
+            mp.start();
+        });
+        mCainMediaPlayer.setOnVideoSizeChangedListener((mediaPlayer, width, height) -> {
+            if (mediaPlayer.getRotate() % 180 != 0) {
+                mVideoPlayerView.setVideoSize(height, width);
+            } else {
+                mVideoPlayerView.setVideoSize(width, height);
             }
         });
-        mCainMediaPlayer.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener() {
-            @Override
-            public void onVideoSizeChanged(IMediaPlayer mediaPlayer, int width, int height) {
-                if (mediaPlayer.getRotate() % 180 != 0) {
-                    mVideoPlayerView.setVideoSize(height, width);
-                } else {
-                    mVideoPlayerView.setVideoSize(width, height);
-                }
-            }
-        });
-        mCainMediaPlayer.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(IMediaPlayer mp) {
-
-            }
+        mCainMediaPlayer.setOnCompletionListener(mp -> {
+            Log.d(TAG, "openMediaPlayer: onComplete");
         });
 
-        mCainMediaPlayer.setOnErrorListener(new IMediaPlayer.OnErrorListener() {
-            @Override
-            public boolean onError(IMediaPlayer mp, int what, int extra) {
-                Log.d(TAG, "onError: what = " + what + ", extra = " + extra);
-                return false;
-            }
+        mCainMediaPlayer.setOnErrorListener((mp, what, extra) -> {
+            Log.d(TAG, "onError: what = " + what + ", extra = " + extra);
+            return false;
         });
 
-        mCainMediaPlayer.setOnSeekCompleteListener(new IMediaPlayer.OnSeekCompleteListener() {
-            @Override
-            public void onSeekComplete(IMediaPlayer mp) {
-                mSeeking = false;
-            }
+        mCainMediaPlayer.setOnSeekCompleteListener(mp -> {
+            mSeeking = false;
         });
 
-        mCainMediaPlayer.setOnCurrentPositionListener(new CainMediaPlayer.OnCurrentPositionListener() {
-            @Override
-            public void onCurrentPosition(long current, long duration) {
-                if (!mSeeking) {
-                    if (current > (mCutRange + mCutStart) * mVideoSpeed.getSpeed()) {
-                        mCainMediaPlayer.seekTo(mCutStart * mVideoSpeed.getSpeed());
-                        mSeeking = true;
-                    }
+        mCainMediaPlayer.setOnCurrentPositionListener((current, duration) -> {
+            if (!mSeeking) {
+                if (current > (mCutRange + mCutStart) * mVideoSpeed.getSpeed()) {
+                    mCainMediaPlayer.seekTo(mCutStart * mVideoSpeed.getSpeed());
+                    mSeeking = true;
                 }
             }
         });
@@ -433,79 +416,65 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
      */
     private void cutVideo() {
         mLayoutProgress.setVisibility(View.VISIBLE);
-        // TODO crop video
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (mCainMediaPlayer != null) {
-                    mCainMediaPlayer.pause();
-                }
-                if (mVideoEditor == null) {
-                    mVideoEditor = new CainShortVideoEditor();
-                }
-                mVideoEditor.setOnVideoEditorProcessListener(mProcessListener);
+        if (mCainMediaPlayer != null) {
+            mCainMediaPlayer.pause();
+        }
+        if (mMediaEditor == null) {
+            mMediaEditor = new CainMediaEditor();
+        }
 
-                float start = mVideoSpeed.getSpeed() * mCutStart;
-                float duration = mVideoSpeed.getSpeed() * mCutRange;
-                if (duration > mVideoDuration) {
-                    duration = mVideoDuration;
-                }
-                // TODO videoCutSpeed方法是通过native层来实现的，但目前倍速时音频部分还没想好怎么处理才不会出现杂音问题，暂时先弄完后面的编辑页面再回来弄这个
-                String videoPath = CainShortVideoEditor.VideoEditorUtil.createPathInBox("mp4");
-                int ret = mVideoEditor.videoCutSpeed(mVideoPath, videoPath, start, duration, mVideoSpeed.getSpeed());
-                // 成功则释放播放器并跳转至编辑页面
-                if (ret == 0 && FileUtils.fileExists(videoPath)) {
-                    // 需要释放销毁播放器，后面要用到播放器，防止内存占用过大
-                    if (mCainMediaPlayer != null) {
-                        mCainMediaPlayer.stop();
-                        mCainMediaPlayer.release();
-                        mCainMediaPlayer = null;
-                    }
-                    if (mSurface != null) {
-                        mSurface.release();
-                        mSurface = null;
-                    }
-                    if (mVideoEditor != null) {
-                        mVideoEditor.release();
-                        mVideoEditor = null;
-                    }
-                    Intent intent = new Intent(mActivity, VideoEditActivity.class);
-                    intent.putExtra(VideoEditActivity.VIDEO_PATH, videoPath);
-                    startActivity(intent);
-                } else {
-                    Log.e(TAG, "video cut's error!");
-                    if (mCainMediaPlayer != null) {
-                        mCainMediaPlayer.start();
-                    }
-                }
-                mActivity.runOnUiThread(new Runnable() {
+        float start = mVideoSpeed.getSpeed() * mCutStart;
+        float duration = mVideoSpeed.getSpeed() * mCutRange;
+        if (duration > mVideoDuration) {
+            duration = mVideoDuration;
+        }
+        String videoPath = VideoEditorUtil.createPathInBox(mActivity, "mp4");
+        mMediaEditor.videoSpeedCut(mVideoPath, videoPath, start, duration, mVideoSpeed.getSpeed(),
+                new CainMediaEditor.OnEditProcessListener() {
                     @Override
-                    public void run() {
-                        mLayoutProgress.setVisibility(View.GONE);
+                    public void onProcessing(int percent) {
+                        mActivity.runOnUiThread(() -> {
+                            mCvCropProgress.setProgress(percent);
+                            mTvCropProgress.setText(percent + "%");
+                        });
+                    }
+
+                    @Override
+                    public void onSuccess() {
+                        mActivity.runOnUiThread(() -> {
+                            mLayoutProgress.setVisibility(View.GONE);
+                            // 成功则释放播放器并跳转至编辑页面
+                            if (FileUtils.fileExists(videoPath)) {
+                                // 需要释放销毁播放器，后面要用到播放器，防止内存占用过大
+                                if (mCainMediaPlayer != null) {
+                                    mCainMediaPlayer.stop();
+                                    mCainMediaPlayer.release();
+                                    mCainMediaPlayer = null;
+                                }
+                                if (mSurface != null) {
+                                    mSurface.release();
+                                    mSurface = null;
+                                }
+                                if (mMediaEditor != null) {
+                                    mMediaEditor.release();
+                                    mMediaEditor = null;
+                                }
+                                Intent intent = new Intent(mActivity, VideoEditActivity.class);
+                                intent.putExtra(VideoEditActivity.VIDEO_PATH, videoPath);
+                                startActivity(intent);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(String msg) {
+                        mActivity.runOnUiThread(() -> {
+                            Toast.makeText(mActivity, "processing error：" + msg, Toast.LENGTH_SHORT).show();
+                            if (mCainMediaPlayer != null) {
+                                mCainMediaPlayer.start();
+                            }
+                        });
                     }
                 });
-            }
-        }).start();
     }
-
-    private CainShortVideoEditor.OnVideoEditorProcessListener mProcessListener = new CainShortVideoEditor.OnVideoEditorProcessListener() {
-
-        @Override
-        public void onProcessing(int time) {
-            Log.d(TAG, "onProcessing: time = " + time + "s" + ", duration = " + mVideoDuration);
-            if (mVideoSpeed.getSpeed() != 1.0) {
-                float percent = time * 1000f / mCutRange * 100;
-                if (percent > 100) {
-                    percent = 100;
-                }
-                mCvCropProgress.setProgress(percent);
-                mTvCropProgress.setText(percent + "%");
-            }
-        }
-
-        @Override
-        public void onError() {
-            Toast.makeText(mActivity, "processing error", Toast.LENGTH_SHORT).show();
-        }
-    };
 }

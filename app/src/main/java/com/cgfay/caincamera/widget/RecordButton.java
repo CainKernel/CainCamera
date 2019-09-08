@@ -5,6 +5,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -26,6 +28,10 @@ public class RecordButton extends TextView {
 
     private OnRecordListener mListener;
 
+    private boolean mEnable;
+
+    private Handler mMainHandler;
+
     public RecordButton(Context context) {
         super(context);
         init();
@@ -40,6 +46,8 @@ public class RecordButton extends TextView {
         setBackground(null);
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setColor(mBackgroundColor);
+        mEnable = true;
+        mMainHandler = new Handler(Looper.getMainLooper());
     }
 
     @Override
@@ -56,12 +64,26 @@ public class RecordButton extends TextView {
         }
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                mEnable = false;
                 mListener.onRecordStart();
+                mMainHandler.postDelayed(()-> {
+                    mEnable = true;
+                    setEnabled(true);
+                }, 1000);
+                setEnabled(false);
                 startAnimation();
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                mListener.onRecordStop();
+                if (mEnable) {
+                    mMainHandler.post(()-> {
+                        mListener.onRecordStop();
+                    });
+                } else {
+                    mMainHandler.postDelayed(()-> {
+                        mListener.onRecordStop();
+                    }, 1000);
+                }
                 stopAnimation();
                 break;
         }

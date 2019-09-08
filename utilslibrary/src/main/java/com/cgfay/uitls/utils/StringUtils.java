@@ -266,6 +266,20 @@ public class StringUtils {
     }
 
     /**
+     * 生成标准时钟
+     * @param totalMillisSeconds
+     * @return
+     */
+    public static String generateStandardTime(long totalMillisSeconds) {
+        int millisSeconds = (int) (totalMillisSeconds % 1000);
+        int totalSeconds = (int) (totalMillisSeconds / 1000);
+        int seconds = totalSeconds % 60;
+        int minutes = (totalSeconds / 60) % 60;
+        int hours = totalSeconds / 3600;
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    /**
      * 转换文件大小
      * @param size
      * @return

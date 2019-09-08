@@ -52,35 +52,19 @@ public class MusicMergeActivity extends AppCompatActivity {
             fragment.addOnMusicSelectedListener(listener);
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.fragment_content, fragment)
-                    .addToBackStack(FRAGMENT_MUSIC_MERGE)
+                    .add(R.id.fragment_container, fragment)
                     .commit();
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        // 判断fragment栈中的个数，如果只有一个，则表示当前只处于视频编辑主页面点击返回
-        int backStackEntryCount = getSupportFragmentManager().getBackStackEntryCount();
-        if (backStackEntryCount == 1) {
-            finish();
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    private MusicSelectFragment.OnMusicSelectedListener listener = new MusicSelectFragment.OnMusicSelectedListener() {
-        @Override
-        public void onMusicSelected(Music music) {
-            MusicMergeFragment fragment = MusicMergeFragment.newInstance();
-            fragment.setVideoPath(mVideoPath);
-            fragment.setMusicPath(music.getSongUrl(), music.getDuration());
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_content, fragment, FRAGMENT_MUSIC_MERGE)
-                    .addToBackStack(FRAGMENT_MUSIC_MERGE)
-                    .commit();
-        }
+    private MusicSelectFragment.OnMusicSelectedListener listener = (music) -> {
+        MusicMergeFragment fragment = MusicMergeFragment.newInstance();
+        fragment.setVideoPath(mVideoPath);
+        fragment.setMusicPath(music.getSongUrl(), music.getDuration());
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment, FRAGMENT_MUSIC_MERGE)
+                .commit();
     };
 
 }

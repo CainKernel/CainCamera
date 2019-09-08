@@ -21,7 +21,7 @@ import java.nio.FloatBuffer;
  * @author CainHuang
  * @date 2019/6/30
  */
-public class VideoRecorder implements Runnable, VideoEncoder.OnEncodingListener {
+public final class VideoRecorder implements Runnable, VideoEncoder.OnEncodingListener {
 
     private static final String TAG = "VideoRecorder";
     private static final boolean VERBOSE = true;

@@ -19,7 +19,9 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.media.CainShortVideoEditor;
+import com.cgfay.media.CainCommandEditor;
+import com.cgfay.media.CainMediaEditor;
+import com.cgfay.media.VideoEditorUtil;
 import com.cgfay.uitls.utils.FileUtils;
 import com.cgfay.video.activity.VideoEditActivity;
 import com.cgfay.video.widget.CircleProgressView;
@@ -35,7 +37,7 @@ public class MusicMergeFragment extends Fragment implements View.OnClickListener
 
     private String mVideoPath;
     private String mMusicPath;
-    private long mMusicDuration;
+    private long mMusicDuration; // 音乐时长(ms)
 
     private View mContentView;
     private VideoView mVideoPlayerView;
@@ -53,7 +55,8 @@ public class MusicMergeFragment extends Fragment implements View.OnClickListener
     private TextView mTvCropProgress;
 
     private AudioManager mAudioManager;
-    private CainShortVideoEditor mVideoEditor;
+    private CainCommandEditor mCommandEditor;
+    private CainMediaEditor mMediaEditor;
 
     public static MusicMergeFragment newInstance() {
         return new MusicMergeFragment();
@@ -144,6 +147,14 @@ public class MusicMergeFragment extends Fragment implements View.OnClickListener
             mVideoPlayerView.pause();
             mVideoPlayerView = null;
         }
+        if (mCommandEditor != null) {
+            mCommandEditor.release();
+            mCommandEditor = null;
+        }
+        if (mMediaEditor != null) {
+            mMediaEditor.release();
+            mMediaEditor = null;
+        }
         super.onDestroy();
     }
 
@@ -151,6 +162,7 @@ public class MusicMergeFragment extends Fragment implements View.OnClickListener
     public void onClick(View v) {
         if (v.getId() == R.id.btn_test_music_merge) {
             musicMergeCommand();
+//            musicMerge();
         }
     }
 
@@ -170,89 +182,125 @@ public class MusicMergeFragment extends Fragment implements View.OnClickListener
     }
 
     /**
-     * 给视频添加音乐
-     */
-    private void musicMerge() {
-        // TODO native层用代码实现音频混合
-    }
-
-    /**
      * 命令行混合，这里直接用mp3 和 视频合成会崩溃，会提示找不到aac编码器，需要先将音频文件转码成aac文件
      * 这里是混合处理的代码
      */
+    private long startTime;
     private void musicMergeCommand() {
         mLayoutProgress.setVisibility(View.VISIBLE);
-        // TODO crop video
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final long startTime = System.currentTimeMillis();
+        startTime = System.currentTimeMillis();
+        if (mVideoPlayerView != null) {
+            mVideoPlayerView.pause();
+        }
+        if (mCommandEditor == null) {
+            mCommandEditor = new CainCommandEditor();
+        }
+
+        // 1、将音频文件转码为aac文件
+        int duration = (int) CainCommandEditor.getDuration(mVideoPath)/1000;
+        if (mMusicDuration < duration) {
+            duration = (int) mMusicDuration;
+        }
+        String tmpAACPath = VideoEditorUtil.createPathInBox(mActivity, "aac");
+        mCommandEditor.execCommand(CainCommandEditor.audioCut(mMusicPath, tmpAACPath, 10 * 1000, duration), result -> {
+            if (result < 0) {
+                FileUtils.deleteFile(tmpAACPath);
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(mActivity, "aac转码失败", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                Log.d(TAG, "musicMergeCommand: audioVideoMix");
+                audioVideoMix(tmpAACPath);
+            }
+        });
+    }
+
+    /**
+     * 音视频混合，似乎有部分视频混合失败？音频剪辑部分是正常才对
+     */
+    private void musicMerge() {
+        startTime = System.currentTimeMillis();
+        mLayoutProgress.setVisibility(View.VISIBLE);
+        mCvCropProgress.setProgress(0);
+        mTvCropProgress.setText("0%");
+        if (mMediaEditor == null) {
+            mMediaEditor = new CainMediaEditor();
+        }
+        int duration = (int) CainCommandEditor.getDuration(mVideoPath)/1000;
+        final String tmpAACPath = VideoEditorUtil.createPathInBox(mActivity, "aac");
+        mMediaEditor.audioCut(mMusicPath, tmpAACPath, 10 * 1000, duration,
+                new CainMediaEditor.OnEditProcessListener() {
+                    @Override
+                    public void onProcessing(int percent) {
+                        mActivity.runOnUiThread(() -> {
+                            mCvCropProgress.setProgress(percent);
+                            mTvCropProgress.setText(percent + "%");
+                        });
+                    }
+
+                    @Override
+                    public void onSuccess() {
+                        audioVideoMix(tmpAACPath);
+                    }
+
+                    @Override
+                    public void onError(String msg) {
+                        FileUtils.deleteFile(tmpAACPath);
+                        mActivity.runOnUiThread(() -> {
+                            Toast.makeText(mActivity, "aac剪辑失败：" + msg, Toast.LENGTH_SHORT).show();
+                            mLayoutProgress.setVisibility(View.GONE);
+                        });
+                    }
+                });
+    }
+
+    /**
+     * 音视频混合
+     * @param audioPath
+     */
+    private void audioVideoMix(String audioPath) {
+        if (mCommandEditor == null) {
+            mCommandEditor = new CainCommandEditor();
+        }
+        final String videoPath = VideoEditorUtil.createFileInBox(mActivity, "mp4");
+        mCommandEditor.execCommand(CainCommandEditor.audioVideoMix(mVideoPath, audioPath, videoPath, mVideoVolume, mMusicVolume), result -> {
+            FileUtils.deleteFile(audioPath);
+            // 成功则释放播放器并跳转至编辑页面
+            if (result == 0 && FileUtils.fileExists(videoPath)) {
+                // 需要释放销毁播放器，后面要用到播放器，防止内存占用过大
                 if (mVideoPlayerView != null) {
                     mVideoPlayerView.pause();
                 }
-                if (mVideoEditor == null) {
-                    mVideoEditor = new CainShortVideoEditor();
+                if (mCommandEditor != null) {
+                    mCommandEditor.release();
+                    mCommandEditor = null;
                 }
-
-                // 1、将音频文件转码为aac文件
-                long duration = mMusicDuration;
-                if (mMusicDuration > mVideoPlayerView.getDuration()) {
-                    duration = mVideoPlayerView.getDuration();
-                }
-                String tmpAACPath = CainShortVideoEditor.VideoEditorUtil.createPathInBox("aac");
-                int ret = mVideoEditor.audioCut(mMusicPath, tmpAACPath, 0, duration);
-                if (ret < 0) {
-                    FileUtils.deleteFile(tmpAACPath);
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(mActivity, "aac转码失败，合成失败", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                    return;
-                }
-
-                // 2、音视频混合
-                String videoPath = mVideoEditor.audioVideoMix(mVideoPath, tmpAACPath, mVideoVolume, mMusicVolume);
-                FileUtils.deleteFile(tmpAACPath);
-                // 成功则释放播放器并跳转至编辑页面
-                if (FileUtils.fileExists(videoPath)) {
-                    // 需要释放销毁播放器，后面要用到播放器，防止内存占用过大
-                    if (mVideoPlayerView != null) {
-                        mVideoPlayerView.pause();
-                    }
-                    if (mVideoEditor != null) {
-                        mVideoEditor.release();
-                        mVideoEditor = null;
-                    }
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            long processTime = System.currentTimeMillis() - startTime;
-                            Toast.makeText(mActivity,
-                                    "音频混合处理耗时: " + (processTime / 1000f) + "秒",
-                                    Toast.LENGTH_SHORT)
-                                    .show();
-                            Intent intent = new Intent(mActivity, VideoEditActivity.class);
-                            intent.putExtra(VideoEditActivity.VIDEO_PATH, videoPath);
-                            startActivity(intent);
-                            mActivity.finish();
-                        }
-                    });
-                } else {
+                mActivity.runOnUiThread(() -> {
+                    long processTime = System.currentTimeMillis() - startTime;
+                    Toast.makeText(mActivity,
+                            "音频混合处理耗时: " + (processTime / 1000f) + "秒",
+                            Toast.LENGTH_SHORT)
+                            .show();
+                    Intent intent = new Intent(mActivity, VideoEditActivity.class);
+                    intent.putExtra(VideoEditActivity.VIDEO_PATH, videoPath);
+                    startActivity(intent);
+                    mActivity.finish();
+                });
+            } else {
+                mActivity.runOnUiThread(() -> {
                     Log.e(TAG, "video cut's error!");
                     if (mVideoPlayerView != null) {
                         mVideoPlayerView.start();
                     }
-                }
-                mActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mLayoutProgress.setVisibility(View.GONE);
-                    }
                 });
             }
-        }).start();
+            mActivity.runOnUiThread(() -> {
+                mLayoutProgress.setVisibility(View.GONE);
+            });
+        });
     }
 
     private SeekBar.OnSeekBarChangeListener mSeekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {

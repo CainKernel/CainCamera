@@ -2,6 +2,8 @@
 // Created by cain on 2018/11/29.
 //
 
+#if defined(__ANDROID__)
+
 #include <jni.h>
 #include <Mutex.h>
 #include <Condition.h>
@@ -620,3 +622,5 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     }
     return JNI_VERSION_1_4;
 }
+
+#endif  /* defined(__ANDROID__) */

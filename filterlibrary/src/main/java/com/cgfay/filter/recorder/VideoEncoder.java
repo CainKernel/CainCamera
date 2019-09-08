@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
  * @author CainHuang
  * @date 2019/6/30
  */
-public class VideoEncoder {
+final class VideoEncoder {
 
     private static final String TAG = "VideoEncoder";
     private static final boolean VERBOSE = false;

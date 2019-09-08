@@ -39,7 +39,7 @@ add_library( soundtouch
              SoundTouchWrapper.cpp
 
              # controller
-             android/com_cgfay_media_SoundTouch.cpp)
+             com_cgfay_media_SoundTouch.cpp)
 
 target_include_directories( soundtouch
 

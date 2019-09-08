@@ -7,7 +7,7 @@
     <string name="btn_edit_video">编辑视频</string>
     <string name="btn_speed_record">倍速录制测试</string>
     <string name="btn_edit_music_merge">添加背景音乐</string>
-    <string name="btn_edit_gif_make">视频转gif</string>
+    <string name="btn_ff_media_record">使用 FFmpeg 录制视频</string>
 
     <!-- 添加背景音乐部分 -->
     <string name="tv_test_source_voice">原声音量</string>
@@ -21,4 +21,6 @@
 
     <string name="btn_next">下一步</string>
     <string name="record_text">按住拍</string>
+    <string name="btn_record_start">开始录制</string>
+    <string name="btn_record_cancel">停止录制</string>
 </resources>

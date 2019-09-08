@@ -3,18 +3,30 @@
     package="com.cgfay.caincamera">
     <!-- 高通GPU调试权限 -->
     <uses-permission android:name="com.qti.permission.PROFILER" />
-    <uses-permission android:name="android.permission.INTERNET" /> <!-- 存储权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- 存储权限 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 相机权限 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <!-- 相机权限 -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.FLASHLIGHT" /> <!-- 位置权限 -->
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+
+    <!-- 位置权限 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- 录音权限 -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" /> <!-- 获取设备信息权限 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- 录音权限 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- 获取设备信息权限 -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" /> <!-- opengles版本控制 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- opengles版本控制 -->
     <uses-feature
         android:glEsVersion="0x00030000"
         android:required="true" />
@@ -34,9 +46,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.VideoGifMakeActivity" />
         <activity android:name=".activity.MusicMergeActivity" />
-        <activity android:name=".activity.SpeedRecordActivity" android:theme="@style/NoActionBarTheme"/>
+        <activity
+            android:name=".activity.SpeedRecordActivity"
+            android:theme="@style/NoActionBarTheme" />
+        <activity
+            android:name=".activity.FFMediaRecordActivity"
+            android:theme="@style/NoActionBarTheme" />
 
         <!-- 全面屏兼容逻辑 -->
         <meta-data

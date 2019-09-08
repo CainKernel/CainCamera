@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
@@ -59,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_edit_picture).setOnClickListener(this);
         findViewById(R.id.btn_speed_record).setOnClickListener(this);
         findViewById(R.id.btn_edit_music_merge).setOnClickListener(this);
-        findViewById(R.id.btn_edit_gif_make).setOnClickListener(this);
+        findViewById(R.id.btn_ff_media_record).setOnClickListener(this);
     }
 
     @Override
@@ -93,7 +92,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_speed_record: {
                 Intent intent = new Intent(MainActivity.this, SpeedRecordActivity.class);
                 startActivity(intent);
-                finish();
                 break;
             }
 
@@ -102,8 +100,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             }
 
-            case R.id.btn_edit_gif_make: {
-                videoConvertGif();
+            case R.id.btn_ff_media_record: {
+                ffmpegRecord();
                 break;
             }
         }
@@ -113,13 +111,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 初始化动态贴纸、滤镜等资源
      */
     private void initResources() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ResourceHelper.initAssetsResource(MainActivity.this);
-                FilterHelper.initAssetsFilter(MainActivity.this);
-                MakeupHelper.initAssetsMakeup(MainActivity.this);
-            }
+        new Thread(() -> {
+            ResourceHelper.initAssetsResource(MainActivity.this);
+            FilterHelper.initAssetsFilter(MainActivity.this);
+            MakeupHelper.initAssetsMakeup(MainActivity.this);
         }).start();
     }
 
@@ -233,34 +228,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 视频转GIF
-     * 备注：目前so没有把gif的encoder 和 muxer编译进去，这里没做完整的测试
+     * 使用FFmpeg 录制视频
      */
-    private void videoConvertGif() {
-        MediaScanEngine.from(this)
-                .setMimeTypes(MimeType.ofAll())
-                .ImageLoader(new GlideMediaLoader())
-                .spanCount(4)
-                .showCapture(true)
-                .showImage(false)
-                .showVideo(true)
-                .enableSelectGif(false)
-                .setCaptureListener(new OnCaptureListener() {
-                    @Override
-                    public void onCapture() {
-                        previewCamera();
-                    }
-                })
-                .setMediaSelectedListener(new OnMediaSelectedListener() {
-                    @Override
-                    public void onSelected(List<Uri> uriList, List<String> pathList, boolean isVideo) {
-                        if (isVideo) {
-                            Intent intent = new Intent(MainActivity.this, VideoGifMakeActivity.class);
-                            intent.putExtra(VideoGifMakeActivity.PATH, pathList.get(0));
-                            startActivity(intent);
-                        }
-                    }
-                })
-                .scanMedia();
+    private void ffmpegRecord() {
+        startActivity(new Intent(MainActivity.this, FFMediaRecordActivity.class));
     }
 }

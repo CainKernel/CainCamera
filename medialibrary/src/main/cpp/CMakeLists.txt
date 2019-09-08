@@ -29,6 +29,9 @@ set_target_properties( yuv
 # FFmpeg命令行库
 add_subdirectory(${CMAKE_SOURCE_DIR}/FFCommand)
 
+# 媒体录制器
+add_subdirectory(${CMAKE_SOURCE_DIR}/FFMediaRecorder)
+
 # Metadata库
 add_subdirectory(${CMAKE_SOURCE_DIR}/Metadata)
 
@@ -41,5 +44,5 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/CainFilter)
 # 媒体播放器
 add_subdirectory(${CMAKE_SOURCE_DIR}/MediaPlayer)
 
-# 媒体合成器
-add_subdirectory(${CMAKE_SOURCE_DIR}/VideoEditor)
+# 媒体编辑器
+add_subdirectory(${CMAKE_SOURCE_DIR}/MediaEditor)

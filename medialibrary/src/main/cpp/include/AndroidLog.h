@@ -5,11 +5,11 @@
 #ifndef NATIVE_LOG_H
 #define NATIVE_LOG_H
 
-#include <android/log.h>
-
 #define JNI_TAG "CainPlayer"
 
 #if defined(__ANDROID__)
+
+#include <android/log.h>
 
 #define ALOGE(format, ...) __android_log_print(ANDROID_LOG_ERROR, JNI_TAG, format, ##__VA_ARGS__)
 #define ALOGI(format, ...) __android_log_print(ANDROID_LOG_INFO,  JNI_TAG, format, ##__VA_ARGS__)

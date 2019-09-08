@@ -57,14 +57,13 @@
             android:text="@string/btn_edit_music_merge"/>
 
         <Button
-            android:id="@+id/btn_edit_gif_make"
+            android:id="@+id/btn_ff_media_record"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/dp5"
             android:background="@android:color/transparent"
             android:textColor="@color/white"
-            android:text="@string/btn_edit_gif_make"
-            android:visibility="gone"/>
+            android:text="@string/btn_ff_media_record"/>
     </LinearLayout>
 
 </ScrollView>
