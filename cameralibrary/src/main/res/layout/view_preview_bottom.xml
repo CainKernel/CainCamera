@@ -11,14 +11,23 @@
     android:gravity="center"
     android:orientation="vertical">
 
+    <!-- 速度选择条 -->
+    <com.cgfay.camera.widget.RecordSpeedLevelBar
+        android:id="@+id/record_speed_bar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp40"
+        android:layout_marginStart="@dimen/dp40"
+        android:layout_marginEnd="@dimen/dp40"
+        android:layout_marginBottom="@dimen/dp10"
+        android:visibility="gone"/>
+
     <!-- 显示倒计时 -->
     <TextView
         android:id="@+id/tv_countdown"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:textColor="@color/yellow"
-        android:visibility="gone" />
+        android:textColor="@color/yellow" />
 
     <!-- 底部进度条 -->
     <RelativeLayout
@@ -36,12 +45,10 @@
             android:background="@drawable/ic_camera_sticker_light" />
 
         <!-- 快门 -->
-        <com.cgfay.cameralibrary.widget.ShutterButton
+        <com.cgfay.camera.widget.ShutterButton
             android:id="@+id/btn_shutter"
             android:layout_width="@dimen/record_width_height_normal"
             android:layout_height="@dimen/record_width_height_normal"
-            android:layout_marginTop="@dimen/bottom_layout_margin"
-            android:layout_marginBottom="@dimen/bottom_layout_margin"
             android:layout_centerInParent="true"
             android:layout_gravity="center" />
 
@@ -67,19 +74,19 @@
             android:background="@drawable/ic_camera_record_done_dark"
             android:visibility="gone"/>
 
-        <!-- 特效 -->
+        <!-- 图库 -->
         <Button
-            android:id="@+id/btn_effects"
-            android:layout_width="@dimen/filters_width_height"
-            android:layout_height="@dimen/filters_width_height"
+            android:id="@+id/btn_view_photo"
+            android:layout_width="@dimen/stickers_width_height"
+            android:layout_height="@dimen/stickers_width_height"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="@dimen/button_margin_horizontal"
-            android:background="@drawable/ic_camera_effect_light" />
+            android:background="@drawable/ic_camera_gallery_light" />
     </RelativeLayout>
 
     <!-- 底部指示器 -->
-    <com.cgfay.cameralibrary.widget.HorizontalIndicatorView
+    <com.cgfay.camera.widget.HorizontalIndicatorView
         android:id="@+id/bottom_indicator"
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_indicator_height"

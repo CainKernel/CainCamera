@@ -2,11 +2,9 @@
     <string name="app_name">VideoLibrary</string>
     
     <string-array name="video_speed_texts">
-        <item>极慢</item>
-        <item>较慢</item>
+        <item>慢</item>
         <item>标准</item>
-        <item>较快</item>
-        <item>极快</item>
+        <item>快</item>
     </string-array>
 
     <string name="video_crop_next">下一步</string>

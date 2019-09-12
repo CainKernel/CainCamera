@@ -28,12 +28,16 @@ android {
             dirs 'libs'
         }
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':landmarklibrary')
     implementation project(':utilslibrary')
     implementation 'com.android.support:appcompat-v7:27.1.1'

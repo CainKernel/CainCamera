@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/video_page_background">
+
+    <!-- 视频显示页面 -->
+    <VideoView
+        android:id="@+id/video_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/music_path"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp20"
+        android:textColor="@color/white"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="bottom|center_horizontal"
+        android:gravity="center_horizontal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="@string/tv_test_source_voice"/>
+            <SeekBar
+                android:id="@+id/video_voice_progress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp10"
+                android:max="100"
+                android:progress="50"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="@string/tv_test_music_voice"/>
+
+            <SeekBar
+                android:id="@+id/music_voice_progress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp10"
+                android:max="100"
+                android:progress="50"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_test_music_merge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp30"
+            android:layout_marginBottom="@dimen/dp30"
+            android:background="@android:color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/btn_test_music_merge"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_progress_round"
+        android:orientation="vertical"
+        android:paddingBottom="15dp"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:paddingTop="20dp"
+        android:visibility="gone">
+        <com.cgfay.video.widget.CircleProgressView
+            xmlns:circle="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/cv_crop_progress"
+            android:layout_width="@dimen/dp60"
+            android:layout_height="@dimen/dp60"
+            circle:backgroundColor="@color/azure"
+            circle:backgroundCircleWidth="2dp"
+            circle:color="@color/yellow"
+            circle:circleWidth="2dp"
+            circle:textColor="@color/white"
+            circle:textSize="9"
+            circle:textSuffix="%"/>
+
+        <TextView
+            android:id="@+id/tv_crop_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="5dp"
+            android:textColor="@color/wheat"
+            android:text="@string/video_crop_progress_tips"
+            android:textSize="15sp" />
+    </LinearLayout>
+</FrameLayout>

@@ -6,5 +6,17 @@
         <item name="colorPrimary">@color/video_window_background</item>
         <item name="colorPrimaryDark">@color/video_window_background</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:navigationBarColor">@color/video_window_background</item>
+        <item name="android:textAllCaps">false</item>
     </style>
+
+    <style name="NoActionBarTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/video_window_background</item>
+        <item name="colorPrimaryDark">@color/video_window_background</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:navigationBarColor">@color/video_window_background</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
 </resources>

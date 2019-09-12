@@ -7,8 +7,11 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.cgfay.scan.loader.MediaLoader;
+import com.cgfay.uitls.utils.DensityUtils;
 
 /**
  * 使用Glide加载缩略图
@@ -23,7 +26,8 @@ public class GlideMediaLoader implements MediaLoader {
                 .apply(new RequestOptions()
                         .override(resize, resize)
                         .placeholder(placeholder)
-                        .centerCrop())
+                        .transforms(new CenterCrop(),
+                                new RoundedCorners(DensityUtils.dp2px(context, 3f))))
                 .into(imageView);
     }
 

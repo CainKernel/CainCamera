@@ -1,2 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.cgfay.utilslibrary" />
+    package="com.cgfay.utilslibrary">
+
+    <application>
+        <activity android:name="com.cgfay.uitls.activity.BaseActivity"></activity>
+    </application>
+
+</manifest>

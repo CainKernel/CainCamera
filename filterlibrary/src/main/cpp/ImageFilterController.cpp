@@ -13,7 +13,7 @@
  */
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeMosaic(JNIEnv *env, jobject instance,
+Java_com_cgfay_filter_ndkfilter_ImageFilter_nativeMosaic(JNIEnv *env, jobject instance,
         jobject sourceBitmap, jint radius) {
 
     AndroidBitmapInfo sourceInfo;
@@ -52,7 +52,7 @@ Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeMosaic(JNIEnv *env, job
  */
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeLookupTable(JNIEnv *env, jobject instance,
+Java_com_cgfay_filter_ndkfilter_ImageFilter_nativeLookupTable(JNIEnv *env, jobject instance,
                                                                      jobject bitmap,
                                                                      jobject lookupTable) {
 
@@ -111,7 +111,7 @@ Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeLookupTable(JNIEnv *env
  */
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeInvertFilter(JNIEnv *env, jobject instance,
+Java_com_cgfay_filter_ndkfilter_ImageFilter_nativeInvertFilter(JNIEnv *env, jobject instance,
                                                                      jobject bitmap) {
     AndroidBitmapInfo sourceInfo;
     void *pixels;
@@ -145,7 +145,7 @@ Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeInvertFilter(JNIEnv *en
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeBlackWhiteFilter(JNIEnv *env,
+Java_com_cgfay_filter_ndkfilter_ImageFilter_nativeBlackWhiteFilter(JNIEnv *env,
                                                                           jobject instance,
                                                                           jobject bitmap) {
 
@@ -180,7 +180,7 @@ Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeBlackWhiteFilter(JNIEnv
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeBrightContrastFilter(JNIEnv *env,
+Java_com_cgfay_filter_ndkfilter_ImageFilter_nativeBrightContrastFilter(JNIEnv *env,
                                                                           jobject instance,
                                                                           jobject bitmap,
                                                                           jfloat brightness,
@@ -219,7 +219,7 @@ Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeBrightContrastFilter(JN
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeColorQuantizeFilter(JNIEnv *env,
+Java_com_cgfay_filter_ndkfilter_ImageFilter_nativeColorQuantizeFilter(JNIEnv *env,
                                                                           jobject instance,
                                                                           jobject bitmap,
                                                                           jfloat levels) {
@@ -256,7 +256,7 @@ Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeColorQuantizeFilter(JNI
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeHistogramEqualFilter(JNIEnv *env,
+Java_com_cgfay_filter_ndkfilter_ImageFilter_nativeHistogramEqualFilter(JNIEnv *env,
                                                                           jobject instance,
                                                                           jobject bitmap) {
 
@@ -291,7 +291,7 @@ Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeHistogramEqualFilter(JN
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeShiftFilter(JNIEnv *env,
+Java_com_cgfay_filter_ndkfilter_ImageFilter_nativeShiftFilter(JNIEnv *env,
                                                                      jobject instance,
                                                                      jobject bitmap,
                                                                      jint amount) {
@@ -328,7 +328,7 @@ Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeShiftFilter(JNIEnv *env
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeVignetteFilter(JNIEnv *env,
+Java_com_cgfay_filter_ndkfilter_ImageFilter_nativeVignetteFilter(JNIEnv *env,
                                                                      jobject instance,
                                                                      jobject bitmap,
                                                                      jfloat size) {
@@ -365,7 +365,7 @@ Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeVignetteFilter(JNIEnv *
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeGaussianBlurFilter(JNIEnv *env,
+Java_com_cgfay_filter_ndkfilter_ImageFilter_nativeGaussianBlurFilter(JNIEnv *env,
                                                                         jobject instance,
                                                                         jobject bitmap) {
 
@@ -402,7 +402,7 @@ Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeGaussianBlurFilter(JNIE
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_cgfay_filterlibrary_ndkfilter_ImageFilter_nativeStackBlurFilter(JNIEnv *env,
+Java_com_cgfay_filter_ndkfilter_ImageFilter_nativeStackBlurFilter(JNIEnv *env,
                                                                          jobject instance,
                                                                          jobject bitmap,
                                                                          jint radius) {

@@ -34,7 +34,7 @@ public:
 
     int onUpdateARGB(uint8_t *rgba, int pitch) override;
 
-    int onRequestRender(FlipDirection direction) override;
+    int onRequestRender(bool flip) override;
 
     void changeFilter(RenderNodeType type, const char *filterName);
 
@@ -44,8 +44,6 @@ private:
     void resetVertices();
 
     void resetTexVertices();
-
-    void cropTexVertices(Texture *texture);
 private:
     Mutex mMutex;
     Condition mCondition;
@@ -66,7 +64,7 @@ private:
     FilterInfo filterInfo;              // 滤镜信息
     bool filterChange;                  // 切换滤镜
     GLfloat vertices[8];                // 顶点坐标
-    GLfloat textureVetrices[8];         // 纹理坐标
+    GLfloat textureVertices[8];         // 纹理坐标
 };
 
 #endif //GLESDEVICE_H

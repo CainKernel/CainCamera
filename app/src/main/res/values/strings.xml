@@ -5,10 +5,22 @@
     <string name="btn_camera">滤镜相机</string>
     <string name="btn_edit_picture">编辑图片</string>
     <string name="btn_edit_video">编辑视频</string>
+    <string name="btn_speed_record">倍速录制测试</string>
+    <string name="btn_edit_music_merge">添加背景音乐</string>
+    <string name="btn_ff_media_record">使用 FFmpeg 录制视频</string>
 
-    <string name="btn_test_metadata">截帧测试页面</string>
-    <string name="btn_test_music">音乐播放器测试页面</string>
-    <string name="btn_test_media_player">视频播放器测试页面</string>
-    <string name="btn_test_recorder">录制器测试页面(未完整测试)</string>
+    <!-- 添加背景音乐部分 -->
+    <string name="tv_test_source_voice">原声音量</string>
+    <string name="tv_test_music_voice">音乐音量</string>
+    <string name="btn_test_music_merge">添加背景音乐</string>
 
+    <!-- 视频转gif部分-->
+    <string name="tv_test_gif_start">开始位置：%1$.2f</string>
+    <string name="tv_test_gif_end">结束位置：%1$.2f</string>
+    <string name="btn_test_gif_make">转gif</string>
+
+    <string name="btn_next">下一步</string>
+    <string name="record_text">按住拍</string>
+    <string name="btn_record_start">开始录制</string>
+    <string name="btn_record_cancel">停止录制</string>
 </resources>

@@ -413,7 +413,7 @@ void MediaSync::renderVideo() {
                 }
 
                 videoDevice->onInitTexture(vp->frame->width, vp->frame->height,
-                                           FMT_ARGB, BLEND_NONE);
+                                           FMT_ARGB, BLEND_NONE, videoDecoder->getRotate());
                 ret = videoDevice->onUpdateARGB(pFrameARGB->data[0], pFrameARGB->linesize[0]);
                 if (ret < 0) {
                     return;
@@ -426,7 +426,7 @@ void MediaSync::renderVideo() {
     // 请求渲染视频
     if (videoDevice != NULL) {
         videoDevice->setTimeStamp(isnan(vp->pts) ? 0 : vp->pts);
-        videoDevice->onRequestRender(vp->frame->linesize[0] < 0 ? FLIP_VERTICAL : FLIP_NONE);
+        videoDevice->onRequestRender(vp->frame->linesize[0] < 0);
     }
     mMutex.unlock();
 }

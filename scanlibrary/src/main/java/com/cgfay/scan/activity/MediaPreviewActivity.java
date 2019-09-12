@@ -14,7 +14,7 @@ import com.cgfay.scan.model.AlbumItem;
 import com.cgfay.scan.model.MediaItem;
 import com.cgfay.scan.engine.MediaScanParam;
 import com.cgfay.scan.scanner.MediaScanner;
-import com.cgfay.utilslibrary.utils.FileUtils;
+import com.cgfay.uitls.utils.FileUtils;
 
 import java.util.ArrayList;
 import java.util.List;

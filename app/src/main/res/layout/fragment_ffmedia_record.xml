@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/black"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- 安全区域 -->
+    <View
+        android:id="@+id/view_safety_area"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"/>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- 录制预览 -->
+        <com.cgfay.caincamera.widget.GLRecordView
+            android:id="@+id/gl_record_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+
+        <!-- 录制进度条 -->
+        <com.cgfay.camera.widget.RecordProgressView
+            android:id="@+id/record_progress_view"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp6"
+            android:layout_marginStart="@dimen/dp6"
+            android:layout_marginEnd="@dimen/dp6"
+            android:layout_marginTop="@dimen/dp6"
+            app:radius="@dimen/dp4"
+            app:divider_width="@dimen/dp1"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <!-- 录制按钮 -->
+        <Button
+            android:id="@+id/record_button"
+            android:layout_width="@dimen/dp100"
+            android:layout_height="@dimen/dp80"
+            android:layout_marginBottom="@dimen/dp40"
+            android:layout_gravity="bottom|center_horizontal"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:background="#fe2c55"
+            android:text="@string/btn_record_start"
+            android:textSize="@dimen/dp15"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+        <!-- 删除 -->
+        <Button
+            android:id="@+id/btn_delete"
+            android:layout_width="@dimen/dp50"
+            android:layout_height="@dimen/dp50"
+            android:layout_marginEnd="@dimen/dp20"
+            android:background="@drawable/ic_camera_record_delete_light"
+            app:layout_constraintBottom_toBottomOf="@+id/record_button"
+            app:layout_constraintRight_toLeftOf="@+id/record_button"
+            app:layout_constraintTop_toTopOf="@+id/record_button"/>
+
+        <!-- 下一步 -->
+        <Button
+            android:id="@+id/btn_next"
+            android:layout_width="@dimen/dp70"
+            android:layout_height="@dimen/dp35"
+            android:background="@drawable/bg_record_next_button"
+            android:text="@string/btn_next"
+            android:textColor="@color/white"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/record_button"
+            app:layout_constraintBottom_toBottomOf="@+id/record_button"
+            app:layout_constraintTop_toTopOf="@+id/record_button"/>
+
+    </android.support.constraint.ConstraintLayout>
+
+</LinearLayout>

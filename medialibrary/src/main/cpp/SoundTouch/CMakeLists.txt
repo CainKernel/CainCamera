@@ -36,7 +36,10 @@ add_library( soundtouch
              source/SoundTouch/TDStretch.cpp
 
              # wrapper
-             SoundTouchWrapper.cpp )
+             SoundTouchWrapper.cpp
+
+             # controller
+             com_cgfay_media_SoundTouch.cpp)
 
 target_include_directories( soundtouch
 
