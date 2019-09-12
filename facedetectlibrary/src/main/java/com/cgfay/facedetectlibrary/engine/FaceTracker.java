@@ -207,7 +207,7 @@ public final class FaceTracker {
         long apiName = Facepp.getApiName();
         licenseManager.setAuthTimeBufferMillis(0);
         licenseManager.takeLicenseFromNetwork(uuid, FaceppConstraints.API_KEY, FaceppConstraints.API_SECRET, apiName,
-                LicenseManager.DURATION_30DAYS, "Landmark", "1", false,
+                LicenseManager.DURATION_30DAYS, "Landmark", "1", true,
                 new LicenseManager.TakeLicenseCallback() {
                     @Override
                     public void onSuccess() {
