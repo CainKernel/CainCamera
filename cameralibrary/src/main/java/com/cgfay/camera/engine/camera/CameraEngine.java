@@ -73,7 +73,7 @@ public class CameraEngine {
         cameraParam.supportFlash = checkSupportFlashLight(parameters);
         cameraParam.previewFps = chooseFixedPreviewFps(parameters, expectFps * 1000);
         parameters.setRecordingHint(true);
-        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+//        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
         mCamera.setParameters(parameters);
         setPreviewSize(mCamera, expectWidth, expectHeight);
         setPictureSize(mCamera, expectWidth, expectHeight);

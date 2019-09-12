@@ -221,7 +221,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                         mBtnCompare.setBackgroundResource(R.drawable.ic_camera_compare_pressed);
                         break;
 
-                    default:
+                    case MotionEvent.ACTION_UP:
                         mPreviewPresenter.showCompare(false);
                         mBtnCompare.setBackgroundResource(R.drawable.ic_camera_compare_normal);
                         break;
