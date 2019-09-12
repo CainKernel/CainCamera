@@ -2,8 +2,8 @@
 // Created by admin on 2018/4/10.
 //
 
-#ifndef CAINMUSICPLAYER_SOUNDTOUCHWRAPPER_H
-#define CAINMUSICPLAYER_SOUNDTOUCHWRAPPER_H
+#ifndef SOUNDTOUCHWRAPPER_H
+#define SOUNDTOUCHWRAPPER_H
 
 #include <stdint.h>
 #include "include/SoundTouch.h"
@@ -22,6 +22,8 @@ public:
     void create();
     // 转换
     int translate(short* data, float speed, float pitch, int len, int bytes_per_sample, int n_channel, int n_sampleRate);
+    // 清空
+    void flush();
     // 销毁
     void destroy();
     // 获取SoundTouch对象
@@ -32,4 +34,4 @@ private:
 };
 
 
-#endif //CAINMUSICPLAYER_SOUNDTOUCHWRAPPER_H
+#endif //SOUNDTOUCHWRAPPER_H

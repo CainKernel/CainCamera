@@ -7,7 +7,7 @@
 
     <color name="effect_item_color">#60EEEEEE</color>
 
-    <color name="video_window_background">#1A1A1A</color>
+    <color name="video_window_background">#000000</color>
 
     <color name="bottomBackground">#2A2A2A</color>
 

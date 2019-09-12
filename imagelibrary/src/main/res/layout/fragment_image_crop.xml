@@ -24,7 +24,7 @@
             android:orientation="vertical"
             android:layout_gravity="center"
             android:gravity="bottom">
-            <com.cgfay.imagelibrary.widget.CropCoverView
+            <com.cgfay.image.widget.CropCoverView
                 android:id="@+id/image_cop_view"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"

@@ -3,20 +3,61 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragment.CameraPreviewFragment">
+    android:background="@color/video_window_background"
+    tools:context="com.cgfay.camera.fragment.CameraPreviewFragment">
 
     <!-- 预览视图 -->
-    <com.cgfay.cameralibrary.widget.AspectFrameLayout
+    <com.cgfay.camera.widget.AspectFrameLayout
         android:id="@+id/layout_aspect"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:layout_height="match_parent"
         android:layout_gravity="top">
-    </com.cgfay.cameralibrary.widget.AspectFrameLayout>
+    </com.cgfay.camera.widget.AspectFrameLayout>
 
     <!-- 顶部视图 -->
+    <RelativeLayout
+        android:id="@+id/layout_preview_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="@dimen/dp20">
+
+        <!-- 关闭按钮 -->
+        <Button
+            android:id="@+id/btn_close"
+            android:layout_width="@dimen/dp30"
+            android:layout_height="@dimen/dp30"
+            android:layout_centerVertical="true"
+            android:background="@drawable/ic_camera_preview_close"/>
+
+        <LinearLayout
+            android:id="@+id/btn_select_music"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="@dimen/dp30"
+                android:layout_height="@dimen/dp30"
+                android:background="@drawable/ic_camera_music"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/dp25"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:text="选择音乐"/>
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+    <!-- 右上角视图 -->
     <include
-        layout="@layout/view_preview_top"/>
+        layout="@layout/view_preview_right_top"/>
 
     <!-- 滤镜/贴纸等页面 -->
     <FrameLayout
@@ -31,15 +72,15 @@
     <include
         layout="@layout/view_preview_bottom"/>
 
-
     <!-- fps 提示 -->
     <TextView
         android:id="@+id/tv_fps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="end"
+        android:layout_gravity="start"
         android:layout_marginTop="@dimen/fps_margin_top"
-        android:layout_marginEnd="@dimen/fps_margin_end"
+        android:layout_marginStart="@dimen/fps_margin"
+        android:layout_marginEnd="@dimen/fps_margin"
         android:textColor="@android:color/holo_orange_dark" />
 
     <!-- 对比按钮 -->

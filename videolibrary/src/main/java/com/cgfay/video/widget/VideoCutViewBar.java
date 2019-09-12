@@ -14,6 +14,7 @@ import android.view.View;
 
 import com.cgfay.media.CainMediaMetadataRetriever;
 import com.cgfay.media.CainMetadata;
+import com.cgfay.video.R;
 import com.cgfay.video.bean.VideoFrameNode;
 import com.cgfay.video.bean.VideoSpeed;
 
@@ -642,7 +643,7 @@ public class VideoCutViewBar extends View {
         }
 
         // 顶层拖拽控件
-        paint.setColor(0xFFFFFFFF);
+        paint.setColor(getResources().getColor(R.color.video_cut_bar_foreground));
         int start = (int) (mCropStart * (getMeasuredWidth()/(float) mMaxTime));
         int end = (int) (mCropEnd * (getMeasuredWidth()/(float) mMaxTime));
 

@@ -16,7 +16,7 @@ import android.view.animation.Interpolator;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.cgfay.utilslibrary.utils.DensityUtils;
+import com.cgfay.uitls.utils.DensityUtils;
 import com.cgfay.video.R;
 
 /**

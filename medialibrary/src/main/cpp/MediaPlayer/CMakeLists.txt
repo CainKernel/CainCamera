@@ -14,14 +14,14 @@ endif (${ANDROID_PLATFORM_LEVEL} LESS 11)
 set(soundtouch_dir ../SoundTouch)
 
 # 添加GLFilter库
-set(glfilter_dir ../GLFilter)
+set(filter_dir ../CainFilter)
 
 
 # 添加头文件路径
 include_directories( source
                      android
                      ${soundtouch_dir}
-                     ${glfilter_dir} )
+                     ${filter_dir} )
 
 # 添加源文件
 add_library( media_player
@@ -63,7 +63,7 @@ target_link_libraries( media_player
 
                        ffmpeg
                        soundtouch
-                       gl_filter
+                       cainfilter
 
                        -landroid
                        -llog

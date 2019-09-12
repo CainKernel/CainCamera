@@ -12,8 +12,7 @@ if(CMAKE_COMPILER_IS_CLANG)
 endif(CMAKE_COMPILER_IS_CLANG)
 
 # 添加include目录路径
-include_directories( common
-                     include )
+include_directories( include )
 
 # 添加ffmpeg库
 add_library( ffmpeg SHARED IMPORTED )
@@ -21,20 +20,29 @@ set_target_properties( ffmpeg
                        PROPERTIES IMPORTED_LOCATION
                        ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libffmpeg.so )
 
+# 添加yuv库
+add_library(yuv SHARED IMPORTED )
+set_target_properties( yuv
+        PROPERTIES IMPORTED_LOCATION
+        ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libyuv.so )
+
+# FFmpeg命令行库
+add_subdirectory(${CMAKE_SOURCE_DIR}/FFCommand)
+
+# 媒体录制器
+add_subdirectory(${CMAKE_SOURCE_DIR}/FFMediaRecorder)
+
 # Metadata库
 add_subdirectory(${CMAKE_SOURCE_DIR}/Metadata)
 
 # SoundTouch库
 add_subdirectory(${CMAKE_SOURCE_DIR}/SoundTouch)
 
-# libyuv库
-add_subdirectory(${CMAKE_SOURCE_DIR}/libyuv)
-
 # GLFilter库
-add_subdirectory(${CMAKE_SOURCE_DIR}/GLFilter)
+add_subdirectory(${CMAKE_SOURCE_DIR}/CainFilter)
 
 # 媒体播放器
 add_subdirectory(${CMAKE_SOURCE_DIR}/MediaPlayer)
 
-# 媒体合成器
-add_subdirectory(${CMAKE_SOURCE_DIR}/VideoEditor)
+# 媒体编辑器
+add_subdirectory(${CMAKE_SOURCE_DIR}/MediaEditor)

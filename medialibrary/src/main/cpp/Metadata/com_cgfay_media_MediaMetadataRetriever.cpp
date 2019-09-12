@@ -1,6 +1,7 @@
 //
 // Created by cain on 2018/11/27.
 //
+#if defined(__ANDROID__)
 
 #include <unistd.h>
 #include <jni.h>
@@ -493,3 +494,5 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     }
     return JNI_VERSION_1_4;
 }
+
+#endif  /* defined(__ANDROID__) */

@@ -63,6 +63,14 @@
         <item>视频</item>
     </string-array>
 
+    <!-- 录制速度 -->
+    <string-array name="record_speed_texts">
+        <item>极慢</item>
+        <item>慢</item>
+        <item>标准</item>
+        <item>快</item>
+        <item>极快</item>
+    </string-array>
 
     <!-- 特效页面参数 -->
     <string name="preview_beauty_reset">恢复默认</string>

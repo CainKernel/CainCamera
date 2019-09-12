@@ -830,6 +830,10 @@ int MediaPlayer::readPackets() {
             playerState->messageQueue->postMessage(MSG_COMPLETED);
         }
     }
+    // 停止消息队列
+    if (playerState->messageQueue) {
+        playerState->messageQueue->stop();
+    }
 
     return ret;
 }

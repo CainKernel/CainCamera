@@ -67,6 +67,15 @@ int SoundTouchWrapper::translate(short *data, float speed, float pitch, int len,
 }
 
 /**
+ * 清空缓冲区
+ */
+void SoundTouchWrapper::flush() {
+    if (mSoundTouch != nullptr) {
+        mSoundTouch->flush();
+    }
+}
+
+/**
  * 获取SoundTouch对象
  * @return
  */

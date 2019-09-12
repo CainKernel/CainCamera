@@ -34,6 +34,6 @@ int VideoDevice::onUpdateARGB(uint8_t *rgba, int pitch) {
     return 0;
 }
 
-int VideoDevice::onRequestRender(FlipDirection direction) {
+int VideoDevice::onRequestRender(bool flip) {
     return 0;
 }
