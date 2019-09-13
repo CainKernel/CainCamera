@@ -12,11 +12,12 @@ add_library( media_editor
              SHARED
 
              # 通用类
+             ${common_dir}/AVFormatter.cpp
              ${common_dir}/AVFrameFilter.cpp
+             ${common_dir}/AVMediaData.cpp
              ${common_dir}/AVMediaReader.cpp
              ${common_dir}/AVMediaWriter.cpp
-             ${common_dir}/AVFormatter.cpp
-             ${common_dir}/AVMediaData.cpp
+             ${common_dir}/Resampler.cpp
              ${common_dir}/YuvConvertor.cpp
              ${common_dir}/YuvData.cpp
 
