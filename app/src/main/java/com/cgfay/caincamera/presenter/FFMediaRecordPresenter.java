@@ -128,6 +128,13 @@ public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioReco
         }
         mMediaRecorder = new FFMediaRecorder.RecordBuilder(generateOutputPath())
                 .setVideoParams(mRecordWidth, mRecordHeight, AVFormatter.PIXEL_FORMAT_NV21, 25)
+//                .setVideoFilter("lutyuv='u=128:v=128'") // 黑白滤镜
+//                .setVideoFilter("noise=alls=20:allf=t+p") // 噪点
+//                .setVideoFilter("boxblur") // 模糊
+//                .setVideoFilter("boxblur=2:1:cr=0:ar=0") // 指定模糊参数
+//                .setVideoFilter("hue='h=60:s=-3'") // 调整色调
+//                .setVideoFilter("drawgrid=width=100:height=100:thickness=2:color=black@0.9") // 添加网格
+//                .setVideoFilter("vignette=PI/4")  // 光晕
                 .setRotate(mPreviewRotate)
                 .setAudioParams(mAudioRecorder.getSampleRate(), AVFormatter.getSampleFormat(mAudioRecorder.getSampleFormat()), mAudioRecorder.getChannels())
                 .create();
