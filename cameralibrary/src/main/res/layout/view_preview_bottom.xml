@@ -86,14 +86,19 @@
     </RelativeLayout>
 
     <!-- 底部指示器 -->
-    <com.cgfay.camera.widget.HorizontalIndicatorView
-        android:id="@+id/bottom_indicator"
+
+    <com.cgfay.widget.CameraTabView
+        android:id="@+id/tl_camera_tab"
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_indicator_height"
-        app:SeeSize="5"
-        app:TextSize="40"
-        app:TextColor="@android:color/darker_gray"
-        app:SelectedTextColor="@color/colorHorizontalIndicator"
-        app:SelectedTextSize="40"/>
+        app:tabMode="scrollable"
+        app:tabGravity="center"
+        app:tabTextColor="@android:color/darker_gray"
+        app:tabSelectedTextColor="@color/colorHorizontalIndicator"
+        app:tabIndicatorColor="@color/white"
+        app:tabIndicatorHeight="4dp"
+        app:tabIndicatorFullWidth="false">
+
+    </com.cgfay.widget.CameraTabView>
 
 </LinearLayout>

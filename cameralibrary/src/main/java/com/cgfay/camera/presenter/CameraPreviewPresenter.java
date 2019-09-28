@@ -154,6 +154,9 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
      */
     @Override
     public void onPreviewCallback(byte[] data) {
+        if (getTarget() != null) {
+            getTarget().enableShutter(true);
+        }
         // 人脸检测
         FaceTracker.getInstance().trackFace(data,
                 mCameraParam.previewWidth, mCameraParam.previewHeight);

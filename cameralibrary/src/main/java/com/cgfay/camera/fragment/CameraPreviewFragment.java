@@ -21,7 +21,6 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -35,7 +34,6 @@ import com.cgfay.camera.engine.model.GalleryType;
 import com.cgfay.camera.engine.recorder.PreviewRecorder;
 import com.cgfay.camera.utils.PathConstraints;
 import com.cgfay.camera.widget.AspectFrameLayout;
-import com.cgfay.camera.widget.HorizontalIndicatorView;
 import com.cgfay.camera.widget.PopupSettingView;
 import com.cgfay.camera.widget.RecordSpeedLevelBar;
 import com.cgfay.camera.widget.ShutterButton;
@@ -47,6 +45,7 @@ import com.cgfay.uitls.utils.NotchUtils;
 import com.cgfay.uitls.utils.PermissionUtils;
 import com.cgfay.uitls.utils.StatusBarUtils;
 import com.cgfay.uitls.utils.StringUtils;
+import com.cgfay.widget.CameraTabView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,8 +54,7 @@ import java.util.List;
 /**
  * 相机预览页面
  */
-public class CameraPreviewFragment extends Fragment implements View.OnClickListener,
-        HorizontalIndicatorView.OnIndicatorListener {
+public class CameraPreviewFragment extends Fragment implements View.OnClickListener {
 
     private static final String TAG = "CameraPreviewFragment";
     private static final boolean VERBOSE = true;
@@ -124,8 +122,8 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private Button mBtnRecordDelete;
     // 视频预览按钮
     private Button mBtnRecordPreview;
-    // 相机类型指示器
-    private HorizontalIndicatorView mBottomIndicator;
+    // 相机指示器
+    private CameraTabView mCameraTabView;
     // 相机类型指示文字
     private List<String> mIndicatorText = new ArrayList<String>();
     // 合并对话框
@@ -251,11 +249,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         mBtnStickers.setOnClickListener(this);
         mBtnViewPhoto = (Button) view.findViewById(R.id.btn_view_photo);
         mBtnViewPhoto.setOnClickListener(this);
-        mBottomIndicator = (HorizontalIndicatorView) view.findViewById(R.id.bottom_indicator);
-        String[] galleryIndicator = getResources().getStringArray(R.array.gallery_indicator);
-        mIndicatorText.addAll(Arrays.asList(galleryIndicator));
-        mBottomIndicator.setIndicators(mIndicatorText);
-        mBottomIndicator.addIndicatorListener(this);
 
         mBtnShutter = (ShutterButton) view.findViewById(R.id.btn_shutter);
         mBtnShutter.setOnShutterListener(mShutterListener);
@@ -267,6 +260,55 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         mBtnRecordPreview.setOnClickListener(this);
 
         adjustBottomView();
+
+        initCameraTabView();
+    }
+
+    private void initCameraTabView() {
+        String[] galleryIndicator = getResources().getStringArray(R.array.gallery_indicator);
+        mCameraTabView = mContentView.findViewById(R.id.tl_camera_tab);
+        for (int i = 0; i < galleryIndicator.length; i++) {
+            mCameraTabView.addTab(mCameraTabView.newTab().setText(galleryIndicator[i]));
+        }
+        mCameraTabView.setIndicateCenter(true);
+        mCameraTabView.setScrollAutoSelected(true);
+        mCameraTabView.addOnTabSelectedListener(new CameraTabView.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(CameraTabView.Tab tab) {
+                int position = tab.getPosition();
+                if (position == 0) {
+                    mCameraParam.mGalleryType = GalleryType.GIF;
+                    mBtnShutter.setIsRecorder(false);
+                } else if (position == 1) {
+                    mCameraParam.mGalleryType = GalleryType.PICTURE;
+                    // 拍照状态
+                    mBtnShutter.setIsRecorder(false);
+                    if (!mStorageWriteEnable) {
+                        PermissionUtils.requestStoragePermission(CameraPreviewFragment.this);
+                    }
+                } else if (position == 2) {
+                    mCameraParam.mGalleryType = GalleryType.VIDEO;
+                    // 录制视频状态
+                    mBtnShutter.setIsRecorder(true);
+                    // 请求录音权限
+                    if (!mCameraParam.audioPermitted) {
+                        PermissionUtils.requestRecordSoundPermission(CameraPreviewFragment.this);
+                    }
+                }
+            }
+
+            @Override
+            public void onTabUnselected(CameraTabView.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(CameraTabView.Tab tab) {
+
+            }
+        });
+
+        mCameraTabView.setSelectedTabPosition(1);
     }
 
     /**
@@ -352,29 +394,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             deleteRecordedVideo(false);
         } else if (i == R.id.btn_record_preview) {
             stopRecordOrPreviewVideo();
-        }
-    }
-
-    @Override
-    public void onIndicatorChanged(int currentIndex) {
-        if (currentIndex == 0) {
-            mCameraParam.mGalleryType = GalleryType.GIF;
-            mBtnShutter.setIsRecorder(false);
-        } else if (currentIndex == 1) {
-            mCameraParam.mGalleryType = GalleryType.PICTURE;
-            // 拍照状态
-            mBtnShutter.setIsRecorder(false);
-            if (!mStorageWriteEnable) {
-                PermissionUtils.requestStoragePermission(this);
-            }
-        } else if (currentIndex == 2) {
-            mCameraParam.mGalleryType = GalleryType.VIDEO;
-            // 录制视频状态
-            mBtnShutter.setIsRecorder(true);
-            // 请求录音权限
-            if (!mCameraParam.audioPermitted) {
-                PermissionUtils.requestRecordSoundPermission(this);
-            }
         }
     }
 
