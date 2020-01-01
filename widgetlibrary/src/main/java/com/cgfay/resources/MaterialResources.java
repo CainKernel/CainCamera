@@ -5,11 +5,11 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
-import android.support.annotation.RestrictTo;
-import android.support.annotation.StyleableRes;
-import android.support.design.resources.TextAppearance;
-import android.support.v7.content.res.AppCompatResources;
+import androidx.annotation.Nullable;
+import androidx.annotation.RestrictTo;
+import androidx.annotation.StyleableRes;
+import com.google.android.material.resources.TextAppearance;
+import androidx.appcompat.content.res.AppCompatResources;
 
 @RestrictTo({RestrictTo.Scope.LIBRARY_GROUP})
 public final class MaterialResources {

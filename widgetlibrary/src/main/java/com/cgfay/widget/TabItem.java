@@ -6,6 +6,8 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.cgfay.design.R;
+
 
 /**
  * @author erenhuang
@@ -23,10 +25,10 @@ public class TabItem extends View {
     public TabItem(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, android.support.design.R.styleable.TabItem);
-        mText = typedArray.getText(android.support.design.R.styleable.TabItem_android_text);
-        mIcon = typedArray.getDrawable(android.support.design.R.styleable.TabItem_android_icon);
-        mCustomLayout = typedArray.getResourceId(android.support.design.R.styleable.TabItem_android_layout, 0);
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.TabItem);
+        mText = typedArray.getText(R.styleable.TabItem_android_text);
+        mIcon = typedArray.getDrawable(R.styleable.TabItem_android_icon);
+        mCustomLayout = typedArray.getResourceId(R.styleable.TabItem_android_layout, 0);
         typedArray.recycle();
     }
 }

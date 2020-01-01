@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.cgfay.picker.widget.SquareFrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/iv_thumbnail"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop" />
+
+    <ImageView
+        android:id="@+id/video_indicator"
+        android:layout_width="@dimen/dp60"
+        android:layout_height="@dimen/dp60"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:background="@drawable/ic_media_picker_indicator"/>
+
+    <TextView
+        android:id="@+id/video_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="@dimen/selected_indicator_padding"
+        android:layout_marginStart="@dimen/selected_indicator_padding"
+        android:textColor="@android:color/white"
+        android:textSize="12sp"
+        android:visibility="gone"/>
+
+    <LinearLayout
+        android:id="@+id/layout_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:paddingTop="@dimen/dp4"
+        android:paddingEnd="@dimen/dp4"
+        android:paddingStart="@dimen/dp10"
+        android:paddingBottom="@dimen/dp10">
+        <TextView
+            android:id="@+id/tv_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/icon_media_checkbox"
+            android:gravity="center"
+            android:textColor="@color/gray"
+            android:textSize="@dimen/dp15"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</com.cgfay.picker.widget.SquareFrameLayout>

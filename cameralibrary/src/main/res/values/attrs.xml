@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="HorizontalIndicatorView">
-        <!--可见数目-->
-        <attr name="SeeSize" format="integer"></attr>
-        <!--默认文字大小和颜色-->
-        <attr name="TextSize" format="float"></attr>
-        <attr name="TextColor" format="color|reference"></attr>
-        <attr name="SelectedTextSize" format="float"></attr>
-        <attr name="SelectedTextColor" format="color|reference"></attr>
-    </declare-styleable>
-
+    <!--  录制进度条样式  -->
     <declare-styleable name="RecordProgressView">
         <attr name="radius" format="dimension|reference" />
         <attr name="bg_color" format="color|reference" />
         <attr name="content_color" format="color|reference" />
         <attr name="divider_color" format="color|reference" />
         <attr name="divider_width" format="dimension|reference" />
+    </declare-styleable>
+
+    <!--  录制按钮样式  -->
+    <declare-styleable name="RecordButton">
+        <attr name="circleStrokeWidthMin" format="dimension|reference"/>
+        <attr name="circleStrokeWidthMax" format="dimension|reference"/>
+        <attr name="strokeColor" format="color|reference"/>
+        <attr name="circleColor" format="color|reference"/>
+        <attr name="rectCorner" format="dimension|reference"/>
+        <attr name="rectWidthMax" format="dimension|reference"/>
+        <attr name="rectWidthMin" format="dimension|reference"/>
     </declare-styleable>
 
 </resources>

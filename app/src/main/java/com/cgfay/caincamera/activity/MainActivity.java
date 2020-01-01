@@ -1,28 +1,27 @@
 package com.cgfay.caincamera.activity;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.os.Handler;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.camera.engine.PreviewEngine;
-import com.cgfay.camera.engine.model.AspectRatio;
-import com.cgfay.camera.engine.model.GalleryType;
-import com.cgfay.camera.listener.OnGallerySelectedListener;
-import com.cgfay.camera.listener.OnPreviewCaptureListener;
+import com.cgfay.camera.PreviewEngine;
+import com.cgfay.camera.model.AspectRatio;
 
+import com.cgfay.camera.listener.OnPreviewCaptureListener;
 import com.cgfay.filter.glfilter.resource.FilterHelper;
 import com.cgfay.filter.glfilter.resource.MakeupHelper;
 import com.cgfay.filter.glfilter.resource.ResourceHelper;
 import com.cgfay.image.activity.ImageEditActivity;
-import com.cgfay.scan.engine.MediaScanEngine;
-import com.cgfay.scan.listener.OnCaptureListener;
-import com.cgfay.scan.listener.OnMediaSelectedListener;
-import com.cgfay.scan.loader.impl.GlideMediaLoader;
-import com.cgfay.scan.model.MimeType;
+import com.cgfay.picker.MediaPicker;
+import com.cgfay.picker.selector.OnMediaSelector;
+import com.cgfay.picker.model.MediaData;
 import com.cgfay.uitls.utils.PermissionUtils;
 import com.cgfay.video.activity.VideoCutActivity;
 import com.cgfay.video.activity.VideoEditActivity;
@@ -33,7 +32,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final int REQUEST_CODE = 0;
 
+    private static final int DELAY_CLICK = 500;
+
     private boolean mOnClick;
+    private Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +43,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         checkPermissions();
         initView();
-        initResources();
+        if (PermissionUtils.permissionChecking(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            initResources();
+        }
+        mHandler = new Handler();
     }
 
     private void checkPermissions() {
@@ -68,11 +73,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE) {
+            if (grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                initResources();
+            }
+        }
+    }
+
+    @Override
     public void onClick(View v) {
         if (mOnClick) {
             return;
         }
         mOnClick = true;
+        mHandler.postDelayed(()->{
+            mOnClick = false;
+        }, DELAY_CLICK);
         switch (v.getId()) {
             case R.id.btn_camera: {
                 previewCamera();
@@ -80,12 +98,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             case R.id.btn_edit_video: {
-                scanMedia(false, false,true);
+                scanMedia(false,true);
                 break;
             }
 
             case R.id.btn_edit_picture: {
-                scanMedia(false, true, false);
+                scanMedia(true, false);
                 break;
             }
 
@@ -122,109 +140,81 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 打开预览页面
      */
     private void previewCamera() {
-        PreviewEngine.from(this)
-                .setCameraRatio(AspectRatio.Ratio_16_9)
-                .showFacePoints(false)
-                .showFps(true)
-                .backCamera(true)
-                .setGalleryListener(new OnGallerySelectedListener() {
-                    @Override
-                    public void onGalleryClickListener(GalleryType type) {
-                        scanMedia(type == GalleryType.ALL);
-                    }
-                })
-                .setPreviewCaptureListener(new OnPreviewCaptureListener() {
-                    @Override
-                    public void onMediaSelectedListener(String path, GalleryType type) {
-                        if (type == GalleryType.PICTURE) {
+        if (PermissionUtils.permissionChecking(this, Manifest.permission.CAMERA)) {
+            PreviewEngine.from(this)
+                    .setCameraRatio(AspectRatio.Ratio_16_9)
+                    .showFacePoints(false)
+                    .showFps(true)
+                    .backCamera(true)
+                    .setPreviewCaptureListener((path, type) -> {
+                        if (type == OnPreviewCaptureListener.MediaTypePicture) {
                             Intent intent = new Intent(MainActivity.this, ImageEditActivity.class);
                             intent.putExtra(ImageEditActivity.IMAGE_PATH, path);
                             intent.putExtra(ImageEditActivity.DELETE_INPUT_FILE, true);
                             startActivity(intent);
-                        } else if (type == GalleryType.VIDEO) {
+                        } else if (type == OnPreviewCaptureListener.MediaTypeVideo) {
                             Intent intent = new Intent(MainActivity.this, VideoEditActivity.class);
                             intent.putExtra(VideoEditActivity.VIDEO_PATH, path);
                             startActivity(intent);
                         }
-                    }
-                })
-                .startPreview();
+                    })
+                    .startPreview();
+        } else {
+            checkPermissions();
+        }
     }
 
     /**
      * 扫描媒体库
-     */
-    private void scanMedia(boolean enableGif) {
-        scanMedia(enableGif, true, true);
-    }
-
-    /**
-     * 扫描媒体库
-     * @param enableGif
      * @param enableImage
      * @param enableVideo
      */
-    private void scanMedia(boolean enableGif, boolean enableImage, boolean enableVideo) {
-        MediaScanEngine.from(this)
-                .setMimeTypes(MimeType.ofAll())
-                .ImageLoader(new GlideMediaLoader())
-                .spanCount(4)
-                .showCapture(true)
+    private void scanMedia(boolean enableImage, boolean enableVideo) {
+        MediaPicker.from(this)
                 .showImage(enableImage)
                 .showVideo(enableVideo)
-                .enableSelectGif(enableGif)
-                .setCaptureListener(new OnCaptureListener() {
-                    @Override
-                    public void onCapture() {
-                        previewCamera();
-                    }
-                })
-                .setMediaSelectedListener(new OnMediaSelectedListener() {
-                    @Override
-                    public void onSelected(List<Uri> uriList, List<String> pathList, boolean isVideo) {
-                        if (isVideo) {
-                            Intent intent = new Intent(MainActivity.this, VideoCutActivity.class);
-                            intent.putExtra(VideoCutActivity.PATH, pathList.get(0));
-                            startActivity(intent);
-                        } else {
-                            Intent intent = new Intent(MainActivity.this, ImageEditActivity.class);
-                            intent.putExtra(ImageEditActivity.IMAGE_PATH, pathList.get(0));
-                            startActivity(intent);
-                        }
-                    }
-                })
-                .scanMedia();
+                .setMediaSelector(new NormalMediaSelector())
+                .show();
     }
 
     /**
      * 音视频混合
      */
     private void musicMerge() {
-        MediaScanEngine.from(this)
-                .setMimeTypes(MimeType.ofAll())
-                .ImageLoader(new GlideMediaLoader())
-                .spanCount(4)
+        MediaPicker.from(this)
                 .showCapture(true)
                 .showImage(false)
                 .showVideo(true)
-                .enableSelectGif(false)
-                .setCaptureListener(new OnCaptureListener() {
-                    @Override
-                    public void onCapture() {
-                        previewCamera();
-                    }
-                })
-                .setMediaSelectedListener(new OnMediaSelectedListener() {
-                    @Override
-                    public void onSelected(List<Uri> uriList, List<String> pathList, boolean isVideo) {
-                        if (isVideo) {
-                            Intent intent = new Intent(MainActivity.this, MusicMergeActivity.class);
-                            intent.putExtra(MusicMergeActivity.PATH, pathList.get(0));
-                            startActivity(intent);
-                        }
-                    }
-                })
-                .scanMedia();
+                .setMediaSelector(new MusicMergeMediaSelector())
+                .show();
+    }
+
+    private class MusicMergeMediaSelector implements OnMediaSelector {
+        @Override
+        public void onMediaSelect(@NonNull Context context, @NonNull List<MediaData> mediaDataList) {
+            if (mediaDataList.size() == 1) {
+                Intent intent = new Intent(context, MusicMergeActivity.class);
+                intent.putExtra(MusicMergeActivity.PATH, mediaDataList.get(0).getPath());
+                context.startActivity(intent);
+            }
+        }
+    }
+
+    private class NormalMediaSelector implements OnMediaSelector {
+
+        @Override
+        public void onMediaSelect(@NonNull Context context, @NonNull List<MediaData> mediaDataList) {
+            MediaData mediaData = mediaDataList.get(0);
+            if (mediaData.isVideo()) {
+                Intent intent = new Intent(context, VideoCutActivity.class);
+                intent.putExtra(VideoCutActivity.PATH, mediaData.getPath());
+                context.startActivity(intent);
+            } else {
+                Intent intent = new Intent(context, ImageEditActivity.class);
+                intent.putExtra(ImageEditActivity.IMAGE_PATH, mediaData.getPath());
+                context.startActivity(intent);
+            }
+        }
     }
 
     /**

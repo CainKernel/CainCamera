@@ -107,18 +107,18 @@
             </RelativeLayout>
 
             <!-- 特效列表 -->
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list_video_edit_effect"
                 android:layout_width="match_parent"
                 android:layout_height="92dp">
-            </android.support.v7.widget.RecyclerView>
+            </androidx.recyclerview.widget.RecyclerView>
 
             <!-- 特效分类栏 -->
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list_video_edit_effect_category"
                 android:layout_width="match_parent"
                 android:layout_height="47dp">
-            </android.support.v7.widget.RecyclerView>
+            </androidx.recyclerview.widget.RecyclerView>
         </LinearLayout>
     </LinearLayout>
 

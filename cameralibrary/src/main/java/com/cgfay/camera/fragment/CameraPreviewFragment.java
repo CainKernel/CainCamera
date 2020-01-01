@@ -2,81 +2,78 @@ package com.cgfay.camera.fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
+
+import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.cgfay.camera.loader.impl.CameraMediaLoader;
 import com.cgfay.camera.presenter.CameraPreviewPresenter;
 import com.cgfay.camera.widget.CainTextureView;
+import com.cgfay.camera.widget.CameraPreviewTopbar;
+import com.cgfay.camera.widget.RecordButton;
+import com.cgfay.camera.widget.RecordCountDownView;
+import com.cgfay.camera.widget.RecordProgressView;
 import com.cgfay.cameralibrary.R;
-import com.cgfay.camera.engine.camera.CameraEngine;
-import com.cgfay.camera.engine.camera.CameraParam;
-import com.cgfay.camera.engine.model.GalleryType;
-import com.cgfay.camera.engine.recorder.PreviewRecorder;
-import com.cgfay.camera.utils.PathConstraints;
+import com.cgfay.camera.camera.CameraParam;
+import com.cgfay.camera.model.GalleryType;
 import com.cgfay.camera.widget.AspectFrameLayout;
-import com.cgfay.camera.widget.PopupSettingView;
 import com.cgfay.camera.widget.RecordSpeedLevelBar;
-import com.cgfay.camera.widget.ShutterButton;
-import com.cgfay.filter.multimedia.VideoCombiner;
+import com.cgfay.filter.recorder.SpeedMode;
+import com.cgfay.picker.MediaPicker;
+import com.cgfay.picker.loader.AlbumDataLoader;
+import com.cgfay.picker.model.AlbumData;
+import com.cgfay.uitls.bean.MusicData;
+import com.cgfay.uitls.dialog.DialogBuilder;
+import com.cgfay.uitls.fragment.MusicPickerFragment;
 import com.cgfay.uitls.fragment.PermissionErrorDialogFragment;
 import com.cgfay.uitls.utils.BrightnessUtils;
 import com.cgfay.uitls.utils.DisplayUtils;
 import com.cgfay.uitls.utils.NotchUtils;
 import com.cgfay.uitls.utils.PermissionUtils;
 import com.cgfay.uitls.utils.StatusBarUtils;
-import com.cgfay.uitls.utils.StringUtils;
+import com.cgfay.uitls.widget.RoundOutlineProvider;
 import com.cgfay.widget.CameraTabView;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * 相机预览页面
  */
-public class CameraPreviewFragment extends Fragment implements View.OnClickListener {
+public class CameraPreviewFragment extends Fragment implements View.OnClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = "CameraPreviewFragment";
     private static final boolean VERBOSE = true;
 
+    private static final String FRAGMENT_TAG = "FRAGMENT_TAG";
     private static final String FRAGMENT_DIALOG = "dialog";
 
-    // 对焦大小
-    private static final int FocusSize = 100;
-
-    // 相机权限使能标志
-    private boolean mCameraEnable = false;
-    // 存储权限使能标志
-    private boolean mStorageWriteEnable = false;
-    // 是否需要等待录制完成再跳转
-    private boolean mNeedToWaitStop = false;
-    // 显示贴纸页面
-    private boolean isShowingStickers = false;
-    // 显示滤镜页面
-    private boolean isShowingFilters = false;
-
-    // 处于延时拍照状态
-    private boolean mDelayTaking = false;
+    private static final int ALBUM_LOADER_ID = 1;
 
     // 预览参数
     private CameraParam mCameraParam;
@@ -85,73 +82,82 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private View mContentView;
     // 预览部分
     private AspectFrameLayout mAspectLayout;
-//    private CainSurfaceView mCameraSurfaceView;
     private CainTextureView mCameraTextureView;
-    // 顶部布局
-    private RelativeLayout mPreviewTop;
     // fps显示
     private TextView mFpsView;
-    // 对比按钮
-    private Button mBtnCompare;
-    // 右上角列表
-    private LinearLayout mPreviewRightTop;
-    // 顶部Button
-    private LinearLayout mBtnSetting;
-    // 翻转按钮
-    private LinearLayout mBtnSwitch;
-    // 速度按钮
-    private LinearLayout mBtnSpeed;
-    // 滤镜按钮
-    private LinearLayout mBtnEffect;
-    // 设置的PopupView
-    private PopupSettingView mSettingView;
 
-    private LinearLayout mLayoutBottom;
+    // 录制进度条
+    private RecordProgressView mProgressView;
+    // 倒计时控件
+    private RecordCountDownView mCountDownView;
+
+    // 顶部topbar
+    private CameraPreviewTopbar mPreviewTopbar;
+
     // 速度选择条
     private RecordSpeedLevelBar mSpeedBar;
     private boolean mSpeedBarShowing;
-    // 倒计时
-    private TextView mCountDownView;
     // 贴纸按钮
-    private Button mBtnStickers;
-    // 快门按钮
-    private ShutterButton mBtnShutter;
+    private LinearLayout mBtnStickers;
+    // 录制按钮
+    private RecordButton mBtnRecord;
+
+    private View mLayoutMedia;
     // 媒体库按钮
-    private Button mBtnViewPhoto;
+    private ImageView mBtnMedia;
+
+    // 刪除布局
+    private LinearLayout mLayoutDelete;
     // 视频删除按钮
-    private Button mBtnRecordDelete;
+    private Button mBtnDelete;
     // 视频预览按钮
-    private Button mBtnRecordPreview;
+    private Button mBtnNext;
     // 相机指示器
     private CameraTabView mCameraTabView;
-    // 相机类型指示文字
-    private List<String> mIndicatorText = new ArrayList<String>();
-    // 合并对话框
-    private CombineVideoDialogFragment mCombineDialog;
-    // 主线程Handler
-    private Handler mMainHandler;
-    // 持有该Fragment的Activity，onAttach/onDetach中绑定/解绑，主要用于解决getActivity() = null的情况
-    private Activity mActivity;
+    private View mTabIndicator;
+
+    private boolean mFragmentAnimating;
+    private FrameLayout mFragmentContainer;
     // 贴纸资源页面
     private PreviewResourceFragment mResourcesFragment;
     // 滤镜页面
     private PreviewEffectFragment mEffectFragment;
+    // 更多设置界面
+    private PreviewSettingFragment mSettingFragment;
+
+    private final Handler mMainHandler;
+    private Activity mActivity;
 
     private CameraPreviewPresenter mPreviewPresenter;
 
+    // 本地缩略图加载器
+    private LoaderManager mLocalImageLoader;
+
+    // 当前对话框
+    private Dialog mDialog;
+
     public CameraPreviewFragment() {
         mCameraParam = CameraParam.getInstance();
+        mMainHandler = new Handler(Looper.getMainLooper());
+        mPreviewPresenter = new CameraPreviewPresenter(this);
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        mActivity = getActivity();
-        mMainHandler = new Handler(context.getMainLooper());
-        mCameraEnable = PermissionUtils.permissionChecking(mActivity, Manifest.permission.CAMERA);
-        mStorageWriteEnable = PermissionUtils.permissionChecking(mActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        mPreviewPresenter = new CameraPreviewPresenter(this);
+        if (context instanceof Activity) {
+            mActivity = (Activity) context;
+        } else {
+            mActivity = getActivity();
+        }
         mPreviewPresenter.onAttach(mActivity);
+        Log.d(TAG, "onAttach: ");
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mPreviewPresenter.onCreate();
     }
 
     @Nullable
@@ -164,10 +170,15 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (mCameraEnable) {
+        if (isCameraEnable()) {
             initView(mContentView);
         } else {
             PermissionUtils.requestCameraPermission(this);
+        }
+
+        if (PermissionUtils.permissionChecking(mActivity, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            mLocalImageLoader = LoaderManager.getInstance(this);
+            mLocalImageLoader.initLoader(ALBUM_LOADER_ID, null, this);
         }
     }
 
@@ -176,16 +187,26 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
      * @param view
      */
     private void initView(View view) {
-        mAspectLayout = (AspectFrameLayout) view.findViewById(R.id.layout_aspect);
-//        mCameraSurfaceView = new CainSurfaceView(mActivity);
-//        mCameraSurfaceView.addOnTouchScroller(mTouchScroller);
-//        mCameraSurfaceView.addMultiClickListener(mMultiClickListener);
-//        mAspectLayout.addView(mCameraSurfaceView);
+        initPreviewSurface();
+        initPreviewTopbar();
+        initBottomLayout(view);
+        initCameraTabView();
+    }
+
+    private void initPreviewSurface() {
+        mFpsView = mContentView.findViewById(R.id.tv_fps);
+        mAspectLayout = mContentView.findViewById(R.id.layout_aspect);
         mCameraTextureView = new CainTextureView(mActivity);
         mCameraTextureView.addOnTouchScroller(mTouchScroller);
         mCameraTextureView.addMultiClickListener(mMultiClickListener);
         mCameraTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
         mAspectLayout.addView(mCameraTextureView);
+
+        // 添加圆角显示
+        if (Build.VERSION.SDK_INT >= 21) {
+            mCameraTextureView.setOutlineProvider(new RoundOutlineProvider(getResources().getDimension(R.dimen.dp7)));
+            mCameraTextureView.setClipToOutline(true);
+        }
 
         // 全面屏比例处理
         if (DisplayUtils.isAllScreenDevice(mActivity)) {
@@ -193,7 +214,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             mActivity.getWindowManager().getDefaultDisplay().getRealMetrics(outMetrics);
             int widthPixel = outMetrics.widthPixels;
             int heightPixel = outMetrics.heightPixels;
-            float height = mActivity.getResources().getDimension(R.dimen.bottom_indicator_height);
+            float height = mActivity.getResources().getDimension(R.dimen.camera_tab_height);
             // 是否刘海屏
             if (NotchUtils.hasNotchScreen(mActivity)) {
                 height += StatusBarUtils.getStatusBarHeight(mActivity);
@@ -201,75 +222,85 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             mAspectLayout.setAspectRatio(widthPixel / (heightPixel - height));
         }
         mAspectLayout.requestLayout();
-//        mCameraSurfaceView.getHolder().addCallback(mSurfaceCallback);
 
-        mPreviewTop = (RelativeLayout) view.findViewById(R.id.layout_preview_top);
-        view.findViewById(R.id.btn_close).setOnClickListener(this);
-        view.findViewById(R.id.btn_select_music).setOnClickListener(this);
-
-        mFpsView = (TextView) view.findViewById(R.id.tv_fps);
-        mBtnCompare = (Button) view.findViewById(R.id.btn_compare);
-        mBtnCompare.setVisibility(View.GONE);
-        mBtnCompare.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        mPreviewPresenter.showCompare(true);
-                        mBtnCompare.setBackgroundResource(R.drawable.ic_camera_compare_pressed);
-                        break;
-
-                    default:
-                        mPreviewPresenter.showCompare(false);
-                        mBtnCompare.setBackgroundResource(R.drawable.ic_camera_compare_normal);
-                        break;
-                }
-                return true;
-            }
-        });
-
-        mPreviewRightTop = (LinearLayout) view.findViewById(R.id.layout_preview_right_top);
-        mBtnSetting = (LinearLayout)view.findViewById(R.id.btn_setting);
-        mBtnSetting.setOnClickListener(this);
-        mBtnSwitch = (LinearLayout) view.findViewById(R.id.btn_switch);
-        mBtnSwitch.setOnClickListener(this);
-        mBtnSpeed = (LinearLayout) view.findViewById(R.id.btn_speed);
-        mBtnSpeed.setOnClickListener(this);
-        mBtnEffect = (LinearLayout) view.findViewById(R.id.btn_effects);
-        mBtnEffect.setOnClickListener(this);
-
-        mLayoutBottom = (LinearLayout) view.findViewById(R.id.layout_bottom);
-        mSpeedBar = (RecordSpeedLevelBar) view.findViewById(R.id.record_speed_bar);
-        mSpeedBar.setOnSpeedChangedListener((speed) -> {
-            mPreviewPresenter.setSpeed(speed.getSpeed());
-        });
-
-        mCountDownView = (TextView) view.findViewById(R.id.tv_countdown);
-        mBtnStickers = (Button) view.findViewById(R.id.btn_stickers);
-        mBtnStickers.setOnClickListener(this);
-        mBtnViewPhoto = (Button) view.findViewById(R.id.btn_view_photo);
-        mBtnViewPhoto.setOnClickListener(this);
-
-        mBtnShutter = (ShutterButton) view.findViewById(R.id.btn_shutter);
-        mBtnShutter.setOnShutterListener(mShutterListener);
-        mBtnShutter.setOnClickListener(this);
-
-        mBtnRecordDelete = (Button) view.findViewById(R.id.btn_record_delete);
-        mBtnRecordDelete.setOnClickListener(this);
-        mBtnRecordPreview = (Button) view.findViewById(R.id.btn_record_preview);
-        mBtnRecordPreview.setOnClickListener(this);
-
-        adjustBottomView();
-
-        initCameraTabView();
+        mProgressView = mContentView.findViewById(R.id.record_progress);
+        mCountDownView = mContentView.findViewById(R.id.count_down_view);
     }
 
+    /**
+     * 初始化顶部topbar
+     */
+    private void initPreviewTopbar() {
+        mPreviewTopbar = mContentView.findViewById(R.id.camera_preview_topbar);
+        mPreviewTopbar.addOnCameraCloseListener(this::closeCamera)
+                .addOnCameraSwitchListener(this::switchCamera)
+                .addOnShowPanelListener(type -> {
+                    switch (type) {
+                        case CameraPreviewTopbar.PanelMusic: {
+                            openMusicPicker();
+                            break;
+                        }
+
+                        case CameraPreviewTopbar.PanelSpeedBar: {
+                            setShowingSpeedBar(mSpeedBar.getVisibility() != View.VISIBLE);
+                            break;
+                        }
+
+                        case CameraPreviewTopbar.PanelFilter: {
+                            showEffectFragment();
+                            break;
+                        }
+
+                        case CameraPreviewTopbar.PanelSetting: {
+                            showSettingFragment();
+                            break;
+                        }
+                    }
+                });
+    }
+
+    /**
+     * 初始化底部布局
+     * @param view
+     */
+    private void initBottomLayout(@NonNull View view) {
+        mFragmentContainer = view.findViewById(R.id.fragment_bottom_container);
+        mSpeedBar = view.findViewById(R.id.record_speed_bar);
+        mSpeedBar.setOnSpeedChangedListener((speed) -> {
+            mPreviewPresenter.setSpeedMode(SpeedMode.valueOf(speed.getSpeed()));
+        });
+
+        mBtnStickers = view.findViewById(R.id.btn_stickers);
+        mBtnStickers.setOnClickListener(this);
+        mLayoutMedia = view.findViewById(R.id.layout_media);
+        mBtnMedia = view.findViewById(R.id.btn_media);
+        mBtnMedia.setOnClickListener(this);
+
+        mBtnRecord = view.findViewById(R.id.btn_record);
+        mBtnRecord.setOnClickListener(this);
+        mBtnRecord.addRecordStateListener(mRecordStateListener);
+
+        mLayoutDelete = view.findViewById(R.id.layout_delete);
+        mBtnDelete = view.findViewById(R.id.btn_record_delete);
+        mBtnDelete.setOnClickListener(this);
+        mBtnNext = view.findViewById(R.id.btn_goto_edit);
+        mBtnNext.setOnClickListener(this);
+
+        setShowingSpeedBar(mSpeedBarShowing);
+    }
+
+    /**
+     * 初始化相机底部tab view
+     */
     private void initCameraTabView() {
-        String[] galleryIndicator = getResources().getStringArray(R.array.gallery_indicator);
+        mTabIndicator = mContentView.findViewById(R.id.iv_tab_indicator);
         mCameraTabView = mContentView.findViewById(R.id.tl_camera_tab);
-        for (int i = 0; i < galleryIndicator.length; i++) {
-            mCameraTabView.addTab(mCameraTabView.newTab().setText(galleryIndicator[i]));
-        }
+
+        mCameraTabView.addTab(mCameraTabView.newTab().setText(R.string.tab_picture));
+        mCameraTabView.addTab(mCameraTabView.newTab().setText(R.string.tab_video_60s));
+        mCameraTabView.addTab(mCameraTabView.newTab().setText(R.string.tab_video_15s), true);
+        mCameraTabView.addTab(mCameraTabView.newTab().setText(R.string.tab_video_picture));
+
         mCameraTabView.setIndicateCenter(true);
         mCameraTabView.setScrollAutoSelected(true);
         mCameraTabView.addOnTabSelectedListener(new CameraTabView.OnTabSelectedListener() {
@@ -277,23 +308,35 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             public void onTabSelected(CameraTabView.Tab tab) {
                 int position = tab.getPosition();
                 if (position == 0) {
-                    mCameraParam.mGalleryType = GalleryType.GIF;
-                    mBtnShutter.setIsRecorder(false);
-                } else if (position == 1) {
                     mCameraParam.mGalleryType = GalleryType.PICTURE;
-                    // 拍照状态
-                    mBtnShutter.setIsRecorder(false);
-                    if (!mStorageWriteEnable) {
-                        PermissionUtils.requestStoragePermission(CameraPreviewFragment.this);
-                    }
-                } else if (position == 2) {
-                    mCameraParam.mGalleryType = GalleryType.VIDEO;
-                    // 录制视频状态
-                    mBtnShutter.setIsRecorder(true);
-                    // 请求录音权限
-                    if (!mCameraParam.audioPermitted) {
+                    if (!isStorageEnable()) {
                         PermissionUtils.requestRecordSoundPermission(CameraPreviewFragment.this);
                     }
+                    if (mBtnRecord != null) {
+                        mBtnRecord.setRecordEnable(false);
+                    }
+                } else if (position == 1) {
+                    mCameraParam.mGalleryType = GalleryType.VIDEO_60S;
+                    // 请求录音权限
+                    if (!isRecordAudioEnable()) {
+                        PermissionUtils.requestRecordSoundPermission(CameraPreviewFragment.this);
+                    }
+                    if (mBtnRecord != null) {
+                        mBtnRecord.setRecordEnable(true);
+                    }
+                    mPreviewPresenter.setRecordSeconds(60);
+                } else if (position == 2) {
+                    mCameraParam.mGalleryType = GalleryType.VIDEO_15S;
+                    // 请求录音权限
+                    if (!isRecordAudioEnable()) {
+                        PermissionUtils.requestRecordSoundPermission(CameraPreviewFragment.this);
+                    }
+                    if (mBtnRecord != null) {
+                        mBtnRecord.setRecordEnable(true);
+                    }
+                    mPreviewPresenter.setRecordSeconds(15);
+                } else if (position == 3) {
+                    showVideoPicture();
                 }
             }
 
@@ -307,26 +350,28 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
 
             }
         });
-
-        mCameraTabView.setSelectedTabPosition(1);
+        mPreviewPresenter.setRecordSeconds(15);
     }
 
     /**
-     * 调整底部视图
+     * 显示影集蒙层
      */
-    private void adjustBottomView() {
-        boolean result = mCameraParam.currentRatio < CameraParam.Ratio_4_3;
-        mBtnStickers.setBackgroundResource(result ? R.drawable.ic_camera_sticker_light : R.drawable.ic_camera_sticker_dark);
-        mBtnRecordDelete.setBackgroundResource(result ? R.drawable.ic_camera_record_delete_light : R.drawable.ic_camera_record_delete_dark);
-        mBtnRecordPreview.setBackgroundResource(result ? R.drawable.ic_camera_record_done_light : R.drawable.ic_camera_record_done_dark);
-        mBtnShutter.setOuterBackgroundColor(result ? R.color.shutter_gray_light : R.color.shutter_gray_dark);
+    private void showVideoPicture() {
+        // TODO 后续有时间再做
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mPreviewPresenter.onStart();
     }
 
     @Override
     public void onResume() {
         super.onResume();
         enhancementBrightness();
-        mBtnShutter.setEnableOpened(false);
+        mPreviewPresenter.onResume();
+        Log.d(TAG, "onResume: ");
     }
 
     /**
@@ -340,21 +385,36 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     @Override
     public void onPause() {
         super.onPause();
-        hideStickerView();
-        hideEffectView();
-        mBtnShutter.setEnableOpened(false);
+        mPreviewPresenter.onPause();
+        Log.d(TAG, "onPause: ");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mPreviewPresenter.onStop();
+        Log.d(TAG, "onStop: ");
     }
 
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
+        if (mCountDownView != null) {
+            mCountDownView.cancel();
+            mCountDownView = null;
+        }
         mContentView = null;
+        super.onDestroyView();
+        Log.d(TAG, "onDestroyView: ");
     }
 
     @Override
     public void onDestroy() {
+        destroyImageLoader();
         mPreviewPresenter.onDestroy();
+        dismissDialog();
+        mMainHandler.removeCallbacksAndMessages(null);
         super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
     }
 
     @Override
@@ -363,37 +423,61 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         mPreviewPresenter = null;
         mActivity = null;
         super.onDetach();
+        Log.d(TAG, "onDetach: ");
+    }
+
+    /**
+     * 处理返回按钮事件
+     * @return 是否拦截返回按键事件
+     */
+    public boolean onBackPressed() {
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(FRAGMENT_TAG);
+        if (fragment != null) {
+            hideFragmentAnimating();
+            return true;
+        }
+
+        // 倒计时
+        if (mCountDownView != null && mCountDownView.isCountDowning()) {
+            mCountDownView.cancel();
+            return true;
+        }
+        return false;
     }
 
     @Override
     public void onClick(View v) {
-        if (mSettingView != null && mSettingView.isShowing()) {
-            setShowingSpeedBar(mSpeedBarShowing);
-        }
         int i = v.getId();
-        if (i == R.id.btn_close) {
-            mActivity.finish();
-            mActivity.overridePendingTransition(0, R.anim.anim_slide_down);
-        } else if (i == R.id.btn_select_music) {
-            mPreviewPresenter.onOpenMusicSelectPage();
-        } else if (i == R.id.btn_switch) {
-            mPreviewPresenter.switchCamera();
-        } else if (i == R.id.btn_speed) {
-            setShowingSpeedBar(mSpeedBar.getVisibility() != View.VISIBLE);
-        } else if (i == R.id.btn_effects) {
-            showEffectView();
-        } else if (i == R.id.btn_setting) {
-            showSettingPopView();
-        } else if (i == R.id.btn_stickers) {
+        if (i == R.id.btn_stickers) {
             showStickers();
-        } else if (i == R.id.btn_view_photo) {
-            mPreviewPresenter.onOpenGalleryPage();
-        } else if (i == R.id.btn_shutter) {
+        } else if (i == R.id.btn_media) {
+            openMediaPicker();
+        } else if (i == R.id.btn_record) {
             takePicture();
         } else if (i == R.id.btn_record_delete) {
-            deleteRecordedVideo(false);
-        } else if (i == R.id.btn_record_preview) {
+            deleteRecordedVideo();
+        } else if (i == R.id.btn_goto_edit) {
             stopRecordOrPreviewVideo();
+        }
+    }
+
+    /**
+     * 销毁当前的对话框
+     */
+    private void dismissDialog() {
+        if (mDialog != null) {
+            mDialog.dismiss();
+            mDialog = null;
+        }
+    }
+
+    /**
+     * 关闭相机
+     */
+    private void closeCamera() {
+        if (mActivity != null) {
+            mActivity.finish();
+            mActivity.overridePendingTransition(0, R.anim.anim_slide_down);
         }
     }
 
@@ -401,7 +485,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
      * 切换相机
      */
     private void switchCamera() {
-        if (!mCameraEnable) {
+        if (!isCameraEnable()) {
             PermissionUtils.requestCameraPermission(this);
             return;
         }
@@ -415,149 +499,308 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private void setShowingSpeedBar(boolean show) {
         mSpeedBarShowing = show;
         mSpeedBar.setVisibility(show ? View.VISIBLE : View.GONE);
-        ((TextView)mContentView.findViewById(R.id.tv_speed_status)).setText(show ? "速度开" : "速度关");
-        if (show) {
-            if (mSettingView != null) {
-                mSettingView.dismiss();
-            }
-            hideStickerView();
-            hideEffectView();
-        }
+        mPreviewTopbar.setSpeedBarOpen(show);
     }
 
     /**
-     * 显示下拉设置页面
+     * 显示设置页面
      */
-    private void showSettingPopView() {
-        if (mSettingView == null) {
-            mSettingView = new PopupSettingView(mActivity);
+    private void showSettingFragment() {
+        if (mSettingFragment == null) {
+            mSettingFragment = new PreviewSettingFragment();
         }
-        mSettingView.addStateChangedListener(mStateChangedListener);
-        mSettingView.showAsDropDown(mBtnSetting, Gravity.BOTTOM, 0, 0);
-        mSettingView.setEnableChangeFlash(mCameraParam.supportFlash);
-
-        mSpeedBar.setVisibility(View.GONE);
-        ((TextView)mContentView.findViewById(R.id.tv_speed_status)).setText("速度关");
+        mSettingFragment.addStateChangedListener(mStateChangedListener);
+        mSettingFragment.setEnableChangeFlash(mCameraParam.supportFlash);
+        getChildFragmentManager()
+                .beginTransaction()
+                .add(R.id.fragment_bottom_container, mSettingFragment, FRAGMENT_TAG)
+                .addToBackStack(FRAGMENT_TAG)
+                .commitAllowingStateLoss();
+        showFragmentAnimating();
     }
 
     /**
      * 显示动态贴纸页面
      */
     private void showStickers() {
-        isShowingStickers = true;
-        FragmentTransaction ft = getChildFragmentManager().beginTransaction();
         if (mResourcesFragment == null) {
             mResourcesFragment = new PreviewResourceFragment();
-            mResourcesFragment.addOnChangeResourceListener((data) -> {
-                mPreviewPresenter.changeResource(data);
-            });
-            ft.add(R.id.fragment_container, mResourcesFragment);
-        } else {
-            mResourcesFragment.addOnChangeResourceListener((data) -> {
-                mPreviewPresenter.changeResource(data);
-            });
-            ft.show(mResourcesFragment);
         }
-        ft.commit();
-        hideBottomLayout();
-
+        mResourcesFragment.addOnChangeResourceListener((data) -> {
+            mPreviewPresenter.changeResource(data);
+        });
+        getChildFragmentManager()
+                .beginTransaction()
+                .add(R.id.fragment_bottom_container, mResourcesFragment, FRAGMENT_TAG)
+                .addToBackStack(FRAGMENT_TAG)
+                .commitAllowingStateLoss();
+        showFragmentAnimating(false);
     }
 
     /**
      * 显示滤镜页面
      */
-    private void showEffectView() {
-        mBtnCompare.setVisibility(View.VISIBLE);
-        isShowingFilters = true;
-        FragmentTransaction ft = getChildFragmentManager().beginTransaction();
+    private void showEffectFragment() {
         if (mEffectFragment == null) {
             mEffectFragment = new PreviewEffectFragment();
-            mEffectFragment.addOnFilterChangeListener(color -> {
-                mPreviewPresenter.changeDynamicFilter(color);
-            });
-            mEffectFragment.addOnMakeupChangeListener(makeup -> {
-                mPreviewPresenter.changeDynamicMakeup(makeup);
-            });
-            ft.add(R.id.fragment_container, mEffectFragment);
-        } else {
-            mEffectFragment.addOnFilterChangeListener(color -> {
-                mPreviewPresenter.changeDynamicFilter(color);
-            });
-            mEffectFragment.addOnMakeupChangeListener(makeup -> {
-                mPreviewPresenter.changeDynamicMakeup(makeup);
-            });
-            ft.show(mEffectFragment);
         }
-        ft.commit();
+        mEffectFragment.addOnCompareEffectListener(compare -> {
+            mPreviewPresenter.showCompare(compare);
+        });
+        mEffectFragment.addOnFilterChangeListener(color -> {
+            mPreviewPresenter.changeDynamicFilter(color);
+        });
+        mEffectFragment.addOnMakeupChangeListener(makeup -> {
+            mPreviewPresenter.changeDynamicMakeup(makeup);
+        });
         mEffectFragment.scrollToCurrentFilter(mPreviewPresenter.getFilterIndex());
-        hideBottomLayout();
+        getChildFragmentManager()
+                .beginTransaction()
+                .add(R.id.fragment_bottom_container, mEffectFragment, FRAGMENT_TAG)
+                .addToBackStack(FRAGMENT_TAG)
+                .commitAllowingStateLoss();
+        showFragmentAnimating();
     }
 
     /**
-     * 隐藏动态贴纸页面
+     * 显示Fragment动画
      */
-    private void hideStickerView() {
-        if (isShowingStickers) {
-            isShowingStickers = false;
-            if (mResourcesFragment != null) {
-                FragmentTransaction ft = getChildFragmentManager().beginTransaction();
-                ft.hide(mResourcesFragment);
-                ft.commit();
-            }
+    private void showFragmentAnimating() {
+        showFragmentAnimating(true);
+    }
+
+    /**
+     * 显示Fragment动画
+     */
+    private void showFragmentAnimating(boolean hideAllLayout) {
+        if (mFragmentAnimating) {
+            return;
         }
-        resetBottomLayout();
-    }
+        mFragmentAnimating = true;
+        mFragmentContainer.setVisibility(View.VISIBLE);
+        Animation animation = AnimationUtils.loadAnimation(mActivity, R.anim.preview_slide_up);
+        mFragmentContainer.startAnimation(animation);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
 
-    /**
-     * 隐藏滤镜页面
-     */
-    private void hideEffectView() {
-        mBtnCompare.setVisibility(View.GONE);
-        if (isShowingFilters) {
-            isShowingFilters = false;
-            if (mEffectFragment != null) {
-                FragmentTransaction ft = getChildFragmentManager().beginTransaction();
-                ft.hide(mEffectFragment);
-                ft.commit();
             }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                mFragmentAnimating = false;
+                if (hideAllLayout) {
+                    hideAllLayout();
+                } else {
+                    hideWithoutSwitch();
+                }
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+    }
+
+    /**
+     * 隐藏Fragment动画
+     */
+    private void hideFragmentAnimating() {
+        if (mFragmentAnimating) {
+            return;
         }
-        resetBottomLayout();
+        mFragmentAnimating = true;
+        Animation animation = AnimationUtils.loadAnimation(mActivity, R.anim.preivew_slide_down);
+        mFragmentContainer.startAnimation(animation);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
 
-        mPreviewRightTop.setVisibility(View.VISIBLE);
-        mPreviewTop.setVisibility(View.VISIBLE);
-        mSpeedBar.setVisibility(mSpeedBarShowing ? View.VISIBLE : View.GONE);
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                resetAllLayout();
+                removeFragment();
+                mFragmentAnimating = false;
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
     }
 
     /**
-     * 隐藏底部布局按钮
+     * 移除Fragment
      */
-    private void hideBottomLayout() {
-        mLayoutBottom.setVisibility(View.GONE);
-        mPreviewRightTop.setVisibility(View.GONE);
-        mPreviewTop.setVisibility(View.GONE);
+    private void removeFragment() {
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(FRAGMENT_TAG);
+        if (fragment != null) {
+            getChildFragmentManager().popBackStack();
+        }
     }
 
     /**
-     * 恢复底部布局
+     * 隐藏所有布局
      */
-    private void resetBottomLayout() {
-        mLayoutBottom.setVisibility(View.VISIBLE);
-        mPreviewRightTop.setVisibility(View.VISIBLE);
-        mPreviewTop.setVisibility(View.VISIBLE);
+    private void hideAllLayout() {
+        mMainHandler.post(()-> {
+            if (mPreviewTopbar != null) {
+                mPreviewTopbar.hideAllView();
+            }
+            if (mSpeedBar != null) {
+                mSpeedBar.setVisibility(View.GONE);
+            }
+            if (mBtnStickers != null) {
+                mBtnStickers.setVisibility(View.GONE);
+            }
+            if (mBtnRecord != null) {
+                mBtnRecord.setVisibility(View.GONE);
+            }
+            if (mLayoutMedia != null) {
+                mLayoutMedia.setVisibility(View.GONE);
+            }
+            if (mLayoutDelete != null) {
+                mLayoutDelete.setVisibility(View.GONE);
+            }
+            if (mCameraTabView != null) {
+                mCameraTabView.setVisibility(View.GONE);
+            }
+            if (mTabIndicator != null) {
+                mTabIndicator.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    /**
+     * 隐藏除切换相机按钮外的所有控件
+     */
+    private void hideWithoutSwitch() {
+        mMainHandler.post(() -> {
+            if (mPreviewTopbar != null) {
+                mPreviewTopbar.hideWithoutSwitch();
+            }
+            if (mSpeedBar != null) {
+                mSpeedBar.setVisibility(View.GONE);
+            }
+            if (mBtnStickers != null) {
+                mBtnStickers.setVisibility(View.GONE);
+            }
+            if (mBtnRecord != null) {
+                mBtnRecord.setVisibility(View.GONE);
+            }
+            if (mLayoutMedia != null) {
+                mLayoutMedia.setVisibility(View.GONE);
+            }
+            if (mLayoutDelete != null) {
+                mLayoutDelete.setVisibility(View.GONE);
+            }
+            if (mCameraTabView != null) {
+                mCameraTabView.setVisibility(View.GONE);
+            }
+            if (mTabIndicator != null) {
+                mTabIndicator.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    /**
+     * 录制状态隐藏
+     */
+    public void hideOnRecording() {
+        mMainHandler.post(()-> {
+            if (mPreviewTopbar != null) {
+                mPreviewTopbar.hideAllView();
+            }
+            if (mSpeedBar != null) {
+                mSpeedBar.setVisibility(View.GONE);
+            }
+            if (mBtnStickers != null) {
+                mBtnStickers.setVisibility(View.GONE);
+            }
+            if (mLayoutMedia != null) {
+                mLayoutMedia.setVisibility(View.GONE);
+            }
+            if (mCameraTabView != null) {
+                mCameraTabView.setVisibility(View.GONE);
+            }
+            if (mTabIndicator != null) {
+                mTabIndicator.setVisibility(View.GONE);
+            }
+            if (mBtnDelete != null) {
+                mBtnDelete.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    /**
+     * 恢复所有布局
+     */
+    public void resetAllLayout() {
+        mMainHandler.post(()-> {
+            if (mPreviewTopbar != null) {
+                mPreviewTopbar.resetAllView();
+            }
+            setShowingSpeedBar(mSpeedBarShowing);
+            if (mBtnStickers != null) {
+                mBtnStickers.setVisibility(View.VISIBLE);
+            }
+            if (mBtnRecord != null) {
+                mBtnRecord.setVisibility(View.VISIBLE);
+            }
+            if (mLayoutDelete != null) {
+                mLayoutDelete.setVisibility(View.VISIBLE);
+            }
+            if (mCameraTabView != null) {
+                mCameraTabView.setVisibility(View.VISIBLE);
+            }
+            if (mTabIndicator != null) {
+                mTabIndicator.setVisibility(View.VISIBLE);
+            }
+            resetDeleteButton();
+        });
+    }
+
+    /**
+     * 复位删除按钮
+     */
+    private void resetDeleteButton() {
+        boolean hasRecordVideo = (mPreviewPresenter.getRecordedVideoSize() > 0);
+        if (mBtnNext != null) {
+            mBtnNext.setVisibility(hasRecordVideo ? View.VISIBLE : View.GONE);
+        }
+        if (mBtnDelete != null) {
+            mBtnDelete.setVisibility(hasRecordVideo ? View.VISIBLE : View.GONE);
+        }
+        if (mLayoutMedia != null) {
+            mLayoutMedia.setVisibility(hasRecordVideo ? View.GONE : View.VISIBLE);
+        }
     }
 
     /**
      * 拍照
      */
     private void takePicture() {
-        if (mStorageWriteEnable) {
+        if (isStorageEnable()) {
             if (mCameraParam.mGalleryType == GalleryType.PICTURE) {
-                if (mCameraParam.takeDelay && !mDelayTaking) {
-                    mDelayTaking = true;
-                    mMainHandler.postDelayed(() -> {
-                        mDelayTaking = false;
-                        mPreviewPresenter.takePicture();
-                    }, 3000);
+                if (mCameraParam.takeDelay) {
+                    mCountDownView.addOnCountDownListener(new RecordCountDownView.OnCountDownListener() {
+                        @Override
+                        public void onCountDownEnd() {
+                            mPreviewPresenter.takePicture();
+                            resetAllLayout();
+                        }
+
+                        @Override
+                        public void onCountDownCancel() {
+                            resetAllLayout();
+                        }
+                    });
+                    mCountDownView.start();
+                    hideAllLayout();
                 } else {
                     mPreviewPresenter.takePicture();
                 }
@@ -575,72 +818,64 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         if (mPreviewPresenter.isRecording()) {
             // 取消录制
             mPreviewPresenter.cancelRecord();
-            // 重置进入条
-            mBtnShutter.setProgress((int) mPreviewPresenter.getVideoVisibleDuration());
-            // 删除分割线
-            mBtnShutter.deleteSplitView();
-            // 关闭按钮
-            mBtnShutter.closeButton();
-            // 更新时间
-            mCountDownView.setText(mPreviewPresenter.getVideoVisibleTimeString());
         }
     }
 
-    public void setMusicPath(String path) {
-        mPreviewPresenter.setMusicPath(path);
+    /**
+     * 打开音乐选择页面
+     */
+    public void openMusicPicker() {
+        MusicPickerFragment fragment = new MusicPickerFragment();
+        fragment.addOnMusicSelectedListener(
+                new MusicPickerFragment.OnMusicSelectedListener() {
+            @Override
+            public void onMusicSelectClose() {
+                Fragment currentFragment = getChildFragmentManager().findFragmentByTag(MusicPickerFragment.TAG);
+                if (currentFragment != null) {
+                    getChildFragmentManager()
+                            .beginTransaction()
+                            .remove(currentFragment)
+                            .commitNowAllowingStateLoss();
+                }
+            }
+
+            @Override
+            public void onMusicSelected(MusicData musicData) {
+                resetAllLayout();
+                mPreviewPresenter.setMusicPath(musicData.getPath());
+                mPreviewTopbar.setSelectedMusic(musicData.getName());
+            }
+        });
+        getChildFragmentManager()
+                .beginTransaction()
+                .add(fragment, MusicPickerFragment.TAG)
+                .commitAllowingStateLoss();
     }
 
-    // ------------------------------- SurfaceView 滑动、点击回调 ----------------------------------
-//    private CainSurfaceView.OnTouchScroller mTouchScroller = new CainSurfaceView.OnTouchScroller() {
-//
-//        @Override
-//        public void swipeBack() {
-//            int index = mPreviewPresenter.nextFilter();
-//            if (mEffectFragment != null) {
-//                mEffectFragment.scrollToCurrentFilter(index);
-//            }
-//        }
-//
-//        @Override
-//        public void swipeFrontal() {
-//            int index = mPreviewPresenter.lastFilter();
-//            if (mEffectFragment != null) {
-//                mEffectFragment.scrollToCurrentFilter(index);
-//            }
-//        }
-//
-//        @Override
-//        public void swipeUpper(boolean startInLeft, float distance) {
-//            if (VERBOSE) {
-//                Log.d(TAG, "swipeUpper, startInLeft ? " + startInLeft + ", distance = " + distance);
-//            }
-//        }
-//
-//        @Override
-//        public void swipeDown(boolean startInLeft, float distance) {
-//            if (VERBOSE) {
-//                Log.d(TAG, "swipeDown, startInLeft ? " + startInLeft + ", distance = " + distance);
-//            }
-//        }
-//
-//    };
+    /**
+     * 打开媒体库选择页面
+     */
+    private void openMediaPicker() {
+        mMainHandler.post(()-> {
+            MediaPicker.from(this)
+                    .showImage(true)
+                    .showVideo(true)
+                    .setMediaSelector(new NormalMediaSelector())
+                    .show();
+        });
+    }
 
+    // ------------------------------- TextureView 滑动、点击回调 ----------------------------------
     private CainTextureView.OnTouchScroller mTouchScroller = new CainTextureView.OnTouchScroller() {
 
         @Override
         public void swipeBack() {
-            int index = mPreviewPresenter.nextFilter();
-            if (mEffectFragment != null) {
-                mEffectFragment.scrollToCurrentFilter(index);
-            }
+            mPreviewPresenter.nextFilter();
         }
 
         @Override
         public void swipeFrontal() {
-            int index = mPreviewPresenter.lastFilter();
-            if (mEffectFragment != null) {
-                mEffectFragment.scrollToCurrentFilter(index);
-            }
+            mPreviewPresenter.previewFilter();
         }
 
         @Override
@@ -659,46 +894,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
 
     };
 
-//    /**
-//     * 单双击回调监听
-//     */
-//    private CainSurfaceView.OnMultiClickListener mMultiClickListener = new CainSurfaceView.OnMultiClickListener() {
-//
-//        @Override
-//        public void onSurfaceSingleClick(final float x, final float y) {
-//            // 单击隐藏贴纸和滤镜页面
-//            mMainHandler.post(() -> {
-//                hideStickerView();
-//                hideEffectView();
-//            });
-//
-//            // 如果处于触屏拍照状态，则直接拍照，不做对焦处理
-//            if (mCameraParam.touchTake) {
-//                takePicture();
-//                return;
-//            }
-//
-//            // 判断是否支持对焦模式
-//            if (CameraEngine.getInstance().getCamera() != null) {
-//                List<String> focusModes = CameraEngine.getInstance().getCamera()
-//                        .getParameters().getSupportedFocusModes();
-//                if (focusModes != null && focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-//                    CameraEngine.getInstance().setFocusArea(CameraEngine.getFocusArea((int)x, (int)y,
-//                            mCameraSurfaceView.getWidth(), mCameraSurfaceView.getHeight(), FocusSize));
-//                    mMainHandler.post(() -> {
-//                        mCameraSurfaceView.showFocusAnimation();
-//                    });
-//                }
-//            }
-//        }
-//
-//        @Override
-//        public void onSurfaceDoubleClick(float x, float y) {
-//            switchCamera();
-//        }
-//
-//    };
-
     /**
      * 单双击回调监听
      */
@@ -706,11 +901,10 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
 
         @Override
         public void onSurfaceSingleClick(final float x, final float y) {
-            // 单击隐藏贴纸和滤镜页面
-            mMainHandler.post(() -> {
-                hideStickerView();
-                hideEffectView();
-            });
+            // 处理浮窗Fragment
+            if (onBackPressed()) {
+                return;
+            }
 
             // 如果处于触屏拍照状态，则直接拍照，不做对焦处理
             if (mCameraParam.touchTake) {
@@ -718,18 +912,8 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                 return;
             }
 
-            // 判断是否支持对焦模式
-            if (CameraEngine.getInstance().getCamera() != null) {
-                List<String> focusModes = CameraEngine.getInstance().getCamera()
-                        .getParameters().getSupportedFocusModes();
-                if (focusModes != null && focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-                    CameraEngine.getInstance().setFocusArea(CameraEngine.getFocusArea((int)x, (int)y,
-                            mCameraTextureView.getWidth(), mCameraTextureView.getHeight(), FocusSize));
-                    mMainHandler.post(() -> {
-                        mCameraTextureView.showFocusAnimation();
-                    });
-                }
-            }
+            // todo 判断是否支持对焦模式
+
         }
 
         @Override
@@ -739,39 +923,26 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
 
     };
 
-//    private SurfaceHolder.Callback mSurfaceCallback = new SurfaceHolder.Callback() {
-//        @Override
-//        public void surfaceCreated(SurfaceHolder holder) {
-//            mPreviewPresenter.bindSurface(holder.getSurface());
-//        }
-//
-//        @Override
-//        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-//            mPreviewPresenter.changePreviewSize(width, height);
-//        }
-//
-//        @Override
-//        public void surfaceDestroyed(SurfaceHolder holder) {
-//            mPreviewPresenter.unBindSurface();
-//        }
-//    };
-
+    // ---------------------------- TextureView SurfaceTexture监听 ---------------------------------
     private TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-            mPreviewPresenter.bindSurface(surface);
-            mPreviewPresenter.changePreviewSize(width, height);
+            mPreviewPresenter.onSurfaceCreated(surface);
+            mPreviewPresenter.onSurfaceChanged(width, height);
+            Log.d(TAG, "onSurfaceTextureAvailable: ");
         }
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-            mPreviewPresenter.changePreviewSize(width, height);
+            mPreviewPresenter.onSurfaceChanged(width, height);
+            Log.d(TAG, "onSurfaceTextureSizeChanged: ");
         }
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-            mPreviewPresenter.unBindSurface();
-            return false;
+            mPreviewPresenter.onSurfaceDestroyed();
+            Log.d(TAG, "onSurfaceTextureDestroyed: ");
+            return true;
         }
 
         @Override
@@ -781,11 +952,12 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     };
 
     // ----------------------------------- 顶部状态栏点击回调 ------------------------------------
-    private PopupSettingView.StateChangedListener mStateChangedListener = new PopupSettingView.StateChangedListener() {
+    private PreviewSettingFragment.StateChangedListener mStateChangedListener = new PreviewSettingFragment.StateChangedListener() {
 
         @Override
         public void flashStateChanged(boolean flashOn) {
-            CameraEngine.getInstance().setFlashLight(flashOn);
+            // todo 闪光灯切换
+
         }
 
         @Override
@@ -831,210 +1003,119 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     }
 
     /**
-     * 允许录制按钮
-     * @param enable
-     */
-    public void enableShutter(final boolean enable) {
-        mMainHandler.post(() -> {
-            if (mBtnShutter != null) {
-                mBtnShutter.setEnableOpened(enable);
-            }
-        });
-    }
-
-    // ------------------------------------ 录制回调 -------------------------------------------
-    private ShutterButton.OnShutterListener mShutterListener = new ShutterButton.OnShutterListener() {
-
-        @Override
-        public void onStartRecord() {
-            if (mCameraParam.mGalleryType == GalleryType.PICTURE) {
-                return;
-            }
-
-            // 隐藏顶部视图
-            mPreviewTop.setVisibility(View.GONE);
-            mPreviewRightTop.setVisibility(View.GONE);
-            mSpeedBar.setVisibility(View.GONE);
-
-            // 隐藏删除按钮
-            if (mCameraParam.mGalleryType == GalleryType.VIDEO) {
-                mBtnRecordPreview.setVisibility(View.GONE);
-                mBtnRecordDelete.setVisibility(View.GONE);
-            }
-            mBtnShutter.setProgressMax((int)mPreviewPresenter.getMaxRecordMilliSeconds());
-            // 添加分割线
-            mBtnShutter.addSplitView();
-
-            // 是否允许录制音频
-            boolean enableAudio = mCameraParam.audioPermitted && mCameraParam.recordAudio
-                    && mCameraParam.mGalleryType == GalleryType.VIDEO;
-
-            // 计算输入纹理的大小
-            int width = mCameraParam.previewWidth;
-            int height = mCameraParam.previewHeight;
-            if (mCameraParam.orientation == 90 || mCameraParam.orientation == 270) {
-                width = mCameraParam.previewHeight;
-                height = mCameraParam.previewWidth;
-            }
-            mPreviewPresenter.startRecord(width, height, enableAudio);
-        }
-
-        @Override
-        public void onStopRecord() {
-            mPreviewPresenter.stopRecord();
-            // 隐藏顶部视图
-            mPreviewTop.setVisibility(View.VISIBLE);
-            mPreviewRightTop.setVisibility(View.VISIBLE);
-            setShowingSpeedBar(mSpeedBarShowing);
-        }
-
-        @Override
-        public void onProgressOver() {
-            // 如果最后一秒内点击停止录制，则仅仅关闭录制按钮，因为前面已经停止过了，不做跳转
-            // 如果最后一秒内没有停止录制，否则停止录制并跳转至预览页面
-            if (mPreviewPresenter.isLastSecondStop()) {
-                // 关闭录制按钮
-                mBtnShutter.closeButton();
-            } else {
-                stopRecordOrPreviewVideo();
-            }
-        }
-    };
-
-    /**
-     * 设置快门是否允许可用
-     * @param enable
-     */
-    public void setShutterEnableEncoder(boolean enable) {
-        if (mBtnShutter != null) {
-            mBtnShutter.setEnableEncoder(enable);
-        }
-    }
-
-    /**
      * 更新录制时间
      * @param duration
      */
-    public void updateRecordProgress(final long duration) {
+    public void updateRecordProgress(final float duration) {
         mMainHandler.post(() -> {
-            // 设置进度
-            mBtnShutter.setProgress(duration);
-            // 设置时间
-            mCountDownView.setText(StringUtils.generateMillisTime((int) duration));
+            mProgressView.setProgress(duration);
         });
     }
 
     /**
-     * 录制完成更新状态
+     * 添加一段进度
+     * @param progress
      */
-    public void updateRecordFinish() {
+    public void addProgressSegment(float progress) {
         mMainHandler.post(() -> {
-            setShutterEnableEncoder(true);
-            // 处于录制状态点击了预览按钮，则需要等待完成再跳转， 或者是处于录制GIF状态
-            if (mNeedToWaitStop || mCameraParam.mGalleryType == GalleryType.GIF) {
-                // 开始预览
-                stopRecordOrPreviewVideo();
-            }
-            // 显示删除按钮
-            if (mCameraParam.mGalleryType == GalleryType.VIDEO) {
-                mBtnRecordPreview.setVisibility(View.VISIBLE);
-                mBtnRecordDelete.setVisibility(View.VISIBLE);
-            }
+            mProgressView.addProgressSegment(progress);
+        });
+    }
+
+    /**
+     * 删除一段进度
+     */
+    public void deleteProgressSegment() {
+        mMainHandler.post(() -> {
+            mProgressView.deleteProgressSegment();
+            resetDeleteButton();
         });
     }
 
     /**
      * 删除已录制的视频
-     * @param clearAll
      */
-    private void deleteRecordedVideo(boolean clearAll) {
-        // 处于删除模式，则删除文件
-        if (mBtnShutter.isDeleteMode()) {
-            // 删除视频，判断是否清除所有
-            if (clearAll) {
-                // 清除所有分割线
-                mBtnShutter.cleanSplitView();
-                mPreviewPresenter.removeAllSubVideo();
-            } else {
-                // 删除分割线
-                mBtnShutter.deleteSplitView();
-                mPreviewPresenter.removeLastSubVideo();
-
-            }
-            // 更新进度
-            mBtnShutter.setProgress(mPreviewPresenter.getVideoVisibleDuration());
-            // 更新时间
-            mCountDownView.setText(mPreviewPresenter.getVideoVisibleTimeString());
-            // 如果此时没有了视频，则恢复初始状态
-            if (mPreviewPresenter.getNumberOfSubVideo() <= 0) {
-                mCountDownView.setText("");
-                mBtnRecordDelete.setVisibility(View.GONE);
-                mBtnRecordPreview.setVisibility(View.GONE);
-                mNeedToWaitStop = false;
-            }
-        } else { // 没有进入删除模式则进入删除模式
-            mBtnShutter.setDeleteMode(true);
-        }
+    private void deleteRecordedVideo() {
+        dismissDialog();
+        mDialog = DialogBuilder.from(mActivity, R.layout.dialog_two_button)
+                .setText(R.id.tv_dialog_title, R.string.delete_last_video_tips)
+                .setText(R.id.btn_dialog_cancel, R.string.btn_dialog_cancel)
+                .setDismissOnClick(R.id.btn_dialog_cancel, true)
+                .setText(R.id.btn_dialog_ok, R.string.btn_delete)
+                .setDismissOnClick(R.id.btn_dialog_ok, true)
+                .setOnClickListener(R.id.btn_dialog_ok, v -> {
+                    mPreviewPresenter.deleteLastVideo();
+                })
+                .show();
     }
 
     /**
      * 停止录制或者预览视频
      */
     private void stopRecordOrPreviewVideo() {
-        mBtnShutter.closeButton();
-        if (mPreviewPresenter.isRecording()) {
-            mNeedToWaitStop = true;
-            mPreviewPresenter.stopRecord(false);
-        } else {
-            mNeedToWaitStop = false;
-            mPreviewPresenter.destroyRecorder();
-
-            combinePath = PathConstraints.getVideoCachePath(mActivity);
-            PreviewRecorder.getInstance().combineVideo(combinePath, mCombineListener);
-        }
+        mPreviewPresenter.mergeAndEdit();
     }
 
-    // -------------------------------------- 短视频合成监听器 ---------------------------------
-    // 合成输出路径
-    private String combinePath;
-    // 合成监听器
-    private VideoCombiner.CombineListener mCombineListener = new VideoCombiner.CombineListener() {
+    /**
+     * 录制监听器回调
+     */
+    private RecordButton.RecordStateListener mRecordStateListener = new RecordButton.RecordStateListener() {
         @Override
-        public void onCombineStart() {
-            if (VERBOSE) {
-                Log.d(TAG, "开始合并");
-            }
-            mMainHandler.post(() -> {
-                if (mCombineDialog != null) {
-                    mCombineDialog.dismiss();
-                    mCombineDialog = null;
-                }
-                mCombineDialog = CombineVideoDialogFragment.newInstance(mActivity.getString(R.string.combine_video_message));
-                mCombineDialog.show(getChildFragmentManager(), FRAGMENT_DIALOG);
-            });
+        public void onRecordStart() {
+            mPreviewPresenter.startRecord();
         }
 
         @Override
-        public void onCombineProcessing(final int current, final int sum) {
-            mMainHandler.post(() -> {
-                if (mCombineDialog != null && mCombineDialog.getShowsDialog()) {
-                    mCombineDialog.setProgressMessage(mActivity.getString(R.string.combine_video_message));
-                }
-            });
+        public void onRecordStop() {
+            mPreviewPresenter.stopRecord();
         }
 
         @Override
-        public void onCombineFinished(final boolean success) {
-            mMainHandler.post(() -> {
-                if (mCombineDialog != null) {
-                    mCombineDialog.dismiss();
-                    mCombineDialog = null;
-                }
-            });
-            mPreviewPresenter.onOpenVideoEditPage(combinePath);
+        public void onZoom(float percent) {
+
         }
     };
 
+
+    // -------------------------------------- 合成提示 --------------------------------------
+    private Dialog mProgressDialog;
+    /**
+     * 显示合成进度
+     */
+    public void showConcatProgressDialog() {
+        mMainHandler.post(() -> {
+            mProgressDialog = ProgressDialog.show(mActivity, "正在合成", "正在合成");
+        });
+    }
+
+    /**
+     * 隐藏合成进度
+     */
+    public void hideConcatProgressDialog() {
+        mMainHandler.post(() -> {
+            if (mProgressDialog != null) {
+                mProgressDialog.dismiss();
+                mProgressDialog = null;
+            }
+        });
+    }
+
+    private Toast mToast;
+    /**
+     * 显示Toast提示
+     * @param msg
+     */
+    public void showToast(String msg) {
+        mMainHandler.post(() -> {
+            if (mToast != null) {
+                mToast.cancel();
+            }
+            mToast = Toast.makeText(mActivity, msg, Toast.LENGTH_SHORT);
+            mToast.show();
+        });
+    }
+
+    // -------------------------------------- 权限逻辑处理 ---------------------------------
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PermissionUtils.REQUEST_CAMERA_PERMISSION) {
@@ -1042,25 +1123,82 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                 PermissionErrorDialogFragment.newInstance(getString(R.string.request_camera_permission), PermissionUtils.REQUEST_CAMERA_PERMISSION, true)
                         .show(getChildFragmentManager(), FRAGMENT_DIALOG);
             } else {
-                mCameraEnable = true;
                 initView(mContentView);
             }
         } else if (requestCode == PermissionUtils.REQUEST_STORAGE_PERMISSION) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 PermissionErrorDialogFragment.newInstance(getString(R.string.request_storage_permission), PermissionUtils.REQUEST_STORAGE_PERMISSION)
                         .show(getChildFragmentManager(), FRAGMENT_DIALOG);
-            } else {
-                mStorageWriteEnable = true;
             }
         } else if (requestCode == PermissionUtils.REQUEST_SOUND_PERMISSION) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 PermissionErrorDialogFragment.newInstance(getString(R.string.request_sound_permission), PermissionUtils.REQUEST_SOUND_PERMISSION)
                         .show(getChildFragmentManager(), FRAGMENT_DIALOG);
-            } else {
-                mCameraParam.audioPermitted = true;
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
+
+    /**
+     * 是否允许拍摄
+     * @return
+     */
+    private boolean isCameraEnable() {
+        return PermissionUtils.permissionChecking(mActivity, Manifest.permission.CAMERA);
+    }
+
+    /**
+     * 判断是否可以录制
+     * @return
+     */
+    private boolean isRecordAudioEnable() {
+        return PermissionUtils.permissionChecking(mActivity, Manifest.permission.RECORD_AUDIO);
+    }
+
+    /**
+     * 判断是否可以读取本地媒体
+     * @return
+     */
+    private boolean isStorageEnable() {
+        return PermissionUtils.permissionChecking(mActivity, Manifest.permission.READ_EXTERNAL_STORAGE);
+    }
+
+    // -------------------------------------- 缩略图加载逻辑 start ---------------------------------
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle bundle) {
+        return AlbumDataLoader.getImageLoaderWithoutBucketSort(mActivity);
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor cursor) {
+        if (cursor != null && !cursor.isClosed()) {
+            cursor.moveToFirst();
+            AlbumData albumData = AlbumData.valueOf(cursor);
+            if (mBtnMedia != null) {
+                new CameraMediaLoader().loadThumbnail(mActivity, mBtnMedia, albumData.getCoverPath(),
+                        R.drawable.ic_camera_thumbnail_placeholder,
+                        (int)getResources().getDimension(R.dimen.dp4));
+            }
+            cursor.close();
+            destroyImageLoader();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+
+    }
+
+    /**
+     * 销毁加载器
+     */
+    private void destroyImageLoader() {
+        if (mLocalImageLoader != null) {
+            mLocalImageLoader.destroyLoader(ALBUM_LOADER_ID);
+            mLocalImageLoader = null;
+        }
+    }
+    // -------------------------------------- 缩略图加载逻辑 end -----------------------------------
 }

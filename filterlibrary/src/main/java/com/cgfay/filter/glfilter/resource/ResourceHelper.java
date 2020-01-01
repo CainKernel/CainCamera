@@ -44,7 +44,6 @@ public final class ResourceHelper extends ResourceBaseHelper {
         mResourceList.clear();
 
         // 添加资源列表，如果可以是Assets文件夹下的，也可以是绝对路径下的zip包
-        mResourceList.add(new ResourceData("none", "assets://resource/none.zip", ResourceType.NONE, "none", "assets://thumbs/resource/none.png"));
         mResourceList.add(new ResourceData("cat", "assets://resource/cat.zip", ResourceType.STICKER, "cat", "assets://thumbs/resource/cat.png"));
         mResourceList.add(new ResourceData("test_sticker1", "assets://resource/test_sticker1.zip", ResourceType.STICKER, "test_sticker1", "assets://thumbs/resource/sticker_temp.png"));
         mResourceList.add(new ResourceData("triple_frame", "assets://resource/triple_frame.zip", ResourceType.FILTER, "triple_frame", "assets://thumbs/resource/triple_frame.png"));

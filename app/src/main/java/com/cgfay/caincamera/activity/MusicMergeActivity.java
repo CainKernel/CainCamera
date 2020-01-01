@@ -1,15 +1,15 @@
 package com.cgfay.caincamera.activity;
 
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.fragment.MusicMergeFragment;
-import com.cgfay.uitls.bean.Music;
-import com.cgfay.uitls.fragment.MusicSelectFragment;
+import com.cgfay.uitls.bean.MusicData;
+import com.cgfay.uitls.fragment.MusicPickerFragment;
 
 /**
  * 视频音乐合成
@@ -33,12 +33,7 @@ public class MusicMergeActivity extends AppCompatActivity {
             int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN;
             decorView.setSystemUiVisibility(uiOptions);
-            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-                @Override
-                public void onSystemUiVisibilityChange(int visibility) {
-                    hideNavigationBar();
-                }
-            });
+            decorView.setOnSystemUiVisibilityChangeListener(visibility -> hideNavigationBar());
         }
     }
     @Override
@@ -48,7 +43,7 @@ public class MusicMergeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_music_merge);
         if (null == savedInstanceState) {
             mVideoPath = getIntent().getStringExtra(PATH);
-            MusicSelectFragment fragment = new MusicSelectFragment();
+            MusicPickerFragment fragment = new MusicPickerFragment();
             fragment.addOnMusicSelectedListener(listener);
             getSupportFragmentManager()
                     .beginTransaction()
@@ -57,14 +52,23 @@ public class MusicMergeActivity extends AppCompatActivity {
         }
     }
 
-    private MusicSelectFragment.OnMusicSelectedListener listener = (music) -> {
-        MusicMergeFragment fragment = MusicMergeFragment.newInstance();
-        fragment.setVideoPath(mVideoPath);
-        fragment.setMusicPath(music.getSongUrl(), music.getDuration());
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, fragment, FRAGMENT_MUSIC_MERGE)
-                .commit();
+    private MusicPickerFragment.OnMusicSelectedListener listener =
+            new MusicPickerFragment.OnMusicSelectedListener() {
+        @Override
+        public void onMusicSelectClose() {
+            finish();
+        }
+
+        @Override
+        public void onMusicSelected(MusicData musicData) {
+            MusicMergeFragment fragment = MusicMergeFragment.newInstance();
+            fragment.setVideoPath(mVideoPath);
+            fragment.setMusicPath(musicData.getPath(), musicData.getDuration());
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, fragment, FRAGMENT_MUSIC_MERGE)
+                    .commit();
+        }
     };
 
 }

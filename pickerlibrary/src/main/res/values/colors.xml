@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="picker_type_color">@color/gray</color>
+    <color name="capture_item_color">#60EEEEEE</color>
+</resources>

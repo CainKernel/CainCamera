@@ -2,8 +2,6 @@ package com.cgfay.filter.recorder;
 
 import android.util.Log;
 
-import java.io.IOException;
-
 /**
  * 媒体录制器，支持倍速录制
  * @author CainHuang
@@ -34,7 +32,7 @@ public class HWMediaRecorder implements OnRecordListener {
     public HWMediaRecorder(OnRecordStateListener listener) {
         mRecordStateListener = listener;
         mVideoRecorder = new VideoRecorder();
-        mVideoRecorder.setOnRecordListner(this);
+        mVideoRecorder.setOnRecordListener(this);
 
         mAudioRecorder = new AudioRecorder();
         mAudioRecorder.setOnRecordListener(this);
@@ -80,9 +78,9 @@ public class HWMediaRecorder implements OnRecordListener {
             try {
                 mAudioRecorder.prepare(audioParams);
                 mAudioRecorder.startRecord();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "startRecord: " + e.getMessage());
-           }
+            }
         }
     }
 

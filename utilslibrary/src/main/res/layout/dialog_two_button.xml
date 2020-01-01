@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dialog">
+
+    <!--  关闭按钮  -->
+    <ImageView
+        android:id="@+id/iv_dialog_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/dp10"
+        android:visibility="gone"
+        android:background="@drawable/ic_close"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"/>
+
+    <!--  标题  -->
+    <TextView
+        android:id="@+id/tv_dialog_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:textSize="@dimen/dp18"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:layout_marginTop="@dimen/dp40"
+        android:layout_marginStart="@dimen/dp20"
+        android:layout_marginEnd="@dimen/dp20"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/iv_dialog_close"/>
+
+    <!--  消息内容  -->
+    <TextView
+        android:id="@+id/tv_dialog_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:textSize="@dimen/dp15"
+        android:textColor="@color/gray"
+        android:visibility="gone"
+        android:layout_marginTop="@dimen/dp20"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/tv_dialog_title"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/dp40"
+        android:layout_marginBottom="@dimen/dp40"
+        android:layout_below="@id/tv_dialog_message">
+        <!--  取消按钮  -->
+        <Button
+            android:id="@+id/btn_dialog_cancel"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/dp40"
+            android:layout_weight="1"
+            android:text="@string/btn_dialog_cancel"
+            android:textSize="@dimen/dp18"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_dialog_cancel"
+            android:layout_marginStart="@dimen/dp20"
+            android:layout_marginEnd="@dimen/dp10"/>
+
+        <!--  确定按钮  -->
+        <Button
+            android:id="@+id/btn_dialog_ok"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/dp40"
+            android:layout_weight="1"
+            android:text="@string/btn_dialog_ok"
+            android:textSize="@dimen/dp18"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_dialog_ok"
+            android:layout_marginStart="@dimen/dp10"
+            android:layout_marginEnd="@dimen/dp20"/>
+    </LinearLayout>
+
+</RelativeLayout>

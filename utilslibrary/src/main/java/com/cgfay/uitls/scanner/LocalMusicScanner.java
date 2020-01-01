@@ -3,11 +3,11 @@ package com.cgfay.uitls.scanner;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
 
 import java.lang.ref.WeakReference;
 
@@ -24,7 +24,7 @@ public class LocalMusicScanner implements LoaderManager.LoaderCallbacks<Cursor> 
 
     public LocalMusicScanner(FragmentActivity activity, MusicScanCallbacks callbacks) {
         mWeakContext = new WeakReference<Context>(activity);
-        mLoaderManager = activity.getSupportLoaderManager();
+        mLoaderManager = LoaderManager.getInstance(activity);
         mCallbacks = callbacks;
     }
 

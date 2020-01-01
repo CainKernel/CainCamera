@@ -3,8 +3,8 @@ package com.cgfay.camera.adapter;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +15,7 @@ import android.widget.LinearLayout;
 
 import com.cgfay.cameralibrary.R;
 import com.cgfay.camera.loader.MediaLoader;
-import com.cgfay.camera.loader.impl.GlideMediaLoader;
+import com.cgfay.camera.loader.impl.CameraMediaLoader;
 import com.cgfay.filter.glfilter.resource.bean.ResourceData;
 import com.cgfay.uitls.utils.BitmapUtils;
 
@@ -26,6 +26,7 @@ import java.util.List;
  */
 public class PreviewResourceAdapter extends RecyclerView.Adapter<PreviewResourceAdapter.ResourceHolder> {
 
+    private static final int UNSELECTED_INDEX = -1;
     private Drawable mPlaceHolder;
     private List<ResourceData> mResourceList;
     private Context mContext;
@@ -38,9 +39,9 @@ public class PreviewResourceAdapter extends RecyclerView.Adapter<PreviewResource
     public PreviewResourceAdapter(Context context, List<ResourceData> itemList) {
         mContext = context;
         mResourceList = itemList;
-        mSelected = 0;
+        mSelected = UNSELECTED_INDEX;
         mPlaceHolder = context.getDrawable(R.drawable.ic_camera_thumbnail_placeholder);
-        mMediaLoader = new GlideMediaLoader();
+        mMediaLoader = new CameraMediaLoader();
     }
 
     @NonNull
@@ -110,6 +111,10 @@ public class PreviewResourceAdapter extends RecyclerView.Adapter<PreviewResource
         }
     }
 
+    public void unSelect() {
+        mSelected = UNSELECTED_INDEX;
+        notifyDataSetChanged();
+    }
 
     public interface OnResourceChangeListener {
         void onResourceChanged(ResourceData resourceData);

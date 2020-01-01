@@ -11,7 +11,7 @@
 #include <Thread.h>
 #include <AVFormatter.h>
 #include <AVFrameFilter.h>
-#include <AVMediaWriter.h>
+#include <writer/AVMediaWriter.h>
 #include <YuvConvertor.h>
 #include "RecordParams.h"
 

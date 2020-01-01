@@ -7,4 +7,29 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:navigationBarColor">@color/video_window_background</item>
     </style>
+
+    <!--  相机动画  -->
+    <style name="CameraDialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/anim_slide_up</item>
+        <item name="android:windowExitAnimation">@anim/anim_slide_down</item>
+    </style>
+
+    <!--  相机底部弹窗样式  -->
+    <style name="CameraBottomDialogStyle" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowAnimationStyle">@style/CameraDialogAnimation</item>
+    </style>
+
+    <!--  相机tab样式  -->
+    <style name="CameraTabTextStyle">
+        <item name="android:textSize">@dimen/dp16</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>

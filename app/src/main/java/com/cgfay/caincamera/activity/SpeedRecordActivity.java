@@ -3,8 +3,11 @@ package com.cgfay.caincamera.activity;
 import android.Manifest;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.graphics.SurfaceTexture;
 import android.opengl.GLSurfaceView;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -16,7 +19,7 @@ import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.presenter.RecordPresenter;
 import com.cgfay.caincamera.renderer.RecordRenderer;
 import com.cgfay.caincamera.widget.GLRecordView;
-import com.cgfay.caincamera.widget.RecordButton;
+import com.cgfay.camera.widget.RecordButton;
 import com.cgfay.camera.widget.RecordProgressView;
 import com.cgfay.camera.widget.RecordSpeedLevelBar;
 import com.cgfay.filter.glfilter.color.bean.DynamicColor;
@@ -42,6 +45,7 @@ public class SpeedRecordActivity extends AppCompatActivity implements View.OnCli
     private RecordRenderer mRenderer;
     private RecordPresenter mPresenter;
 
+    private View mBtnSwitch;
     private Button mBtnNext;
     private Button mBtnDelete;
 
@@ -68,8 +72,8 @@ public class SpeedRecordActivity extends AppCompatActivity implements View.OnCli
         });
 
         // 录制按钮
-        mRecordButton = (RecordButton) findViewById(R.id.record_button);
-        mRecordButton.setOnRecordListener(new RecordButton.OnRecordListener() {
+        mRecordButton = (RecordButton) findViewById(R.id.btn_record);
+        mRecordButton.addRecordStateListener(new RecordButton.RecordStateListener() {
             @Override
             public void onRecordStart() {
                 mPresenter.startRecord();
@@ -79,7 +83,16 @@ public class SpeedRecordActivity extends AppCompatActivity implements View.OnCli
             public void onRecordStop() {
                 mPresenter.stopRecord();
             }
+
+            @Override
+            public void onZoom(float percent) {
+
+            }
         });
+
+        // 切换相机
+        mBtnSwitch = findViewById(R.id.btn_switch);
+        mBtnSwitch.setOnClickListener(this);
 
         // 下一步
         mBtnNext = findViewById(R.id.btn_next);
@@ -96,6 +109,8 @@ public class SpeedRecordActivity extends AppCompatActivity implements View.OnCli
             params.height = StatusBarUtils.getStatusBarHeight(this);
             view.setLayoutParams(params);
         }
+
+        showViews();
     }
 
     @Override
@@ -112,6 +127,7 @@ public class SpeedRecordActivity extends AppCompatActivity implements View.OnCli
         super.onPause();
         mGLRecordView.onPause();
         mPresenter.onPause();
+        mRenderer.clear();
     }
 
     @Override
@@ -136,7 +152,9 @@ public class SpeedRecordActivity extends AppCompatActivity implements View.OnCli
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if (id == R.id.btn_delete) {
+        if (id == R.id.btn_switch) {
+            mPresenter.switchCamera();
+        } else if (id == R.id.btn_delete) {
             mPresenter.deleteLastVideo();
         } else if (id == R.id.btn_next) {
             mPresenter.mergeAndEdit();
@@ -148,9 +166,18 @@ public class SpeedRecordActivity extends AppCompatActivity implements View.OnCli
      */
     public void hidViews() {
         runOnUiThread(() -> {
-            mRecordSpeedBar.setVisibility(View.GONE);
-            mBtnNext.setVisibility(View.GONE);
-            mBtnDelete.setVisibility(View.GONE);
+            if (mRecordSpeedBar != null) {
+                mRecordSpeedBar.setVisibility(View.GONE);
+            }
+            if (mBtnDelete != null) {
+                mBtnDelete.setVisibility(View.GONE);
+            }
+            if (mBtnNext != null) {
+                mBtnNext.setVisibility(View.GONE);
+            }
+            if (mBtnSwitch != null) {
+                mBtnSwitch.setVisibility(View.GONE);
+            }
         });
     }
 
@@ -159,10 +186,18 @@ public class SpeedRecordActivity extends AppCompatActivity implements View.OnCli
      */
     public void showViews() {
         runOnUiThread(() -> {
-            mRecordSpeedBar.setVisibility(View.VISIBLE);
-            if (mPresenter.getRecordVideos() > 0) {
-                mBtnNext.setVisibility(View.VISIBLE);
-                mBtnDelete.setVisibility(View.VISIBLE);
+            if (mRecordSpeedBar != null) {
+                mRecordSpeedBar.setVisibility(View.VISIBLE);
+            }
+            boolean showEditEnable = mPresenter.getRecordVideoSize() > 0;
+            if (mBtnDelete != null) {
+                mBtnDelete.setVisibility(showEditEnable ? View.VISIBLE : View.GONE);
+            }
+            if (mBtnNext != null) {
+                mBtnNext.setVisibility(showEditEnable ? View.VISIBLE : View.GONE);
+            }
+            if (mBtnSwitch != null) {
+                mBtnSwitch.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -194,6 +229,14 @@ public class SpeedRecordActivity extends AppCompatActivity implements View.OnCli
         runOnUiThread(() -> {
             mProgressView.deleteProgressSegment();
         });
+    }
+
+    /**
+     * 绑定相机输出的SurfaceTexture
+     * @param surfaceTexture
+     */
+    public void bindSurfaceTexture(@NonNull SurfaceTexture surfaceTexture) {
+        mGLRecordView.queueEvent(() -> mRenderer.bindSurfaceTexture(surfaceTexture));
     }
 
     /**

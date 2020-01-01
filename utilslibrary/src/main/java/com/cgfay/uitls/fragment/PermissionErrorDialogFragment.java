@@ -1,12 +1,13 @@
 package com.cgfay.uitls.fragment;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
+
+import com.cgfay.uitls.dialog.DialogBuilder;
+import com.cgfay.utilslibrary.R;
 
 /**
  * 权限出错对话框
@@ -40,14 +41,14 @@ public class PermissionErrorDialogFragment extends DialogFragment {
         final Activity activity = getActivity();
         mRequestCode = getArguments().getInt(REQUEST_CODE);
         mErrorForceClose = getArguments().getBoolean(ERROR_CLOSE);
-        return new AlertDialog.Builder(activity)
-                .setMessage(getArguments().getString(ARG_MESSAGE))
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if (mErrorForceClose) {
-                            activity.finish();
-                        }
+        return DialogBuilder.from(activity, R.layout.dialog_two_button)
+                .setText(R.id.tv_dialog_title, getArguments().getString(ARG_MESSAGE))
+                .setText(R.id.btn_dialog_cancel, "取消")
+                .setDismissOnClick(R.id.btn_dialog_cancel, true)
+                .setText(R.id.btn_dialog_ok, "确定")
+                .setOnClickListener(R.id.btn_dialog_ok, v -> {
+                    if (mErrorForceClose) {
+                        activity.finish();
                     }
                 })
                 .create();

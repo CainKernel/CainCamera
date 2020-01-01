@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">CameraLibrary</string>
 
+    <string name="delete_last_video_tips">删除上一段视频？</string>
+    <string name="btn_delete">删除</string>
+
     <!-- 合并提示 -->
     <string name="combine_video_message">正在合并视频...</string>
 
@@ -12,11 +15,14 @@
     <string name="tv_edge_blur">边框模糊</string>
     <string name="tv_touch_take">触屏拍照</string>
     <string name="tv_camera_setting">相机设置</string>
+    <string name="tv_select_music">选择音乐</string>
+    <string name="btn_stickers">道具</string>
+    <string name="btn_media">上传</string>
 
     <!-- 滤镜页面按钮 -->
-    <string name="btn_preview_beauty">美颜</string>
-    <string name="btn_preview_makeup">美妆</string>
-    <string name="btn_preview_filter">滤镜</string>
+    <string name="tab_preview_beauty">美颜</string>
+    <string name="tab_preview_makeup">美妆</string>
+    <string name="tab_preview_filter">滤镜</string>
 
     <!-- 美颜 -->
     <string-array name="preview_beauty">
@@ -56,12 +62,10 @@
 
     <string name="makeup_clear">一键清除</string>
 
-    <!-- 相机类型 -->
-    <string-array name="gallery_indicator">
-        <item>表情包</item>
-        <item>拍照</item>
-        <item>视频</item>
-    </string-array>
+    <string name="tab_picture">拍照</string>
+    <string name="tab_video_60s">拍60秒</string>
+    <string name="tab_video_15s">拍15秒</string>
+    <string name="tab_video_picture">影集</string>
 
     <!-- 录制速度 -->
     <string-array name="record_speed_texts">

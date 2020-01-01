@@ -29,7 +29,7 @@ set_target_properties( yuv
 # FFmpeg命令行库
 add_subdirectory(${CMAKE_SOURCE_DIR}/FFCommand)
 
-# 媒体录制器
+# 基于FFmpeg的媒体录制器
 add_subdirectory(${CMAKE_SOURCE_DIR}/FFMediaRecorder)
 
 # Metadata库

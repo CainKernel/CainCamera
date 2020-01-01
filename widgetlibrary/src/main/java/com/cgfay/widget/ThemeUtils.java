@@ -3,6 +3,8 @@ package com.cgfay.widget;
 import android.content.Context;
 import android.content.res.TypedArray;
 
+import com.cgfay.design.R;
+
 /**
  * @author erenhuang
  * 2019-09-28
@@ -10,7 +12,7 @@ import android.content.res.TypedArray;
 final class ThemeUtils {
 
     private static final int[] APPCOMPAT_CHECK_ATTRS = {
-            android.support.v7.appcompat.R.attr.colorPrimary
+            R.attr.colorPrimary
     };
 
     static void checkAppCompatTheme(Context context) {

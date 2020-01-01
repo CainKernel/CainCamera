@@ -21,6 +21,4 @@
 
     <string name="btn_next">下一步</string>
     <string name="record_text">按住拍</string>
-    <string name="btn_record_start">开始录制</string>
-    <string name="btn_record_cancel">停止录制</string>
 </resources>

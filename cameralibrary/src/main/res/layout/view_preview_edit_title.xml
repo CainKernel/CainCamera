@@ -6,7 +6,7 @@
     android:orientation="horizontal"
     android:layout_gravity="center"
     android:gravity="center"
-    android:background="@color/effectEditBackground">
+    android:background="@color/effect_content_background">
 
     <Button
         android:id="@+id/btn_preview_beauty"
@@ -15,7 +15,7 @@
         android:layout_weight="1"
         android:background="@android:color/transparent"
         android:textColor="@android:color/white"
-        android:text="@string/btn_preview_beauty"/>
+        android:text="@string/tab_preview_beauty"/>
 
     <Button
         android:id="@+id/btn_preview_makeup"
@@ -24,7 +24,7 @@
         android:layout_weight="1"
         android:background="@android:color/transparent"
         android:textColor="@android:color/white"
-        android:text="@string/btn_preview_makeup"/>
+        android:text="@string/tab_preview_makeup"/>
 
     <Button
         android:id="@+id/btn_preview_filter"
@@ -33,6 +33,6 @@
         android:layout_weight="1"
         android:background="@android:color/transparent"
         android:textColor="@android:color/white"
-        android:text="@string/btn_preview_filter"/>
+        android:text="@string/tab_preview_filter"/>
 
 </LinearLayout>

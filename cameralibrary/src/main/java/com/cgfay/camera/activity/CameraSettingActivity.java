@@ -1,14 +1,14 @@
 package com.cgfay.camera.activity;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.cgfay.cameralibrary.R;
-import com.cgfay.camera.engine.camera.CameraParam;
+import com.cgfay.camera.camera.CameraParam;
 
 /**
  * 相机设置页面

@@ -3,8 +3,8 @@
 
     <!-- popup页面字体选中颜色 -->
     <color name="popup_text_normal">#333333</color>
-    <color name="popup_text_select">#DB7093</color>
-    <color name="popup_text_color">#333333</color>
+    <color name="popup_text_select">@color/gold</color>
+    <color name="popup_text_color">@color/white</color>
     <color name="popup_background">#55FFFFFF</color>
 
     <!-- 快门颜色 -->
@@ -13,10 +13,11 @@
     <color name="shutter_blue">#3394EC</color>
     <color name="shutter_green">#90EE90</color>
 
+    <!-- 录制按钮颜色 -->
+    <color name="record_red">@color/red</color>
+    <color name="record_stroke_red">#66FF0000</color>
+
     <!-- 特效选择页面背景颜色 -->
-    <color name="effectEditBackground">#ff9e9e9e</color>
-
-    <!-- 指示器颜色 -->
-    <color name="colorHorizontalIndicator">#FFCC00</color>
-
+    <color name="effect_title_background">#AA696969</color>
+    <color name="effect_content_background">#AA808080</color>
 </resources>

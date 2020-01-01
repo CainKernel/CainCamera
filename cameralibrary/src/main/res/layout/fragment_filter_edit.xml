@@ -1,17 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:layout_gravity="bottom">
+
+    <!-- 对比按钮 -->
+    <Button
+        android:id="@+id/btn_compare"
+        android:layout_width="@dimen/compare_size"
+        android:layout_height="@dimen/compare_size"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@id/tl_effect_type"
+        android:layout_marginEnd="@dimen/compare_margin_end"
+        android:layout_marginBottom="@dimen/compare_margin_bottom"
+        android:background="@drawable/ic_camera_compare_normal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/tl_effect_type"/>
 
     <!-- 数值调整 -->
     <LinearLayout
         android:id="@+id/layout_progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/dp15"
+        android:gravity="center_vertical"
         android:orientation="vertical"
-        android:visibility="gone">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/tl_effect_type">
+
         <!-- 数值 -->
         <TextView
             android:id="@+id/tv_type_value"
@@ -19,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:textColor="@android:color/white"
-            android:visibility="visible"/>
+            android:visibility="gone"/>
 
         <!-- 值调整 -->
         <SeekBar
@@ -28,40 +48,36 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/dp10"
             android:layout_marginEnd="@dimen/dp10"
-            android:layout_marginBottom="@dimen/dp20"
             android:visibility="visible"/>
     </LinearLayout>
 
-    <!-- 类型选择 -->
-    <LinearLayout
-        android:id="@+id/layout_bottom"
+    <!-- 特效类型栏 -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tl_effect_type"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="@dimen/dp50"
+        android:background="@drawable/bg_effect_type"
+        app:tabGravity="fill"
+        app:tabMode="fixed"
+        app:tabTextColor="@android:color/darker_gray"
+        app:tabSelectedTextColor="@color/white"
+        app:tabIndicatorColor="@color/white"
+        app:tabIndicatorHeight="4dp"
+        app:tabIndicatorFullWidth="false"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/vp_effect" />
+    <!-- 内容栏 -->
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/vp_effect"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp160"
         android:orientation="vertical"
-        android:minHeight="@dimen/dp200"
-        android:gravity="bottom"
-        android:layout_gravity="bottom">
-
-        <!-- 标题栏 -->
-        <include
-            layout="@layout/view_preview_edit_title"/>
-
-        <!-- 分割线 -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/white"/>
-
-        <!-- 内容栏 -->
-        <LinearLayout
-            android:id="@+id/layout_content"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp160"
-            android:orientation="vertical"
-            android:layout_gravity="center_horizontal"
-            android:gravity="top"
-            android:background="@color/effectEditBackground">
-        </LinearLayout>
-    </LinearLayout>
-
-</LinearLayout>
+        android:layout_gravity="center_horizontal"
+        android:layout_alignParentBottom="true"
+        android:background="@color/effect_content_background"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+    </androidx.viewpager.widget.ViewPager>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,9 +8,10 @@
 
     <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:layout_marginTop="@dimen/dp10">
         <Button
             android:id="@+id/btn_liquefaction"
             android:layout_width="@dimen/dp30"
@@ -28,11 +29,11 @@
             android:background="@drawable/ic_camera_vignette_normal"/>
     </LinearLayout>
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/preview_filter_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center">
-    </android.support.v7.widget.RecyclerView>
+        android:layout_height="@dimen/dp70"
+        android:layout_marginTop="@dimen/dp10">
+    </androidx.recyclerview.widget.RecyclerView>
 
 </LinearLayout>

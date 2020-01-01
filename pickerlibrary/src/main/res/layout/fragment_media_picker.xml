@@ -1,0 +1,104 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_picker_fragment">
+
+    <!-- 相册选项 -->
+    <RelativeLayout
+        android:id="@+id/layout_album"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/dp10"
+        android:paddingBottom="@dimen/dp10">
+
+        <ImageView
+            android:id="@+id/iv_album_back"
+            android:layout_width="@dimen/dp30"
+            android:layout_height="@dimen/dp30"
+            android:layout_marginStart="@dimen/dp18"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_media_picker_close" />
+
+        <LinearLayout
+            android:id="@+id/layout_album_select"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/dp30"
+            android:orientation="horizontal"
+            android:layout_centerInParent="true"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tv_album_selected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/dp18"
+                android:textColor="@color/black"
+                android:text="所有照片"/>
+
+            <ImageView
+                android:id="@+id/iv_album_indicator"
+                android:layout_width="@dimen/dp18"
+                android:layout_height="@dimen/dp18"
+                android:layout_marginStart="@dimen/dp4"
+                android:background="@drawable/ic_media_album_indicator"/>
+
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/btn_select"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="@color/crimson"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/dp18"
+            android:visibility="gone"/>
+
+    </RelativeLayout>
+
+    <!-- 媒体类型TabLayout -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tl_media_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layout_album"
+        android:layout_centerHorizontal="true"
+        app:tabMaxWidth="0dp"
+        app:tabGravity="fill"
+        app:tabMode="fixed"
+        app:tabPadding="@dimen/dp10"
+        app:tabTextColor="@color/picker_type_color"
+        app:tabSelectedTextColor="@color/black"
+        app:tabIndicatorHeight="@dimen/dp3"
+        app:tabIndicatorColor="@color/gold"
+        app:tabTextAppearance="@style/AlbumTitleTextStyle">
+    </com.google.android.material.tabs.TabLayout>
+
+    <!-- 媒体缩略图列表 -->
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/vp_media_thumbnail"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/tl_media_title">
+    </androidx.viewpager.widget.ViewPager>
+
+    <!-- 相册列表容器 -->
+    <LinearLayout
+        android:id="@+id/ll_album_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/layout_album"
+        android:visibility="gone">
+        <!-- 相册列表页面 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_album_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/white">
+        </androidx.recyclerview.widget.RecyclerView>
+    </LinearLayout>
+</RelativeLayout>

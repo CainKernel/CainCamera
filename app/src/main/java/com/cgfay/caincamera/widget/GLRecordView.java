@@ -9,7 +9,7 @@ import android.graphics.Rect;
 
 import android.opengl.GLSurfaceView;
 import android.os.Build;
-import android.support.v4.view.GestureDetectorCompat;
+import androidx.core.view.GestureDetectorCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -30,7 +30,7 @@ import com.cgfay.uitls.utils.DensityUtils;
  */
 public class GLRecordView extends GLSurfaceView {
 
-    private static final String TAG = "CainSurfaceView";
+    private static final String TAG = "GLRecordView";
     private static final boolean VERBOSE = false;
     
     // 单击时点击的位置

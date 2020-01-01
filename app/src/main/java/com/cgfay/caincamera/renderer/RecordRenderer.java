@@ -5,10 +5,9 @@ import android.graphics.SurfaceTexture;
 import android.opengl.EGL14;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.cgfay.caincamera.presenter.RecordPresenter;
-import com.cgfay.camera.engine.render.RenderIndex;
 import com.cgfay.filter.glfilter.base.GLImageFilter;
 import com.cgfay.filter.glfilter.base.GLImageOESInputFilter;
 import com.cgfay.filter.glfilter.color.GLImageDynamicColorFilter;
@@ -30,10 +29,6 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class RecordRenderer implements GLSurfaceView.Renderer {
 
-    // 录制状态
-    private static final int RECORDING_OFF = 0;
-    private static final int RECORDING_ON = 1;
-
     private GLImageOESInputFilter mInputFilter; // 相机输入滤镜
     private GLImageFilter mColorFilter;  // 颜色滤镜
     private GLImageFilter mImageFilter; // 输出滤镜
@@ -52,8 +47,9 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
     protected int mViewWidth;
     protected int mViewHeight;
     // 输入纹理
-    private int mInputTexture;
-    private SurfaceTexture mSurfaceTexture;
+    private int mInputTexture = OpenGLUtils.GL_NOT_TEXTURE;
+    private volatile boolean mNeedToAttach;
+    private WeakReference<SurfaceTexture> mWeakSurfaceTexture;
     private float[] mMatrix = new float[16];
     // presenter
     private final WeakReference<RecordPresenter> mWeakPresenter;
@@ -69,15 +65,12 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
         mDisplayVertexBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.CubeVertices);
         mDisplayTextureBuffer = OpenGLUtils.createFloatBuffer(TextureRotationUtils.TextureVertices);
 
-        mInputTexture = OpenGLUtils.createOESTexture();
-        mSurfaceTexture = new SurfaceTexture(mInputTexture);
         GLES30.glDisable(GL10.GL_DITHER);
         GLES30.glClearColor(0,0, 0, 0);
         GLES30.glEnable(GL10.GL_CULL_FACE);
         GLES30.glEnable(GL10.GL_DEPTH_TEST);
         initFilters();
         if (mWeakPresenter.get() != null) {
-            mWeakPresenter.get().onBindSurfaceTexture(mSurfaceTexture);
             mWeakPresenter.get().onBindSharedContext(EGL14.eglGetCurrentContext());
         }
     }
@@ -92,10 +85,14 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        if (mSurfaceTexture != null) {
-            mSurfaceTexture.updateTexImage();
-            mSurfaceTexture.getTransformMatrix(mMatrix);
+        if (mWeakSurfaceTexture == null || mWeakSurfaceTexture.get() == null) {
+            return;
         }
+
+        // 更新纹理
+        final SurfaceTexture surfaceTexture = mWeakSurfaceTexture.get();
+        updateSurfaceTexture(surfaceTexture);
+
         GLES30.glClearColor(0,0, 0, 0);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
         if (mInputFilter == null || mImageFilter == null) {
@@ -113,13 +110,53 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
         mImageFilter.drawFrame(currentTexture, mDisplayVertexBuffer, mDisplayTextureBuffer);
         // 录制视频
         if (mWeakPresenter.get() != null) {
-            mWeakPresenter.get().onRecordFrameAvailable(currentTexture, mSurfaceTexture.getTimestamp());
+            mWeakPresenter.get().onRecordFrameAvailable(currentTexture, surfaceTexture.getTimestamp());
         }
     }
 
+    /**
+     * 更新输入纹理
+     * @param surfaceTexture
+     */
+    private void updateSurfaceTexture(@NonNull SurfaceTexture surfaceTexture) {
+        // 绑定到当前的输入纹理
+        synchronized (this) {
+            if (mNeedToAttach) {
+                if (mInputTexture != OpenGLUtils.GL_NOT_TEXTURE) {
+                    OpenGLUtils.deleteTexture(mInputTexture);
+                }
+                mInputTexture = OpenGLUtils.createOESTexture();
+                surfaceTexture.attachToGLContext(mInputTexture);
+                mNeedToAttach = false;
+            }
+            surfaceTexture.updateTexImage();
+            surfaceTexture.getTransformMatrix(mMatrix);
+        }
+    }
+
+    /**
+     * 绑定纹理
+     * @param surfaceTexture
+     */
+    public void bindSurfaceTexture(SurfaceTexture surfaceTexture) {
+        synchronized (this) {
+            mWeakSurfaceTexture = new WeakReference<>(surfaceTexture);
+            mNeedToAttach = true;
+        }
+    }
+
+    /**
+     * 设置纹理大小
+     * @param width
+     * @param height
+     */
     public void setTextureSize(int width, int height) {
         mTextureWidth = width;
         mTextureHeight = height;
+        if (mViewWidth != 0 && mViewHeight != 0) {
+            onFilterSizeChanged();
+            adjustCoordinateSize();
+        }
     }
 
     private void initFilters() {
@@ -196,5 +233,14 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
 
     private float addDistance(float coordinate, float distance) {
         return coordinate == 0.0f ? distance : 1 - distance;
+    }
+
+    /**
+     * 清理一些缓存数据
+     */
+    public void clear() {
+        if (mWeakSurfaceTexture != null) {
+            mWeakSurfaceTexture.clear();
+        }
     }
 }

@@ -2,27 +2,29 @@ package com.cgfay.camera.fragment;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.google.android.material.tabs.TabLayout;
+import androidx.fragment.app.Fragment;
+import androidx.viewpager.widget.ViewPager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.cgfay.camera.adapter.EffectViewPagerAdapter;
 import com.cgfay.cameralibrary.R;
 import com.cgfay.camera.adapter.PreviewBeautyAdapter;
 import com.cgfay.camera.adapter.PreviewFilterAdapter;
 import com.cgfay.camera.adapter.PreviewMakeupAdapter;
-import com.cgfay.camera.engine.camera.CameraParam;
+import com.cgfay.camera.camera.CameraParam;
 import com.cgfay.filter.glfilter.color.bean.DynamicColor;
 import com.cgfay.filter.glfilter.makeup.bean.DynamicMakeup;
 import com.cgfay.filter.glfilter.resource.FilterHelper;
@@ -30,54 +32,49 @@ import com.cgfay.filter.glfilter.resource.MakeupHelper;
 import com.cgfay.filter.glfilter.resource.ResourceJsonCodec;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 特效选择页面
  */
 public class PreviewEffectFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
-    private static final String TAG = "FilterEditedFragment";
-    private static final boolean VERBOSE = true;
-
-    // 标题选择索引，0表示美颜，1表轻美妆，3表示滤镜
-    private int mTitleButtonIndex = 0;
-
-    // 滤镜索引你
+    // 滤镜索引
     private int mFilterIndex = 0;
 
     // 内容显示列表
     private View mContentView;
+
+    // 对比按钮
+    private Button mBtnCompare;
 
     // 数值调整布局
     private LinearLayout mLayoutProgress;
     private TextView mTypeValueView;
     private SeekBar mValueSeekBar;
 
-    // 美型
-    private Button mBtnBeauty;
-    // 美妆
-    private Button mBtnMakeup;
-    // 滤镜
-    private Button mBtnFilter;
-
-    // 内容栏
-    private LinearLayout mLayoutContent;
+    // 特效类型
+    private TabLayout mEffectTabLayout;
+    // 特效ViewPager
+    private ViewPager mEffectViewPager;
+    // 特效页面列表
+    private List<View> mEffectViewLists = new ArrayList<>();
+    // 特效标题列表
+    private List<String> mEffectTitleLists = new ArrayList<>();
 
     // 美颜列表
-    private RelativeLayout mLayoutBeauty;
     private RecyclerView mBeautyRecyclerView;
     private LinearLayoutManager mBeautyLayoutManager;
     private PreviewBeautyAdapter mBeautyAdapter;
     private Button mBtnReset;
 
     // 美妆列表
-    private LinearLayout mLayoutMakeup;
     private RecyclerView mMakeupRecyclerView;
     private LinearLayoutManager mMakeupLayoutManager;
     private PreviewMakeupAdapter mMakeupAdapter;
 
     // 滤镜列表
-    private LinearLayout mLayoutFilter;
     private Button mBtnLiquefaction;
     private Button mBtnVignette;
     private RecyclerView mFilterRecyclerView;
@@ -94,8 +91,12 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mActivity = getActivity();
-        mInflater = LayoutInflater.from(mActivity);
+        if (context instanceof Activity) {
+            mActivity = (Activity) context;
+        } else {
+            mActivity = getActivity();
+        }
+        mInflater = LayoutInflater.from(context);
         mCameraParam = CameraParam.getInstance();
     }
 
@@ -103,13 +104,8 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mContentView = inflater.inflate(R.layout.fragment_filter_edit, container, false);
-        return mContentView;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
         initView(mContentView);
+        return mContentView;
     }
 
     /**
@@ -117,28 +113,185 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
      * @param view
      */
     private void initView(View view) {
+        initCompareButton(view);
+        initBeautyProgress(view);
+        initViewList(view);
+    }
 
+    /**
+     * 初始化比较滤镜
+     * @param view
+     */
+    private void initCompareButton(@NonNull View view) {
+        mBtnCompare = view.findViewById(R.id.btn_compare);
+        mBtnCompare.setOnTouchListener((v, event)-> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    if (mCompareEffectListener != null) {
+                        mCompareEffectListener.onCompareEffect(true);
+                    }
+                    mBtnCompare.setBackgroundResource(R.drawable.ic_camera_compare_pressed);
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    if (mCompareEffectListener != null) {
+                        mCompareEffectListener.onCompareEffect(false);
+                    }
+                    mBtnCompare.setBackgroundResource(R.drawable.ic_camera_compare_normal);
+                    break;
+            }
+            return true;
+        });
+    }
+
+    private void initBeautyProgress(@NonNull View view) {
         // 数值布局
-        mLayoutProgress = (LinearLayout) view.findViewById(R.id.layout_progress);
-        mTypeValueView = (TextView) view.findViewById(R.id.tv_type_value);
-        mValueSeekBar = (SeekBar) view.findViewById(R.id.value_progress);
+        mLayoutProgress = view.findViewById(R.id.layout_progress);
+        mTypeValueView = view.findViewById(R.id.tv_type_value);
+        mValueSeekBar = view.findViewById(R.id.value_progress);
         mValueSeekBar.setMax(100);
         mValueSeekBar.setOnSeekBarChangeListener(this);
+    }
 
-        // 内容栏
-        mLayoutContent = (LinearLayout) view.findViewById(R.id.layout_content);
+    /**
+     * 初始化列表
+     * @param view
+     */
+    private void initViewList(@NonNull View view) {
+        mEffectViewLists.clear();
+        mEffectTitleLists.clear();
 
-        // 标题按钮
-        mBtnBeauty = (Button) view.findViewById(R.id.btn_preview_beauty);
-        mBtnFilter = (Button) view.findViewById(R.id.btn_preview_filter);
-        mBtnMakeup = (Button) view.findViewById(R.id.btn_preview_makeup);
+        addBeautyView();
+        addMakeupView();
+        addFilterView();
 
-        mBtnBeauty.setOnClickListener(this);
-        mBtnFilter.setOnClickListener(this);
-        mBtnMakeup.setOnClickListener(this);
+        mEffectViewPager = view.findViewById(R.id.vp_effect);
+        mEffectTabLayout = view.findViewById(R.id.tl_effect_type);
+        mEffectViewPager.setAdapter(new EffectViewPagerAdapter(mEffectViewLists, mEffectTitleLists));
+        mEffectTabLayout.setupWithViewPager(mEffectViewPager);
+        mEffectTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                mLayoutProgress.setVisibility(tab.getPosition() == 0 ? View.VISIBLE : View.GONE);
+            }
 
-        // 显示默认内容布局
-        showContentLayout(mTitleButtonIndex);
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+    }
+
+    /**
+     * 显示美颜视图布局
+     */
+    private void addBeautyView() {
+        mLayoutProgress.setVisibility(View.VISIBLE);
+        View beautyView = mInflater.inflate(R.layout.view_preview_beauty, null);
+        mBeautyRecyclerView = beautyView.findViewById(R.id.preview_beauty_list);
+        mBeautyLayoutManager = new LinearLayoutManager(mActivity);
+        mBeautyLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        mBeautyRecyclerView.setLayoutManager(mBeautyLayoutManager);
+        mBeautyAdapter = new PreviewBeautyAdapter(mActivity);
+        mBeautyRecyclerView.setAdapter(mBeautyAdapter);
+        mBeautyAdapter.addOnBeautySelectedListener((position, beautyName) -> setSeekBarBeautyParam(position));
+        mBtnReset = beautyView.findViewById(R.id.btn_beauty_reset);
+        mBtnReset.setOnClickListener(v -> {
+            mCameraParam.beauty.reset();
+            setSeekBarBeautyParam(mBeautyAdapter.getSelectedPosition());
+        });
+        setSeekBarBeautyParam(mBeautyAdapter.getSelectedPosition());
+        mEffectViewLists.add(beautyView);
+        mEffectTitleLists.add(getResources().getString(R.string.tab_preview_beauty));
+    }
+
+    /**
+     * 显示美妆布局
+     */
+    private void addMakeupView() {
+        View makeupView = mInflater.inflate(R.layout.view_preview_makeup, null);
+        mMakeupRecyclerView = makeupView.findViewById(R.id.preview_makeup_list);
+        mMakeupLayoutManager = new LinearLayoutManager(mActivity);
+        mMakeupLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        mMakeupRecyclerView.setLayoutManager(mMakeupLayoutManager);
+        mMakeupAdapter = new PreviewMakeupAdapter(mActivity);
+        mMakeupRecyclerView.setAdapter(mMakeupAdapter);
+        mMakeupAdapter.addOnMakeupSelectedListener((position, makeupName) -> {
+            if (position == 0) {
+                String folderPath = MakeupHelper.getMakeupDirectory(mActivity) + File.separator +
+                        MakeupHelper.getMakeupList().get(1).unzipFolder;
+                DynamicMakeup makeup = null;
+                try {
+                    makeup = ResourceJsonCodec.decodeMakeupData(folderPath);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                if (mOnMakeupChangeListener != null) {
+                    mOnMakeupChangeListener.onMakeupChange(makeup);
+                }
+            } else {
+                if (mOnMakeupChangeListener != null) {
+                    mOnMakeupChangeListener.onMakeupChange(null);
+                }
+            }
+        });
+        mEffectViewLists.add(makeupView);
+        mEffectTitleLists.add(getResources().getString(R.string.tab_preview_makeup));
+    }
+
+    /**
+     * 显示滤镜布局
+     */
+    private void addFilterView() {
+        View filterView = mInflater.inflate(R.layout.view_preview_filter, null);
+        mBtnLiquefaction = filterView.findViewById(R.id.btn_liquefaction);
+        mBtnLiquefaction.setBackgroundResource(mCameraParam.enableDepthBlur
+                ? R.drawable.ic_camera_blur_selected
+                : R.drawable.ic_camera_blur_normal);
+        mBtnLiquefaction.setOnClickListener(this);
+        mBtnVignette = filterView.findViewById(R.id.btn_vignette);
+        mBtnVignette.setBackgroundResource(mCameraParam.enableVignette
+                ? R.drawable.ic_camera_vignette_selected
+                : R.drawable.ic_camera_vignette_normal);
+        mBtnVignette.setOnClickListener(this);
+        mFilterRecyclerView = filterView.findViewById(R.id.preview_filter_list);
+        mFilterLayoutManager = new LinearLayoutManager(mActivity);
+        mFilterLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        mFilterRecyclerView.setLayoutManager(mFilterLayoutManager);
+        mFilterAdapter = new PreviewFilterAdapter(mActivity,
+                FilterHelper.getFilterList());
+        mFilterRecyclerView.setAdapter(mFilterAdapter);
+        mFilterAdapter.setOnFilterChangeListener(resourceData -> {
+            if (mActivity == null) {
+                return;
+            }
+            if (!resourceData.name.equals("none")) {
+                String folderPath = FilterHelper.getFilterDirectory(mActivity) + File.separator + resourceData.unzipFolder;
+                DynamicColor color = null;
+                try {
+                    color = ResourceJsonCodec.decodeFilterData(folderPath);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                if (mOnFilterChangeListener != null) {
+                    mOnFilterChangeListener.onFilterChange(color);
+                }
+            } else {
+                if (mOnFilterChangeListener != null) {
+                    mOnFilterChangeListener.onFilterChange(null);
+                }
+            }
+            scrollToCurrentFilter(mFilterAdapter.getSelectedPosition());
+        });
+        scrollToCurrentFilter(mFilterIndex);
+        mEffectViewLists.add(filterView);
+        mEffectTitleLists.add(getResources().getString(R.string.tab_preview_filter));
     }
 
     @Override
@@ -160,13 +313,7 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if (id == R.id.btn_preview_beauty) {            // 美型
-            showContentLayout(0);
-        } else if (id == R.id.btn_preview_makeup) {     // 美妆
-            showContentLayout(1);
-        } else if (id == R.id.btn_preview_filter) {     // 滤镜
-            showContentLayout(2);
-        } else if (id == R.id.btn_liquefaction) {   // 景深/液化
+        if (id == R.id.btn_liquefaction) {   // 景深/液化
             processDepthBlur();
         } else if (id == R.id.btn_vignette) {   // 暗角
             processVignette();
@@ -176,12 +323,8 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (fromUser) {
-            if (mTitleButtonIndex == 0) { // 美颜
+            if (mEffectTabLayout.getSelectedTabPosition() == 0) { // 美颜
                 processBeautyParam(mBeautyAdapter.getSelectedPosition(), progress);
-            } else if (mTitleButtonIndex == 1) { // 彩妆
-
-            } else if (mTitleButtonIndex == 2) { // 滤镜
-
             }
         }
     }
@@ -194,33 +337,6 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
 
-    }
-
-    /**
-     * 显示内容布局
-     * @param index
-     */
-    private void showContentLayout(int index) {
-        mTitleButtonIndex = index;
-        resetLayout();
-        if (index == 0) {
-            showBeautyLayout();
-        } else if (index == 1) {
-            showMakeupLayout();
-        } else if (index == 2) {
-            showFilterLayout();
-        }
-    }
-
-    /**
-     * 重置布局
-     */
-    private void resetLayout() {
-        // 重置标题
-        mBtnBeauty.setBackgroundColor(mTitleButtonIndex == 0 ? Color.DKGRAY : Color.TRANSPARENT);
-        mBtnMakeup.setBackgroundColor(mTitleButtonIndex == 1 ? Color.DKGRAY : Color.TRANSPARENT);
-        mBtnFilter.setBackgroundColor(mTitleButtonIndex == 2 ? Color.DKGRAY : Color.TRANSPARENT);
-        mLayoutProgress.setVisibility(View.GONE);
     }
 
     /**
@@ -241,41 +357,6 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
         mBtnVignette.setBackgroundResource(mCameraParam.enableVignette
                 ? R.drawable.ic_camera_vignette_selected
                 : R.drawable.ic_camera_vignette_normal);
-    }
-
-    // -------------------------------------- 美颜(beauty) ----------------------------------------
-    /**
-     * 显示美颜视图布局
-     */
-    private void showBeautyLayout() {
-        mLayoutProgress.setVisibility(View.VISIBLE);
-        if (mLayoutBeauty == null) {
-            mLayoutBeauty = (RelativeLayout) mInflater.inflate(R.layout.view_preview_beauty, null);
-            mBeautyRecyclerView = (RecyclerView) mLayoutBeauty.findViewById(R.id.preview_beauty_list);
-            mBeautyLayoutManager = new LinearLayoutManager(mActivity);
-            mBeautyLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-            mBeautyRecyclerView.setLayoutManager(mBeautyLayoutManager);
-            mBeautyAdapter = new PreviewBeautyAdapter(mActivity);
-            mBeautyRecyclerView.setAdapter(mBeautyAdapter);
-            mBeautyAdapter.addOnBeautySelectedListener(new PreviewBeautyAdapter.OnBeautySelectedListener() {
-                @Override
-                public void onBeautySelected(int position, String beautyName) {
-                    setSeekBarBeautyParam(position);
-                }
-            });
-            mBtnReset = (Button) mLayoutBeauty.findViewById(R.id.btn_beauty_reset);
-            mBtnReset.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mCameraParam.beauty.reset();
-                    setSeekBarBeautyParam(mBeautyAdapter.getSelectedPosition());
-                }
-            });
-        }
-        setSeekBarBeautyParam(mBeautyAdapter.getSelectedPosition());
-
-        mLayoutContent.removeAllViews();
-        mLayoutContent.addView(mLayoutBeauty);
     }
 
     /**
@@ -369,95 +450,6 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
         }
     }
 
-    // -------------------------------------- 美妆(makeup) ----------------------------------------
-    /**
-     * 显示美妆布局
-     */
-    private void showMakeupLayout() {
-        if (mLayoutMakeup == null) {
-            mLayoutMakeup = (LinearLayout) mInflater.inflate(R.layout.view_preview_makeup, null);
-            mMakeupRecyclerView = (RecyclerView) mLayoutMakeup.findViewById(R.id.preview_makeup_list);
-            mMakeupLayoutManager = new LinearLayoutManager(mActivity);
-            mMakeupLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-            mMakeupRecyclerView.setLayoutManager(mMakeupLayoutManager);
-            mMakeupAdapter = new PreviewMakeupAdapter(mActivity);
-            mMakeupRecyclerView.setAdapter(mMakeupAdapter);
-            mMakeupAdapter.addOnMakeupSelectedListener((position, makeupName) -> {
-                if (position == 0) {
-                    String folderPath = MakeupHelper.getMakeupDirectory(mActivity) + File.separator +
-                            MakeupHelper.getMakeupList().get(1).unzipFolder;
-                    DynamicMakeup makeup = null;
-                    try {
-                        makeup = ResourceJsonCodec.decodeMakeupData(folderPath);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    if (mOnMakeupChangeListener != null) {
-                        mOnMakeupChangeListener.onMakeupChange(makeup);
-                    }
-                } else {
-                    if (mOnMakeupChangeListener != null) {
-                        mOnMakeupChangeListener.onMakeupChange(null);
-                    }
-                }
-            });
-        }
-        mLayoutContent.removeAllViews();
-        mLayoutContent.addView(mLayoutMakeup);
-    }
-
-    // -------------------------------------- 滤镜(filter) ----------------------------------------
-    /**
-     * 显示滤镜布局
-     */
-    private void showFilterLayout() {
-        if (mLayoutFilter == null) {
-            mLayoutFilter = (LinearLayout) mInflater.inflate(R.layout.view_preview_filter, null);
-            mBtnLiquefaction = (Button) mLayoutFilter.findViewById(R.id.btn_liquefaction);
-            mBtnLiquefaction.setBackgroundResource(mCameraParam.enableDepthBlur
-                    ? R.drawable.ic_camera_blur_selected
-                    : R.drawable.ic_camera_blur_normal);
-            mBtnLiquefaction.setOnClickListener(this);
-            mBtnVignette = (Button) mLayoutFilter.findViewById(R.id.btn_vignette);
-            mBtnVignette.setBackgroundResource(mCameraParam.enableVignette
-                    ? R.drawable.ic_camera_vignette_selected
-                    : R.drawable.ic_camera_vignette_normal);
-            mBtnVignette.setOnClickListener(this);
-            mFilterRecyclerView = (RecyclerView) mLayoutFilter.findViewById(R.id.preview_filter_list);
-            mFilterLayoutManager = new LinearLayoutManager(mActivity);
-            mFilterLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-            mFilterRecyclerView.setLayoutManager(mFilterLayoutManager);
-            mFilterAdapter = new PreviewFilterAdapter(mActivity,
-                    FilterHelper.getFilterList());
-            mFilterRecyclerView.setAdapter(mFilterAdapter);
-            mFilterAdapter.setOnFilterChangeListener(resourceData -> {
-                if (mActivity == null) {
-                    return;
-                }
-                if (!resourceData.name.equals("none")) {
-                    String folderPath = FilterHelper.getFilterDirectory(mActivity) + File.separator + resourceData.unzipFolder;
-                    DynamicColor color = null;
-                    try {
-                        color = ResourceJsonCodec.decodeFilterData(folderPath);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    if (mOnFilterChangeListener != null) {
-                        mOnFilterChangeListener.onFilterChange(color);
-                    }
-                } else {
-                    if (mOnFilterChangeListener != null) {
-                        mOnFilterChangeListener.onFilterChange(null);
-                    }
-                }
-                scrollToCurrentFilter(mFilterAdapter.getSelectedPosition());
-            });
-            scrollToCurrentFilter(mFilterIndex);
-        }
-        mLayoutContent.removeAllViews();
-        mLayoutContent.addView(mLayoutFilter);
-    }
-
     /**
      * 滚动到选中的滤镜位置上
      * @param index
@@ -480,10 +472,29 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
     }
 
     /**
+     * 比较监听器
+     */
+    public interface OnCompareEffectListener {
+
+        void onCompareEffect(boolean compare);
+    }
+
+    /**
+     * 添加比较回调监听
+     * @param listener
+     */
+    public void addOnCompareEffectListener(OnCompareEffectListener listener) {
+        mCompareEffectListener = listener;
+    }
+
+    private OnCompareEffectListener mCompareEffectListener;
+
+    /**
      * 滤镜切换监听
      */
     public interface OnFilterChangeListener {
 
+        /** 滤镜切换监听器 */
         void onFilterChange(DynamicColor color);
     }
 
@@ -502,6 +513,7 @@ public class PreviewEffectFragment extends Fragment implements View.OnClickListe
      */
     public interface OnMakeupChangeListener {
 
+        /** 彩妆切换监听器 */
         void onMakeupChange(DynamicMakeup makeup);
     }
 

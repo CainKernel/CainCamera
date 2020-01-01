@@ -1,2 +1,2 @@
 include ':app', ':cameralibrary', ':facedetectlibrary', ':filterlibrary', ':videolibrary', ':gdxlibrary', ':widgetlibrary',
-        ':landmarklibrary', ':scanlibrary', ':imagelibrary', ':medialibrary', ':utilslibrary'
+        ':landmarklibrary', ':pickerlibrary', ':imagelibrary', ':medialibrary', ':utilslibrary'

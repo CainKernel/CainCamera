@@ -13,29 +13,23 @@ public class AudioParams {
 
     public static final int SAMPLE_RATE = 44100;        // 44.1[KHz] is only setting guaranteed to be available on all devices.
 
-    public static final int SAMPLE_PER_FRAME = 1024;    // AAC, bytes/frame/channel
-
-    public static final int FRAMES_PER_BUFFER = 25; 	// AAC, frame/buffer/sec
-
-    public static final int BIT_RATE = 64000;
-
-    public static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
-
-    public static final int CHANNEL_COUNT = 1;
-
-    public static final int BITS_PER_SAMPLE = AudioFormat.ENCODING_PCM_16BIT;
-
+    public static final int BIT_RATE = 96000;
 
     private int mSampleRate;    // 采样率
-    private int mNbSamples;     // 一帧的采样点数
+    private int mChannel;       // 采样声道
+    private int mBitRate;       // 比特率
+    private int mAudioFormat;   // 采样格式
+
     SpeedMode mSpeedMode;       // 速度模式
     private String mAudioPath;   // 文件名
     private long mMaxDuration;  // 最大时长
 
     public AudioParams() {
         mSampleRate = SAMPLE_RATE;
-        mNbSamples = SAMPLE_PER_FRAME;
         mSpeedMode = SpeedMode.MODE_NORMAL;
+        mChannel =  AudioFormat.CHANNEL_IN_MONO;
+        mBitRate = BIT_RATE;
+        mAudioFormat = AudioFormat.ENCODING_PCM_16BIT;
     }
 
     public void setSampleRate(int sampleRate) {
@@ -46,12 +40,28 @@ public class AudioParams {
         return mSampleRate;
     }
 
-    public void setNbSamples(int nbSamples) {
-        this.mNbSamples = nbSamples;
+    public void setChannel(int channel) {
+        mChannel = channel;
     }
 
-    public int getNbSamples() {
-        return mNbSamples;
+    public int getChannel() {
+        return mChannel;
+    }
+
+    public void setBitRate(int bitRate) {
+        mBitRate = bitRate;
+    }
+
+    public int getBitRate() {
+        return mBitRate;
+    }
+
+    public void setAudioFormat(int audioFormat) {
+        mAudioFormat = audioFormat;
+    }
+
+    public int getAudioFormat() {
+        return mAudioFormat;
     }
 
     public void setSpeedMode(SpeedMode mode) {

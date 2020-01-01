@@ -1,13 +1,23 @@
 package com.cgfay.media.recorder;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
+
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
+
+import java.nio.ByteBuffer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 基于FFmpeg的音频/视频录制器
  */
 public final class FFMediaRecorder {
-    private static final String TAG = "FFMediaRecorder";
 
     static {
         System.loadLibrary("ffmpeg");

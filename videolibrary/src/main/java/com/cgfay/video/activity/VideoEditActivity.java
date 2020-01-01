@@ -1,48 +1,24 @@
 package com.cgfay.video.activity;
 
-import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.view.WindowManager;
 
 import com.cgfay.video.R;
-import com.cgfay.uitls.bean.Music;
-import com.cgfay.uitls.fragment.MusicSelectFragment;
+import com.cgfay.uitls.bean.MusicData;
+import com.cgfay.uitls.fragment.MusicPickerFragment;
 import com.cgfay.video.fragment.VideoEditFragment;
 
 public class VideoEditActivity extends AppCompatActivity implements VideoEditFragment.OnSelectMusicListener,
-        MusicSelectFragment.OnMusicSelectedListener {
+        MusicPickerFragment.OnMusicSelectedListener {
 
     public static final String VIDEO_PATH = "videoPath";
 
     private static final String FRAGMENT_VIDEO_EDIT = "fragment_video_edit";
     private static final String FRAGMENT_MUSIC_SELECT = "fragment_video_music_select";
 
-    protected void hideNavigationBar() {
-        if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
-            View v = getWindow().getDecorView();
-            v.setSystemUiVisibility(View.GONE);
-        } else if (Build.VERSION.SDK_INT >= 19) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            View decorView = getWindow().getDecorView();
-            int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN;
-            decorView.setSystemUiVisibility(uiOptions);
-            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-                @Override
-                public void onSystemUiVisibilityChange(int visibility) {
-                    hideNavigationBar();
-                }
-            });
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        hideNavigationBar();
         setContentView(R.layout.activity_video_edit);
         if (null == savedInstanceState) {
             String videoPath = getIntent().getStringExtra(VIDEO_PATH);
@@ -87,7 +63,7 @@ public class VideoEditActivity extends AppCompatActivity implements VideoEditFra
 
     @Override
     public void onOpenMusicSelectPage() {
-        MusicSelectFragment fragment = new MusicSelectFragment();
+        MusicPickerFragment fragment = new MusicPickerFragment();
         fragment.addOnMusicSelectedListener(this);
         getSupportFragmentManager()
                 .beginTransaction()
@@ -98,12 +74,17 @@ public class VideoEditActivity extends AppCompatActivity implements VideoEditFra
     }
 
     @Override
-    public void onMusicSelected(Music music) {
+    public void onMusicSelectClose() {
+        getSupportFragmentManager().popBackStack(FRAGMENT_VIDEO_EDIT, 0);
+    }
+
+    @Override
+    public void onMusicSelected(MusicData musicData) {
         getSupportFragmentManager().popBackStack(FRAGMENT_VIDEO_EDIT, 0);
         VideoEditFragment fragment = (VideoEditFragment) getSupportFragmentManager()
                 .findFragmentByTag(FRAGMENT_VIDEO_EDIT);
         if (fragment != null) {
-            fragment.setSelectedMusic(music.getSongUrl(), music.getDuration());
+            fragment.setSelectedMusic(musicData.getPath(), musicData.getDuration());
         }
     }
 }

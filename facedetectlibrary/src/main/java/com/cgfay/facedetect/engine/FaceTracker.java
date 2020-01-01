@@ -3,8 +3,9 @@ package com.cgfay.facedetect.engine;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.Nullable;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import com.cgfay.facedetectlibrary.R;
 import com.cgfay.facedetect.listener.FaceTrackerCallback;
@@ -466,7 +467,8 @@ public final class FaceTracker {
             // 设置旋转方向
             LandmarkEngine.getInstance().setOrientation(orientation);
             // 设置是否需要翻转
-            LandmarkEngine.getInstance().setNeedFlip(faceTrackParam.previewTrack && faceTrackParam.isBackCamera);
+            boolean needFlip = faceTrackParam.previewTrack && !faceTrackParam.isBackCamera;
+            LandmarkEngine.getInstance().setNeedFlip(needFlip);
 
             // 计算人脸关键点
             if (faces != null && faces.length > 0) {

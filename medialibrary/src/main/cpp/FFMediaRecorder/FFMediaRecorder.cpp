@@ -156,12 +156,20 @@ int FFMediaRecorder::prepare() {
     mMediaWriter->setOutputVideo(outputWidth, outputHeight, params->frameRate, pixelFormat);
     mMediaWriter->setOutputAudio(params->sampleRate, params->channels, sampleFormat);
 
+    // 指定编码器名称
+    if (params->videoEncoder != nullptr) {
+        mMediaWriter->setVideoEncoderName(params->videoEncoder);
+    }
+    if (params->audioEncoder != nullptr) {
+        mMediaWriter->setAudioEncoderName(params->audioEncoder);
+    }
+
     // 准备
     ret = mMediaWriter->prepare();
     if (ret < 0) {
         release();
     }
-    return 0;
+    return ret;
 }
 
 /**

@@ -4,8 +4,9 @@
     <dimen name="bottom_gallery_layout_height">120dp</dimen>
     <dimen name="record_width_height_normal">100dp</dimen>
     <dimen name="record_width_height_small">50dp</dimen>
-    <dimen name="stickers_width_height">40dp</dimen>
-    <dimen name="bottom_indicator_height">60dp</dimen>
+    <dimen name="preview_sticker_size">35dp</dimen>
+    <dimen name="preview_album_size">30dp</dimen>
+    <dimen name="camera_tab_height">60dp</dimen>
     <dimen name="button_margin_horizontal">40dp</dimen>
     <dimen name="bottom_layout_margin">10dp</dimen>
     <!--删除、预览按钮的宽高-->
@@ -24,7 +25,7 @@
     <!-- 对比按钮 -->
     <dimen name="compare_size">41dp</dimen>
     <dimen name="compare_margin_end">20dp</dimen>
-    <dimen name="compare_margin_bottom">250dp</dimen>
+    <dimen name="compare_margin_bottom">50dp</dimen>
 
 
     <!-- 显示图片的size -->

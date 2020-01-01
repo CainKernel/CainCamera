@@ -8,4 +8,7 @@
     <string name="request_storage_permission">需要存储权限</string>
     <string name="request_sound_permission">需要录音权限</string>
 
+    <string name="btn_dialog_cancel">取消</string>
+    <string name="btn_dialog_ok">确定</string>
+    <string name="music_selection">选择音乐</string>
 </resources>

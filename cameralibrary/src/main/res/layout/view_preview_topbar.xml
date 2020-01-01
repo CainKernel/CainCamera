@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_preview_topbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:parentTag="com.cgfay.camera.widget.CameraPreviewTopbar">
+
+    <!-- 关闭按钮 -->
+    <Button
+        android:id="@+id/btn_close"
+        android:layout_width="@dimen/dp30"
+        android:layout_height="@dimen/dp30"
+        android:layout_marginStart="@dimen/top_button_margin"
+        android:layout_marginTop="@dimen/top_button_margin"
+        android:background="@drawable/ic_camera_preview_close"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <!--  选择音乐  -->
+    <LinearLayout
+        android:id="@+id/btn_select_music"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btn_close"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.6">
+        <ImageView
+            android:layout_width="@dimen/dp30"
+            android:layout_height="@dimen/dp30"
+            android:background="@drawable/ic_camera_music"/>
+        <TextView
+            android:id="@+id/tv_music_name"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/dp25"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:lines="1"
+            android:text="@string/tv_select_music"/>
+    </LinearLayout>
+
+    <!-- 切换相机 -->
+    <LinearLayout
+        android:id="@+id/btn_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/top_button_margin"
+        android:layout_marginEnd="@dimen/top_button_margin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <ImageView
+            android:id="@+id/iv_switch"
+            android:layout_width="@dimen/top_button_width_height"
+            android:layout_height="@dimen/top_button_width_height"
+            android:background="@drawable/ic_camera_switch_camera_light" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="翻转" />
+    </LinearLayout>
+
+    <!-- 速度 -->
+    <LinearLayout
+        android:id="@+id/btn_speed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/dp20"
+        app:layout_constraintStart_toStartOf="@id/btn_switch"
+        app:layout_constraintEnd_toEndOf="@id/btn_switch"
+        app:layout_constraintTop_toBottomOf="@id/btn_switch">
+        <ImageView
+            android:layout_width="@dimen/top_button_width_height"
+            android:layout_height="@dimen/top_button_width_height"
+            android:background="@drawable/ic_camera_setting_more_light" />
+        <TextView
+            android:id="@+id/tv_speed_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="速度关" />
+    </LinearLayout>
+
+    <!-- 滤镜 -->
+    <LinearLayout
+        android:id="@+id/btn_effect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/dp20"
+        app:layout_constraintStart_toStartOf="@id/btn_speed"
+        app:layout_constraintEnd_toEndOf="@id/btn_speed"
+        app:layout_constraintTop_toBottomOf="@id/btn_speed">
+        <!-- 滤镜 -->
+        <ImageView
+            android:layout_width="@dimen/top_button_width_height"
+            android:layout_height="@dimen/top_button_width_height"
+            android:background="@drawable/ic_camera_effect_light" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="滤镜" />
+    </LinearLayout>
+
+    <!--  设置  -->
+    <LinearLayout
+        android:id="@+id/btn_setting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/dp20"
+        app:layout_constraintStart_toStartOf="@id/btn_effect"
+        app:layout_constraintEnd_toEndOf="@id/btn_effect"
+        app:layout_constraintTop_toBottomOf="@id/btn_effect">
+        <ImageView
+            android:layout_width="@dimen/top_button_width_height"
+            android:layout_height="@dimen/top_button_width_height"
+            android:background="@drawable/ic_camera_setting_more_light" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="更多" />
+    </LinearLayout>
+
+</merge>

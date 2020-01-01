@@ -1,19 +1,20 @@
 package com.cgfay.caincamera.fragment;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
-import android.media.ImageReader;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,18 +27,12 @@ import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.presenter.FFMediaRecordPresenter;
 import com.cgfay.caincamera.renderer.FFRecordRenderer;
 import com.cgfay.caincamera.widget.GLRecordView;
-import com.cgfay.caincamera.widget.RecordButton;
+import com.cgfay.camera.widget.RecordButton;
 import com.cgfay.camera.widget.RecordProgressView;
-import com.cgfay.camera.widget.RecordSpeedLevelBar;
-import com.cgfay.filter.glfilter.color.bean.DynamicColor;
-import com.cgfay.filter.glfilter.resource.FilterHelper;
-import com.cgfay.filter.glfilter.resource.ResourceJsonCodec;
-import com.cgfay.filter.recorder.SpeedMode;
 import com.cgfay.uitls.utils.NotchUtils;
 import com.cgfay.uitls.utils.PermissionUtils;
 import com.cgfay.uitls.utils.StatusBarUtils;
 
-import java.io.File;
 
 /**
  * 利用FFmpeg录制视频
@@ -46,14 +41,15 @@ public class FFMediaRecordFragment extends Fragment implements View.OnClickListe
 
     private static final String TAG = "FFMediaRecordFragment";
 
-    private Activity mActivity;
+    private FragmentActivity mActivity;
     private Handler mMainHandler;
 
     private View mContentView;
     private GLRecordView mGLRecordView;
     private RecordProgressView mProgressView;
-    private Button mRecordButton;
+    private RecordButton mRecordButton;
 
+    private View mBtnSwitch;
     private Button mBtnNext;
     private Button mBtnDelete;
 
@@ -101,23 +97,30 @@ public class FFMediaRecordFragment extends Fragment implements View.OnClickListe
         // 进度条
         mProgressView = (RecordProgressView) mContentView.findViewById(R.id.record_progress_view);
 
+        mBtnSwitch = mContentView.findViewById(R.id.btn_switch);
+        mBtnSwitch.setOnClickListener(v -> {
+            if (!mPresenter.isRecording()) {
+                mPresenter.switchCamera();
+            }
+        });
+
         // 录制按钮
-        mRecordButton = (Button) mContentView.findViewById(R.id.record_button);
-        mRecordButton.setOnClickListener(v -> {
-            mRecordButton.setEnabled(false);
-            if (mPresenter.isRecording()) {
-                mPresenter.stopRecord();
-            } else {
+        mRecordButton = mContentView.findViewById(R.id.btn_record);
+        mRecordButton.addRecordStateListener(new RecordButton.RecordStateListener() {
+            @Override
+            public void onRecordStart() {
                 mPresenter.startRecord();
             }
-            mMainHandler.postDelayed(() -> {
-                if (mPresenter.isRecording()) {
-                    mRecordButton.setText(getText(R.string.btn_record_cancel));
-                } else {
-                    mRecordButton.setText(getText(R.string.btn_record_start));
-                }
-                mRecordButton.setEnabled(true);
-            }, 1000);
+
+            @Override
+            public void onRecordStop() {
+                mPresenter.stopRecord();
+            }
+
+            @Override
+            public void onZoom(float percent) {
+
+            }
         });
 
         // 下一步
@@ -135,6 +138,7 @@ public class FFMediaRecordFragment extends Fragment implements View.OnClickListe
             params.height = StatusBarUtils.getStatusBarHeight(mActivity);
             view.setLayoutParams(params);
         }
+        showViews();
     }
 
     @Override
@@ -156,6 +160,7 @@ public class FFMediaRecordFragment extends Fragment implements View.OnClickListe
         super.onPause();
         mGLRecordView.onPause();
         mPresenter.onPause();
+        mRenderer.clear();
     }
 
     @Override
@@ -196,8 +201,15 @@ public class FFMediaRecordFragment extends Fragment implements View.OnClickListe
      */
     public void hidViews() {
         runOnUiThread(() -> {
-            mBtnNext.setVisibility(View.GONE);
-            mBtnDelete.setVisibility(View.GONE);
+            if (mBtnDelete != null) {
+                mBtnDelete.setVisibility(View.GONE);
+            }
+            if (mBtnNext != null) {
+                mBtnNext.setVisibility(View.GONE);
+            }
+            if (mBtnSwitch != null) {
+                mBtnSwitch.setVisibility(View.GONE);
+            }
         });
     }
 
@@ -206,9 +218,15 @@ public class FFMediaRecordFragment extends Fragment implements View.OnClickListe
      */
     public void showViews() {
         runOnUiThread(() -> {
-            if (mPresenter.getRecordVideos() > 0) {
-                mBtnNext.setVisibility(View.VISIBLE);
-                mBtnDelete.setVisibility(View.VISIBLE);
+            boolean showEditEnable = mPresenter.getRecordVideoSize() > 0;
+            if (mBtnDelete != null) {
+                mBtnDelete.setVisibility(showEditEnable ? View.VISIBLE : View.GONE);
+            }
+            if (mBtnNext != null) {
+                mBtnNext.setVisibility(showEditEnable ? View.VISIBLE : View.GONE);
+            }
+            if (mBtnSwitch != null) {
+                mBtnSwitch.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -240,6 +258,14 @@ public class FFMediaRecordFragment extends Fragment implements View.OnClickListe
         runOnUiThread(() -> {
             mProgressView.deleteProgressSegment();
         });
+    }
+
+    /**
+     * 绑定相机输出的SurfaceTexture
+     * @param surfaceTexture
+     */
+    public void bindSurfaceTexture(@NonNull SurfaceTexture surfaceTexture) {
+        mGLRecordView.queueEvent(() -> mRenderer.bindSurfaceTexture(surfaceTexture));
     }
 
     /**

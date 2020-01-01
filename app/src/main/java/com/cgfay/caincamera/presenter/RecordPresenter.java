@@ -5,16 +5,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.opengl.EGLContext;
+import android.os.Build;
 import android.os.Environment;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+
 import android.text.TextUtils;
 
 import com.cgfay.caincamera.activity.SpeedRecordActivity;
+import com.cgfay.camera.camera.CameraApi;
+import com.cgfay.camera.camera.CameraController;
+import com.cgfay.camera.camera.CameraXController;
+import com.cgfay.camera.camera.ICameraController;
+import com.cgfay.camera.camera.OnFrameAvailableListener;
+import com.cgfay.camera.camera.OnSurfaceTextureListener;
 import com.cgfay.filter.recorder.MediaInfo;
 import com.cgfay.filter.recorder.AudioParams;
 import com.cgfay.filter.recorder.HWMediaRecorder;
-import com.cgfay.camera.engine.camera.CameraEngine;
-import com.cgfay.camera.engine.camera.CameraParam;
 import com.cgfay.camera.utils.PathConstraints;
 import com.cgfay.filter.recorder.MediaType;
 import com.cgfay.filter.recorder.OnRecordStateListener;
@@ -34,9 +41,7 @@ import java.util.List;
  * @author CainHuang
  * @date 2019/7/7
  */
-public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener, OnRecordStateListener {
-
-    private static final String TAG = "RecordPresenter";
+public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailableListener, OnRecordStateListener {
 
     private SpeedRecordActivity mActivity;
 
@@ -53,7 +58,7 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
     // 剩余时长
     private long mRemainDuration;
 
-    // 视频编码器
+    // 视频录制器
     private HWMediaRecorder mHWMediaRecorder;
 
     // 视频列表
@@ -67,10 +72,13 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
     // 命令行编辑器
     private CainCommandEditor mCommandEditor;
 
+    // 相机控制器
+    private final ICameraController mCameraController;
+
     public RecordPresenter(SpeedRecordActivity activity) {
         mActivity = activity;
 
-        // 创建视频流
+        // 视频录制器
         mHWMediaRecorder = new HWMediaRecorder(this);
 
         // 视频参数
@@ -83,6 +91,15 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
 
         // 命令行编辑器
         mCommandEditor = new CainCommandEditor();
+
+        // 创建相机控制器
+        if (CameraApi.hasCamera2(mActivity)) {
+            mCameraController = new CameraXController(activity, ContextCompat.getMainExecutor(activity));
+        } else {
+            mCameraController = new CameraController(activity);
+        }
+        mCameraController.setOnFrameAvailableListener(this);
+        mCameraController.setOnSurfaceTextureListener(this);
     }
 
     /**
@@ -96,7 +113,14 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
      * 暂停
      */
     public void onPause() {
-        releaseCamera();
+        closeCamera();
+    }
+
+    /**
+     * 切换相机
+     */
+    public void switchCamera() {
+        mCameraController.switchCamera();
     }
 
     /**
@@ -230,17 +254,6 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
     }
 
     /**
-     * SurfaceTexture创建成功回调
-     * @param surfaceTexture
-     */
-    public void onBindSurfaceTexture(SurfaceTexture surfaceTexture) {
-        CameraEngine.getInstance().setPreviewSurface(surfaceTexture);
-        if (surfaceTexture != null) {
-            surfaceTexture.setOnFrameAvailableListener(this);
-        }
-    }
-
-    /**
      * 绑定EGLContext
      * @param context
      */
@@ -257,6 +270,11 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
         if (mOperateStarted && mHWMediaRecorder != null && mHWMediaRecorder.isRecording()) {
             mHWMediaRecorder.frameAvailable(texture, timestamp);
         }
+    }
+
+    @Override
+    public void onSurfaceTexturePrepared(@NonNull SurfaceTexture surfaceTexture) {
+        mActivity.bindSurfaceTexture(surfaceTexture);
     }
 
     @Override
@@ -285,11 +303,8 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
      * 打开相机
      */
     private void openCamera() {
-        releaseCamera();
-        CameraParam.getInstance().setBackCamera(true);
-        CameraEngine.getInstance().openCamera(mActivity);
+        mCameraController.openCamera();
         calculateImageSize();
-        CameraEngine.getInstance().startPreview();
     }
 
     /**
@@ -298,12 +313,12 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
     private void calculateImageSize() {
         int width;
         int height;
-        if (CameraParam.getInstance().orientation == 90 || CameraParam.getInstance().orientation == 270) {
-            width = CameraParam.getInstance().previewHeight;
-            height = CameraParam.getInstance().previewWidth;
+        if (mCameraController.getOrientation() == 90 || mCameraController.getOrientation() == 270) {
+            width = mCameraController.getPreviewHeight();
+            height = mCameraController.getPreviewWidth();
         } else {
-            width = CameraParam.getInstance().previewWidth;
-            height = CameraParam.getInstance().previewHeight;
+            width = mCameraController.getPreviewWidth();
+            height = mCameraController.getPreviewHeight();
         }
         mVideoParams.setVideoSize(width, height);
         mActivity.updateTextureSize(width, height);
@@ -312,8 +327,8 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
     /**
      * 释放资源
      */
-    private void releaseCamera() {
-        CameraEngine.getInstance().releaseCamera();
+    private void closeCamera() {
+        mCameraController.closeCamera();
     }
 
     /**
@@ -367,7 +382,7 @@ public class RecordPresenter implements SurfaceTexture.OnFrameAvailableListener,
      * 获取录制视频的段数
      * @return
      */
-    public int getRecordVideos() {
+    public int getRecordVideoSize() {
         return mVideoList.size();
     }
 

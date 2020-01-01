@@ -6,7 +6,7 @@ import android.media.MediaFormat;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.cgfay.uitls.utils.FileUtils;

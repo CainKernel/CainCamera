@@ -1,10 +1,14 @@
 package com.cgfay.camera.presenter;
 
+import android.content.Context;
+
+import androidx.annotation.NonNull;
+
 /**
  * @author CainHuang
  * @date 2019/7/3
  */
-public class IPresenter <T> {
+public abstract class IPresenter <T> {
 
     private T mTarget;
 
@@ -39,4 +43,7 @@ public class IPresenter <T> {
     public void onDestroy() {
 
     }
+
+    @NonNull
+    public abstract Context getContext();
 }

@@ -1,76 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/video_window_background"
-    tools:context="com.cgfay.camera.fragment.CameraPreviewFragment">
+    android:background="@color/video_window_background">
 
     <!-- 预览视图 -->
     <com.cgfay.camera.widget.AspectFrameLayout
         android:id="@+id/layout_aspect"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="top">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
     </com.cgfay.camera.widget.AspectFrameLayout>
 
-    <!-- 顶部视图 -->
-    <RelativeLayout
-        android:id="@+id/layout_preview_top"
-        android:layout_width="match_parent"
+    <!--  倒计时  -->
+    <com.cgfay.camera.widget.RecordCountDownView
+        android:id="@+id/count_down_view"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_margin="@dimen/dp20">
+        android:textSize="@dimen/dp140"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/layout_aspect"
+        app:layout_constraintBottom_toBottomOf="@id/layout_aspect"/>
 
-        <!-- 关闭按钮 -->
-        <Button
-            android:id="@+id/btn_close"
-            android:layout_width="@dimen/dp30"
-            android:layout_height="@dimen/dp30"
-            android:layout_centerVertical="true"
-            android:background="@drawable/ic_camera_preview_close"/>
-
-        <LinearLayout
-            android:id="@+id/btn_select_music"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="@dimen/dp30"
-                android:layout_height="@dimen/dp30"
-                android:background="@drawable/ic_camera_music"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/dp25"
-                android:gravity="center"
-                android:textAlignment="center"
-                android:textColor="@color/white"
-                android:text="选择音乐"/>
-        </LinearLayout>
-
-
-    </RelativeLayout>
-
-    <!-- 右上角视图 -->
-    <include
-        layout="@layout/view_preview_right_top"/>
-
-    <!-- 滤镜/贴纸等页面 -->
-    <FrameLayout
-        android:id="@+id/fragment_container"
+    <!-- 录制进度条 -->
+    <com.cgfay.camera.widget.RecordProgressView
+        android:id="@+id/record_progress"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:clickable="true">
-    </FrameLayout>
-
-    <!-- 底部按钮 -->
-    <include
-        layout="@layout/view_preview_bottom"/>
+        android:layout_height="@dimen/dp6"
+        android:layout_margin="@dimen/dp10"
+        app:radius="@dimen/dp4"
+        app:divider_width="@dimen/dp1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/layout_aspect"/>
 
     <!-- fps 提示 -->
     <TextView
@@ -81,16 +50,178 @@
         android:layout_marginTop="@dimen/fps_margin_top"
         android:layout_marginStart="@dimen/fps_margin"
         android:layout_marginEnd="@dimen/fps_margin"
-        android:textColor="@android:color/holo_orange_dark" />
+        android:textColor="@android:color/holo_orange_dark"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/layout_aspect"/>
 
-    <!-- 对比按钮 -->
-    <Button
-        android:id="@+id/btn_compare"
-        android:layout_width="@dimen/compare_size"
-        android:layout_height="@dimen/compare_size"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="@dimen/compare_margin_end"
-        android:layout_marginBottom="@dimen/compare_margin_bottom"
-        android:background="@drawable/ic_camera_compare_normal"/>
+    <!--  顶部布局  -->
+    <com.cgfay.camera.widget.CameraPreviewTopbar
+        android:id="@+id/camera_preview_topbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp10"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/layout_aspect"/>
 
-</FrameLayout>
+    <!-- 速度选择条 -->
+    <com.cgfay.camera.widget.RecordSpeedLevelBar
+        android:id="@+id/record_speed_bar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp40"
+        android:layout_marginStart="@dimen/dp40"
+        android:layout_marginEnd="@dimen/dp40"
+        android:layout_marginBottom="@dimen/dp20"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/btn_record"/>
+
+    <!-- 录制按钮 -->
+    <com.cgfay.camera.widget.RecordButton
+        android:id="@+id/btn_record"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="@dimen/dp70"
+        app:circleColor="@color/record_red"
+        app:strokeColor="@color/record_stroke_red"
+        app:circleStrokeWidthMin="@dimen/dp6"
+        app:circleStrokeWidthMax="@dimen/dp12"
+        app:rectCorner="@dimen/dp5"
+        app:rectWidthMin="@dimen/dp30"
+        app:rectWidthMax="@dimen/dp55"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+
+    <!-- 贴纸 -->
+    <LinearLayout
+        android:id="@+id/btn_stickers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btn_record"
+        app:layout_constraintBottom_toBottomOf="@id/btn_record"
+        app:layout_constraintHorizontal_bias="0.15">
+
+        <ImageView
+            android:id="@+id/iv_stickers"
+            android:layout_width="@dimen/preview_sticker_size"
+            android:layout_height="@dimen/preview_sticker_size"
+            android:background="@drawable/ic_camera_sticker_light"/>
+        <TextView
+            android:id="@+id/tv_stickers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="@string/btn_stickers"
+            android:textSize="@dimen/dp12"/>
+    </LinearLayout>
+
+    <!-- 上传媒体 -->
+    <LinearLayout
+        android:id="@+id/layout_media"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btn_record"
+        app:layout_constraintBottom_toBottomOf="@id/btn_record"
+        app:layout_constraintHorizontal_bias="0.85">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/dp2"
+            android:background="@drawable/bg_btn_media">
+            <ImageView
+                android:id="@+id/btn_media"
+                android:layout_width="@dimen/preview_album_size"
+                android:layout_height="@dimen/preview_album_size"
+                android:background="@drawable/ic_camera_gallery_light" />
+        </LinearLayout>
+        <TextView
+            android:id="@+id/tv_media_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp5"
+            android:text="@string/btn_media"
+            android:textColor="@color/white"
+            android:textSize="@dimen/dp12"
+            app:layout_constraintStart_toStartOf="@id/layout_media"
+            app:layout_constraintEnd_toEndOf="@id/layout_media"
+            app:layout_constraintTop_toBottomOf="@id/layout_media"
+            app:layout_constraintBottom_toBottomOf="@id/btn_record"/>
+    </LinearLayout>
+
+    <!--   删除预览控件   -->
+    <LinearLayout
+        android:id="@+id/layout_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="@id/btn_record"
+        app:layout_constraintBottom_toBottomOf="@id/btn_record"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.90">
+        <!-- 删除 -->
+        <Button
+            android:id="@+id/btn_record_delete"
+            android:layout_width="@dimen/button_preview_width_height"
+            android:layout_height="@dimen/button_preview_width_height"
+            android:background="@drawable/ic_camera_record_delete"
+            android:layout_marginEnd="@dimen/dp20"
+            android:visibility="gone"/>
+
+        <!-- 预览 -->
+        <Button
+            android:id="@+id/btn_goto_edit"
+            android:layout_width="@dimen/button_preview_width_height"
+            android:layout_height="@dimen/button_preview_width_height"
+            android:background="@drawable/ic_camera_record_done"
+            android:visibility="gone"/>
+    </LinearLayout>
+
+    <!-- 底部指示器 -->
+    <com.cgfay.widget.CameraTabView
+        android:id="@+id/tl_camera_tab"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/camera_tab_height"
+        android:layout_marginBottom="@dimen/dp10"
+        app:tabMode="scrollable"
+        app:tabGravity="center"
+        app:tabTextColor="@color/gray"
+        app:tabSelectedTextColor="@color/white"
+        app:tabTextAppearance="@style/CameraTabTextStyle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <!--  圆形指示器  -->
+    <View
+        android:id="@+id/iv_tab_indicator"
+        android:layout_width="@dimen/dp4"
+        android:layout_height="@dimen/dp4"
+        android:layout_marginBottom="@dimen/dp18"
+        android:background="@drawable/bg_tab_indicator"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <!--  浮窗容器  -->
+    <FrameLayout
+        android:id="@+id/fragment_bottom_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

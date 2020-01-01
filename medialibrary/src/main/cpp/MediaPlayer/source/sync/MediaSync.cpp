@@ -157,12 +157,15 @@ void MediaSync::run() {
             break;
         }
 
-        if (remaining_time > 0.0) {
-            av_usleep((int64_t) (remaining_time * 1000000.0));
-        }
-        remaining_time = REFRESH_RATE;
+//        if (remaining_time > 0.0) {
+//            av_usleep((int64_t) (remaining_time * 1000000.0));
+//        }
+//        remaining_time = REFRESH_RATE;
         if (!playerState->pauseRequest || forceRefresh) {
             refreshVideo(&remaining_time);
+        }
+        if (remaining_time <= 0) {
+            remaining_time = REFRESH_RATE;
         }
     }
 

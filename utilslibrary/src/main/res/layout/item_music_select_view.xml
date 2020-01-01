@@ -13,18 +13,18 @@
         android:orientation="vertical">
         <TextView
             android:id="@+id/tv_music_name"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <TextView
             android:id="@+id/tv_music_duration"
             android:layout_marginTop="5dp"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </LinearLayout>
     <View
         android:layout_width="match_parent"
         android:layout_height="1px"
-        android:background="@color/white"/>
+        android:background="@color/gray"/>
 </LinearLayout>

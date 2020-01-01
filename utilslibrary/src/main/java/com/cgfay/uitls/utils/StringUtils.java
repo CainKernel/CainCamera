@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -248,9 +249,9 @@ public class StringUtils {
         int totalSeconds = totalMillisSeconds / 1000;
         int seconds = totalSeconds % 60;
         int minutes = (totalSeconds / 60) % 60;
-        return minutes > 0 ? String.format("%02d:%02d", minutes, seconds)  //分钟和秒
-                :(seconds > 0 ? String.format("%02d''%02d", seconds, millisSeconds) // 秒和毫秒
-                : String.format("''%02d", millisSeconds)); // 毫秒
+        return minutes > 0 ? String.format(Locale.getDefault(),"%02d:%02d", minutes, seconds)  //分钟和秒
+                :(seconds > 0 ? String.format(Locale.getDefault(),"%02d''%02d", seconds, millisSeconds) // 秒和毫秒
+                : String.format(Locale.getDefault(),"''%02d", millisSeconds)); // 毫秒
     }
 
     /**
@@ -262,7 +263,7 @@ public class StringUtils {
         int totalSeconds = totalMillisSeconds / 1000;
         int seconds = totalSeconds % 60;
         int minutes = (totalSeconds / 60) % 60;
-        return String.format("%02d:%02d", minutes, seconds);
+        return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
     }
 
     /**
@@ -276,7 +277,7 @@ public class StringUtils {
         int seconds = totalSeconds % 60;
         int minutes = (totalSeconds / 60) % 60;
         int hours = totalSeconds / 3600;
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+        return String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
     }
 
     /**

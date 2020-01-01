@@ -1,6 +1,6 @@
 package com.cgfay.media;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.cgfay.uitls.utils.FileUtils;
 

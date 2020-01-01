@@ -3,6 +3,7 @@ package com.cgfay.uitls.utils;
 import android.content.Context;
 import android.graphics.Point;
 import android.os.Build;
+import androidx.annotation.NonNull;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
@@ -15,6 +16,24 @@ import java.lang.reflect.Method;
  * @date 2019/6/18
  */
 public class DisplayUtils {
+
+    /**
+     * 获取屏幕宽度
+     * @param context
+     * @return
+     */
+    public static int getScreenWidth(@NonNull Context context) {
+        return context.getResources().getDisplayMetrics().widthPixels;
+    }
+
+    /**
+     * 获取屏幕高度
+     * @param context
+     * @return
+     */
+    public static int getScreenHeight(@NonNull Context context) {
+        return context.getResources().getDisplayMetrics().heightPixels;
+    }
 
     /**
      * 获取虚拟导航栏高度

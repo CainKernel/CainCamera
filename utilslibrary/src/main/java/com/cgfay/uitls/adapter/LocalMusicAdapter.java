@@ -1,15 +1,15 @@
 package com.cgfay.uitls.adapter;
 
 import android.database.Cursor;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.cgfay.uitls.bean.Music;
+import com.cgfay.uitls.bean.MusicData;
 import com.cgfay.uitls.utils.StringUtils;
 import com.cgfay.utilslibrary.R;
 
@@ -35,15 +35,12 @@ public class LocalMusicAdapter extends LocalCursorAdapter<RecyclerView.ViewHolde
     @Override
     protected void onBindViewHolder(RecyclerView.ViewHolder holder, Cursor cursor) {
         MusicViewHolder viewHolder = (MusicViewHolder) holder;
-        final Music music = Music.valueof(cursor);
-        viewHolder.mTextName.setText(music.getName());
-        viewHolder.mTexDuration.setText(StringUtils.generateMillisTime((int) music.getDuration()));
-        viewHolder.mLayoutMusic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mListener != null) {
-                    mListener.onMusicItemSelected(music);
-                }
+        final MusicData musicData = MusicData.valueof(cursor);
+        viewHolder.mTextName.setText(musicData.getName());
+        viewHolder.mTexDuration.setText(StringUtils.generateMillisTime((int) musicData.getDuration()));
+        viewHolder.mLayoutMusic.setOnClickListener(v -> {
+            if (mListener != null) {
+                mListener.onMusicItemSelected(musicData);
             }
         });
     }
@@ -61,7 +58,7 @@ public class LocalMusicAdapter extends LocalCursorAdapter<RecyclerView.ViewHolde
      */
     public interface OnMusicItemSelectedListener {
         // 选中音乐
-        void onMusicItemSelected(Music music);
+        void onMusicItemSelected(MusicData musicData);
     }
 
 

@@ -3,22 +3,30 @@ package com.cgfay.caincamera.presenter;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
 import android.media.AudioFormat;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
+
 import com.cgfay.caincamera.fragment.FFMediaRecordFragment;
-import com.cgfay.camera.engine.camera.CameraEngine;
-import com.cgfay.camera.engine.camera.CameraParam;
+import com.cgfay.camera.camera.CameraApi;
+import com.cgfay.camera.camera.CameraController;
+import com.cgfay.camera.camera.CameraXController;
+import com.cgfay.camera.camera.ICameraController;
+import com.cgfay.camera.camera.OnFrameAvailableListener;
+import com.cgfay.camera.camera.OnSurfaceTextureListener;
+import com.cgfay.camera.camera.PreviewCallback;
 import com.cgfay.camera.utils.PathConstraints;
 
 import com.cgfay.media.recorder.AVFormatter;
 import com.cgfay.media.CainCommandEditor;
 import com.cgfay.media.recorder.FFMediaRecorder;
-import com.cgfay.media.recorder.AudioRecorder;
+import com.cgfay.media.recorder.FFAudioRecorder;
 import com.cgfay.uitls.utils.FileUtils;
 import com.cgfay.video.activity.VideoEditActivity;
 
@@ -28,13 +36,13 @@ import java.util.List;
 /**
  * 使用FFmpeg进行录制的Presenter
  */
-public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioRecorder.OnRecordCallback,
-        SurfaceTexture.OnFrameAvailableListener, FFMediaRecorder.OnRecordListener {
+public class FFMediaRecordPresenter implements PreviewCallback, FFAudioRecorder.OnRecordCallback, OnSurfaceTextureListener,
+        OnFrameAvailableListener, FFMediaRecorder.OnRecordListener {
 
     private static final String TAG = "FFMediaRecordPresenter";
     private static final boolean VERBOSE = true;
 
-    private Activity mActivity;
+    private FragmentActivity mActivity;
     private FFMediaRecordFragment mFragment;
 
     // 命令行编辑器
@@ -47,25 +55,35 @@ public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioReco
     private int mPreviewRotate;
     private int mRecordWidth;
     private int mRecordHeight;
-    private AudioRecorder mAudioRecorder;
+    private FFAudioRecorder mFFAudioRecorder;
     private FFMediaRecorder mMediaRecorder;
     private boolean mIsRecording;
     private Handler mHandler;
 
     private final List<VideoInfo> mVideoList;
 
-    public FFMediaRecordPresenter(Activity activity, FFMediaRecordFragment fragment) {
+    private final ICameraController mCameraController;
+
+    public FFMediaRecordPresenter(FragmentActivity activity, FFMediaRecordFragment fragment) {
         mActivity = activity;
         mFragment = fragment;
         mIsRecording = false;
         mPreviewRotate = 0;
         // 命令行编辑器
         mCommandEditor = new CainCommandEditor();
-        mAudioRecorder = new AudioRecorder();
-        mAudioRecorder.setOnRecordCallback(this);
-        mAudioRecorder.setSampleFormat(AudioFormat.ENCODING_PCM_16BIT);
+        mFFAudioRecorder = new FFAudioRecorder();
+        mFFAudioRecorder.setOnRecordCallback(this);
+        mFFAudioRecorder.setSampleFormat(AudioFormat.ENCODING_PCM_16BIT);
         mHandler = new Handler(Looper.myLooper());
         mVideoList = new ArrayList<>();
+        if (CameraApi.hasCamera2(mActivity)) {
+            mCameraController = new CameraXController(mActivity, ContextCompat.getMainExecutor(activity));
+        } else {
+            mCameraController = new CameraController(mActivity);
+        }
+        mCameraController.setPreviewCallback(this);
+        mCameraController.setOnFrameAvailableListener(this);
+        mCameraController.setOnSurfaceTextureListener(this);
     }
 
     /**
@@ -81,7 +99,7 @@ public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioReco
      */
     public void onPause() {
         Log.d(TAG, "onPause: ");
-        releaseCamera();
+        closeCamera();
     }
 
     /**
@@ -94,6 +112,13 @@ public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioReco
             mCommandEditor.release();
             mCommandEditor = null;
         }
+    }
+
+    /**
+     * 切换相机
+     */
+    public void switchCamera() {
+        mCameraController.switchCamera();
     }
 
     /**
@@ -126,6 +151,8 @@ public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioReco
         if (mMediaRecorder != null) {
             mMediaRecorder.release();
         }
+        mPreviewRotate = mCameraController.getOrientation();
+        Log.d(TAG, "startRecord: " + mPreviewRotate);
         mMediaRecorder = new FFMediaRecorder.RecordBuilder(generateOutputPath())
                 .setVideoParams(mRecordWidth, mRecordHeight, AVFormatter.PIXEL_FORMAT_NV21, 25)
 //                .setVideoFilter("lutyuv='u=128:v=128'") // 黑白滤镜
@@ -135,12 +162,12 @@ public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioReco
 //                .setVideoFilter("hue='h=60:s=-3'") // 调整色调
 //                .setVideoFilter("drawgrid=width=100:height=100:thickness=2:color=black@0.9") // 添加网格
 //                .setVideoFilter("vignette=PI/4")  // 光晕
-                .setRotate(mPreviewRotate)
-                .setAudioParams(mAudioRecorder.getSampleRate(), AVFormatter.getSampleFormat(mAudioRecorder.getSampleFormat()), mAudioRecorder.getChannels())
+                .setRotate(mCameraController.isFront() ? Math.abs(360 - mPreviewRotate) : mPreviewRotate)
+                .setAudioParams(mFFAudioRecorder.getSampleRate(), AVFormatter.getSampleFormat(mFFAudioRecorder.getSampleFormat()), mFFAudioRecorder.getChannels())
                 .create();
         mMediaRecorder.setRecordListener(this);
         mMediaRecorder.startRecord();
-        mAudioRecorder.start();
+        mFFAudioRecorder.start();
     }
 
     /**
@@ -156,7 +183,7 @@ public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioReco
         if (mMediaRecorder != null) {
             mMediaRecorder.stopRecord();
         }
-        mAudioRecorder.stop();
+        mFFAudioRecorder.stop();
     }
 
     /**
@@ -241,18 +268,9 @@ public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioReco
         }
     }
 
-    /**
-     * SurfaceTexture创建成功回调
-     * @param surfaceTexture
-     */
-    public void onBindSurfaceTexture(SurfaceTexture surfaceTexture) {
-        if (VERBOSE) {
-            Log.d(TAG, "onBindSurfaceTexture: ");
-        }
-        CameraEngine.getInstance().setPreviewSurface(surfaceTexture);
-        if (surfaceTexture != null) {
-            surfaceTexture.setOnFrameAvailableListener(this);
-        }
+    @Override
+    public void onSurfaceTexturePrepared(@NonNull SurfaceTexture surfaceTexture) {
+        mFragment.bindSurfaceTexture(surfaceTexture);
     }
 
     @Override
@@ -261,9 +279,11 @@ public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioReco
     }
 
     @Override
-    public void onPreviewFrame(byte[] data, Camera camera) {
+    public void onPreviewFrame(byte[] data) {
         if (mMediaRecorder != null && mIsRecording) {
-            mHandler.post(() -> mMediaRecorder.recordVideoFrame(data, data.length, mRecordWidth, mRecordHeight, AVFormatter.PIXEL_FORMAT_NV21));
+            mHandler.post(() -> mMediaRecorder.recordVideoFrame(data, data.length,
+                    mRecordWidth, mRecordHeight,
+                    AVFormatter.PIXEL_FORMAT_NV21));
         }
     }
 
@@ -291,13 +311,8 @@ public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioReco
      * 打开相机
      */
     private void openCamera() {
-        releaseCamera();
-        CameraParam.getInstance().setBackCamera(true);
-        CameraEngine.getInstance().openCamera(mFragment.getActivity());
+        mCameraController.openCamera();
         calculateImageSize();
-        CameraEngine.getInstance().setPreviewCallback(this);
-        CameraEngine.getInstance().startPreview();
-        Log.d(TAG, "openCamera: ");
     }
 
     /**
@@ -307,16 +322,16 @@ public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioReco
         int width;
         int height;
 
-        mPreviewRotate = CameraParam.getInstance().orientation;
-        mRecordWidth = CameraParam.getInstance().previewWidth;
-        mRecordHeight = CameraParam.getInstance().previewHeight;
+        mPreviewRotate = mCameraController.getOrientation();
+        mRecordWidth = mCameraController.getPreviewWidth();
+        mRecordHeight = mCameraController.getPreviewHeight();
 
-        if (CameraParam.getInstance().orientation == 90 || CameraParam.getInstance().orientation == 270) {
-            width = CameraParam.getInstance().previewHeight;
-            height = CameraParam.getInstance().previewWidth;
+        if (mPreviewRotate == 90 || mPreviewRotate == 270) {
+            width = mRecordHeight;
+            height = mRecordWidth;
         } else {
-            width = CameraParam.getInstance().previewWidth;
-            height = CameraParam.getInstance().previewHeight;
+            width = mRecordWidth;
+            height = mRecordHeight;
         }
 
         mFragment.updateTextureSize(width, height);
@@ -325,10 +340,10 @@ public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioReco
     /**
      * 释放资源
      */
-    private void releaseCamera() {
-        CameraEngine.getInstance().releaseCamera();
+    private void closeCamera() {
+        mCameraController.closeCamera();
         if (VERBOSE) {
-            Log.d(TAG, "releaseCamera: ");
+            Log.d(TAG, "closeCamera: ");
         }
     }
 
@@ -385,7 +400,7 @@ public class FFMediaRecordPresenter implements Camera.PreviewCallback, AudioReco
      * 获取录制视频的段数
      * @return
      */
-    public int getRecordVideos() {
+    public int getRecordVideoSize() {
         return mVideoList.size();
     }
 

@@ -3,12 +3,33 @@ package com.cgfay.camera.loader;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import android.widget.ImageView;
 
 /**
  * 加载图片
  */
 public interface MediaLoader {
+
+    /**
+     * 加载缩略图
+     * @param context
+     * @param imageView
+     * @param path
+     * @param placeholder
+     */
+    void loadThumbnail(@NonNull Context context, ImageView imageView, String path, @DrawableRes int placeholder, int radius);
+
+    /**
+     * 加载缩略图
+     * @param context
+     * @param imageView
+     * @param path
+     * @param placeholder
+     */
+    void loadThumbnail(@NonNull Context context, ImageView imageView, String path, @DrawableRes int placeholder);
 
     /**
      * 加载缩略图

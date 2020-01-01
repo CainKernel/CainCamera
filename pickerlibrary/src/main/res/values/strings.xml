@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">MediaLibrary</string>
+
+    <string name="album_all">所有照片</string>
+    <string name="media_empty">没有%1$s</string>
+    <string name="preview_btn_edit">编辑</string>
+    <string name="video_single_picker">单段视频</string>
+    <string name="video_multi_picker">多段视频</string>
+
+</resources>

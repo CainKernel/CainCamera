@@ -3,7 +3,7 @@ package com.cgfay.filter.recorder;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.cgfay.filter.gles.EglCore;
@@ -64,7 +64,7 @@ public final class VideoRecorder implements Runnable, VideoEncoder.OnEncodingLis
      * 设置录制监听器
      * @param listener
      */
-    public void setOnRecordListner(OnRecordListener listener) {
+    public void setOnRecordListener(OnRecordListener listener) {
         mRecordListener = listener;
     }
 

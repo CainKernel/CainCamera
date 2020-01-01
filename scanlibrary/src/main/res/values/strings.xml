@@ -1,8 +1,0 @@
-<resources>
-    <string name="app_name">MediaLibrary</string>
-
-    <string name="album_name_all">系统相册</string>
-    <string name="album_empty">没有图片/视频</string>
-    <string name="preview_btn_edit">编辑</string>
-
-</resources>

@@ -1,49 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:layout_gravity="bottom">
 
-    <!-- 类型选择 -->
+    <!-- 标题栏 -->
     <LinearLayout
-        android:id="@+id/layout_bottom"
+        android:id="@+id/layout_sticker_title"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:minHeight="@dimen/dp200"
-        android:gravity="bottom"
-        android:layout_gravity="bottom">
+        android:layout_height="@dimen/dp50"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_effect_type">
 
-        <!-- 标题栏 -->
-        <LinearLayout
-            android:id="@+id/layout_sticker_title"
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/iv_resource_none"
+            android:layout_width="@dimen/dp40"
             android:layout_height="@dimen/dp40"
-            android:orientation="horizontal"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:background="@color/effectEditBackground">
+            android:layout_marginStart="@dimen/dp10"
+            android:layout_marginEnd="@dimen/dp10"
+            android:background="@drawable/ic_preview_none"/>
 
-        </LinearLayout>
-
-        <!-- 分割线 -->
-        <View
+        <!-- 资源类型 -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tl_resource_type"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/white"/>
+            android:layout_height="match_parent"
+            app:tabMode="scrollable"
+            app:tabGravity="center"
+            app:tabTextColor="@android:color/darker_gray"
+            app:tabSelectedTextColor="@color/white"
+            app:tabIndicatorColor="@color/white"
+            app:tabIndicatorHeight="4dp"
+            app:tabIndicatorFullWidth="false"/>
 
-        <!-- 内容栏 -->
-        <LinearLayout
-            android:id="@+id/layout_sticker_content"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp160"
-            android:orientation="vertical"
-            android:layout_gravity="center_horizontal"
-            android:gravity="top"
-            android:background="@color/effectEditBackground">
-
-        </LinearLayout>
     </LinearLayout>
+
+    <!-- 内容栏 -->
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/vp_resource"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp200"
+        android:orientation="vertical"
+        android:layout_gravity="center_horizontal"
+        android:background="@color/effect_content_background">
+
+    </androidx.viewpager.widget.ViewPager>
 
 </LinearLayout>

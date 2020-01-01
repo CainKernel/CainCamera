@@ -25,7 +25,7 @@
 #define LOGW(format, ...) {}
 #define LOGV(format, ...) {}
 
-#endif
+#endif /* defined(__ANDROID__) */
 
 #include <cstdint>
 
@@ -65,6 +65,8 @@ extern "C" {
 #ifdef __cplusplus
 };
 #endif
+
+#include <string>
 
 #define AUDIO_MIN_BUFFER_SIZE 512
 
