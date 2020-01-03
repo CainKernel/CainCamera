@@ -12,9 +12,8 @@
         android:id="@+id/item_category_name"
         android:layout_width="@dimen/effect_category_size"
         android:layout_height="@dimen/effect_category_height"
-        android:layout_marginTop="@dimen/dp10"
-        android:layout_marginBottom="@dimen/dp10"
-        android:layout_gravity="bottom|center_horizontal"
+        android:layout_gravity="center"
+        android:textSize="@dimen/dp16"
         android:textColor="@android:color/white"
         android:gravity="center"
         android:textAlignment="center" />

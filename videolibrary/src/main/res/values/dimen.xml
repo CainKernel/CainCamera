@@ -5,6 +5,6 @@
     <dimen name="effect_item_size">50dp</dimen>
     <dimen name="effect_item_text_width">60dp</dimen>
     <dimen name="effect_category_size">100dp</dimen>
-    <dimen name="effect_category_height">30dp</dimen>
+    <dimen name="effect_category_height">60dp</dimen>
 
 </resources>

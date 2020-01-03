@@ -7,6 +7,7 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -36,6 +37,7 @@ import com.cgfay.uitls.fragment.BackPressedDialogFragment;
 import com.cgfay.uitls.utils.DensityUtils;
 import com.cgfay.uitls.utils.FileUtils;
 import com.cgfay.uitls.utils.StringUtils;
+import com.cgfay.uitls.widget.RoundOutlineProvider;
 import com.cgfay.video.R;
 import com.cgfay.video.adapter.VideoEffectAdapter;
 import com.cgfay.video.adapter.VideoEffectCategoryAdapter;
@@ -83,11 +85,11 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     private VideoEffectCategoryAdapter mEffectCategoryAdapter; // 特效目录列表适配器
 
     // 顶部控制栏
-    private RelativeLayout mLayoutTop;
+    private View mLayoutTop;
     // 顶部子控制栏
     private RelativeLayout mLayoutSubTop;
     // 底部控制栏
-    private RelativeLayout mLayoutBottom;
+    private View mLayoutBottom;
     // 底部子控制栏
     private FrameLayout mLayoutSubBottom;
 
@@ -155,6 +157,10 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         mVideoPlayerView.setOnClickListener(this);
         mIvVideoPlay = mContentView.findViewById(R.id.iv_video_play);
         mIvVideoPlay.setOnClickListener(this);
+        if (Build.VERSION.SDK_INT >= 21) {
+            mVideoPlayerView.setOutlineProvider(new RoundOutlineProvider(DensityUtils.dp2px(mActivity, 7.5f)));
+            mVideoPlayerView.setClipToOutline(true);
+        }
 
         // 特效控制栏
         mLayoutEffect = mContentView.findViewById(R.id.layout_effect);
@@ -188,8 +194,6 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         mLayoutTop = mContentView.findViewById(R.id.layout_top);
         mContentView.findViewById(R.id.btn_edit_back).setOnClickListener(this);
         mContentView.findViewById(R.id.btn_select_music).setOnClickListener(this);
-        mContentView.findViewById(R.id.btn_change_voice).setOnClickListener(this);
-        mContentView.findViewById(R.id.btn_cut_music).setOnClickListener(this);
 
         // 顶部子控制栏
         mLayoutSubTop = mContentView.findViewById(R.id.layout_sub_top);
@@ -199,7 +203,6 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         // 底部控制栏
         mLayoutBottom = mContentView.findViewById(R.id.layout_bottom);
         mContentView.findViewById(R.id.btn_edit_effect).setOnClickListener(this);
-        mContentView.findViewById(R.id.btn_edit_cover).setOnClickListener(this);
         mContentView.findViewById(R.id.btn_edit_filter).setOnClickListener(this);
         mContentView.findViewById(R.id.btn_edit_stickers).setOnClickListener(this);
         mContentView.findViewById(R.id.btn_edit_next).setOnClickListener(this);
@@ -297,18 +300,12 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             onBackPressed();
         } else if (id == R.id.btn_select_music) {
             selectMusic();
-        } else if (id == R.id.btn_change_voice) {
-            showVolumeChangeLayout(true);
-        } else if (id == R.id.btn_cut_music) {
-            showCutMusicLayout(true);
         } else if (id == R.id.btn_sub_cancel) {
             subChangeCancel();
         } else if (id == R.id.btn_sub_save) {
             subChangeSave();
         } else if (id == R.id.btn_edit_effect) {
             showChangeEffectLayout(true);
-        } else if (id == R.id.btn_edit_cover) {
-            showSelectCoverLayout(true);
         } else if (id == R.id.btn_edit_filter) {
             showSelectFilterLayout(true);
         } else if (id == R.id.btn_edit_stickers) {
@@ -506,18 +503,6 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     }
 
     /**
-     * 显示选择封面页面
-     * @param showSubView
-     */
-    private void showSelectCoverLayout(boolean showSubView) {
-        if (showSubView) {
-
-        } else {
-            resetBottomView();
-        }
-    }
-
-    /**
      * 显示选择滤镜页面
      * @param showSubView
      */
@@ -698,16 +683,16 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
                 });
             }
         });
-        mCainMediaPlayer.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener() {
-            @Override
-            public void onVideoSizeChanged(IMediaPlayer mediaPlayer, int width, int height) {
-                if (mediaPlayer.getRotate() % 180 != 0) {
-                    mVideoPlayerView.setVideoSize(height, width);
-                } else {
-                    mVideoPlayerView.setVideoSize(width, height);
-                }
-            }
-        });
+//        mCainMediaPlayer.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener() {
+//            @Override
+//            public void onVideoSizeChanged(IMediaPlayer mediaPlayer, int width, int height) {
+//                if (mediaPlayer.getRotate() % 180 != 0) {
+//                    mVideoPlayerView.setVideoSize(height, width);
+//                } else {
+//                    mVideoPlayerView.setVideoSize(width, height);
+//                }
+//            }
+//        });
         mCainMediaPlayer.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(IMediaPlayer mp) {

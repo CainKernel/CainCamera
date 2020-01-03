@@ -27,7 +27,10 @@ public class VideoParams {
      * 29.4  * 1000000 bps：HD DVD质量
      * 40 * 1000000 bps：蓝光光碟质量（使用MPEG2、H.264或VC-1压缩）
      */
-    public static final int BIT_RATE = 15 * 1000000;
+//    public static final int BIT_RATE = 15 * 1000000;
+    // 与抖音相同的视频比特率
+    public static final int BIT_RATE = 6693560; // 1280 * 720
+    public static final int BIT_RATE_LOW = 3921332; // 576 * 1024
 
     private int mVideoWidth;
     private int mVideoHeight;
@@ -60,6 +63,9 @@ public class VideoParams {
     public VideoParams setVideoSize(int width, int height) {
         this.mVideoWidth = width;
         this.mVideoHeight = height;
+        if (mVideoWidth * mVideoHeight < 1280 * 720) {
+            mBitRate = BIT_RATE_LOW;
+        }
         return this;
     }
 

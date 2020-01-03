@@ -50,19 +50,16 @@ public class VideoEffectCategoryAdapter extends RecyclerView.Adapter<VideoEffect
         } else {
             holder.filterName.setTextColor(mContext.getResources().getColor(R.color.video_edit_effect_category_text_normal));
         }
-        holder.filterRoot.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mSelected == position) {
-                    return;
-                }
-                int lastSelected = mSelected;
-                mSelected = position;
-                notifyItemChanged(lastSelected, 0);
-                notifyItemChanged(position, 0);
-                if (mEffectCategoryChangeListener != null) {
-                    mEffectCategoryChangeListener.onCategoryChange(mCategoryList.get(position));
-                }
+        holder.filterRoot.setOnClickListener(v -> {
+            if (mSelected == position) {
+                return;
+            }
+            int lastSelected = mSelected;
+            mSelected = position;
+            notifyItemChanged(lastSelected, 0);
+            notifyItemChanged(position, 0);
+            if (mEffectCategoryChangeListener != null) {
+                mEffectCategoryChangeListener.onCategoryChange(mCategoryList.get(position));
             }
         });
     }

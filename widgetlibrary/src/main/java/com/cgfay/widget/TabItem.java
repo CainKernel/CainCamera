@@ -10,7 +10,7 @@ import com.cgfay.design.R;
 
 
 /**
- * @author erenhuang
+ * @author CainHuang
  * 2019-09-28
  */
 public class TabItem extends View {

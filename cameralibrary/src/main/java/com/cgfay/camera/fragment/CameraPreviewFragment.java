@@ -761,6 +761,9 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
                 mTabIndicator.setVisibility(View.VISIBLE);
             }
             resetDeleteButton();
+            if (mBtnRecord != null) {
+                mBtnRecord.reset();
+            }
         });
     }
 

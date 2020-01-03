@@ -16,11 +16,11 @@
 
     <!-- 编辑页面 -->
     <string name="video_edit_back_press">返回上一步会丢失当前效果，是否返回</string>
-    <string name="video_edit_select_music">选音乐</string>
+    <string name="video_edit_select_music">选配乐</string>
     <string name="video_edit_voice">声音</string>
     <string name="video_edit_cut_music">剪音乐</string>
     <string name="video_edit_effect">特效</string>
-    <string name="video_edit_cover">选封面</string>
+    <string name="video_edit_text">文字</string>
     <string name="video_edit_filter">滤镜</string>
     <string name="video_edit_stickers">贴纸</string>
     <string name="video_edit_next">下一步</string>

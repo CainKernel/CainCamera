@@ -8,7 +8,7 @@ import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 
 /**
- * @author erenhuang
+ * @author CainHuang
  * 2019-09-28
  */
 final class AnimationUtils {

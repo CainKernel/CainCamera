@@ -336,8 +336,12 @@ public class CameraRenderer extends Thread {
         mDisplaySurface.makeCurrent();
 
         // 更新纹理
-        final SurfaceTexture surfaceTexture = mWeakSurfaceTexture.get();
-        updateSurfaceTexture(surfaceTexture);
+        long timeStamp = 0;
+        synchronized (this) {
+            final SurfaceTexture surfaceTexture = mWeakSurfaceTexture.get();
+            updateSurfaceTexture(surfaceTexture);
+            timeStamp = surfaceTexture.getTimestamp();
+        }
 
         // 如果不存在外部输入纹理，则直接返回，不做处理
         if (mInputTexture == OpenGLUtils.GL_NOT_TEXTURE) {
@@ -358,7 +362,7 @@ public class CameraRenderer extends Thread {
 
         // 录制视频
         if (mWeakPresenter.get() != null) {
-            mWeakPresenter.get().onRecordFrameAvailable(mCurrentTexture, surfaceTexture.getTimestamp());
+            mWeakPresenter.get().onRecordFrameAvailable(mCurrentTexture, timeStamp);
         }
 
         // 是否绘制人脸关键点
@@ -377,18 +381,16 @@ public class CameraRenderer extends Thread {
      */
     private void updateSurfaceTexture(@NonNull SurfaceTexture surfaceTexture) {
         // 绑定到当前的输入纹理
-        synchronized (this) {
-            if (mNeedToAttach) {
-                if (mInputTexture != OpenGLUtils.GL_NOT_TEXTURE) {
-                    OpenGLUtils.deleteTexture(mInputTexture);
-                }
-                mInputTexture = OpenGLUtils.createOESTexture();
-                surfaceTexture.attachToGLContext(mInputTexture);
-                mNeedToAttach = false;
+        if (mNeedToAttach) {
+            if (mInputTexture != OpenGLUtils.GL_NOT_TEXTURE) {
+                OpenGLUtils.deleteTexture(mInputTexture);
             }
-            surfaceTexture.updateTexImage();
-            surfaceTexture.getTransformMatrix(mMatrix);
+            mInputTexture = OpenGLUtils.createOESTexture();
+            surfaceTexture.attachToGLContext(mInputTexture);
+            mNeedToAttach = false;
         }
+        surfaceTexture.updateTexImage();
+        surfaceTexture.getTransformMatrix(mMatrix);
     }
 
     /**

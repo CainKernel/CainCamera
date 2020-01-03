@@ -413,6 +413,9 @@ public final class RenderManager {
             textureCoord = textureVertices;
         }
         // 更新VertexBuffer 和 TextureBuffer
+        if (mDisplayVertexBuffer == null || mDisplayTextureBuffer == null) {
+            initBuffers();
+        }
         mDisplayVertexBuffer.clear();
         mDisplayVertexBuffer.put(vertexCoord).position(0);
         mDisplayTextureBuffer.clear();

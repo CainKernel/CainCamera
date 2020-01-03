@@ -4,9 +4,11 @@ import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
-import androidx.annotation.NonNull;
+import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
+
+import androidx.annotation.NonNull;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -19,7 +21,7 @@ import java.nio.ByteBuffer;
 final class VideoEncoder {
 
     private static final String TAG = "VideoEncoder";
-    private static final boolean VERBOSE = false;
+    private static final boolean VERBOSE = true;
 
     private Surface mInputSurface;
     private MediaMuxer mMediaMuxer;
@@ -31,6 +33,8 @@ final class VideoEncoder {
     private OnEncodingListener mRecordingListener;
     // 录制起始时间戳
     private long mStartTimeStamp;
+    // 记录上一个时间戳
+    private long mLastTimeStamp;
     // 录制时长
     private long mDuration;
 
@@ -53,6 +57,30 @@ final class VideoEncoder {
         format.setInteger(MediaFormat.KEY_BIT_RATE, params.getBitRate());
         format.setInteger(MediaFormat.KEY_FRAME_RATE, VideoParams.FRAME_RATE);
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, VideoParams.I_FRAME_INTERVAL);
+        if (Build.VERSION.SDK_INT >= 21) {
+            int profile = 0;
+            int level = 0;
+            if (VideoParams.MIME_TYPE.equals("video/avc")) {
+                profile = MediaCodecInfo.CodecProfileLevel.AVCProfileHigh;
+                if (videoWidth * videoHeight >= 1920 * 1080) {
+                    level = MediaCodecInfo.CodecProfileLevel.AVCLevel4;
+                } else {
+                    level = MediaCodecInfo.CodecProfileLevel.AVCLevel31;
+                }
+            } else if (VideoParams.MIME_TYPE.equals("video/hevc")) {
+                profile = MediaCodecInfo.CodecProfileLevel.HEVCProfileMain;
+                if (videoWidth * videoHeight >= 1920 * 1080) {
+                    level = MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel4;
+                } else {
+                    level = MediaCodecInfo.CodecProfileLevel.HEVCHighTierLevel31;
+                }
+            }
+            format.setInteger(MediaFormat.KEY_PROFILE, profile);
+            // API 23以后可以设置AVC的编码level，低于23设置了但不生效
+//            if (Build.VERSION.SDK_INT >= 23) {
+                format.setInteger(MediaFormat.KEY_LEVEL, level);
+//            }
+        }
         if (VERBOSE) {
             Log.d(TAG, "format: " + format);
         }
@@ -157,6 +185,9 @@ final class VideoEncoder {
                     }
 
                     // 计算录制时钟
+                    if (mLastTimeStamp > 0 && mBufferInfo.presentationTimeUs < mLastTimeStamp) {
+                        mBufferInfo.presentationTimeUs = mLastTimeStamp + 10 * 1000;
+                    }
                     calculateTimeUs(mBufferInfo);
                     // adjust the ByteBuffer values to match BufferInfo (not needed?)
                     encodedData.position(mBufferInfo.offset);
@@ -196,6 +227,7 @@ final class VideoEncoder {
      * @param info
      */
     private void calculateTimeUs(MediaCodec.BufferInfo info) {
+        mLastTimeStamp = info.presentationTimeUs;
         if (mStartTimeStamp == 0) {
             mStartTimeStamp = info.presentationTimeUs;
         } else {
