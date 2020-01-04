@@ -228,6 +228,9 @@ public class FFMediaRecordFragment extends Fragment implements View.OnClickListe
             if (mBtnSwitch != null) {
                 mBtnSwitch.setVisibility(View.VISIBLE);
             }
+            if (mRecordButton != null) {
+                mRecordButton.reset();
+            }
         });
     }
 

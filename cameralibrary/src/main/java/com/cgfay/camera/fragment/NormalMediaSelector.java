@@ -7,8 +7,10 @@ import androidx.annotation.NonNull;
 import com.cgfay.image.activity.ImageEditActivity;
 import com.cgfay.picker.model.MediaData;
 import com.cgfay.picker.selector.OnMediaSelector;
+import com.cgfay.video.activity.MultiVideoActivity;
 import com.cgfay.video.activity.VideoCutActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,14 +20,28 @@ public class NormalMediaSelector implements OnMediaSelector {
 
     @Override
     public void onMediaSelect(@NonNull Context context, @NonNull List<MediaData> mediaDataList) {
-        MediaData mediaData = mediaDataList.get(0);
-        if (mediaData.isVideo()) {
-            Intent intent = new Intent(context, VideoCutActivity.class);
-            intent.putExtra(VideoCutActivity.PATH, mediaData.getPath());
-            context.startActivity(intent);
+        if (mediaDataList.size() <= 0) {
+            return;
+        }
+        boolean isVideo = false;
+        ArrayList<String> pathList = new ArrayList<>();
+        for (MediaData mediaData : mediaDataList) {
+            isVideo |= mediaData.isVideo();
+            pathList.add(mediaData.getPath());
+        }
+        if (isVideo) {
+            if (pathList.size() > 1) {
+                Intent intent = new Intent(context, MultiVideoActivity.class);
+                intent.putExtra(MultiVideoActivity.PATH, pathList);
+                context.startActivity(intent);
+            } else {
+                Intent intent = new Intent(context, VideoCutActivity.class);
+                intent.putExtra(VideoCutActivity.PATH, pathList.get(0));
+                context.startActivity(intent);
+            }
         } else {
             Intent intent = new Intent(context, ImageEditActivity.class);
-            intent.putExtra(ImageEditActivity.IMAGE_PATH, mediaData.getPath());
+            intent.putExtra(ImageEditActivity.IMAGE_PATH, pathList.get(0));
             context.startActivity(intent);
         }
     }

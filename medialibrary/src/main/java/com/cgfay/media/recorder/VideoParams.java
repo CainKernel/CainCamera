@@ -1,4 +1,4 @@
-package com.cgfay.filter.recorder;
+package com.cgfay.media.recorder;
 
 import android.opengl.EGLContext;
 

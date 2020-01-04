@@ -1,4 +1,4 @@
-package com.cgfay.filter.recorder;
+package com.cgfay.media.recorder;
 
 /**
  * 录制一段视频/音频的信息

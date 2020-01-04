@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment;
 import com.cgfay.filter.glfilter.color.bean.DynamicColor;
 import com.cgfay.filter.glfilter.makeup.bean.DynamicMakeup;
 import com.cgfay.filter.glfilter.resource.bean.ResourceData;
-import com.cgfay.filter.recorder.SpeedMode;
+import com.cgfay.media.recorder.SpeedMode;
 
 /**
  * 预览画面的presenter

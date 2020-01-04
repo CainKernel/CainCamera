@@ -5,17 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 
 import android.opengl.EGLContext;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.cgfay.camera.activity.CameraSettingActivity;
-import com.cgfay.camera.camera.CameraApi;
 import com.cgfay.camera.camera.CameraController;
 import com.cgfay.camera.camera.CameraParam;
-import com.cgfay.camera.camera.CameraXController;
 import com.cgfay.camera.camera.ICameraController;
 import com.cgfay.camera.camera.OnFrameAvailableListener;
 import com.cgfay.camera.camera.OnSurfaceTextureListener;
@@ -36,14 +33,14 @@ import com.cgfay.filter.glfilter.resource.ResourceJsonCodec;
 import com.cgfay.filter.glfilter.resource.bean.ResourceData;
 import com.cgfay.filter.glfilter.resource.bean.ResourceType;
 import com.cgfay.filter.glfilter.stickers.bean.DynamicSticker;
-import com.cgfay.filter.recorder.AudioParams;
-import com.cgfay.filter.recorder.HWMediaRecorder;
-import com.cgfay.filter.recorder.MediaInfo;
-import com.cgfay.filter.recorder.MediaType;
-import com.cgfay.filter.recorder.OnRecordStateListener;
-import com.cgfay.filter.recorder.RecordInfo;
-import com.cgfay.filter.recorder.SpeedMode;
-import com.cgfay.filter.recorder.VideoParams;
+import com.cgfay.media.recorder.AudioParams;
+import com.cgfay.media.recorder.HWMediaRecorder;
+import com.cgfay.media.recorder.MediaInfo;
+import com.cgfay.media.recorder.MediaType;
+import com.cgfay.media.recorder.OnRecordStateListener;
+import com.cgfay.media.recorder.RecordInfo;
+import com.cgfay.media.recorder.SpeedMode;
+import com.cgfay.media.recorder.VideoParams;
 import com.cgfay.landmark.LandmarkEngine;
 import com.cgfay.media.CainCommandEditor;
 import com.cgfay.uitls.utils.BitmapUtils;
@@ -120,7 +117,6 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
         // 视频录制器
         mVideoParams = new VideoParams();
         mAudioParams = new AudioParams();
-        mHWMediaRecorder = new HWMediaRecorder(this);
 
         // 命令行编辑器
         mCommandEditor = new CainCommandEditor();
@@ -191,6 +187,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
         LandmarkEngine.getInstance().clearAll();
         if (mHWMediaRecorder != null) {
             mHWMediaRecorder.release();
+            mHWMediaRecorder = null;
         }
         if (mCommandEditor != null) {
             mCommandEditor.release();
@@ -212,6 +209,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
     @Override
     public void onBindSharedContext(EGLContext context) {
         mVideoParams.setEglContext(context);
+        Log.d(TAG, "onBindSharedContext: ");
     }
 
     @Override
@@ -384,6 +382,9 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
         if (mOperateStarted) {
             return;
         }
+        if (mHWMediaRecorder == null) {
+            mHWMediaRecorder = new HWMediaRecorder(this);
+        }
         mHWMediaRecorder.startRecord(mVideoParams, mAudioParams);
         mOperateStarted = true;
     }
@@ -394,7 +395,9 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
             return;
         }
         mOperateStarted = false;
-        mHWMediaRecorder.stopRecord();
+        if (mHWMediaRecorder != null) {
+            mHWMediaRecorder.stopRecord();
+        }
     }
 
     @Override
@@ -534,6 +537,9 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
             mVideoInfo = info;
             mCurrentProgress = info.getDuration() * 1.0f / mVideoParams.getMaxDuration();
         }
+        if (mHWMediaRecorder == null) {
+            return;
+        }
         if (mHWMediaRecorder.enableAudio() && (mAudioInfo == null || mVideoInfo == null)) {
             return;
         }
@@ -573,6 +579,10 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
                 getTarget().resetAllLayout();
                 mCurrentProgress = 0;
             }
+        }
+        if (mHWMediaRecorder != null) {
+            mHWMediaRecorder.release();
+            mHWMediaRecorder = null;
         }
     }
 

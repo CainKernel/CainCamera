@@ -85,12 +85,13 @@ public class FFRecordRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        Log.d(TAG, "onDrawFrame: ");
         if (mWeakSurfaceTexture == null || mWeakSurfaceTexture.get() == null) {
             return;
         }
-        Log.d(TAG, "onDrawFrame: 01");
-        updateSurfaceTexture(mWeakSurfaceTexture.get());
+        synchronized (this) {
+            final SurfaceTexture texture = mWeakSurfaceTexture.get();
+            updateSurfaceTexture(texture);
+        }
         GLES30.glClearColor(0,0, 0, 0);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
         if (mInputFilter == null || mImageFilter == null) {
@@ -110,17 +111,18 @@ public class FFRecordRenderer implements GLSurfaceView.Renderer {
      */
     private void updateSurfaceTexture(@NonNull SurfaceTexture surfaceTexture) {
         // 绑定到当前的输入纹理
-        synchronized (this) {
-            if (mNeedToAttach) {
-                if (mInputTexture != OpenGLUtils.GL_NOT_TEXTURE) {
-                    OpenGLUtils.deleteTexture(mInputTexture);
-                }
-                mInputTexture = OpenGLUtils.createOESTexture();
-                surfaceTexture.attachToGLContext(mInputTexture);
-                mNeedToAttach = false;
+        if (mNeedToAttach) {
+            if (mInputTexture != OpenGLUtils.GL_NOT_TEXTURE) {
+                OpenGLUtils.deleteTexture(mInputTexture);
             }
-            surfaceTexture.updateTexImage();
-            surfaceTexture.getTransformMatrix(mMatrix);
+            mInputTexture = OpenGLUtils.createOESTexture();
+            surfaceTexture.attachToGLContext(mInputTexture);
+            mNeedToAttach = false;
+        }
+        surfaceTexture.updateTexImage();
+        surfaceTexture.getTransformMatrix(mMatrix);
+        if (VERBOSE) {
+            Log.d(TAG, "updateSurfaceTexture: ");
         }
     }
 

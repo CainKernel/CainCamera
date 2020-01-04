@@ -90,8 +90,12 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
         }
 
         // 更新纹理
-        final SurfaceTexture surfaceTexture = mWeakSurfaceTexture.get();
-        updateSurfaceTexture(surfaceTexture);
+        long timeStamp = 0;
+        synchronized (this) {
+            final SurfaceTexture surfaceTexture = mWeakSurfaceTexture.get();
+            updateSurfaceTexture(surfaceTexture);
+            timeStamp = surfaceTexture.getTimestamp();
+        }
 
         GLES30.glClearColor(0,0, 0, 0);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
@@ -110,7 +114,7 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
         mImageFilter.drawFrame(currentTexture, mDisplayVertexBuffer, mDisplayTextureBuffer);
         // 录制视频
         if (mWeakPresenter.get() != null) {
-            mWeakPresenter.get().onRecordFrameAvailable(currentTexture, surfaceTexture.getTimestamp());
+            mWeakPresenter.get().onRecordFrameAvailable(currentTexture, timeStamp);
         }
     }
 
@@ -120,18 +124,16 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
      */
     private void updateSurfaceTexture(@NonNull SurfaceTexture surfaceTexture) {
         // 绑定到当前的输入纹理
-        synchronized (this) {
-            if (mNeedToAttach) {
-                if (mInputTexture != OpenGLUtils.GL_NOT_TEXTURE) {
-                    OpenGLUtils.deleteTexture(mInputTexture);
-                }
-                mInputTexture = OpenGLUtils.createOESTexture();
-                surfaceTexture.attachToGLContext(mInputTexture);
-                mNeedToAttach = false;
+        if (mNeedToAttach) {
+            if (mInputTexture != OpenGLUtils.GL_NOT_TEXTURE) {
+                OpenGLUtils.deleteTexture(mInputTexture);
             }
-            surfaceTexture.updateTexImage();
-            surfaceTexture.getTransformMatrix(mMatrix);
+            mInputTexture = OpenGLUtils.createOESTexture();
+            surfaceTexture.attachToGLContext(mInputTexture);
+            mNeedToAttach = false;
         }
+        surfaceTexture.updateTexImage();
+        surfaceTexture.getTransformMatrix(mMatrix);
     }
 
     /**

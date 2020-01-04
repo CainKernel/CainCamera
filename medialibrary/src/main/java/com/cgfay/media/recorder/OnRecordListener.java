@@ -1,4 +1,4 @@
-package com.cgfay.filter.recorder;
+package com.cgfay.media.recorder;
 
 /**
  * 录制监听器, MediaRecorder内部使用

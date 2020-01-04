@@ -25,7 +25,7 @@ import com.cgfay.camera.widget.RecordSpeedLevelBar;
 import com.cgfay.filter.glfilter.color.bean.DynamicColor;
 import com.cgfay.filter.glfilter.resource.FilterHelper;
 import com.cgfay.filter.glfilter.resource.ResourceJsonCodec;
-import com.cgfay.filter.recorder.SpeedMode;
+import com.cgfay.media.recorder.SpeedMode;
 import com.cgfay.uitls.utils.NotchUtils;
 import com.cgfay.uitls.utils.PermissionUtils;
 import com.cgfay.uitls.utils.StatusBarUtils;
@@ -198,6 +198,9 @@ public class SpeedRecordActivity extends AppCompatActivity implements View.OnCli
             }
             if (mBtnSwitch != null) {
                 mBtnSwitch.setVisibility(View.VISIBLE);
+            }
+            if (mRecordButton != null) {
+                mRecordButton.reset();
             }
         });
     }

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.opengl.EGLContext;
-import android.os.Build;
 import android.os.Environment;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -19,15 +18,15 @@ import com.cgfay.camera.camera.CameraXController;
 import com.cgfay.camera.camera.ICameraController;
 import com.cgfay.camera.camera.OnFrameAvailableListener;
 import com.cgfay.camera.camera.OnSurfaceTextureListener;
-import com.cgfay.filter.recorder.MediaInfo;
-import com.cgfay.filter.recorder.AudioParams;
-import com.cgfay.filter.recorder.HWMediaRecorder;
+import com.cgfay.media.recorder.MediaInfo;
+import com.cgfay.media.recorder.AudioParams;
+import com.cgfay.media.recorder.HWMediaRecorder;
 import com.cgfay.camera.utils.PathConstraints;
-import com.cgfay.filter.recorder.MediaType;
-import com.cgfay.filter.recorder.OnRecordStateListener;
-import com.cgfay.filter.recorder.RecordInfo;
-import com.cgfay.filter.recorder.SpeedMode;
-import com.cgfay.filter.recorder.VideoParams;
+import com.cgfay.media.recorder.MediaType;
+import com.cgfay.media.recorder.OnRecordStateListener;
+import com.cgfay.media.recorder.RecordInfo;
+import com.cgfay.media.recorder.SpeedMode;
+import com.cgfay.media.recorder.VideoParams;
 import com.cgfay.media.CainCommandEditor;
 import com.cgfay.uitls.utils.FileUtils;
 import com.cgfay.video.activity.VideoEditActivity;
@@ -251,6 +250,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
                 mCurrentProgress = 0;
             }
         }
+        mOperateStarted = false;
     }
 
     /**

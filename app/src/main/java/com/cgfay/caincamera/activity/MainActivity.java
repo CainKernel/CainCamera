@@ -12,6 +12,7 @@ import android.view.View;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.camera.PreviewEngine;
+import com.cgfay.camera.fragment.NormalMediaSelector;
 import com.cgfay.camera.model.AspectRatio;
 
 import com.cgfay.camera.listener.OnPreviewCaptureListener;
@@ -195,23 +196,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (mediaDataList.size() == 1) {
                 Intent intent = new Intent(context, MusicMergeActivity.class);
                 intent.putExtra(MusicMergeActivity.PATH, mediaDataList.get(0).getPath());
-                context.startActivity(intent);
-            }
-        }
-    }
-
-    private class NormalMediaSelector implements OnMediaSelector {
-
-        @Override
-        public void onMediaSelect(@NonNull Context context, @NonNull List<MediaData> mediaDataList) {
-            MediaData mediaData = mediaDataList.get(0);
-            if (mediaData.isVideo()) {
-                Intent intent = new Intent(context, VideoCutActivity.class);
-                intent.putExtra(VideoCutActivity.PATH, mediaData.getPath());
-                context.startActivity(intent);
-            } else {
-                Intent intent = new Intent(context, ImageEditActivity.class);
-                intent.putExtra(ImageEditActivity.IMAGE_PATH, mediaData.getPath());
                 context.startActivity(intent);
             }
         }

@@ -1,4 +1,4 @@
-package com.cgfay.filter.recorder;
+package com.cgfay.media.recorder;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -333,10 +333,10 @@ public final class VideoRecorder implements Runnable, VideoEncoder.OnEncodingLis
      * 计算时间戳
      * @return
      */
-    private long getPTS(long timestameNanos) {
+    private long getPTS(long timestampNanos) {
         SpeedMode mode = mVideoEncoder.getVideoParams().getSpeedMode();
         if (mode == SpeedMode.MODE_NORMAL) { // 正常录制的时候，使用SurfaceTexture传递过来的时间戳
-            return timestameNanos;
+            return timestampNanos;
         } else { // 倍速状态下，需要根据帧间间隔来算实际的时间戳
             long time = System.nanoTime();
             if (mFirstTime <= 0) {
