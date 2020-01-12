@@ -162,6 +162,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
     public void onResume() {
         super.onResume();
         openCamera();
+        mCameraParam.captureCallback = this;
         mCameraParam.fpsCallback = this;
     }
 
@@ -170,6 +171,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
         super.onPause();
         mCameraRenderer.onPause();
         closeCamera();
+        mCameraParam.captureCallback = null;
         mCameraParam.fpsCallback = null;
     }
 
