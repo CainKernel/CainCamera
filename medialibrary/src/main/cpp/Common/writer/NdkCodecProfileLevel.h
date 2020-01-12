@@ -137,6 +137,54 @@
 #define HEVCMainTierLevel62 0x1000000
 #define HEVCHighTierLevel62 0x2000000
 
+#ifndef COLOR_FormatYUV420Planar
+#define COLOR_FormatYUV420Planar 19
 #endif
+
+#ifndef COLOR_FormatYUV420SemiPlanar
+#define COLOR_FormatYUV420SemiPlanar 21
+#endif
+
+#ifndef COLOR_FormatSurface
+#define COLOR_FormatSurface 0x7F000789
+#endif
+
+/** MediaCodec key frame flag*/
+#ifndef BUFFER_FLAG_KEY_FRAME
+#define BUFFER_FLAG_KEY_FRAME 1
+#endif
+
+/** Constant quality mode */
+#define BITRATE_MODE_CQ 0
+/** Variable bitrate mode */
+#define BITRATE_MODE_VBR 1
+/** Constant bitrate mode */
+#define BITRATE_MODE_CBR 2
+
+#ifndef VIDEO_MIME_AVC
+#define VIDEO_MIME_AVC "video/avc"
+#endif
+
+#ifndef VIDEO_MIME_HEVC
+#define VIDEO_MIME_HEVC "video/hevc"
+#endif
+
+#ifndef AUDIO_MIME_TYPE
+#define AUDIO_MIME_TYPE "audio/mp4a-latm"
+#endif
+
+#ifndef VIDEO_ENCODE_TIMEOUT
+#define VIDEO_ENCODE_TIMEOUT 10000
+#endif
+
+#ifndef AUDIO_BUFFER_SIZE
+#define AUDIO_BUFFER_SIZE 8192
+#endif
+
+#ifndef AUDIO_BIT_RATE
+#define AUDIO_BIT_RATE 128000
+#endif
+
+#endif /*defined(__ANDROID__)*/
 
 #endif //MEDIACODECPROFILELEVEL_H

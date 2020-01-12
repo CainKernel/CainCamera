@@ -6,7 +6,12 @@
 #define AVMEDIAWRITER_H
 
 #include <map>
+#include <Resampler.h>
 #include "MediaWriter.h"
+#include "AVMediaMuxer.h"
+#include "AVAudioEncoder.h"
+#include "AVVideoEncoder.h"
+#include "../AVFormatter.h"
 
 /**
  * 媒体写入器
@@ -94,32 +99,22 @@ private:
     int mFrameRate;                 // 视频帧率
     AVPixelFormat mPixelFormat;     // 像素格式
     int64_t mMaxBitRate;            // 最大比特率
-    AVCodecID mVideoCodecID;        // 视频编码器id
     const char *mVideoEncodeName;   // 指定视频编码器名称
     bool mUseTimeStamp;             // 是否使用时间戳计算pts
     bool mHasVideo;                 // 是否存在视频流数据
 
     int mSampleRate;                // 采样率
     int mChannels;                  // 声道数
+    int mAudioBitRate;              // 音频比特率
     AVSampleFormat mSampleFormat;   // 采样格式
     const char *mAudioEncodeName;   // 指定音频编码器名称
-    AVCodecID mAudioCodecID;        // 音频编码器id
     bool mHasAudio;                 // 是否存在音频流数据
 
     // 编码上下文
-    AVFormatContext *pFormatCtx;    // 复用上下文
-    AVCodecContext *pVideoCodecCtx; // 视频编码器
-    AVCodecContext *pAudioCodecCtx; // 音频编码器
-    AVStream *pVideoStream;         // 视频流
-    AVStream *pAudioStream;         // 音频流
-
-
-    SwrContext *pSampleConvertCtx;  // 转码上下文
-    AVFrame *mSampleFrame;          // 音频缓冲帧
-    uint8_t **mSampleBuffer;        // 音频缓冲区
-    int mSampleSize;                // 采样大小
-    int mSamplePlanes;              // 每个采样点数量
-    int mNbSamples;                 // 采样数量
+    std::shared_ptr<AVMediaMuxer> mMediaMuxer;      // media muxer
+    std::shared_ptr<AVVideoEncoder> mVideoEncoder;  // video encoder
+    std::shared_ptr<AVAudioEncoder> mAudioEncoder;  // audio encoder
+    std::shared_ptr<Resampler> mResampler;          // audio resampler
 
     AVFrame *mImageFrame;           // 视频缓冲帧
     uint8_t *mImageBuffer;          // 视频缓冲区

@@ -106,7 +106,7 @@ void JNIOnRecordListener::onRecordStart() {
 }
 
 void JNIOnRecordListener::onRecording(float duration) {
-    LOGD("onRecording");
+    LOGD("JNIOnRecordListener onRecording: %f", duration);
     if (jmid_onRecording != nullptr) {
         JNIEnv *jniEnv;
         if (javaVM->AttachCurrentThread(&jniEnv, nullptr) != JNI_OK) {
@@ -166,6 +166,7 @@ Java_com_cgfay_media_recorder_FFMediaRecorder_nativeRelease(JNIEnv *env, jobject
     FFMediaRecorder *recorder = (FFMediaRecorder *)handle;
     if (recorder != nullptr) {
         recorder->release();
+        LOGD("release FFMediaRecorder");
         delete recorder;
     }
 }

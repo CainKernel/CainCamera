@@ -68,9 +68,27 @@ extern "C" {
 
 #include <string>
 
+#ifndef AUDIO_MIN_BUFFER_SIZE
 #define AUDIO_MIN_BUFFER_SIZE 512
+#endif
 
+#ifndef AUDIO_MAX_CALLBACKS_PER_SEC
 #define AUDIO_MAX_CALLBACKS_PER_SEC 30
+#endif
+
+#ifndef AUDIO_BIT_RATE
+#define AUDIO_BIT_RATE 128000
+#endif
+
+// 1280 * 720
+#ifndef VIDEO_BIT_RATE
+#define VIDEO_BIT_RATE 6693560
+#endif
+
+// 576 * 1024
+#ifndef VIDEO_BIT_RATE_LOW
+#define VIDEO_BIT_RATE_LOW 3921332
+#endif
 
 // 获取当前时钟(ms)
 inline uint64_t getCurrentTimeMs() {

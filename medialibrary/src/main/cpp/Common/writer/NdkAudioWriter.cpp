@@ -3,21 +3,29 @@
 //
 
 #include <memory.h>
-#include "MediaCodecAudioEncoder.h"
+#include "NdkAudioWriter.h"
 
-MediaCodecAudioEncoder::MediaCodecAudioEncoder(int bitrate, int sampleRate, int channelCount) {
+NdkAudioWriter::NdkAudioWriter(int bitrate, int sampleRate, int channelCount) {
     mBitrate = bitrate;
     mSampleRate = sampleRate;
     mChannelCount = channelCount;
     mOutputPath = nullptr;
-    mBufferSize = BUFFER_SIZE;
+    mBufferSize = AUDIO_BUFFER_SIZE;
+}
+
+/**
+ * 设置编码监听器
+ * @param listener
+ */
+void NdkAudioWriter::setOnEncodingListener(OnEncodingListener *listener) {
+
 }
 
 /**
  * 设置输出路径
  * @param path
  */
-void MediaCodecAudioEncoder::setOutputPath(const char *path) {
+void NdkAudioWriter::setOutputPath(const char *path) {
     mOutputPath = strdup(path);
 }
 
@@ -25,7 +33,7 @@ void MediaCodecAudioEncoder::setOutputPath(const char *path) {
  * 设置缓冲区大小
  * @param size
  */
-void MediaCodecAudioEncoder::setBufferSize(int size) {
+void NdkAudioWriter::setBufferSize(int size) {
     mBufferSize = size;
 }
 
@@ -33,20 +41,21 @@ void MediaCodecAudioEncoder::setBufferSize(int size) {
  * 准备编码器
  * @return
  */
-int MediaCodecAudioEncoder::prepare() {
+int NdkAudioWriter::prepare() {
     assert(mOutputPath != nullptr);
     int ret;
-    mMediaFormat = AMediaFormat_new();
-    AMediaFormat_setString(mMediaFormat, AMEDIAFORMAT_KEY_MIME, AUDIO_MIME_TYPE);
-    AMediaFormat_setInt32(mMediaFormat, AMEDIAFORMAT_KEY_SAMPLE_RATE, mSampleRate);
-    AMediaFormat_setInt32(mMediaFormat, AMEDIAFORMAT_KEY_CHANNEL_COUNT, mChannelCount);
-    AMediaFormat_setInt32(mMediaFormat, AMEDIAFORMAT_KEY_AAC_PROFILE, AACObjectLC);
-    AMediaFormat_setInt32(mMediaFormat, AMEDIAFORMAT_KEY_BIT_RATE, mBitrate);
-    AMediaFormat_setInt32(mMediaFormat, AMEDIAFORMAT_KEY_MAX_INPUT_SIZE, mBufferSize);
+    AMediaFormat *mediaFormat = AMediaFormat_new();
+    AMediaFormat_setString(mediaFormat, AMEDIAFORMAT_KEY_MIME, AUDIO_MIME_TYPE);
+    AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_SAMPLE_RATE, mSampleRate);
+    AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_CHANNEL_COUNT, mChannelCount);
+    AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_AAC_PROFILE, AACObjectLC);
+    AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_BIT_RATE, mBitrate);
+    AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_MAX_INPUT_SIZE, mBufferSize);
 
     mMediaCodec = AMediaCodec_createEncoderByType(AUDIO_MIME_TYPE);
     // 配置编码器
-    ret = AMediaCodec_configure(mMediaCodec, mMediaFormat, nullptr, nullptr, AMEDIACODEC_CONFIGURE_FLAG_ENCODE);
+    ret = AMediaCodec_configure(mMediaCodec, mediaFormat, nullptr, nullptr, AMEDIACODEC_CONFIGURE_FLAG_ENCODE);
+    AMediaFormat_delete(mediaFormat);
     if (ret != AMEDIA_OK) {
         LOGE("AMediaCodec_configure error: %d", ret);
         return ret;
@@ -66,11 +75,11 @@ int MediaCodecAudioEncoder::prepare() {
     }
 
     // 创建Muxer
+    int mFd;
     FILE *fp = fopen(mOutputPath, "wb");
     if (fp != nullptr) {
         mFd = fileno(fp);
     } else {
-        mFd = -1;
         LOGE("open file error: %s", mOutputPath);
         return -1;
     }
@@ -87,7 +96,7 @@ int MediaCodecAudioEncoder::prepare() {
  * 关闭编码器
  * @return
  */
-int MediaCodecAudioEncoder::closeEncoder() {
+int NdkAudioWriter::closeEncoder() {
     if (!mMediaCodec) {
         return 0;
     }
@@ -110,17 +119,7 @@ int MediaCodecAudioEncoder::closeEncoder() {
         return ret;
     }
     mMediaCodec = nullptr;
-}
-
-/**
- * 释放数据
- */
-void MediaCodecAudioEncoder::release() {
-    if (mMediaFormat != nullptr) {
-        AMediaFormat_delete(mMediaFormat);
-        mMediaFormat = nullptr;
-    }
-    closeEncoder();
+    // 关闭复用器
     if (mMediaMuxer != nullptr) {
         if (mMuxerStarted) {
             AMediaMuxer_stop(mMediaMuxer);
@@ -129,17 +128,25 @@ void MediaCodecAudioEncoder::release() {
         AMediaMuxer_delete(mMediaMuxer);
         mMediaMuxer = nullptr;
     }
+    return 0;
+}
+
+/**
+ * 释放数据
+ */
+void NdkAudioWriter::release() {
+    closeEncoder();
 }
 
 /**
  * 编码一帧数据
  * @param data
  */
-void MediaCodecAudioEncoder::encode(AVMediaData *data) {
+void NdkAudioWriter::encode(AVMediaData *data) {
     if (data->getType() != MediaAudio) {
         return;
     }
-    ssize_t inputIndex = AMediaCodec_dequeueInputBuffer(mMediaCodec, ENCODE_TIMEOUT);
+    ssize_t inputIndex = AMediaCodec_dequeueInputBuffer(mMediaCodec, -1);
     if (inputIndex >= 0) {
         size_t bufSize;
         uint8_t *buffer = AMediaCodec_getInputBuffer(mMediaCodec, inputIndex, &bufSize);
@@ -151,6 +158,7 @@ void MediaCodecAudioEncoder::encode(AVMediaData *data) {
             memcpy(buffer, data->sample, data->sample_size);
             AMediaCodec_queueInputBuffer(mMediaCodec, inputIndex, 0, data->sample_size, (uint64_t)mPresentationTimeUs, 0);
             mPresentationTimeUs = 1000000L * 1.0 * (mTotalBytesRead / mChannelCount / 2) / mSampleRate;
+            LOGD("encode pcm: presentationTimeUs: %f, s: %f", mPresentationTimeUs, (mPresentationTimeUs / 1000000.0));
         }
     }
 
@@ -169,11 +177,8 @@ void MediaCodecAudioEncoder::encode(AVMediaData *data) {
             }
         } else if (encodeStatus == AMEDIACODEC_INFO_OUTPUT_FORMAT_CHANGED) {
             assert(!mMuxerStarted);
-            if (mMediaFormat != nullptr) {
-                AMediaFormat_delete(mMediaFormat);
-            }
-            mMediaFormat = AMediaCodec_getOutputFormat(mMediaCodec);
-            mAudioTrackId = (int)AMediaMuxer_addTrack(mMediaMuxer, mMediaFormat);
+            AMediaFormat *mediaFormat = AMediaCodec_getOutputFormat(mMediaCodec);
+            mAudioTrackId = (int)AMediaMuxer_addTrack(mMediaMuxer, mediaFormat);
             AMediaMuxer_start(mMediaMuxer);
             mMuxerStarted = true;
         }

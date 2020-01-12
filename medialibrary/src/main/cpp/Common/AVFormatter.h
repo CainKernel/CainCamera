@@ -22,9 +22,10 @@ enum PixelFormat {
     PIXEL_FORMAT_YV12    = 2,
     PIXEL_FORMAT_NV12    = 3,
     PIXEL_FORMAT_YUV420P = 4,
-    PIXEL_FORMAT_ARGB    = 5,
-    PIXEL_FORMAT_ABGR    = 6,
-    PIXEL_FORMAT_RGBA    = 7,
+    PIXEL_FORMAT_YUV420SP = 5,
+    PIXEL_FORMAT_ARGB    = 6,
+    PIXEL_FORMAT_ABGR    = 7,
+    PIXEL_FORMAT_RGBA    = 8,
 };
 
 // 音频采样格式
@@ -238,7 +239,7 @@ inline AVSampleFormat getSampleFormat(SampleFormat format) {
 }
 
 /**
- * 将图像数据转成YUV420P格式
+ * 将图像数据转成YuvData对象
  * @param image
  * @param length
  * @param width
@@ -246,13 +247,54 @@ inline AVSampleFormat getSampleFormat(SampleFormat format) {
  * @param pixelFormat
  * @return
  */
-YuvData *convertToYuv420P(uint8_t *image, int length, int width, int height, int pixelFormat);
+YuvData* convertToYuvData(uint8_t *image, int length, int width, int height, int pixelFormat);
 
 /**
- * 将图像数据转成YUV420P格式
+ * 将图像数据转成YuvData对象
  * @param mediaData
  * @return
  */
-YuvData* convertToYuv420P(AVMediaData *mediaData);
+YuvData* convertToYuvData(AVMediaData *mediaData);
+
+/**
+ * 将AVFrame的数据转换成YuvData对象
+ * @param frame
+ * @return
+ */
+YuvData* convertToYuvData(AVFrame *frame);
+
+/**
+ * 将YuvData对象转换为AVMediaData
+ * @param mediaData
+ * @param yuvData
+ * @param width
+ * @param height
+ */
+void fillVideoData(AVMediaData *mediaData, YuvData *yuvData, int width, int height);
+
+/**
+ * NV12转YUV420P
+ */
+void NV12toYUV420Planar(uint8_t* input, int offset, uint8_t* output, int width, int height);
+
+/**
+ * NV21转YUV420P
+ */
+void NV21toYUV420Planar(uint8_t* input, int offset, uint8_t* output, int width, int height);
+
+/**
+ * YUV420P转YUV420SP
+ */
+void I420toYUV420SemiPlanar(uint8_t* input, int offset, uint8_t* output, int width, int height);
+
+/**
+ * YUV420P转NV21
+ */
+void I420toNV21(uint8_t* input, int offset, uint8_t* output, int width, int height);
+
+/**
+ * NV12转NV21
+ */
+void NV12toNV21(uint8_t* input, int offset, uint8_t* output, int width, int height);
 
 #endif //AVFORMATTER_H

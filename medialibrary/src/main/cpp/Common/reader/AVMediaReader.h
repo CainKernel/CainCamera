@@ -8,11 +8,14 @@
 #include <string>
 #include <map>
 #include "MediaReader.h"
+#include "AVMediaDemuxer.h"
+#include "AVAudioDecoder.h"
+#include "AVVideoDecoder.h"
 
 /**
  * 媒体读取器
  */
-class AVMediaReader : public MediaReader, Runnable {
+class AVMediaReader : public MediaReader {
 public:
     AVMediaReader();
 
@@ -20,12 +23,6 @@ public:
 
     // 设置数据源
     void setDataSource(const char *url) override;
-
-    // 设置起始位置
-    void setStart(float timeMs) override;
-
-    // 设置结束位置
-    void setEnd(float timeMs) override;
 
     // 指定解码格式，对应命令行的 -f 的参数
     void setInputFormat(const char *format);
@@ -43,24 +40,19 @@ public:
     void addDecodeOptions(std::string key, std::string value);
 
     // 设置媒体读取监听器
-    void setReadListener(OnReadListener *listener, bool autoRelease) override;
+    void setReadListener(OnDecodeListener *listener, bool autoRelease) override;
+
+    // 打开输入文件
+    int openInputFile();
 
     // 定位
-    void seekTo(float timeMs) override;
+    int seekTo(float timeMs) override;
 
-    // 开始读取
-    void start() override;
+    // 解码数据包
+    int decodePacket() override;
 
-    // 暂停读取
-    void pause() override;
-
-    // 继续读取
-    void resume() override;
-
-    // 停止读取
-    void stop() override;
-
-    void run() override ;
+    // 获取时长
+    int64_t getDuration() override;
 
 private:
     // 重置所有参数
@@ -69,58 +61,28 @@ private:
     // 释放所有参数
     void release();
 
-    // 打开输入文件
-    int openInputFile();
-
-    // 打开解码器
-    int openDecoder(AVFormatContext *formatCtx, AVCodecContext **codecCtx, AVMediaType type);
-
     // 解码数据包
-    void decodePacket(AVPacket *packet, OnReadListener *listener);
-
-    // 读取数据包
-    int readPackets();
+    int decodePacket(AVPacket *packet, OnDecodeListener *listener);
 
 private:
-    Mutex mMutex;
-    Condition mCondition;
-    Thread *mThread;
+    const char *mSrcPath;               // input path
+    OnDecodeListener *mReadListener;    // decode listener
+    bool mAutoRelease;                  // auto release decode listener or not
 
-    const char *mSrcPath;           // 媒体文件路径
-    OnReadListener *mReadListener;  // 读取监听器
-    bool mAutoRelease;              // 是否自动释放监听器
+    const char *mFormat;         // AVInputFormat name
+    std::map<std::string, std::string> mFormatOptions;  // format options
+    std::map<std::string, std::string> mDecodeOptions;  // decode options
 
-    AVInputFormat *iformat;         // 指定文件封装格式，也就是解复用器
-    std::map<std::string, std::string> mFormatOptions;  // 格式参数
-    std::map<std::string, std::string> mDecodeOptions;  // 解码参数
+    const char *mVideoCodecName;      // video decoder name
+    const char *mAudioCodecName;      // audio decoder name
 
-    const char *mVideoDecoder;      // 视频解码器名称
-    const char *mAudioDecoder;      // 音频解码器名称
+    std::shared_ptr<AVMediaDemuxer> mMediaDemuxer;  // demuxer
+    std::shared_ptr<AVAudioDecoder> mAudioDecoder;  // video decoder
+    std::shared_ptr<AVVideoDecoder> mVideoDecoder;  // audio decoder
 
-    AVFormatContext *pFormatCtx;    // 解复用上下文
-    AVCodecContext *pAudioCodecCtx; // 音频解码上下文
-    AVCodecContext *pVideoCodecCtx; // 视频解码上下文
-    int mAudioIndex;                // 音频流索引
-    int mVideoIndex;                // 视频流索引
+    AVPacket mPacket;               // decoder temp packet
 
-    int mWidth;                     // 视频宽度
-    int mHeight;                    // 视频高度
-    AVPixelFormat mPixelFormat;     // 像素格式
-    int mFrameRate;                 // 帧率
-    int mSampleRate;                // 采样率
-
-    int64_t mDuration;              // 文件总时长
-
-    float mStart;                   // 起始时间
-    float mEnd;                     // 结束时间
-
-    int seekRequest;                // 定位请求
-    int seekFlags;                  // 定位标志
-    int64_t seekPos;                // 定位位置
-    int64_t seekRel;                // 定位偏移
-
-    bool abortRequest;              // 终止请求
-    bool pauseRequest;              // 暂停请求
+    bool abortRequest;              // abort and stop request
 
 };
 

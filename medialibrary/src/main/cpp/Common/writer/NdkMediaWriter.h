@@ -1,29 +1,28 @@
 //
-// Created by CainHuang on 2019/9/15.
+// Created by CainHuang on 2020/1/11.
 //
 
-#ifndef MEDIACODECWRITER_H
-#define MEDIACODECWRITER_H
+#ifndef NDKMEDIAWRITER_H
+#define NDKMEDIAWRITER_H
 
 #if defined(__ANDROID__)
 
+#include <Resampler.h>
+#include <map>
+#include "NdkAudioEncoder.h"
+#include "NdkVideoEncoder.h"
 #include "MediaWriter.h"
+#include "AVMediaMuxer.h"
+#include <AVFormatter.h>
 
-#include <media/NdkMediaFormat.h>
-#include <media/NdkMediaMuxer.h>
-#include <media/NdkMediaCodec.h>
-#include <media/NdkMediaError.h>
-
-#define VIDEO_MIME_TYPE "video/avc"
-#define AUDIO_MIME_TYPE "audio/mp4a-latm"
-
-
-
-class MediaCodecWriter : public MediaWriter {
+/**
+ * 基于AMediaCodec硬编码器的媒体写入器
+ */
+class NdkMediaWriter : MediaWriter {
 public:
-    MediaCodecWriter();
+    NdkMediaWriter();
 
-    virtual ~MediaCodecWriter();
+    virtual ~NdkMediaWriter();
 
     // 设置输出文件
     void setOutputPath(const char *dstUrl) override;
@@ -62,33 +61,21 @@ public:
     void release() override;
 
 private:
-    // 重置所有资源
+    // 打开输出文件
+    int openOutputFile();
+
+    // 打开编码器
+    int openEncoder(AVMediaType mediaType);
+
+    // 重置所有参数
     void reset();
 
-    // 刷新缓冲区
-    void flush();
-
-    // 打开音频编码器
-    int openAudioEncoder();
-
-    // 打开视频编码器
-    int openVideoEncoder();
-
-    // 关闭编码器
-    int closeEncoder(AMediaCodec *codec);
-
-    // 计算时间戳
-    uint64_t computePresentationTime();
-
-    // 查找起始码
-    int avcFindStartCode(uint8 *data, int offset, int end);
-
-    // 查找起始码
-    int findStartCode(uint8 *data, int offset, int end);
+    // 获取缓冲区大小
+    int getBufferSize();
 
 private:
-
     const char *mDstUrl;            // 输出路径
+
     int mWidth;                     // 视频宽度
     int mHeight;                    // 视频高度
     int mFrameRate;                 // 视频帧率
@@ -99,17 +86,23 @@ private:
 
     int mSampleRate;                // 采样率
     int mChannels;                  // 声道数
+    int mAudioBitRate;              // 音频比特率
     AVSampleFormat mSampleFormat;   // 采样格式
     bool mHasAudio;                 // 是否存在音频流数据
 
-    AMediaMuxer *mMediaMuxer;       // 媒体复用器
-    AMediaCodec *mVideoCodec;       // 视频编码器
-    AMediaCodec *mAudioCodec;       // 音频编码器
+    // 编码上下文
+    std::shared_ptr<NdkMediaCodecMuxer> mMediaMuxer; // media muxer
+    std::shared_ptr<NdkVideoEncoder> mVideoEncoder;  // video encoder
+    std::shared_ptr<NdkAudioEncoder> mAudioEncoder;  // audio encoder
+    std::shared_ptr<Resampler> mResampler;           // audio resampler
 
-    int mFrameIndex;                // 视频索引
-
+    AVFrame *mImageFrame;           // 视频缓冲帧
+    uint8_t *mImageBuffer;          // 视频缓冲区
+    int mImageCount;                // 视频数量
+    int64_t mStartPts;              // 开始pts
+    int64_t mLastPts;               // 上一帧pts
 };
 
 #endif /* defined(__ANDROID__) */
 
-#endif //MEDIACODECWRITER_H
+#endif //NDKMEDIAWRITER_H

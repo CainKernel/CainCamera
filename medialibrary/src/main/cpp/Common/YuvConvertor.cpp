@@ -62,7 +62,7 @@ void YuvConvertor::setInputParams(int width, int height, int pixelFormat) {
     mWidth = width;
     mHeight = height;
     mPixelFormat = pixelFormat;
-    LOGE("input video params:[%d, %d, %s]", width, height, av_get_pix_fmt_name(getPixelFormat((PixelFormat)pixelFormat)));
+    LOGD("input video params:[%d, %d, %s]", width, height, av_get_pix_fmt_name(getPixelFormat((PixelFormat)pixelFormat)));
 }
 
 /**
@@ -299,6 +299,7 @@ void YuvConvertor::fillMediaData(AVMediaData *model, YuvData *src, int srcW, int
     model->width = srcW;
     model->height = srcH;
     model->pixelFormat = PIXEL_FORMAT_YUV420P;
+    model->type = MediaVideo;
 }
 
 /**

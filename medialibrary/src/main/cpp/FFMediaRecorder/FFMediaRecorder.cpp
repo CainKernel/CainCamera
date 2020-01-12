@@ -8,7 +8,8 @@
 FFMediaRecorder::FFMediaRecorder() : mRecordListener(nullptr), mAbortRequest(true),
                                      mStartRequest(false), mExit(true), mRecordThread(nullptr),
                                      mYuvConvertor(nullptr), mFrameFilter(nullptr),
-                                     mFrameQueue(nullptr), mMediaWriter(nullptr) {
+                                     mFrameQueue(nullptr), mMediaWriter(nullptr),
+                                     mMediaCodecWriter(nullptr), mUseHardCodec(false) {
     av_register_all();
     avfilter_register_all();
     mRecordParams = new RecordParams();
@@ -63,6 +64,11 @@ void FFMediaRecorder::release() {
         mMediaWriter->release();
         delete mMediaWriter;
         mMediaWriter = nullptr;
+    }
+    if (mMediaCodecWriter != nullptr) {
+        mMediaCodecWriter->release();
+        delete mMediaCodecWriter;
+        mMediaCodecWriter = nullptr;
     }
 }
 
@@ -145,29 +151,44 @@ int FFMediaRecorder::prepare() {
         }
     }
 
-    mMediaWriter = new AVMediaWriter();
-    // 设置参数
-    mMediaWriter->setUseTimeStamp(true);
-    mMediaWriter->addEncodeOptions("preset", "ultrafast");
-    mMediaWriter->setQuality(params->quality > 0 ? params->quality : 23);
+    if (mUseHardCodec) {
+        mMediaCodecWriter = new NdkMediaWriter();
+        mMediaCodecWriter->setUseTimeStamp(true);
 
-    mMediaWriter->setMaxBitRate(params->maxBitRate);
-    mMediaWriter->setOutputPath(params->dstFile);
-    mMediaWriter->setOutputVideo(outputWidth, outputHeight, params->frameRate, pixelFormat);
-    mMediaWriter->setOutputAudio(params->sampleRate, params->channels, sampleFormat);
+        mMediaCodecWriter->setMaxBitRate(params->maxBitRate);
+        mMediaCodecWriter->setOutputPath(params->dstFile);
+        mMediaCodecWriter->setOutputVideo(outputWidth, outputHeight, params->frameRate, pixelFormat);
+        mMediaCodecWriter->setOutputAudio(params->sampleRate, params->channels, sampleFormat);
 
-    // 指定编码器名称
-    if (params->videoEncoder != nullptr) {
-        mMediaWriter->setVideoEncoderName(params->videoEncoder);
-    }
-    if (params->audioEncoder != nullptr) {
-        mMediaWriter->setAudioEncoderName(params->audioEncoder);
-    }
+        ret = mMediaCodecWriter->prepare();
+        if (ret < 0) {
+            release();
+        }
+    } else {
+        mMediaWriter = new AVMediaWriter();
+        // 设置参数
+        mMediaWriter->setUseTimeStamp(true);
+        mMediaWriter->addEncodeOptions("preset", "ultrafast");
+        mMediaWriter->setQuality(params->quality > 0 ? params->quality : 23);
 
-    // 准备
-    ret = mMediaWriter->prepare();
-    if (ret < 0) {
-        release();
+        mMediaWriter->setMaxBitRate(params->maxBitRate);
+        mMediaWriter->setOutputPath(params->dstFile);
+        mMediaWriter->setOutputVideo(outputWidth, outputHeight, params->frameRate, pixelFormat);
+        mMediaWriter->setOutputAudio(params->sampleRate, params->channels, sampleFormat);
+
+        // 指定编码器名称
+        if (params->videoEncoder != nullptr) {
+            mMediaWriter->setVideoEncoderName(params->videoEncoder);
+        }
+        if (params->audioEncoder != nullptr) {
+            mMediaWriter->setAudioEncoderName(params->audioEncoder);
+        }
+
+        // 准备
+        ret = mMediaWriter->prepare();
+        if (ret < 0) {
+            release();
+        }
     }
     return ret;
 }
@@ -307,7 +328,11 @@ void FFMediaRecorder::run() {
                 }
 
                 // 编码
-                ret = mMediaWriter->encodeMediaData(data);
+                if (mUseHardCodec) {
+                    ret = mMediaCodecWriter->encodeMediaData(data);
+                } else {
+                    ret = mMediaWriter->encodeMediaData(data);
+                }
                 if (ret < 0) {
                     LOGE("Failed to encoder media data： %s", data->getName());
                 } else {
@@ -321,16 +346,77 @@ void FFMediaRecorder::run() {
             }
         }
 
+        // 清空队列
+        while(!mFrameQueue->empty()) {
+            // 从帧对列里面取出媒体数据
+            auto data = mFrameQueue->pop();
+            if (!data) {
+                continue;
+            }
+            if (start == 0) {
+                start = data->getPts();
+            }
+            if (data->getPts() >= current) {
+                current = data->getPts();
+            }
+
+            // yuv转码
+            if (data->getType() == MediaVideo && mYuvConvertor != nullptr) {
+                // 将数据转换成Yuv数据，处理失败则开始处理下一帧
+                if (mYuvConvertor->convert(data) < 0) {
+                    LOGE("Failed to convert video data to yuv420");
+                    delete data;
+                    continue;
+                }
+            }
+
+            // 过滤
+            if (mFrameFilter != nullptr) {
+                ret = mFrameFilter->filterData(data);
+                if (ret < 0) {
+                    LOGE("Failed to filter media data: %s", data->getName());
+                }
+            }
+
+            // 编码
+            if (mUseHardCodec) {
+                ret = mMediaCodecWriter->encodeMediaData(data);
+            } else {
+                ret = mMediaWriter->encodeMediaData(data);
+            }
+            if (ret < 0) {
+                LOGE("Failed to encoder media data： %s", data->getName());
+            } else {
+                LOGD("recording time: %f", (float)(current - start));
+                if (mRecordListener != nullptr) {
+                    mRecordListener->onRecording((float)(current - start));
+                }
+            }
+            // 释放资源
+            delete data;
+        }
+
         // 停止文件写入器
-        ret = mMediaWriter->stop();
+        if (mUseHardCodec) {
+            ret = mMediaCodecWriter->stop();
+        } else {
+            ret = mMediaWriter->stop();
+        }
     }
 
-    // 通知退出成功
-    mExit = true;
-    mCondition.signal();
+    LOGD("FFMediaRecorder exiting...");
+    if (mUseHardCodec) {
+        mMediaCodecWriter->release();
+    } else {
+        mMediaWriter->release();
+    }
 
     // 录制完成回调
     if (mRecordListener != nullptr) {
         mRecordListener->onRecordFinish(ret == 0, (float)(current - start));
     }
+
+    // 通知退出成功
+    mExit = true;
+    mCondition.signal();
 }

@@ -46,3 +46,6 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/MediaPlayer)
 
 # 媒体编辑器
 add_subdirectory(${CMAKE_SOURCE_DIR}/MediaEditor)
+
+# 媒体转码器
+add_subdirectory(${CMAKE_SOURCE_DIR}/MediaTranscoder)

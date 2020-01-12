@@ -8,13 +8,13 @@
 
 EglHelper::EglHelper() {
     mEglDisplay = EGL_NO_DISPLAY;
-    mEglConfig = NULL;
+    mEglConfig = nullptr;
     mEglContext = EGL_NO_CONTEXT;
     mGlVersion = -1;
 
 #if defined(__ANDROID__)
     // 设置时间戳方法，只有Android存在这个方法
-    eglPresentationTimeANDROID = NULL;
+    eglPresentationTimeANDROID = nullptr;
 #endif
 
 }
@@ -33,7 +33,7 @@ bool EglHelper::init(EGLContext sharedContext, int flags) {
         return false;
     }
 
-    if (sharedContext == NULL) {
+    if (sharedContext == nullptr) {
         ALOGD("Shared Context is null");
         sharedContext = EGL_NO_CONTEXT;
     } else {
@@ -57,7 +57,7 @@ bool EglHelper::init(EGLContext sharedContext, int flags) {
     // 判断是否尝试使用GLES3
     if ((flags & FLAG_TRY_GLES3) != 0) {
         EGLConfig config = getConfig(flags, 3);
-        if (config != NULL) {
+        if (config != nullptr) {
             int attrib3_list[] = {
                     EGL_CONTEXT_CLIENT_VERSION, 3,
                     EGL_NONE
@@ -115,7 +115,7 @@ void EglHelper::release() {
         eglTerminate(mEglDisplay);
     }
     mEglDisplay = EGL_NO_DISPLAY;
-    mEglConfig = NULL;
+    mEglConfig = nullptr;
     mEglContext = EGL_NO_CONTEXT;
 }
 
@@ -128,9 +128,9 @@ void EglHelper::destroySurface(EGLSurface eglSurface) {
 }
 
 EGLSurface EglHelper::createSurface(ANativeWindow *surface) {
-    if (surface == NULL) {
-        ALOGE("Window surface is NULL!");
-        return NULL;
+    if (surface == nullptr) {
+        ALOGE("Window surface is null!");
+        return nullptr;
     }
     int attrib_list[] = {
             EGL_NONE
@@ -191,7 +191,7 @@ int EglHelper::swapBuffers(EGLSurface eglSurface) {
 
 #if defined(__ANDROID__)
 void EglHelper::setPresentationTime(EGLSurface eglSurface, long nsecs) {
-    if (eglPresentationTimeANDROID != NULL) {
+    if (eglPresentationTimeANDROID != nullptr) {
         eglPresentationTimeANDROID(mEglDisplay, eglSurface, nsecs);
     }
 }
@@ -244,11 +244,11 @@ EGLConfig EglHelper::getConfig(int flags, int version) {
         attribList[length - 3] = EGL_RECORDABLE_ANDROID;
         attribList[length - 2] = 1;
     }
-    EGLConfig configs = NULL;
+    EGLConfig configs = nullptr;
     int numConfigs;
     if (!eglChooseConfig(mEglDisplay, attribList, &configs, 1, &numConfigs)) {
         ALOGW("unable to find RGB8888 / %d  EGLConfig", version);
-        return NULL;
+        return nullptr;
     }
     return configs;
 }

@@ -122,6 +122,7 @@ public final class AudioRecorder implements Runnable {
 
     @Override
     public void run() {
+        long duration = 0;
         try {
 
             // 初始化录音器
@@ -194,6 +195,9 @@ public final class AudioRecorder implements Runnable {
                     mAudioEncoder.encodePCM(null, -1);
                 }
             }
+            if (mAudioEncoder != null) {
+                duration = mAudioEncoder.getDuration();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -206,7 +210,7 @@ public final class AudioRecorder implements Runnable {
 
         // 录制完成回调
         if (mRecordListener != null) {
-            mRecordListener.onRecordFinish(new RecordInfo(mAudioParams.getAudioPath(), getMediaType()));
+            mRecordListener.onRecordFinish(new RecordInfo(mAudioParams.getAudioPath(), duration, getMediaType()));
         }
     }
 

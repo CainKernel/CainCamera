@@ -6,10 +6,22 @@
 #define MEDIACODECENCODER_H
 
 #include <AVMediaHeader.h>
+#include <AVMediaData.h>
 
-class MediaCodecEncoder {
+/**
+ * 编码监听器
+ */
+class OnEncodingListener {
 public:
-    virtual ~MediaCodecEncoder(){}
+    virtual void onEncoding(long duration) = 0;
+};
+
+class MediaEncoder {
+public:
+    virtual ~MediaEncoder(){}
+
+    // 设置编码监听器
+    virtual void setOnEncodingListener(OnEncodingListener *listener) = 0;
 
     // 设置输出路径
     virtual void setOutputPath(const char *path) = 0;

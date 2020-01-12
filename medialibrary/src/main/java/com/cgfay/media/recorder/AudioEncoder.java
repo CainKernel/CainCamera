@@ -4,6 +4,7 @@ import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 
@@ -11,6 +12,8 @@ import java.nio.ByteBuffer;
  * 音频编码器
  */
 public class AudioEncoder {
+
+    private static final String TAG = "AudioEncoder";
 
     static final int BUFFER_SIZE = 8192;
 
@@ -32,7 +35,7 @@ public class AudioEncoder {
     private String mOutputPath;
     private int mAudioTrackId;
     private int mTotalBytesRead;
-    private double mPresentationTimeUs = 0;
+    private long mPresentationTimeUs;   // 编码的时长
     private int mBufferSize = BUFFER_SIZE;
 
     public AudioEncoder(int bitrate, int sampleRate, int channelCount) {
@@ -123,7 +126,8 @@ public class AudioEncoder {
                 mTotalBytesRead += len;
                 buffer.put(data, 0, len);
                 mMediaCodec.queueInputBuffer(inputIndex, 0, len, (long) mPresentationTimeUs, 0);
-                mPresentationTimeUs = 1000000L * 1.0d * (mTotalBytesRead / mChannelCount / 2) / mSampleRate;
+                mPresentationTimeUs = 1000000L * (mTotalBytesRead / mChannelCount / 2) / mSampleRate;
+                Log.d(TAG, "encodePCM: presentationUs：" + mPresentationTimeUs + ", s: " + (mPresentationTimeUs / 1000000f));
             }
         }
 
@@ -146,5 +150,13 @@ public class AudioEncoder {
                 mMediaMuxer.start();
             }
         }
+    }
+
+    /**
+     * 获取编码时长
+     * @return
+     */
+    public long getDuration() {
+        return mPresentationTimeUs;
     }
 }

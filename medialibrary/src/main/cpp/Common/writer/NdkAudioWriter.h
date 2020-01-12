@@ -2,33 +2,29 @@
 // Created by CainHuang on 2020-01-02.
 //
 
-#ifndef MEDIACODECAUDIOENCODER_H
-#define MEDIACODECAUDIOENCODER_H
+#ifndef NDKAUDIOWRITER_H
+#define NDKAUDIOWRITER_H
 
 
 #if defined(__ANDROID__)
-
-#include <AVMediaHeader.h>
-#include <AVMediaData.h>
 
 #include <media/NdkMediaFormat.h>
 #include <media/NdkMediaMuxer.h>
 #include <media/NdkMediaCodec.h>
 #include <media/NdkMediaError.h>
 
-#include "MediaCodecEncoder.h"
-#include "MediaCodecProfileLevel.h"
-
-#define AUDIO_MIME_TYPE "audio/mp4a-latm"
-#define BUFFER_SIZE 8192
-#define ENCODE_TIMEOUT -1
+#include "MediaEncoder.h"
+#include "NdkCodecProfileLevel.h"
 
 /**
  * 音频编码器
  */
-class MediaCodecAudioEncoder : public MediaCodecEncoder {
+class NdkAudioWriter : public MediaEncoder {
 public:
-    MediaCodecAudioEncoder(int bitrate, int sampleRate, int channelCount);
+    NdkAudioWriter(int bitrate, int sampleRate, int channelCount);
+
+    // 设置编码监听器
+    void setOnEncodingListener(OnEncodingListener *listener) override;
 
     // 设置输出路径
     void setOutputPath(const char *path) override;
@@ -49,7 +45,6 @@ public:
     void encode(AVMediaData *data) override;
 
 private:
-    AMediaFormat *mMediaFormat;
     AMediaCodec *mMediaCodec;
     AMediaMuxer *mMediaMuxer;
     bool mMuxerStarted;
@@ -58,7 +53,6 @@ private:
     int mSampleRate;
     int mChannelCount;
     const char *mOutputPath;
-    int mFd;
     ssize_t mAudioTrackId;
     int mTotalBytesRead;
     double mPresentationTimeUs;
@@ -68,4 +62,4 @@ private:
 
 #endif /* defined(__ANDROID__) */
 
-#endif //MEDIACODECAUDIOENCODER_H
+#endif //NDKAUDIOWRITER_H

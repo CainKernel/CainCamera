@@ -238,9 +238,6 @@ public class FFMediaRecordPresenter implements PreviewCallback, FFAudioRecorder.
 
     @Override
     public void onRecordFinish(boolean success, float duration) {
-        if (VERBOSE) {
-            Log.d(TAG, "onRecordFinish: ");
-        }
         mIsRecording = false;
         if (mMediaRecorder != null) {
             if (success) {
@@ -249,11 +246,12 @@ public class FFMediaRecordPresenter implements PreviewCallback, FFAudioRecorder.
                 float currentProgress = duration / mMaxDuration;
                 mFragment.addProgressSegment(currentProgress);
             }
-            mMediaRecorder.release();
-            mMediaRecorder = null;
         }
         mFragment.showViews();
         mFragment.showToast("录制成功");
+        if (VERBOSE) {
+            Log.d(TAG, "onRecordFinish: " + success + ", duration：" + duration);
+        }
     }
 
     @Override
