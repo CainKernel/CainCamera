@@ -28,7 +28,7 @@ CainCamera是一个集美颜相机、图片编辑、短视频编辑等功能的�
 关于人脸关键点SDK验证问题，由于采用Face++的试用版作为测试的，每天使用的次数有限
 所以这里建议大家到Face++官网(https://www.faceplusplus.com/) 注册一个Key使用，需要先注册Key，然后绑定Bundle(包名)才能使用。
 国内用户需要到https://www.faceplusplus.com.cn/ 注册。 注册流程如下:
-[Face++ SDK注册流程](https://github.com/CainKernel/CainCamera/blob/master/document/introduction/facepp_register.md)
+[Face++ SDK注册流程](https://github.com/CainKernel/CainCamera/blob/master/document/introduction/facepp_registration.md)
 
 更多关于Face++ SDK相关的问题，可以到Face++官方github询问：
 [MegviiFacepp-Android-SDK](https://github.com/FacePlusPlus/MegviiFacepp-Android-SDK)
