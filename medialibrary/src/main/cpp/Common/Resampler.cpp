@@ -5,6 +5,7 @@
 #include "Resampler.h"
 
 Resampler::Resampler() {
+    pSampleConvertCtx = nullptr;
     mSampleFrame = nullptr;
 }
 
