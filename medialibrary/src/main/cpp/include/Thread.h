@@ -120,7 +120,7 @@ inline void Thread::join() {
         return;
     }
     Mutex::Autolock lock(mMutex);
-    if (mId > 0 && mNeedJoin) {
+    if (mId != -1 && mNeedJoin) {
         pthread_join(mId, NULL);
         mNeedJoin = false;
         mId = -1;

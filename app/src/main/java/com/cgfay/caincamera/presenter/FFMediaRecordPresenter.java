@@ -162,7 +162,8 @@ public class FFMediaRecordPresenter implements PreviewCallback, FFAudioRecorder.
 //                .setVideoFilter("hue='h=60:s=-3'") // 调整色调
 //                .setVideoFilter("drawgrid=width=100:height=100:thickness=2:color=black@0.9") // 添加网格
 //                .setVideoFilter("vignette=PI/4")  // 光晕
-                .setRotate(mCameraController.isFront() ? Math.abs(360 - mPreviewRotate) : mPreviewRotate)
+                .setRotate(mPreviewRotate)
+                .setMirror(mCameraController.isFront())
                 .setAudioParams(mFFAudioRecorder.getSampleRate(), AVFormatter.getSampleFormat(mFFAudioRecorder.getSampleFormat()), mFFAudioRecorder.getChannels())
                 .create();
         mMediaRecorder.setRecordListener(this);

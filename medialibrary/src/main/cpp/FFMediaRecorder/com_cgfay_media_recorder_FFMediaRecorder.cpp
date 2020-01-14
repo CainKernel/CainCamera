@@ -268,6 +268,18 @@ Java_com_cgfay_media_recorder_FFMediaRecorder_setVideoRotate(JNIEnv *env, jobjec
 }
 
 /**
+ * 设置录制视频镜像
+ */
+extern "C" JNIEXPORT void JNICALL
+Java_com_cgfay_media_recorder_FFMediaRecorder_setMirror(JNIEnv *env, jobject thiz, jlong handle, jboolean mirror) {
+    FFMediaRecorder *recorder = (FFMediaRecorder *) handle;
+    if (recorder != nullptr) {
+        RecordParams *recordParams = recorder->getRecordParams();
+        recordParams->setMirror(mirror);
+    }
+}
+
+/**
  * 设置视频录制参数
  */
 extern "C" JNIEXPORT void JNICALL

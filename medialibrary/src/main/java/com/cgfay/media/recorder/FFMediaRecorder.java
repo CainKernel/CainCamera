@@ -44,6 +44,8 @@ public final class FFMediaRecorder {
     private native void setVideoFilter(long handle, String filter);
     // 设置录制视频的旋转角度
     private native void setVideoRotate(long handle, int rotate);
+    // 设置是否镜像处理
+    private native void setMirror(long handle, boolean mirror);
     // 设置录制视频参数
     private native void setVideoParams(long handle, int width, int height, int frameRate,
                                        int pixelFormat, long maxBitRate, int quality);
@@ -148,6 +150,14 @@ public final class FFMediaRecorder {
     }
 
     /**
+     * 设置镜像处理
+     * @param mirror
+     */
+    public void setMirror(boolean mirror) {
+        setMirror(handle, mirror);
+    }
+
+    /**
      * 设置视频参数
      * @param width
      * @param height
@@ -217,6 +227,7 @@ public final class FFMediaRecorder {
         private int mWidth;             // 视频宽度
         private int mHeight;            // 视频高度
         private int mRotate;            // 旋转角度
+        private boolean mMirror;        // 镜像处理
         private int mPixelFormat;       // 像素格式
         private int mFrameRate;         // 帧率，默认30fps
         private long mMaxBitRate;       // 最大比特率，当无法达到设置的quality是，quality会自动调整
@@ -237,6 +248,7 @@ public final class FFMediaRecorder {
             mWidth = -1;
             mHeight = -1;
             mRotate = 0;
+            mMirror = false;
             mPixelFormat = -1;
             mFrameRate = -1;
             mMaxBitRate = -1;
@@ -311,6 +323,16 @@ public final class FFMediaRecorder {
             mRotate = rotate;
             return this;
         }
+
+        /**
+         * 设置是否镜像处理
+         * @param mirror
+         * @return
+         */
+        public RecordBuilder setMirror(boolean mirror) {
+            mMirror = mirror;
+            return this;
+        }
         
         /**
          * 设置最大比特率
@@ -361,6 +383,7 @@ public final class FFMediaRecorder {
             recorder.setOutput(mDstPath);
             recorder.setVideoParams(mWidth, mHeight, mFrameRate, mPixelFormat, mMaxBitRate, mQuality);
             recorder.setVideoRotate(mRotate);
+            recorder.setMirror(mMirror);
             recorder.setAudioParams(mSampleRate, mSampleFormat, mChannels);
             if (!TextUtils.isEmpty(mVideoEncoder)) {
                 recorder.setVideoEncoder(mVideoEncoder);

@@ -50,6 +50,10 @@ add_library( transcoder
              ${common_dir}/writer/NdkAudioWriter.cpp
              ${common_dir}/writer/NdkVideoWriter.cpp
 
+             # player
+             ${common_dir}/player/AudioPlayer.cpp
+             ${common_dir}/player/AudioSLPlayer.cpp
+
              # common
              ${common_dir}/AVFormatter.cpp
              ${common_dir}/AVFrameFilter.cpp
@@ -74,5 +78,8 @@ target_link_libraries( transcoder
                        android
                        jnigraphics
                        mediandk
+                       OpenSLES
+                       EGL
+                       ${GLES-lib}
                        log )
 
