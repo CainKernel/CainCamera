@@ -73,6 +73,16 @@ public enum MimeType {
         return EnumSet.of(MPEG, MP4, GPP, MKV, AVI);
     }
 
+    public static boolean isImage(String mimeType) {
+        if (mimeType == null) return false;
+        return mimeType.startsWith("image");
+    }
+
+    public static boolean isVideo(String mimeType) {
+        if (mimeType == null) return false;
+        return mimeType.startsWith("video");
+    }
+
     private static Set<String> arraySetOf(String... suffixes) {
         return new ArraySet<>(Arrays.asList(suffixes));
     }

@@ -222,7 +222,7 @@ public abstract class MediaDataScanner implements LoaderManager.LoaderCallbacks<
         List<MediaData> mediaDatas = new ArrayList<>();
         try {
             while (isCursorEnable(cursor) && cursor.moveToNext()) {
-                MediaData media = buildMediaData(cursor);
+                MediaData media = buildMediaData(mContext, cursor);
                 if (media != null) {
                     mediaDatas.add(media);
                 }
@@ -238,7 +238,7 @@ public abstract class MediaDataScanner implements LoaderManager.LoaderCallbacks<
             List<MediaData> mediaDataList = new ArrayList<>();
             int size = 0;
             while (isCursorEnable(cursor) && cursor.moveToNext() && size < PAGE_SIZE) {
-                MediaData media = buildMediaData(cursor);
+                MediaData media = buildMediaData(mContext, cursor);
                 if (media != null) {
                     mediaDataList.add(media);
                 }
@@ -264,7 +264,7 @@ public abstract class MediaDataScanner implements LoaderManager.LoaderCallbacks<
         List<MediaData> mediaDataList = new ArrayList<>();
         int size = 0;
         while (isCursorEnable(cursor) && cursor.moveToNext() && size < PAGE_SIZE * 2) {
-            MediaData media = buildMediaData(cursor);
+            MediaData media = buildMediaData(mContext, cursor);
             if (media != null) {
                 mediaDataList.add(media);
             }
@@ -277,8 +277,8 @@ public abstract class MediaDataScanner implements LoaderManager.LoaderCallbacks<
         return 0;
     }
 
-    private MediaData buildMediaData(@NonNull Cursor cursor) {
-        return MediaData.valueOf(cursor);
+    private MediaData buildMediaData(@NonNull Context context, @NonNull Cursor cursor) {
+        return MediaData.valueOf(context, cursor);
     }
 
     public List<MediaData> getCacheMediaData() {

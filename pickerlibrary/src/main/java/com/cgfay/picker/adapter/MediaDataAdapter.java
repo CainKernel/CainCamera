@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cgfay.picker.MediaPickerManager;
+import com.cgfay.picker.utils.MediaMetadataUtils;
 import com.cgfay.scan.R;
 import com.cgfay.picker.model.MediaData;
 import com.cgfay.uitls.utils.StringUtils;
@@ -59,14 +60,12 @@ public class MediaDataAdapter extends RecyclerView.Adapter<MediaDataAdapter.Thum
                 MediaPickerManager.getInstance().getMediaLoader()
                         .loadThumbnail(holder.itemView.getContext(),
                         holder.mThumbnailView, mediaData.getPath(), mResize,
-                        R.color.white,
-                        R.drawable.ic_media_picker_error);
+                        R.color.white, R.color.white);
             } else {
                 MediaPickerManager.getInstance().getMediaLoader()
                         .loadThumbnail(holder.itemView.getContext(),
                         holder.mThumbnailView, mediaData.getPath(),
-                        R.color.white,
-                        R.drawable.ic_media_picker_error);
+                        R.color.white, R.color.white);
             }
 
             if (mediaData.isVideo()) {
@@ -77,6 +76,11 @@ public class MediaDataAdapter extends RecyclerView.Adapter<MediaDataAdapter.Thum
             }
             holder.mLayoutCheckbox.setVisibility(mShowCheckbox ? View.VISIBLE : View.GONE);
             holder.mLayoutCheckbox.setOnClickListener(v -> {
+                if (mediaData.isImage()) {
+                    MediaMetadataUtils.buildImageMetadata(mediaData);
+                } else {
+                    MediaMetadataUtils.buildVideoMetadata(mediaData);
+                }
                 if (mMediaDataChangeListener != null) {
                     mMediaDataChangeListener.onMediaSelectedChange(mediaData);
                 }
@@ -92,6 +96,11 @@ public class MediaDataAdapter extends RecyclerView.Adapter<MediaDataAdapter.Thum
             }
 
             holder.itemView.setOnClickListener(v -> {
+                if (mediaData.isImage()) {
+                    MediaMetadataUtils.buildImageMetadata(mediaData);
+                } else {
+                    MediaMetadataUtils.buildVideoMetadata(mediaData);
+                }
                 if (mMediaDataChangeListener != null) {
                     mMediaDataChangeListener.onMediaPreview(mediaData);
                 }

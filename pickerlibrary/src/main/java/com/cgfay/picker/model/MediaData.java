@@ -1,11 +1,18 @@
 package com.cgfay.picker.model;
 
+import android.content.ContentUris;
+import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import androidx.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
+
+import com.cgfay.picker.utils.MediaMetadataUtils;
+import com.cgfay.picker.utils.UriToPathUtils;
 
 import java.io.File;
 
@@ -13,6 +20,8 @@ import java.io.File;
  * 媒体数据对象
  */
 public class MediaData implements Parcelable {
+
+    private static final String TAG = "MediaData";
 
     public static final Creator<MediaData> CREATOR = new Creator<MediaData>() {
         @Override
@@ -33,21 +42,42 @@ public class MediaData implements Parcelable {
     private int mWidth;
     private int mHeight;
 
-    public MediaData(@NonNull Cursor cursor) throws Exception {
-        mPath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
-        File file = new File(mPath);
-        if (file.exists() && !file.isDirectory()) {
-            mMimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE));
-            mWidth = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.WIDTH));
-            mHeight = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.HEIGHT));
-            if (isVideo()) {
-                int durationId = cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns.DURATION);
-                mDuration = cursor.getLong(durationId);
+    public MediaData(@NonNull Context context, @NonNull Cursor cursor) throws Exception {
+        int id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID));
+        mMimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE));
+        mWidth = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.WIDTH));
+        mHeight = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.HEIGHT));
+        Uri contentUri;
+        if (isImage()) {
+            contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        } else if (isVideo()) {
+            contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+        } else {
+            contentUri = MediaStore.Files.getContentUri("external");
+        }
+        Uri uri = ContentUris.withAppendedId(contentUri, id);
+        mPath = UriToPathUtils.getPath(context, uri);
+        if (!TextUtils.isEmpty(mPath)) {
+            File file = new File(mPath);
+            if (file.exists() && !file.isDirectory()) {
+                if (isVideo()) {
+                    int durationId = cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns.DURATION);
+                    mDuration = cursor.getLong(durationId);
+                } else {
+                    mDuration = 0;
+                }
+//                // 如果是否需要过滤宽高异常的图片？？？
+//                if (isImage()) {
+//                    MediaMetadataUtils.buildImageMetadata(this);
+//                    if (mWidth <=0 || mHeight <= 0) {
+//                        throw new Exception("width or height is anomaly!");
+//                    }
+//                }
             } else {
-                mDuration = 0;
+                throw new Exception("File not exit!");
             }
         } else {
-            throw new Exception("File not exit!");
+            throw new Exception("path not exit!");
         }
     }
 
@@ -60,10 +90,10 @@ public class MediaData implements Parcelable {
         mHeight = source.readInt();
     }
 
-    public static MediaData valueOf(Cursor cursor) {
+    public static MediaData valueOf(@NonNull Context context, @NonNull Cursor cursor) {
         MediaData mediaData = null;
         try {
-            mediaData = new MediaData(cursor);
+            mediaData = new MediaData(context, cursor);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -104,8 +134,16 @@ public class MediaData implements Parcelable {
         return mDuration;
     }
 
+    public void setWidth(int width) {
+        mWidth = width;
+    }
+
     public int getWidth() {
         return mWidth;
+    }
+
+    public void setHeight(int height) {
+        mHeight = height;
     }
 
     public int getHeight() {

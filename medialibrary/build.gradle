@@ -5,11 +5,11 @@ def platformVersion = 21    // 18: openGLES 3 min api level
 // def platformVersion = 12    //openGLES 2 min api level
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     defaultConfig {
         minSdkVersion "${platformVersion}"
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
 

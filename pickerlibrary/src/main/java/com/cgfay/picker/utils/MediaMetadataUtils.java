@@ -8,13 +8,22 @@ import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.media.ExifInterface;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
 import android.net.Uri;
 import android.provider.MediaStore;
 import androidx.annotation.NonNull;
+
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
+import com.cgfay.picker.model.MediaData;
+
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +38,100 @@ public final class MediaMetadataUtils {
 
     private MediaMetadataUtils() {
 
+    }
+
+    /**
+     * 构建图片宽高信息
+     * @param mediaData
+     */
+    public static void buildImageMetadata(@NonNull MediaData mediaData) {
+        if (mediaData.getWidth() > 0 && mediaData.getHeight() > 0) {
+            return;
+        }
+        File file = new File(mediaData.getPath());
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BufferedInputStream bis = null;
+        try {
+            bis = new BufferedInputStream(new FileInputStream(file));
+            BitmapFactory.decodeStream(bis, null, options);
+            mediaData.setWidth(options.outWidth);
+            mediaData.setHeight(options.outHeight);
+        } catch (FileNotFoundException e) {
+            Log.w(TAG, e.getLocalizedMessage());
+        } finally {
+            try {
+                if (bis != null) {
+                    bis.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 构建视频宽高信息
+     * @param mediaData
+     */
+    public static void buildVideoMetadata(@NonNull MediaData mediaData) {
+        if (mediaData.getWidth() > 0 && mediaData.getHeight() > 0) {
+            return;
+        }
+        int[] size = getDimensions(mediaData.getPath());
+        mediaData.setWidth(size[0]);
+        mediaData.setHeight(size[1]);
+    }
+
+    private static int[] getDimensions(String path) {
+        int[] dimension = new int[2];
+        if (!TextUtils.isEmpty(path)) {
+            MediaExtractor mediaExtractor = null;
+            FileInputStream fis = null;
+            try {
+                mediaExtractor = new MediaExtractor();
+                File file = new File(path);
+                fis = new FileInputStream(file);
+                FileDescriptor fd = fis.getFD();
+                mediaExtractor.setDataSource(fd);
+                int numTracks = mediaExtractor.getTrackCount();
+                MediaFormat format = null;
+                for (int i = 0; i < numTracks; ++i) {
+                    format = mediaExtractor.getTrackFormat(i);
+                    String mimeType = format.getString(MediaFormat.KEY_MIME);
+                    if (mimeType.startsWith("video")) {
+                        if (format.containsKey("display-width")) {
+                            dimension[0] = format.getInteger("display-width");
+                        }
+                        if (dimension[0] == 0 && format.containsKey(MediaFormat.KEY_WIDTH)) {
+                            dimension[0] = format.getInteger(MediaFormat.KEY_WIDTH);
+                        }
+
+                        if (format.containsKey("display-height")) {
+                            dimension[1] = format.getInteger("display-height");
+                        }
+                        if (dimension[1] == 0 && format.containsKey(MediaFormat.KEY_HEIGHT)) {
+                            dimension[1] = format.getInteger(MediaFormat.KEY_HEIGHT);
+                        }
+                        break;
+                    }
+                }
+            } catch (Throwable throwable) {
+
+            } finally {
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (mediaExtractor != null) {
+                    mediaExtractor.release();
+                }
+            }
+        }
+        return dimension;
     }
 
     /**

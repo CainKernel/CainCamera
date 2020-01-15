@@ -26,24 +26,27 @@ public class MediaDataLoader extends CursorLoader {
 
     private static final Uri QUERY_URI = MediaStore.Files.getContentUri("external");
 
-    private final static String DISTINCT_DATA = "DISTINCT " + MediaStore.MediaColumns.DATA;
+//    private final static String DISTINCT_DATA = "DISTINCT " + MediaStore.MediaColumns.DATA;
 
     private final static String[] PROJECTION_ALL = new String[] {
-            DISTINCT_DATA,
+//            DISTINCT_DATA,
+            MediaStore.Files.FileColumns._ID,
             MediaStore.MediaColumns.MIME_TYPE,
             MediaStore.MediaColumns.WIDTH,
             MediaStore.MediaColumns.HEIGHT,
     };
 
     private final static String[] PROJECTION_IMAGE = new String[]{
-            DISTINCT_DATA,
+//            DISTINCT_DATA,
+            MediaStore.Files.FileColumns._ID,
             MediaStore.MediaColumns.MIME_TYPE,
             MediaStore.MediaColumns.WIDTH,
             MediaStore.MediaColumns.HEIGHT,
     };
 
     private final static String[] PROJECTION_VIDEO = new String[]{
-            DISTINCT_DATA,
+//            DISTINCT_DATA,
+            MediaStore.Files.FileColumns._ID,
             MediaStore.MediaColumns.MIME_TYPE,
             MediaStore.MediaColumns.WIDTH,
             MediaStore.MediaColumns.HEIGHT,

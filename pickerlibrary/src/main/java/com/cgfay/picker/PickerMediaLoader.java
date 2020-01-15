@@ -3,6 +3,8 @@ package com.cgfay.picker;
 import android.content.Context;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+
+import android.net.Uri;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -18,6 +20,18 @@ class PickerMediaLoader implements MediaLoader {
     @Override
     public void loadThumbnail(@NonNull Context context, @NonNull ImageView imageView, @NonNull String path,
                               @DrawableRes int placeholder, @DrawableRes int error) {
+        Glide.with(context)
+                .asBitmap()
+                .load(path)
+                .apply(new RequestOptions()
+                        .placeholder(placeholder)
+                        .error(error)
+                        .centerCrop())
+                .into(imageView);
+    }
+
+    @Override
+    public void loadThumbnail(@NonNull Context context, @NonNull ImageView imageView, @NonNull Uri path, int placeholder, int error) {
         Glide.with(context)
                 .asBitmap()
                 .load(path)

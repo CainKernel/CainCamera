@@ -17,9 +17,19 @@ import com.cgfay.camera.loader.MediaLoader;
  */
 public class CameraMediaLoader implements MediaLoader {
 
-
     @Override
     public void loadThumbnail(@NonNull Context context, ImageView imageView, String path, int placeholder, int radius) {
+        Glide.with(context)
+                .asBitmap()
+                .load(path)
+                .apply(RequestOptions.bitmapTransform(new RoundedCorners(radius))
+                        .placeholder(placeholder)
+                        .centerCrop())
+                .into(imageView);
+    }
+
+    @Override
+    public void loadThumbnail(@NonNull Context context, ImageView imageView, Uri path, int placeholder, int radius) {
         Glide.with(context)
                 .asBitmap()
                 .load(path)

@@ -1180,7 +1180,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             cursor.moveToFirst();
             AlbumData albumData = AlbumData.valueOf(cursor);
             if (mBtnMedia != null) {
-                new CameraMediaLoader().loadThumbnail(mActivity, mBtnMedia, albumData.getCoverPath(),
+                new CameraMediaLoader().loadThumbnail(mActivity, mBtnMedia, albumData.getCoverUri(),
                         R.drawable.ic_camera_thumbnail_placeholder,
                         (int)getResources().getDimension(R.dimen.dp4));
             }

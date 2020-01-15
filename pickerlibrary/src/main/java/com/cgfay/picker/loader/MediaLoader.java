@@ -3,6 +3,8 @@ package com.cgfay.picker.loader;
 import android.content.Context;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+
+import android.net.Uri;
 import android.widget.ImageView;
 
 /**
@@ -19,6 +21,16 @@ public interface MediaLoader {
      * @param error
      */
     void loadThumbnail(@NonNull Context context, @NonNull ImageView imageView, @NonNull String path, @DrawableRes int placeholder, @DrawableRes int error);
+
+    /**
+     * 加载缩略图
+     * @param context
+     * @param imageView
+     * @param path
+     * @param placeholder
+     * @param error
+     */
+    void loadThumbnail(@NonNull Context context, @NonNull ImageView imageView, @NonNull Uri path, @DrawableRes int placeholder, @DrawableRes int error);
 
     /**
      * 加载缩略图

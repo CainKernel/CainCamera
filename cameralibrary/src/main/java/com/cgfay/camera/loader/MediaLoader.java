@@ -29,6 +29,15 @@ public interface MediaLoader {
      * @param path
      * @param placeholder
      */
+    void loadThumbnail(@NonNull Context context, ImageView imageView, Uri path, @DrawableRes int placeholder, int radius);
+
+    /**
+     * 加载缩略图
+     * @param context
+     * @param imageView
+     * @param path
+     * @param placeholder
+     */
     void loadThumbnail(@NonNull Context context, ImageView imageView, String path, @DrawableRes int placeholder);
 
     /**
