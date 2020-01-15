@@ -25,6 +25,8 @@ public:
 
     AVPixelFormat getFormat();
 
+    double getRotation();
+
 protected:
     void initMetadata() override;
 

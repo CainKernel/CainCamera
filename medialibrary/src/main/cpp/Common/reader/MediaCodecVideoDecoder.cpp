@@ -11,7 +11,6 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(const std::shared_ptr<AVMediaDemu
 
 void MediaCodecVideoDecoder::setDecoder(const char *name) {
     // do nothing
-
 }
 
 int MediaCodecVideoDecoder::openDecoder(std::map<std::string, std::string> decodeOptions) {

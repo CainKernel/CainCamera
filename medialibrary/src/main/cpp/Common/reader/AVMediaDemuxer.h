@@ -45,6 +45,9 @@ public:
 
     bool hasVideoStream();
 
+    // if is live video
+    bool isRealTime();
+
 private:
     const char *mInputPath;         // 输入文件路径
     AVInputFormat *iformat;         // 指定文件封装格式，也就是解复用器

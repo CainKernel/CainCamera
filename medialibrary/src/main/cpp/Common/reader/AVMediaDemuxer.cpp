@@ -151,3 +151,23 @@ bool AVMediaDemuxer::hasVideoStream() {
     }
     return (av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0) >= 0);
 }
+
+/**
+ * 是否实时媒体流
+ * @return
+ */
+bool AVMediaDemuxer::isRealTime() {
+    if (!pFormatCtx) {
+        return false;
+    }
+    if (!strcmp(pFormatCtx->iformat->name, "rtp")
+        || !strcmp(pFormatCtx->iformat->name, "rtsp")
+        || !strcmp(pFormatCtx->iformat->name, "sdp")) {
+        return 1;
+    }
+    if (pFormatCtx->pb && (!strncmp(pFormatCtx->filename, "rtp:", 4)
+        || !strncmp(pFormatCtx->filename, "udp:", 4))) {
+        return 1;
+    }
+    return 0;
+}

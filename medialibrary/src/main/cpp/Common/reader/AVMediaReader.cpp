@@ -182,6 +182,7 @@ int AVMediaReader::openInputFile() {
     int ret;
     mMediaDemuxer = std::make_shared<AVMediaDemuxer>();
     mMediaDemuxer->setInputPath(mSrcPath);
+    mMediaDemuxer->setInputFormat(mFormat);
     ret = mMediaDemuxer->openDemuxer(mFormatOptions);
     if (ret < 0) {
         LOGE("Failed to open media demuxer");
