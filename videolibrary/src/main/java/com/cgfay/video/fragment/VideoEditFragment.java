@@ -9,12 +9,6 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -28,13 +22,21 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.cgfay.filter.glfilter.resource.FilterHelper;
 import com.cgfay.filter.glfilter.resource.bean.ResourceData;
-import com.cgfay.media.CainMediaPlayer;
 import com.cgfay.media.CainMediaEditor;
+import com.cgfay.media.CainMediaPlayer;
 import com.cgfay.media.IMediaPlayer;
 import com.cgfay.uitls.fragment.BackPressedDialogFragment;
 import com.cgfay.uitls.utils.DensityUtils;
+import com.cgfay.uitls.utils.DisplayUtils;
 import com.cgfay.uitls.utils.FileUtils;
 import com.cgfay.uitls.utils.StringUtils;
 import com.cgfay.uitls.widget.RoundOutlineProvider;
@@ -161,6 +163,13 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             mVideoPlayerView.setOutlineProvider(new RoundOutlineProvider(DensityUtils.dp2px(mActivity, 7.5f)));
             mVideoPlayerView.setClipToOutline(true);
         }
+        RelativeLayout.LayoutParams playerParams = (RelativeLayout.LayoutParams) mVideoPlayerView.getLayoutParams();
+        if (DisplayUtils.isFullScreenDevice(mActivity)) {
+            playerParams.bottomMargin = getResources().getDimensionPixelSize(R.dimen.layout_edit_bottom_height);
+        } else {
+            playerParams.bottomMargin = 0;
+        }
+        mVideoPlayerView.setLayoutParams(playerParams);
 
         // 特效控制栏
         mLayoutEffect = mContentView.findViewById(R.id.layout_effect);

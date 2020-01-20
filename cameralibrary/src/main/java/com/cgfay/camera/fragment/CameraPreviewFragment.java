@@ -209,7 +209,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         }
 
         // 全面屏比例处理
-        if (DisplayUtils.isAllScreenDevice(mActivity)) {
+        if (DisplayUtils.isFullScreenDevice(mActivity)) {
             DisplayMetrics outMetrics = new DisplayMetrics();
             mActivity.getWindowManager().getDefaultDisplay().getRealMetrics(outMetrics);
             int widthPixel = outMetrics.widthPixels;

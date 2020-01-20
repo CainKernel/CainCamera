@@ -29,10 +29,19 @@ public:
     int init();
 
     // convert data
-    int resample(const uint8_t *data, int frame_size);
+    int resample(const uint8_t *data, int nb_samples);
+
+    // convert data
+    int resample(AVFrame *frame);
 
     // get converted frame
     AVFrame *getConvertedFrame();
+
+    int getInputSampleRate();
+
+    int getInputChannels();
+
+    AVSampleFormat getInputSampleFormat();
 
 private:
     SwrContext *pSampleConvertCtx;  // resample context

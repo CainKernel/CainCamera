@@ -11,11 +11,8 @@ import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -26,11 +23,18 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
 
-import com.cgfay.media.CainMediaPlayer;
 import com.cgfay.media.CainMediaEditor;
+import com.cgfay.media.CainMediaPlayer;
 import com.cgfay.media.VideoEditorUtil;
+import com.cgfay.uitls.utils.DensityUtils;
+import com.cgfay.uitls.utils.DisplayUtils;
 import com.cgfay.uitls.utils.FileUtils;
+import com.cgfay.uitls.widget.RoundOutlineProvider;
 import com.cgfay.video.R;
 import com.cgfay.video.activity.VideoEditActivity;
 import com.cgfay.video.bean.VideoSpeed;
@@ -115,6 +119,20 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
         mVideoPlayerView = mContentView.findViewById(R.id.video_player_view);
         mVideoPlayerView.setSurfaceTextureListener(mSurfaceTextureListener);
 
+        // 视频容器
+        View layoutVideo = mContentView.findViewById(R.id.layout_video);
+        ConstraintLayout.LayoutParams videoParams = (ConstraintLayout.LayoutParams) layoutVideo.getLayoutParams();
+        if (DisplayUtils.isFullScreenDevice(mActivity)) {
+            videoParams.bottomMargin = getResources().getDimensionPixelSize(R.dimen.layout_edit_bottom_height);
+        } else {
+            videoParams.bottomMargin = 0;
+        }
+        layoutVideo.setLayoutParams(videoParams);
+        if (Build.VERSION.SDK_INT >= 21) {
+            layoutVideo.setOutlineProvider(new RoundOutlineProvider(DensityUtils.dp2px(mActivity, 7.5f)));
+            layoutVideo.setClipToOutline(true);
+        }
+
         mVideoSpeedLevelBar = mContentView.findViewById(R.id.video_crop_speed_bar);
         mVideoSpeedLevelBar.setOnSpeedChangedListener(speed -> {
             if (mCainMediaPlayer != null) {
@@ -133,13 +151,27 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
         mTextVideoCropSelected = mContentView.findViewById(R.id.tv_video_cut_selected);
         mContentView.findViewById(R.id.tv_video_cut_speed_bar_visible).setOnClickListener(this);
         mContentView.findViewById(R.id.tv_video_cut_rotation).setOnClickListener(this);
-
+        View layoutSpeed = mContentView.findViewById(R.id.layout_speed);
+        ConstraintLayout.LayoutParams speedParams = (ConstraintLayout.LayoutParams) layoutSpeed.getLayoutParams();
+        if (DisplayUtils.isFullScreenDevice(mActivity)) {
+            speedParams.bottomMargin = getResources().getDimensionPixelSize(R.dimen.dp20);
+        } else {
+            speedParams.bottomMargin = getResources().getDimensionPixelSize(R.dimen.dp100);
+        }
+        layoutSpeed.setLayoutParams(speedParams);
 
         mVideoCutViewBar = mContentView.findViewById(R.id.video_crop_view_bar);
         if (mVideoPath != null) {
             mVideoCutViewBar.setVideoPath(mVideoPath);
         }
         mVideoCutViewBar.setOnVideoCropViewBarListener(mOnVideoCropViewBarListener);
+        ConstraintLayout.LayoutParams cutViewBarParams = (ConstraintLayout.LayoutParams) mVideoCutViewBar.getLayoutParams();
+        if (DisplayUtils.isFullScreenDevice(mActivity)) {
+            cutViewBarParams.bottomMargin = getResources().getDimensionPixelSize(R.dimen.dp70);
+        } else {
+            cutViewBarParams.bottomMargin = getResources().getDimensionPixelSize(R.dimen.dp20);
+        }
+        mVideoCutViewBar.setLayoutParams(cutViewBarParams);
 
         mLayoutProgress = mContentView.findViewById(R.id.layout_progress);
         mLayoutProgress.setVisibility(View.GONE);
@@ -356,9 +388,10 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
         try {
             mCainMediaPlayer.setDataSource(mVideoPath);
             if (mSurfaceTexture != null) {
-                if (mSurface == null) {
-                    mSurface = new Surface(mSurfaceTexture);
+                if (mSurface != null) {
+                    mSurface.release();
                 }
+                mSurface = new Surface(mSurfaceTexture);
                 mCainMediaPlayer.setSurface(mSurface);
             }
             mCainMediaPlayer.setOption(CainMediaPlayer.OPT_CATEGORY_PLAYER, "vcodec", "h264_mediacodec");
@@ -445,16 +478,6 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
                             mLayoutProgress.setVisibility(View.GONE);
                             // 成功则释放播放器并跳转至编辑页面
                             if (FileUtils.fileExists(videoPath)) {
-                                // 需要释放销毁播放器，后面要用到播放器，防止内存占用过大
-                                if (mCainMediaPlayer != null) {
-                                    mCainMediaPlayer.stop();
-                                    mCainMediaPlayer.release();
-                                    mCainMediaPlayer = null;
-                                }
-                                if (mSurface != null) {
-                                    mSurface.release();
-                                    mSurface = null;
-                                }
                                 if (mMediaEditor != null) {
                                     mMediaEditor.release();
                                     mMediaEditor = null;

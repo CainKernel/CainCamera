@@ -23,7 +23,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:layout_marginBottom="@dimen/dp80"/>
+                android:layout_marginBottom="@dimen/layout_edit_bottom_height"/>
 
             <ImageView
                 android:id="@+id/iv_video_play"
@@ -139,24 +139,25 @@
             android:id="@+id/btn_edit_back"
             android:layout_width="@dimen/dp25"
             android:layout_height="@dimen/dp25"
-            android:layout_marginTop="@dimen/dp20"
             android:layout_marginStart="@dimen/dp10"
             android:scaleType="centerInside"
             android:background="@drawable/icon_video_cut_back"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="@id/btn_edit_filter"
+            app:layout_constraintBottom_toBottomOf="@id/btn_edit_filter"/>
 
         <!-- 滤镜 -->
         <LinearLayout
             android:id="@+id/btn_edit_filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp30"
             android:layout_marginEnd="@dimen/dp15"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/btn_edit_back">
+            app:layout_constraintTop_toTopOf="parent">
             <ImageView
                 android:layout_width="@dimen/dp30"
                 android:layout_height="@dimen/dp30"
@@ -212,8 +213,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_bottom"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/dp70"
-        android:layout_marginBottom="@dimen/dp15"
+        android:layout_height="@dimen/layout_edit_bottom_height"
         android:layout_alignParentBottom="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -223,8 +223,9 @@
         <Button
             android:id="@+id/btn_edit_next"
             android:layout_width="@dimen/dp80"
-            android:layout_height="@dimen/dp30"
+            android:layout_height="@dimen/dp35"
             android:layout_marginEnd="@dimen/dp15"
+            android:layout_marginBottom="@dimen/dp10"
             android:background="@drawable/bg_button_brown_round"
             android:textColor="@color/white"
             android:text="@string/video_edit_next"
@@ -235,6 +236,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/dp20"
+            android:layout_marginBottom="@dimen/dp10"
             app:layout_constraintEnd_toStartOf="@id/btn_edit_next"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
@@ -248,8 +250,8 @@
                 android:orientation="vertical"
                 android:gravity="center">
                 <ImageView
-                    android:layout_width="@dimen/dp40"
-                    android:layout_height="@dimen/dp40"
+                    android:layout_width="@dimen/dp30"
+                    android:layout_height="@dimen/dp30"
                     android:background="@drawable/icon_video_edit_music"/>
                 <TextView
                     android:layout_width="wrap_content"
@@ -269,8 +271,8 @@
                 android:gravity="center">
 
                 <ImageView
-                    android:layout_width="@dimen/dp40"
-                    android:layout_height="@dimen/dp40"
+                    android:layout_width="@dimen/dp30"
+                    android:layout_height="@dimen/dp30"
                     android:background="@drawable/icon_video_edit_placeholder" />
                 <TextView
                     android:layout_width="wrap_content"
@@ -292,8 +294,8 @@
                 android:orientation="vertical"
                 android:gravity="center">
                 <ImageView
-                    android:layout_width="@dimen/dp40"
-                    android:layout_height="@dimen/dp40"
+                    android:layout_width="@dimen/dp30"
+                    android:layout_height="@dimen/dp30"
                     android:background="@drawable/icon_video_edit_placeholder"/>
                 <TextView
                     android:layout_width="wrap_content"
@@ -312,8 +314,8 @@
                 android:orientation="vertical"
                 android:gravity="center">
                 <ImageView
-                    android:layout_width="@dimen/dp40"
-                    android:layout_height="@dimen/dp40"
+                    android:layout_width="@dimen/dp30"
+                    android:layout_height="@dimen/dp30"
                     android:background="@drawable/icon_video_edit_stickers"/>
                 <TextView
                     android:layout_width="wrap_content"

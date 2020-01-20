@@ -70,8 +70,9 @@ void GLInputYUV420PFilter::initProgram(const char *vertexShader, const char *fra
         setInitialized(true);
     } else {
         positionHandle = -1;
-        positionHandle = -1;
         inputTextureHandle[0] = -1;
+        inputTextureHandle[1] = -1;
+        inputTextureHandle[2] = -1;
         setInitialized(false);
     }
 }

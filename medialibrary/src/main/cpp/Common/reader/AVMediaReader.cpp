@@ -11,12 +11,12 @@ AVMediaReader::AVMediaReader() {
     av_init_packet(&mPacket);
     mPacket.data = nullptr;
     mPacket.size = 0;
-    abortRequest = false;
+    mAbortRequest = false;
 }
 
 AVMediaReader::~AVMediaReader() {
     release();
-    abortRequest = true;
+    mAbortRequest = true;
     if (mSrcPath) {
         av_freep(&mSrcPath);
         mSrcPath = nullptr;
@@ -26,7 +26,7 @@ AVMediaReader::~AVMediaReader() {
         mFormat = nullptr;
     }
     if (mVideoCodecName) {
-        av_freep(&mAudioCodecName);
+        av_freep(&mVideoCodecName);
         mVideoCodecName = nullptr;
     }
     if (mAudioCodecName) {
@@ -262,14 +262,14 @@ int AVMediaReader::decodePacket(AVPacket *packet, OnDecodeListener *listener) {
         return -1;
     }
 
-    // 等效队列消耗足够的帧之后再做处理
+    // 等待队列消耗足够的帧之后再做处理
     if (listener != nullptr) {
-        while (!abortRequest && listener->isDecodeWaiting()) {
+        while (!mAbortRequest && listener->isDecodeWaiting()) {
         }
     }
 
     // 如果处于终止状态，则直接退出解码过程
-    if (abortRequest) {
+    if (mAbortRequest) {
         return 0;
     }
     if (packet->stream_index == mVideoDecoder->getStreamIndex() || packet->stream_index == mAudioDecoder->getStreamIndex()) {
@@ -284,7 +284,7 @@ int AVMediaReader::decodePacket(AVPacket *packet, OnDecodeListener *listener) {
             return ret;
         }
 
-        while (ret == 0 && !abortRequest) {
+        while (ret == 0 && !mAbortRequest) {
 
             AVFrame *frame = av_frame_alloc();
             if (!frame) {

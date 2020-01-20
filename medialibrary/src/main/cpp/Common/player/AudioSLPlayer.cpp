@@ -204,7 +204,7 @@ void AudioSLPlayer::stop() {
     mCondition.signal();
     mMutex.unlock();
 
-    if (mAudioThread && mAudioThread->getId() > 0) {
+    if (mAudioThread && mAudioThread->isActive()) {
         mAudioThread->join();
         delete mAudioThread;
         mAudioThread = nullptr;

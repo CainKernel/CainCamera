@@ -2,19 +2,20 @@
 // Created by cain on 2018/12/30.
 //
 
+#include <libyuv/convert.h>
 #include "MediaSync.h"
 
 MediaSync::MediaSync(PlayerState *playerState) {
     this->playerState = playerState;
-    audioDecoder = NULL;
-    videoDecoder = NULL;
+    audioDecoder = nullptr;
+    videoDecoder = nullptr;
     audioClock = new MediaClock();
     videoClock = new MediaClock();
     extClock = new MediaClock();
 
     mExit = true;
     abortRequest = true;
-    syncThread = NULL;
+    syncThread = nullptr;
 
     forceRefresh = 0;
     maxFrameDuration = 10.0;
@@ -22,10 +23,10 @@ MediaSync::MediaSync(PlayerState *playerState) {
     frameTimer = 0;
 
 
-    videoDevice = NULL;
-    swsContext = NULL;
-    mBuffer = NULL;
-    pFrameARGB = NULL;
+    videoDevice = nullptr;
+    swsContext = nullptr;
+    mBuffer = nullptr;
+    pFrameARGB = nullptr;
 }
 
 MediaSync::~MediaSync() {
@@ -34,23 +35,23 @@ MediaSync::~MediaSync() {
 
 void MediaSync::reset() {
     stop();
-    playerState = NULL;
-    videoDecoder = NULL;
-    audioDecoder = NULL;
-    videoDevice = NULL;
+    playerState = nullptr;
+    videoDecoder = nullptr;
+    audioDecoder = nullptr;
+    videoDevice = nullptr;
 
     if (pFrameARGB) {
         av_frame_free(&pFrameARGB);
         av_free(pFrameARGB);
-        pFrameARGB = NULL;
+        pFrameARGB = nullptr;
     }
     if (mBuffer) {
         av_freep(&mBuffer);
-        mBuffer = NULL;
+        mBuffer = nullptr;
     }
     if (swsContext) {
         sws_freeContext(swsContext);
-        swsContext = NULL;
+        swsContext = nullptr;
     }
 }
 
@@ -82,7 +83,7 @@ void MediaSync::stop() {
     if (syncThread) {
         syncThread->join();
         delete syncThread;
-        syncThread = NULL;
+        syncThread = nullptr;
     }
 }
 
@@ -151,16 +152,18 @@ void MediaSync::run() {
     while (true) {
 
         if (abortRequest || playerState->abortRequest) {
-            if (videoDevice != NULL) {
+            if (videoDevice != nullptr) {
                 videoDevice->terminate();
             }
             break;
         }
 
-//        if (remaining_time > 0.0) {
-//            av_usleep((int64_t) (remaining_time * 1000000.0));
-//        }
-//        remaining_time = REFRESH_RATE;
+        // 处于暂停状态，则睡眠一定的时间
+        if (playerState->pauseRequest) {
+            av_usleep((int64_t) (REFRESH_RATE * 1000000.0));
+        }
+
+        // 是否立马刷新
         if (!playerState->pauseRequest || forceRefresh) {
             refreshVideo(&remaining_time);
         }
@@ -336,7 +339,7 @@ double MediaSync::calculateDelay(double delay)  {
         }
     }
 
-    av_log(NULL, AV_LOG_TRACE, "video: delay=%0.3f A-V=%f\n", delay, -diff);
+    av_log(nullptr, AV_LOG_TRACE, "video: delay=%0.3f A-V=%f\n", delay, -diff);
 
     return delay;
 }
@@ -372,12 +375,56 @@ void MediaSync::renderVideo() {
                                            FMT_YUV420P, BLEND_NONE);
 
                 if (vp->frame->linesize[0] < 0 || vp->frame->linesize[1] < 0 || vp->frame->linesize[2] < 0) {
-                    av_log(NULL, AV_LOG_ERROR, "Negative linesize is not supported for YUV.\n");
+                    av_log(nullptr, AV_LOG_ERROR, "Negative linesize is not supported for YUV.\n");
                     return;
                 }
                 ret = videoDevice->onUpdateYUV(vp->frame->data[0], vp->frame->linesize[0],
                                                vp->frame->data[1], vp->frame->linesize[1],
                                                vp->frame->data[2], vp->frame->linesize[2]);
+                if (ret < 0) {
+                    return;
+                }
+                break;
+            }
+
+            // 非MTKCPU的MediaCodec解码出来的视频格式是NV12的，我们使用libyuv转成ARGB格式
+            case AV_PIX_FMT_NV12: {
+                if (!mBuffer) {
+                    int numBytes = av_image_get_buffer_size(AV_PIX_FMT_BGRA, vp->frame->width, vp->frame->height, 1);
+                    mBuffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
+                    pFrameARGB = av_frame_alloc();
+                    av_image_fill_arrays(pFrameARGB->data, pFrameARGB->linesize, mBuffer, AV_PIX_FMT_ARGB,
+                                         vp->frame->width, vp->frame->height, 1);
+                }
+                libyuv::NV12ToARGB(vp->frame->data[0], vp->frame->linesize[0],
+                                   vp->frame->data[1], vp->frame->linesize[1],
+                                   pFrameARGB->data[0], pFrameARGB->linesize[0],
+                                   vp->frame->width,vp->frame->height);
+                videoDevice->onInitTexture(vp->frame->width, vp->frame->height,
+                                           FMT_ARGB, BLEND_NONE, videoDecoder->getRotate());
+                ret = videoDevice->onUpdateARGB(pFrameARGB->data[0], pFrameARGB->linesize[0]);
+                if (ret < 0) {
+                    return;
+                }
+                break;
+            }
+
+            // 将nv21格式转成ARGB格式
+            case AV_PIX_FMT_NV21: {
+                if (!mBuffer) {
+                    int numBytes = av_image_get_buffer_size(AV_PIX_FMT_BGRA, vp->frame->width, vp->frame->height, 1);
+                    mBuffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
+                    pFrameARGB = av_frame_alloc();
+                    av_image_fill_arrays(pFrameARGB->data, pFrameARGB->linesize, mBuffer, AV_PIX_FMT_ARGB,
+                                         vp->frame->width, vp->frame->height, 1);
+                }
+                libyuv::NV21ToARGB(vp->frame->data[0], vp->frame->linesize[0],
+                                   vp->frame->data[1], vp->frame->linesize[1],
+                                   pFrameARGB->data[0], pFrameARGB->linesize[0],
+                                   vp->frame->width,vp->frame->height);
+                videoDevice->onInitTexture(vp->frame->width, vp->frame->height,
+                                           FMT_ARGB, BLEND_NONE, videoDecoder->getRotate());
+                ret = videoDevice->onUpdateARGB(pFrameARGB->data[0], pFrameARGB->linesize[0]);
                 if (ret < 0) {
                     return;
                 }
@@ -401,7 +448,7 @@ void MediaSync::renderVideo() {
                                                   vp->frame->width, vp->frame->height,
                                                   (AVPixelFormat) vp->frame->format,
                                                   vp->frame->width, vp->frame->height,
-                                                  AV_PIX_FMT_BGRA, SWS_BICUBIC, NULL, NULL, NULL);
+                                                  AV_PIX_FMT_BGRA, SWS_BICUBIC, nullptr, nullptr, nullptr);
                 if (!mBuffer) {
                     int numBytes = av_image_get_buffer_size(AV_PIX_FMT_BGRA, vp->frame->width, vp->frame->height, 1);
                     mBuffer = (uint8_t *)av_malloc(numBytes * sizeof(uint8_t));
@@ -409,7 +456,7 @@ void MediaSync::renderVideo() {
                     av_image_fill_arrays(pFrameARGB->data, pFrameARGB->linesize, mBuffer, AV_PIX_FMT_BGRA,
                                          vp->frame->width, vp->frame->height, 1);
                 }
-                if (swsContext != NULL) {
+                if (swsContext != nullptr) {
                     sws_scale(swsContext, (uint8_t const *const *) vp->frame->data,
                               vp->frame->linesize, 0, vp->frame->height,
                               pFrameARGB->data, pFrameARGB->linesize);
@@ -427,7 +474,7 @@ void MediaSync::renderVideo() {
         vp->uploaded = 1;
     }
     // 请求渲染视频
-    if (videoDevice != NULL) {
+    if (videoDevice != nullptr) {
         videoDevice->setTimeStamp(isnan(vp->pts) ? 0 : vp->pts);
         videoDevice->onRequestRender(vp->frame->linesize[0] < 0);
     }

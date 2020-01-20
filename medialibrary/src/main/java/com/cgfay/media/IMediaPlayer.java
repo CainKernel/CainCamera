@@ -500,33 +500,6 @@ public interface IMediaPlayer {
     public void setOnVideoSizeChangedListener(OnVideoSizeChangedListener listener);
 
 
-    /**
-     * Interface definition of a callback to be invoked when a
-     * timed text is available for display.
-     * {@hide}
-     */
-    public interface OnTimedTextListener {
-        /**
-         * Called to indicate an avaliable timed text
-         *
-         * @param mp             the MediaPlayer associated with this callback
-         * @param text           the timed text sample which contains the text
-         *                       needed to be displayed and the display format.
-         * {@hide}
-         */
-        void onTimedText(IMediaPlayer mp, CainTimedText text);
-    }
-
-    /**
-     * Register a callback to be invoked when a timed text is available
-     * for display.
-     *
-     * @param listener the callback that will be run
-     * {@hide}
-     */
-    public void setOnTimedTextListener(OnTimedTextListener listener);
-
-
     /* Do not change these values without updating their counterparts
      * in include/media/mediaplayer.h!
      */

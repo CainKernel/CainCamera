@@ -1,106 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/video_page_background">
 
     <!-- 视频显示页面 -->
-    <com.cgfay.video.widget.VideoTextureView
-        android:id="@+id/video_player_view"
+    <LinearLayout
+        android:id="@+id/layout_video"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerInParent="true"/>
+        android:gravity="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+        <com.cgfay.video.widget.VideoTextureView
+            android:id="@+id/video_player_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
 
     <!-- back -->
     <ImageView
         android:id="@+id/video_crop_back"
         android:layout_width="@dimen/dp25"
         android:layout_height="@dimen/dp25"
-        android:layout_marginTop="@dimen/dp30"
         android:layout_marginStart="@dimen/dp10"
         android:scaleType="centerInside"
-        android:background="@drawable/icon_video_cut_back"/>
+        android:background="@drawable/icon_video_cut_back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/video_crop_ok"
+        app:layout_constraintBottom_toBottomOf="@+id/video_crop_ok"/>
 
     <!-- OK -->
     <Button
         android:id="@+id/video_crop_ok"
         android:layout_width="@dimen/dp80"
-        android:layout_height="@dimen/dp30"
+        android:layout_height="@dimen/dp35"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="@dimen/dp25"
+        android:layout_marginTop="@dimen/dp40"
         android:layout_marginEnd="9dp"
         android:background="@drawable/bg_button_brown_round"
         android:text="@string/video_crop_next"
-        android:textColor="@color/white" />
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <!-- 速度选择条 -->
+    <com.cgfay.video.widget.VideoSpeedLevelBar
+        android:id="@+id/video_crop_speed_bar"
+        android:layout_width="@dimen/dp200"
+        android:layout_height="35dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="@dimen/dp160"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- 裁剪缩略图 -->
+    <com.cgfay.video.widget.VideoCutViewBar
+        android:id="@+id/video_crop_view_bar"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_marginStart="@dimen/dp30"
+        android:layout_marginEnd="@dimen/dp30"
+        android:background="@color/video_cut_bar_background"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <!-- 缩略图/倍速播放 -->
     <LinearLayout
+        android:id="@+id/layout_speed"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_alignParentBottom="true">
-
-        <!-- 速度选择条 -->
-        <com.cgfay.video.widget.VideoSpeedLevelBar
-            android:id="@+id/video_crop_speed_bar"
-            android:layout_width="@dimen/dp200"
-            android:layout_height="35dp"
-            android:layout_gravity="center_horizontal"
-            android:visibility="gone"/>
-        
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dp20"
-            android:layout_marginBottom="@dimen/dp10">
-            <TextView
-                android:id="@+id/tv_video_cut_selected"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:layout_margin="@dimen/dp10"
-                android:textColor="@color/white"
-                android:textSize="12sp"
-                android:text="已选中 15.0s" />
-            <ImageView
-                android:id="@+id/tv_video_cut_speed_bar_visible"
-                android:layout_width="@dimen/dp30"
-                android:layout_height="@dimen/dp30"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="@dimen/dp15"
-                android:background="@drawable/icon_video_cut_speed"/>
-            <ImageView
-                android:id="@+id/tv_video_cut_rotation"
-                android:layout_width="@dimen/dp30"
-                android:layout_height="@dimen/dp30"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="@dimen/dp10"
-                android:background="@drawable/icon_video_cut_rotate" />
-        </LinearLayout>
-
-        <!-- 裁剪缩略图 -->
-        <com.cgfay.video.widget.VideoCutViewBar
-            android:id="@+id/video_crop_view_bar"
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_marginBottom="20dp"
-            android:background="@color/video_cut_bar_background"/>
+        android:layout_height="@dimen/dp30"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="@dimen/dp10"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+        <TextView
+            android:id="@+id/tv_video_cut_selected"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical"
+            android:layout_marginStart="@dimen/dp10"
+            android:layout_marginEnd="@dimen/dp10"
+            android:textColor="@color/white"
+            android:textSize="12dp"
+            android:text="已选中15.0s"
+            android:textStyle="bold"/>
+        <ImageView
+            android:id="@+id/tv_video_cut_speed_bar_visible"
+            android:layout_width="@dimen/dp30"
+            android:layout_height="@dimen/dp30"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="@dimen/dp15"
+            android:background="@drawable/icon_video_cut_speed"/>
+        <ImageView
+            android:id="@+id/tv_video_cut_rotation"
+            android:layout_width="@dimen/dp30"
+            android:layout_height="@dimen/dp30"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="@dimen/dp10"
+            android:background="@drawable/icon_video_cut_rotate" />
     </LinearLayout>
 
+    <!-- 合成进度 -->
     <LinearLayout
         android:id="@+id/layout_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
         android:background="@drawable/bg_progress_round"
         android:orientation="vertical"
         android:paddingBottom="15dp"
         android:paddingLeft="15dp"
         android:paddingRight="15dp"
         android:paddingTop="20dp"
-        android:visibility="gone">
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
         <com.cgfay.video.widget.CircleProgressView
             xmlns:circle="http://schemas.android.com/apk/res-auto"
             android:id="@+id/cv_crop_progress"
@@ -126,4 +152,4 @@
     </LinearLayout>
 
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

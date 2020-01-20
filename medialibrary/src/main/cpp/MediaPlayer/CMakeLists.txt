@@ -16,12 +16,15 @@ set(soundtouch_dir ../SoundTouch)
 # 添加GLFilter库
 set(filter_dir ../CainFilter)
 
+# 添加通用类目录
+set(common_dir ../Common)
 
 # 添加头文件路径
 include_directories( source
                      android
                      ${soundtouch_dir}
-                     ${filter_dir} )
+                     ${filter_dir}
+                     ${common_dir} )
 
 # 添加源文件
 add_library( media_player
@@ -63,6 +66,7 @@ target_link_libraries( media_player
 
                        ffmpeg
                        soundtouch
+                       yuv
                        cainfilter
 
                        -landroid

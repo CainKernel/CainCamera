@@ -7,6 +7,18 @@
 Resampler::Resampler() {
     pSampleConvertCtx = nullptr;
     mSampleFrame = nullptr;
+
+    mOutSampleSize = 0;
+    mOutSampleRate = 0;
+    mOutChannelLayout = 0;
+    mOutSampleFormat = AV_SAMPLE_FMT_NONE;
+    mOutFrameSize = 0;
+    mOutChannels = 0;
+
+    mInSampleRate = 0;
+    mInChannels = 0;
+    mInChannelLayout = 0;
+    mInSampleFormat = AV_SAMPLE_FMT_NONE;
 }
 
 Resampler::~Resampler() {
@@ -104,15 +116,15 @@ int Resampler::init() {
 /**
  * resample pcm data
  * @param data          pcm data
- * @param frame_size    pcm data length
+ * @param nb_samples    pcm data length
  * @return number of samples output per channel, negative value on error
  */
-int Resampler::resample(const uint8_t *data, int frame_size) {
+int Resampler::resample(const uint8_t *data, int nb_samples) {
     int ret = 0;
     // 如果输入输出不相等，则进行转码再做处理
     if (mInChannels != mOutChannels || mOutSampleFormat != mInSampleFormat || mOutSampleRate != mInSampleRate) {
         ret = swr_convert(pSampleConvertCtx, mSampleBuffer, mOutFrameSize,
-                              &data, frame_size);
+                              &data, nb_samples);
         if (ret < 0) {
             LOGE("swr_convert error: %s", av_err2str(ret));
             return -1;
@@ -140,9 +152,48 @@ int Resampler::resample(const uint8_t *data, int frame_size) {
 }
 
 /**
+ * 对音频帧进行重采样处理
+ * @param frame
+ * @return
+ */
+int Resampler::resample(AVFrame *frame) {
+    if (!frame) {
+        return -1;
+    }
+    int ret = 0;
+    ret = swr_convert(pSampleConvertCtx, mSampleBuffer, mOutFrameSize,
+                      (const uint8_t **)frame->extended_data, frame->nb_samples);
+    if (ret < 0) {
+        LOGE("swr_convert error: %s", av_err2str(ret));
+        return -1;
+    }
+    // 将数据复制到采样帧中
+    avcodec_fill_audio_frame(mSampleFrame, mOutChannels, mInSampleFormat, mSampleBuffer[0],
+                             mOutSampleSize, 0);
+    for (int i = 0; i < mOutChannels; i++) {
+        mSampleFrame->data[i] = mSampleBuffer[i];
+        mSampleFrame->linesize[i] = mOutSampleSize;
+    }
+    mSampleFrame->pts = mNbSamples;
+    mNbSamples += mSampleFrame->nb_samples;
+    return 0;
+}
+/**
  * get resampled frame
  * @return
  */
 AVFrame* Resampler::getConvertedFrame() {
     return mSampleFrame;
+}
+
+int Resampler::getInputSampleRate() {
+    return mInSampleRate;
+}
+
+int Resampler::getInputChannels() {
+    return mInChannels;
+}
+
+AVSampleFormat Resampler::getInputSampleFormat() {
+    return mInSampleFormat;
 }

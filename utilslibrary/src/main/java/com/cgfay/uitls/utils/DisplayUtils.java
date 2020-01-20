@@ -66,7 +66,7 @@ public class DisplayUtils {
      * @param context
      * @return
      */
-    public static boolean isAllScreenDevice(Context context) {
+    public static boolean isFullScreenDevice(Context context) {
         if (mHasCheckAllScreen) {
             return mIsAllScreenDevice;
         }

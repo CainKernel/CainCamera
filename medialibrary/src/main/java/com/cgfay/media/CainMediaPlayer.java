@@ -66,6 +66,7 @@ public class CainMediaPlayer implements IMediaPlayer {
     static {
         System.loadLibrary("ffmpeg");
         System.loadLibrary("soundtouch");
+        System.loadLibrary("yuv");
         System.loadLibrary("media_player");
         native_init();
     }
@@ -683,7 +684,6 @@ public class CainMediaPlayer implements IMediaPlayer {
         mOnErrorListener = null;
         mOnInfoListener = null;
         mOnVideoSizeChangedListener = null;
-        mOnTimedTextListener = null;
         mOnCurrentPositionListener = null;
         _release();
     }
@@ -1008,16 +1008,7 @@ public class CainMediaPlayer implements IMediaPlayer {
                 }
 
                 case MEDIA_TIMED_TEXT: {
-                    if (mOnTimedTextListener != null) {
-                        if (msg.obj == null) {
-                            mOnTimedTextListener.onTimedText(mMediaPlayer, null);
-                        } else {
-                            if (msg.obj instanceof byte[]) {
-                                CainTimedText text = new CainTimedText(new Rect(0, 0, 1, 1), (String) (msg.obj));
-                                mOnTimedTextListener.onTimedText(mMediaPlayer, text);
-                            }
-                        }
-                    }
+                    // do nothing
                     return;
                 }
 
@@ -1125,20 +1116,6 @@ public class CainMediaPlayer implements IMediaPlayer {
     }
 
     private OnVideoSizeChangedListener mOnVideoSizeChangedListener;
-
-    /**
-     * Register a callback to be invoked when a timed text is available
-     * for display.
-     *
-     * @param listener the callback that will be run
-     * {@hide}
-     */
-    @Override
-    public void setOnTimedTextListener(OnTimedTextListener listener) {
-        mOnTimedTextListener = listener;
-    }
-
-    private OnTimedTextListener mOnTimedTextListener;
 
 
     /**

@@ -124,7 +124,8 @@ int AVMediaDecoder::decodePacket(AVPacket *packet, OnDecodeListener *listener, i
             return ret;
         }
 
-        while (ret == 0) {
+        // 一个AVPacket的解码，这里要用while的原因是，一个AVPacket中可能存在多个音频帧(AVFrame)
+        while (ret >= 0) {
 
             AVFrame *frame = av_frame_alloc();
             if (!frame) {

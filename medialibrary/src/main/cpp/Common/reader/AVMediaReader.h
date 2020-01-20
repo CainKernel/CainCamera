@@ -65,24 +65,24 @@ private:
     int decodePacket(AVPacket *packet, OnDecodeListener *listener);
 
 private:
-    const char *mSrcPath;               // input path
-    OnDecodeListener *mReadListener;    // decode listener
-    bool mAutoRelease;                  // auto release decode listener or not
+    const char *mSrcPath;                               // input path
+    OnDecodeListener *mReadListener;                    // decode listener
+    bool mAutoRelease;                                  // auto release decode listener or not
 
-    const char *mFormat;         // AVInputFormat name
+    const char *mFormat;                                // AVInputFormat name
     std::map<std::string, std::string> mFormatOptions;  // format options
     std::map<std::string, std::string> mDecodeOptions;  // decode options
 
-    const char *mVideoCodecName;      // video decoder name
-    const char *mAudioCodecName;      // audio decoder name
+    const char *mVideoCodecName;                        // video decoder name
+    const char *mAudioCodecName;                        // audio decoder name
 
-    std::shared_ptr<AVMediaDemuxer> mMediaDemuxer;  // demuxer
-    std::shared_ptr<AVAudioDecoder> mAudioDecoder;  // video decoder
-    std::shared_ptr<AVVideoDecoder> mVideoDecoder;  // audio decoder
+    std::shared_ptr<AVMediaDemuxer> mMediaDemuxer;      // demuxer
+    std::shared_ptr<AVAudioDecoder> mAudioDecoder;      // video decoder
+    std::shared_ptr<AVVideoDecoder> mVideoDecoder;      // audio decoder
 
-    AVPacket mPacket;               // decoder temp packet
+    AVPacket mPacket;                                   // decoder temp packet
 
-    bool abortRequest;              // abort and stop request
+    bool mAbortRequest;                                 // abort and stop request
 
 };
 
