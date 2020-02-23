@@ -44,6 +44,9 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/CainFilter)
 # 媒体播放器
 add_subdirectory(${CMAKE_SOURCE_DIR}/MediaPlayer)
 
+# 音乐播放器
+add_subdirectory(${CMAKE_SOURCE_DIR}/MusicPlayer)
+
 # 媒体编辑器
 add_subdirectory(${CMAKE_SOURCE_DIR}/MediaEditor)
 

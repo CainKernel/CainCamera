@@ -8,8 +8,8 @@
 #include <string>
 #include <map>
 #include "MediaReader.h"
-#include "AVMediaDemuxer.h"
-#include "AVAudioDecoder.h"
+#include "demuxer/AVMediaDemuxer.h"
+#include "decoder/AVAudioDecoder.h"
 
 class AudioReader : public MediaReader {
 public:
@@ -43,10 +43,10 @@ public:
 
     AVSampleFormat getSampleFormat();
 
+    void release();
+
 private:
     void reset();
-
-    void release();
 
     int decodePacket(AVPacket *packet, OnDecodeListener *listener);
 

@@ -8,9 +8,9 @@
 #include <string>
 #include <map>
 #include "MediaReader.h"
-#include "AVMediaDemuxer.h"
-#include "AVAudioDecoder.h"
-#include "AVVideoDecoder.h"
+#include "demuxer/AVMediaDemuxer.h"
+#include "decoder/AVAudioDecoder.h"
+#include "decoder/AVVideoDecoder.h"
 
 /**
  * 媒体读取器

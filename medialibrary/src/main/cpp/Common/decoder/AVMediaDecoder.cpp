@@ -174,6 +174,15 @@ void AVMediaDecoder::closeDecoder() {
 }
 
 /**
+ * 刷新解码缓冲区
+ */
+void AVMediaDecoder::flushBuffer() {
+    if (pCodecCtx) {
+        avcodec_flush_buffers(pCodecCtx);
+    }
+}
+
+/**
  * 获取媒体流索引
  * @return
  */
@@ -187,4 +196,12 @@ int AVMediaDecoder::getStreamIndex() {
  */
 AVCodecContext* AVMediaDecoder::getContext() {
     return pCodecCtx;
+}
+
+/**
+ * 获取媒体流
+ * @return
+ */
+AVStream *AVMediaDecoder::getStream() {
+    return pStream;
 }

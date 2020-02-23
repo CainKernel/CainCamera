@@ -23,7 +23,7 @@ public:
 
     // set output pcm params
     void setOutput(int sample_rate, uint64_t channel_layout, AVSampleFormat sample_fmt,
-                   int channels, int frame_size);
+                   int channels, int nb_samples);
 
     // init convertor
     int init();
@@ -32,7 +32,7 @@ public:
     int resample(const uint8_t *data, int nb_samples);
 
     // convert data
-    int resample(AVFrame *frame);
+    int resample(AVFrame *frame, uint8 **converted_data);
 
     // get converted frame
     AVFrame *getConvertedFrame();

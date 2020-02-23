@@ -9,7 +9,7 @@
 
 #include <jni.h>
 
-#include "AVMediaDecoder.h"
+#include "decoder/AVMediaDecoder.h"
 
 extern "C" {
 #include <libavutil/hwcontext.h>

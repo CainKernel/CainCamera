@@ -5,10 +5,10 @@
 #ifndef SONICAUDIOTRANSCODER_H
 #define SONICAUDIOTRANSCODER_H
 
-// 最大倍速
 #include "AVMediaData.h"
 #include "sonic.h"
 
+// 最大倍速
 #define MAXIMUM_SPEED 8.0
 
 // 最小倍速
@@ -25,21 +25,25 @@
  */
 class SonicAudioTranscoder {
 public:
-    SonicAudioTranscoder(int sampleRate, int channelCount, float speed);
+    SonicAudioTranscoder(int sampleRate, int channelCount, float speed = 1.0f);
 
     virtual ~SonicAudioTranscoder();
 
     // 设置速度
     void setSpeed(float speed);
 
+    float getSpeed();
+
     // 设置节拍
     void setPitch(float pitch);
+
+    float getPitch();
 
     // 刷新缓冲区
     void flush();
 
-    // 音频转码
-    int transcode(AVMediaData *data);
+    // 倍速转换
+    int transcode(AVMediaData *data, short **buffer, int bufSize, int64_t &pts);
 
 private:
     // 将采样数据送去转码

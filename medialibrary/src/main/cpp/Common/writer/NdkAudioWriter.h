@@ -13,7 +13,7 @@
 #include <media/NdkMediaCodec.h>
 #include <media/NdkMediaError.h>
 
-#include "MediaEncoder.h"
+#include "encoder/MediaEncoder.h"
 #include "NdkCodecProfileLevel.h"
 
 /**

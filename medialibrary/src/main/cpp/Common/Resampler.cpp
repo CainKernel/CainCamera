@@ -53,6 +53,8 @@ void Resampler::setInput(int sample_rate, int channels, AVSampleFormat sample_fm
     mInChannels = av_sample_fmt_is_planar(sample_fmt) ? channels : 1;
     mInSampleFormat = sample_fmt;
     mInChannelLayout = av_get_default_channel_layout(mInChannels);
+    LOGD("Resampler setInput: sampleRate: %d, channels: %d, sample_fmt: %s",
+            sample_rate, channels, av_get_sample_fmt_name(sample_fmt));
 }
 
 /**
@@ -61,19 +63,19 @@ void Resampler::setInput(int sample_rate, int channels, AVSampleFormat sample_fm
  * @param channel_layout
  * @param sample_fmt
  * @param channels
- * @param frame_size
+ * @param nb_samples
  */
 void Resampler::setOutput(int sample_rate, uint64_t channel_layout, AVSampleFormat sample_fmt,
-                          int channels, int frame_size) {
+                          int channels, int nb_samples) {
 
     mOutSampleRate = sample_rate;
     mOutChannelLayout = channel_layout;
     mOutSampleFormat = sample_fmt;
-    mOutFrameSize = frame_size;
+    mOutFrameSize = nb_samples;
 
     mSampleFrame = av_frame_alloc();
     mSampleFrame->format = sample_fmt;
-    mSampleFrame->nb_samples = frame_size;
+    mSampleFrame->nb_samples = nb_samples;
     mSampleFrame->channel_layout = (uint64_t)channel_layout;
     mSampleFrame->pts = 0;
 
@@ -81,8 +83,8 @@ void Resampler::setOutput(int sample_rate, uint64_t channel_layout, AVSampleForm
     mOutChannels = av_sample_fmt_is_planar(sample_fmt) ? channels : 1;
     // 计算出缓冲区大小
     mOutSampleSize = av_samples_get_buffer_size(nullptr, channels,
-                                             frame_size,
-                                             sample_fmt, 1) / mOutChannels;
+                                                nb_samples,
+                                                sample_fmt, 1) / mOutChannels;
     // 初始化采样缓冲区大小
     mSampleBuffer = new uint8_t *[mOutChannels];
     for (int i = 0; i < mOutChannels; i++) {
@@ -156,28 +158,20 @@ int Resampler::resample(const uint8_t *data, int nb_samples) {
  * @param frame
  * @return
  */
-int Resampler::resample(AVFrame *frame) {
+int Resampler::resample(AVFrame *frame, uint8 **converted_data) {
     if (!frame) {
         return -1;
     }
     int ret = 0;
-    ret = swr_convert(pSampleConvertCtx, mSampleBuffer, mOutFrameSize,
+    ret = swr_convert(pSampleConvertCtx, converted_data, frame->nb_samples,
                       (const uint8_t **)frame->extended_data, frame->nb_samples);
     if (ret < 0) {
         LOGE("swr_convert error: %s", av_err2str(ret));
         return -1;
     }
-    // 将数据复制到采样帧中
-    avcodec_fill_audio_frame(mSampleFrame, mOutChannels, mInSampleFormat, mSampleBuffer[0],
-                             mOutSampleSize, 0);
-    for (int i = 0; i < mOutChannels; i++) {
-        mSampleFrame->data[i] = mSampleBuffer[i];
-        mSampleFrame->linesize[i] = mOutSampleSize;
-    }
-    mSampleFrame->pts = mNbSamples;
-    mNbSamples += mSampleFrame->nb_samples;
     return 0;
 }
+
 /**
  * get resampled frame
  * @return

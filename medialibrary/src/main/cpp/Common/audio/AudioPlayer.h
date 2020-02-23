@@ -9,7 +9,9 @@
 
 class AudioProvider {
 public:
-    virtual void onAudioProvide(uint8_t *stream, int len) = 0;
+    virtual ~AudioProvider() = default;
+
+    virtual int onAudioProvide(short **buffer, int size) = 0;
 };
 
 class AudioPlayer {
@@ -18,7 +20,6 @@ public:
     AudioPlayer(const std::shared_ptr<AudioProvider> &audioProvider);
 
     virtual ~AudioPlayer();
-
 
     virtual int open(int sampleRate, int channels) = 0;
 
@@ -42,15 +43,15 @@ public:
         return mChannels;
     }
 
-    inline uint32_t getBufferSize() {
-        return mBufferSize;
+    inline AVSampleFormat getSampleFormat() {
+        return mSampleFmt;
     }
 
 protected:
     std::weak_ptr<AudioProvider> mAudioProvider;
     int mSampleRate;                // 采样率
     uint8_t mChannels;              // 声道数
-    uint32_t mBufferSize;           // 缓冲区大小
+    AVSampleFormat mSampleFmt;      // 采样格式
 };
 
 

@@ -23,36 +23,34 @@ add_library( transcoder
 
              SHARED
 
-             # demuxer
+             # reader
              ${common_dir}/reader/AVMediaReader.cpp
              ${common_dir}/reader/AVMediaCodecReader.cpp
-             # soft decoder
-             ${common_dir}/reader/AVMediaDemuxer.cpp
-             ${common_dir}/reader/AVAudioDecoder.cpp
-             ${common_dir}/reader/AVMediaDecoder.cpp
-             ${common_dir}/reader/AVVideoDecoder.cpp
-             # hard decoder
-             ${common_dir}/reader/MediaCodecVideoDecoder.cpp
+             # demuxer
+             ${common_dir}/demuxer/AVMediaDemuxer.cpp
+             # decoder
+             ${common_dir}/decoder/AVAudioDecoder.cpp
+             ${common_dir}/decoder/AVMediaDecoder.cpp
+             ${common_dir}/decoder/AVVideoDecoder.cpp
+             ${common_dir}/decoder/MediaCodecVideoDecoder.cpp
 
-             # soft encoder
-             ${common_dir}/writer/AVAudioEncoder.cpp
-             ${common_dir}/writer/AVMediaEncoder.cpp
-             ${common_dir}/writer/AVVideoEncoder.cpp
-             ${common_dir}/writer/AVMediaMuxer.cpp
+             # encoder
+             ${common_dir}/encoder/AVAudioEncoder.cpp
+             ${common_dir}/encoder/AVMediaEncoder.cpp
+             ${common_dir}/encoder/AVVideoEncoder.cpp
+             ${common_dir}/encoder/NdkAudioEncoder.cpp
+             ${common_dir}/encoder/NdkMediaEncoder.cpp
+             ${common_dir}/encoder/NdkVideoEncoder.cpp
+
+             # muxer
+             ${common_dir}/muxer/AVMediaMuxer.cpp
+             ${common_dir}/muxer/NdkMediaCodecMuxer.cpp
+
+             # media writer
              ${common_dir}/writer/AVMediaWriter.cpp
-             # hard encoder
-             ${common_dir}/writer/NdkMediaCodecMuxer.cpp
-             ${common_dir}/writer/NdkAudioEncoder.cpp
-             ${common_dir}/writer/NdkMediaEncoder.cpp
-             ${common_dir}/writer/NdkVideoEncoder.cpp
              ${common_dir}/writer/NdkMediaWriter.cpp
-             # audio/video single track writer
              ${common_dir}/writer/NdkAudioWriter.cpp
              ${common_dir}/writer/NdkVideoWriter.cpp
-
-             # player
-             ${common_dir}/player/AudioPlayer.cpp
-             ${common_dir}/player/AudioSLPlayer.cpp
 
              # common
              ${common_dir}/AVFormatter.cpp
@@ -80,7 +78,6 @@ target_link_libraries( transcoder
                        android
                        jnigraphics
                        mediandk
-                       OpenSLES
                        EGL
                        ${GLES-lib}
                        log )

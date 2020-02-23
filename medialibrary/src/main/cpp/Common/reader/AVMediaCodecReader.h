@@ -8,8 +8,8 @@
 #if defined(__ANDROID__)
 
 #include "MediaReader.h"
-#include "MediaCodecVideoDecoder.h"
-#include "AVAudioDecoder.h"
+#include "decoder/MediaCodecVideoDecoder.h"
+#include "decoder/AVAudioDecoder.h"
 
 class AVMediaCodecReader : public MediaReader {
 public:

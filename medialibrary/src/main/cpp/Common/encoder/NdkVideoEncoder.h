@@ -16,8 +16,8 @@
 #include <AVFormatter.h>
 
 #include "MediaEncoder.h"
-#include "NdkCodecProfileLevel.h"
-#include "AVMediaMuxer.h"
+#include "writer/NdkCodecProfileLevel.h"
+#include "muxer/AVMediaMuxer.h"
 #include "NdkMediaEncoder.h"
 
 class NdkVideoEncoder : public NdkMediaEncoder {

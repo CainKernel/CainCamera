@@ -6,7 +6,7 @@
 #define AVMEDIADEMUXER_H
 
 #include <map>
-#include "../AVMediaHeader.h"
+#include "AVMediaHeader.h"
 
 /**
  * 解复用器
@@ -27,7 +27,10 @@ public:
     int openDemuxer(std::map<std::string, std::string> formatOptions);
 
     // 定位到某个时间(ms)
-    int seekTo(float timeMs);
+    int seekTo(float timeMs, int stream_index = -1);
+
+    // 读取
+    int readFrame(AVPacket *packet);
 
     // 关闭解复用器
     void closeDemuxer();
@@ -41,6 +44,8 @@ public:
     // 获取解复用上下文
     AVFormatContext *getContext();
 
+    const char *getPath();
+
     bool hasAudioStream();
 
     bool hasVideoStream();
@@ -52,7 +57,7 @@ private:
     const char *mInputPath;         // 输入文件路径
     AVInputFormat *iformat;         // 指定文件封装格式，也就是解复用器
     AVFormatContext *pFormatCtx;    // 解复用上下文
-    int64_t mDuration;              // 文件总时长
+    int64_t mDuration;              // 文件总时长(ms)
 };
 
 

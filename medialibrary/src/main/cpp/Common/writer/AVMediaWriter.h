@@ -8,9 +8,9 @@
 #include <map>
 #include <Resampler.h>
 #include "MediaWriter.h"
-#include "AVMediaMuxer.h"
-#include "AVAudioEncoder.h"
-#include "AVVideoEncoder.h"
+#include "muxer/AVMediaMuxer.h"
+#include "encoder/AVAudioEncoder.h"
+#include "encoder/AVVideoEncoder.h"
 #include "../AVFormatter.h"
 
 /**

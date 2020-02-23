@@ -42,10 +42,18 @@ public:
 
     void run() override;
 
+    int receiveAudioData();
+
 private:
     void reset();
 
     void release();
+
+    // 创建引擎
+    int createEngine();
+
+    // 音频播放
+    void audioPlay();
 
     // 转换成SL采样率
     SLuint32 getSLSampleRate(int sampleRate);
@@ -71,23 +79,14 @@ private:
 
     bool mInited;                       // SL初始化完成标志
 
-    int mBytesPerFrame;                 // 一帧占多少字节
-    int mMillisPerBuffer;               // 一个缓冲区时长占多少
-    int mFramePerBuffer;                // 一个缓冲区有多少帧
-    int mBytesPerBuffer;                // 一个缓冲区的大小
-    uint8_t *mBuffer;                   // 缓冲区
+    int mMaxBufferSize;                 // 最大缓冲区
+    short *mBuffer;                     // 缓冲区
 
     Mutex mMutex;
     Condition mCondition;
     Thread *mAudioThread;               // 音频播放线程
     bool mAbortRequest;                 // 终止标志
     bool mPauseRequest;                 // 暂停标志
-    bool mFlushRequest;                 // 刷新标志
-
-    bool mUpdateVolume;                 // 更新音量
-    float mLeftVolume;                  // 左音量
-    float mRightVolume;                 // 右音量
-
 };
 
 #endif /* defined(__ANDROID__)  */

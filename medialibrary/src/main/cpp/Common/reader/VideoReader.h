@@ -8,8 +8,8 @@
 #include <string>
 #include <map>
 #include "MediaReader.h"
-#include "AVMediaDemuxer.h"
-#include "AVVideoDecoder.h"
+#include "../demuxer/AVMediaDemuxer.h"
+#include "../decoder/AVVideoDecoder.h"
 
 class VideoReader : public MediaReader {
 public:

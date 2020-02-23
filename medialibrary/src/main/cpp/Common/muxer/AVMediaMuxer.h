@@ -5,8 +5,8 @@
 #ifndef AVMEDIAMUXER_H
 #define AVMEDIAMUXER_H
 
-#include "../AVMediaHeader.h"
-#include "../AVMediaData.h"
+#include "AVMediaHeader.h"
+#include "AVMediaData.h"
 
 /**
  * 媒体复用器

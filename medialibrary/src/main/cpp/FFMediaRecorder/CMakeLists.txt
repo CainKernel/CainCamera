@@ -9,19 +9,23 @@ add_library( ffrecorder
 
              SHARED
 
-             #
-             ${common_dir}/writer/AVMediaMuxer.cpp
-             ${common_dir}/writer/AVMediaWriter.cpp
-             ${common_dir}/writer/AVAudioEncoder.cpp
-             ${common_dir}/writer/AVMediaEncoder.cpp
-             ${common_dir}/writer/AVVideoEncoder.cpp
+             # 软编码
 
+             ${common_dir}/encoder/AVAudioEncoder.cpp
+             ${common_dir}/encoder/AVMediaEncoder.cpp
+             ${common_dir}/encoder/AVVideoEncoder.cpp
              # 硬编码
-             ${common_dir}/writer/NdkMediaCodecMuxer.cpp
-             ${common_dir}/writer/NdkAudioEncoder.cpp
-             ${common_dir}/writer/NdkMediaEncoder.cpp
+             ${common_dir}/encoder/NdkAudioEncoder.cpp
+             ${common_dir}/encoder/NdkMediaEncoder.cpp
+             ${common_dir}/encoder/NdkVideoEncoder.cpp
+
+             # 复用器
+             ${common_dir}/muxer/AVMediaMuxer.cpp
+             ${common_dir}/muxer/NdkMediaCodecMuxer.cpp
+
+             # 合成器
+             ${common_dir}/writer/AVMediaWriter.cpp
              ${common_dir}/writer/NdkMediaWriter.cpp
-             ${common_dir}/writer/NdkVideoEncoder.cpp
 
              # 通用类
              ${common_dir}/AVFormatter.cpp

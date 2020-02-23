@@ -5,9 +5,8 @@
 #ifndef AVMEDIADECODER_H
 #define AVMEDIADECODER_H
 
-#include <map>
-#include "AVMediaDemuxer.h"
-#include "OnDecodeListener.h"
+#include "demuxer/AVMediaDemuxer.h"
+#include "reader/OnDecodeListener.h"
 
 /**
  * 媒体解码器基类
@@ -30,11 +29,16 @@ public:
     // 关闭解码器
     virtual void closeDecoder();
 
+    // 刷新解码缓冲区
+    void flushBuffer();
+
     // 获取媒体流索引
     int getStreamIndex();
 
     // 获取解码上下文
     AVCodecContext *getContext();
+
+    AVStream *getStream();
 
     // 获取媒体类型
     virtual AVMediaType getMediaType() = 0;

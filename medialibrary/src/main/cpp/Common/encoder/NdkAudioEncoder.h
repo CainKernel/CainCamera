@@ -12,7 +12,7 @@
 #include <media/NdkMediaCodec.h>
 #include <media/NdkMediaError.h>
 
-#include "NdkCodecProfileLevel.h"
+#include "writer/NdkCodecProfileLevel.h"
 #include "NdkMediaEncoder.h"
 
 class NdkAudioEncoder : public NdkMediaEncoder {

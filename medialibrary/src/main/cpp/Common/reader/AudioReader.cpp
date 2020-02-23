@@ -184,6 +184,7 @@ int AudioReader::decodePacket() {
         }
     }
     if (ret == 0) {
+        LOGD("read one audio packet");
         ret = decodePacket(&mPacket, mDecodeListener);
     }
     av_packet_unref(&mPacket);
@@ -242,6 +243,7 @@ int AudioReader::decodePacket(AVPacket *packet, OnDecodeListener *listener) {
 
             // 将解码后的帧送出去
             if (listener != nullptr) {
+                LOGD("send out one audio frame");
                 listener->onDecodedFrame(frame, AVMEDIA_TYPE_AUDIO);
             } else {
                 av_frame_unref(frame);

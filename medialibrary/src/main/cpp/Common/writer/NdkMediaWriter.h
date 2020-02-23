@@ -9,10 +9,10 @@
 
 #include <Resampler.h>
 #include <map>
-#include "NdkAudioEncoder.h"
-#include "NdkVideoEncoder.h"
+#include "encoder/NdkAudioEncoder.h"
+#include "encoder/NdkVideoEncoder.h"
 #include "MediaWriter.h"
-#include "AVMediaMuxer.h"
+#include "muxer/AVMediaMuxer.h"
 #include <AVFormatter.h>
 
 /**

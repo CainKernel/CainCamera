@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_speed_record).setOnClickListener(this);
         findViewById(R.id.btn_edit_music_merge).setOnClickListener(this);
         findViewById(R.id.btn_ff_media_record).setOnClickListener(this);
+        findViewById(R.id.btn_music_player).setOnClickListener(this);
     }
 
     @Override
@@ -121,6 +122,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_ff_media_record: {
                 ffmpegRecord();
+                break;
+            }
+
+            case R.id.btn_music_player: {
+                musicPlayerTest();
                 break;
             }
         }
@@ -206,5 +212,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void ffmpegRecord() {
         startActivity(new Intent(MainActivity.this, FFMediaRecordActivity.class));
+    }
+
+    private void musicPlayerTest() {
+        startActivity(new Intent(MainActivity.this, MusicPlayerActivity.class));
+        finish();
     }
 }

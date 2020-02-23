@@ -5,9 +5,9 @@
 #ifndef AVMEDIAENCODER_H
 #define AVMEDIAENCODER_H
 
-#include "../AVMediaHeader.h"
-#include "../AVMediaData.h"
-#include "AVMediaMuxer.h"
+#include "AVMediaHeader.h"
+#include "AVMediaData.h"
+#include "muxer/AVMediaMuxer.h"
 
 #include <map>
 

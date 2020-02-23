@@ -8,6 +8,7 @@ AVMediaDemuxer::AVMediaDemuxer() {
     iformat = nullptr;
     pFormatCtx = nullptr;
     mInputPath = nullptr;
+    mDuration = -1;
 }
 
 AVMediaDemuxer::~AVMediaDemuxer() {
@@ -23,6 +24,7 @@ AVMediaDemuxer::~AVMediaDemuxer() {
  */
 void AVMediaDemuxer::setInputPath(const char *path) {
     mInputPath = av_strdup(path);
+    LOGD("setInputPath: %s", path);
 }
 
 /**
@@ -59,14 +61,18 @@ int AVMediaDemuxer::openDemuxer(std::map<std::string, std::string> formatOptions
     }
     av_dict_free(&options);
 
-    // 设置时钟
-    mDuration = pFormatCtx->duration;
-
     // 查找媒体流信息
     if ((ret = avformat_find_stream_info(pFormatCtx, nullptr)) < 0) {
         LOGE("Failed to call avformat_find_stream_info - %s", av_err2str(ret));
         return ret;
     }
+
+    // 获取总时长
+    if (pFormatCtx->duration != AV_NOPTS_VALUE) {
+        mDuration = ((pFormatCtx->duration / AV_TIME_BASE) * 1000);
+        LOGD("duration: %d", mDuration);
+    }
+
     return 0;
 }
 
@@ -75,24 +81,36 @@ int AVMediaDemuxer::openDemuxer(std::map<std::string, std::string> formatOptions
  * @param timeMs 时间/ms
  * @return
  */
-int AVMediaDemuxer::seekTo(float timeMs) {
-    if (mDuration < 0) {
+int AVMediaDemuxer::seekTo(float timeMs, int stream_index) {
+    if (mDuration <= 0) {
         return -1;
     }
-    int seekFlags = 0;
-    seekFlags &= ~AVSEEK_FLAG_BYTE;
     int64_t start_time = 0;
     int64_t seek_pos = av_rescale(timeMs, AV_TIME_BASE, 1000);
     start_time = pFormatCtx ? pFormatCtx->start_time : 0;
     if (start_time > 0 && start_time != AV_NOPTS_VALUE) {
         seek_pos += start_time;
     }
-    int ret = avformat_seek_file(pFormatCtx, -1, INT64_MIN, seek_pos, INT64_MAX, seekFlags);
+//    int seekFlags = 0;
+//    seekFlags &= ~AVSEEK_FLAG_BYTE;
+//    int ret = avformat_seek_file(pFormatCtx, -1, INT64_MIN, seek_pos, INT64_MAX, seekFlags);
+    int ret = av_seek_frame(pFormatCtx, stream_index, seek_pos, AVSEEK_FLAG_BACKWARD);
     if (ret < 0) {
-        LOGE("%s: could not seek to position %0.3f\n", mInputPath, (double)seek_pos / AV_TIME_BASE);
+        LOGE("%s: could not seek to time(ms): %0.3f\n", mInputPath, (double)seek_pos / AV_TIME_BASE * 1000);
         return ret;
     }
-    return 0;
+    LOGD("seek success: time(ms): %.3f, position: %d", timeMs, seek_pos);
+    return ret;
+}
+
+/**
+ * 读取一个数据包
+ */
+int AVMediaDemuxer::readFrame(AVPacket *packet) {
+    if (packet) {
+        return av_read_frame(pFormatCtx, packet);
+    }
+    return -1;
 }
 
 /**
@@ -170,4 +188,8 @@ bool AVMediaDemuxer::isRealTime() {
         return 1;
     }
     return 0;
+}
+
+const char *AVMediaDemuxer::getPath() {
+    return mInputPath;
 }

@@ -14,8 +14,8 @@
 #include <map>
 
 #include "MediaEncoder.h"
-#include "NdkCodecProfileLevel.h"
-#include "NdkMediaCodecMuxer.h"
+#include "writer/NdkCodecProfileLevel.h"
+#include "muxer/NdkMediaCodecMuxer.h"
 
 class NdkMediaEncoder {
 public:

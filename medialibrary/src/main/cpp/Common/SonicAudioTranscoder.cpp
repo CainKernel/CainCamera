@@ -39,6 +39,17 @@ void SonicAudioTranscoder::setSpeed(float speed) {
 }
 
 /**
+ * 获取转码速度
+ * @return
+ */
+float SonicAudioTranscoder::getSpeed() {
+    if (sonic != nullptr) {
+        return sonicGetSpeed(sonic);
+    }
+    return 1.0f;
+}
+
+/**
  * 设置节拍
  * @param pitch
  */
@@ -46,6 +57,17 @@ void SonicAudioTranscoder::setPitch(float pitch) {
     if (sonic != nullptr) {
         sonicSetPitch(sonic, clamp(pitch, MINIMUM_PITCH, MAXIMUM_PITCH));
     }
+}
+
+/**
+ * 获取节拍
+ * @return
+ */
+float SonicAudioTranscoder::getPitch() {
+    if (sonic != nullptr) {
+        return sonicGetPitch(sonic);
+    }
+    return 1.0f;
 }
 
 /**
@@ -58,38 +80,36 @@ void SonicAudioTranscoder::flush() {
 }
 
 /**
- * 转码音频数据
- * @param data 音频数据
- * @return 转码结果
+ * 倍速转码音频数据
+ * @param data      input audio data
+ * @param buffer    output buffer
+ * @param pts       current pts
+ * @return          transcode sample size
  */
-int SonicAudioTranscoder::transcode(AVMediaData *data) {
-    if (data == nullptr || data->sample == nullptr || data->sample_size <= 0) {
+int SonicAudioTranscoder::transcode(AVMediaData *data, short **buffer, int bufSize, int64_t &pts) {
+    if (!data || data->getType() != MediaAudio || !data->sample) {
+        if (data) {
+            delete data;
+        }
         flush();
         return 0;
     }
+    pts = data->getPts();
     int size = data->sample_size;
     if (size > putBufferSize) {
         putAudioBuffer = (short *) realloc(putAudioBuffer, size);
         putBufferSize = size;
     }
-    LOGE("putAudioBuffer == null ? %d, sample size：%d", (putAudioBuffer == nullptr), size);
-    // 将uint8_t数据转成short类型
-    for (int i = 0; i < (size / 2); i++) {
-        putAudioBuffer[i] = (data->sample[i * 2] | (data->sample[i * 2 + 1] << 8));
-    }
+    memcpy(putAudioBuffer, data->sample, size);
     putSample(putAudioBuffer, size);
     data->free();
+    delete data;
     int availableSize = getSamplesAvailable();
     if (availableSize > 0) {
-        auto outputBuffer = (short *) malloc(availableSize);
-        int samplesReadSize = receiveSample(outputBuffer, availableSize);
-        if (samplesReadSize > 0) {
-            data->sample = (uint8 *)outputBuffer; // 转换回原来的uint8_t
-            data->sample_size = samplesReadSize;
-            return samplesReadSize;
-        } else {
-            free(outputBuffer);
+        if (availableSize > bufSize) {
+            *buffer = (short *) realloc(*buffer, availableSize);
         }
+        return receiveSample(*buffer, availableSize);
     }
     return 0;
 }
