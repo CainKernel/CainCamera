@@ -14,10 +14,7 @@ AVMediaDecoder::AVMediaDecoder(std::shared_ptr<AVMediaDemuxer> mediaDemuxer) {
 }
 
 AVMediaDecoder::~AVMediaDecoder() {
-    if (pCodecName) {
-        av_freep(&pCodecName);
-        pCodecName = nullptr;
-    }
+
 }
 
 /**
@@ -57,21 +54,8 @@ int AVMediaDecoder::openDecoder(std::map<std::string, std::string> decodeOptions
     mStreamIndex = ret;
     pStream = mediaDemuxer->getContext()->streams[mStreamIndex];
 
-    // 根据指定解码器名称查找解码器
-    pCodec = avcodec_find_encoder_by_name(pCodecName);
-
-    // 根据id查找解码器
-    if (pCodec == nullptr) {
-        pCodec = avcodec_find_decoder(pStream->codecpar->codec_id);
-    }
-    if (!pCodec) {
-        LOGE("Failed to find %s codec", av_get_media_type_string(getMediaType()));
-        return AVERROR(ENOMEM);
-    }
-    pStream->codecpar->codec_id = pCodec->id;
-
     // 创建解码上下文
-    pCodecCtx = avcodec_alloc_context3(pCodec);
+    pCodecCtx = avcodec_alloc_context3(nullptr);
     if (!pCodecCtx) {
         LOGE("Failed to alloc the %s codec context", av_get_media_type_string(getMediaType()));
         return AVERROR(ENOMEM);
@@ -83,6 +67,28 @@ int AVMediaDecoder::openDecoder(std::map<std::string, std::string> decodeOptions
              av_get_media_type_string(getMediaType()), ret);
         return ret;
     }
+
+    // 设置时钟基准
+    av_codec_set_pkt_timebase(pCodecCtx, pStream->time_base);
+
+    // 根据指定解码器名称查找解码器
+    if (pCodecName) {
+        pCodec = avcodec_find_decoder_by_name(pCodecName);
+    }
+
+    // 根据id查找解码器
+    if (pCodec == nullptr) {
+        if (pCodecName) {
+            av_log(NULL, AV_LOG_WARNING,
+                   "No codec could be found with name '%s'\n", pCodecName);
+        }
+        pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
+    }
+    if (!pCodec) {
+        LOGE("Failed to find %s codec", av_get_media_type_string(getMediaType()));
+        return AVERROR(EINVAL);
+    }
+    pCodecCtx->codec_id = pCodec->id;
 
     // 打开解码器
     AVDictionary *options = nullptr;

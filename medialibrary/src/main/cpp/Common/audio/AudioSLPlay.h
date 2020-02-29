@@ -2,12 +2,12 @@
 // Created by CainHuang on 2020-01-14.
 //
 
-#ifndef AUDIOSLPLAYER_H
-#define AUDIOSLPLAYER_H
+#ifndef AUDIOSLPLAY_H
+#define AUDIOSLPLAY_H
 
 #if defined(__ANDROID__)
 
-#include "AudioPlayer.h"
+#include "AudioPlay.h"
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
@@ -20,11 +20,11 @@
 #define OPENSLES_BUFLEN  10 // 缓冲区长度(毫秒)
 #endif
 
-class AudioSLPlayer : public AudioPlayer, public Runnable {
+class AudioSLPlay : public AudioPlay, public Runnable {
 public:
-    AudioSLPlayer(const std::shared_ptr<AudioProvider> &audioProvider);
+    AudioSLPlay(const std::shared_ptr<AudioProvider> &audioProvider);
 
-    virtual ~AudioSLPlayer();
+    virtual ~AudioSLPlay();
 
     int open(int sampleRate, int channels) override;
 
@@ -91,4 +91,4 @@ private:
 
 #endif /* defined(__ANDROID__)  */
 
-#endif //AUDIOSLPLAYER_H
+#endif //AUDIOSLPLAY_H

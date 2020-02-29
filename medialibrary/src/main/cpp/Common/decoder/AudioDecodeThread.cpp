@@ -5,6 +5,7 @@
 #include "AudioDecodeThread.h"
 
 AudioDecodeThread::AudioDecodeThread(SafetyQueue<AVMediaData *> *frameQueue) {
+    LOGD("AudioDecodeThread::constructor()");
     av_register_all();
     mFrameQueue = frameQueue;
     mAudioDemuxer = std::make_shared<AVMediaDemuxer>();
@@ -15,7 +16,7 @@ AudioDecodeThread::AudioDecodeThread(SafetyQueue<AVMediaData *> *frameQueue) {
     mPacket.data = nullptr;
     mPacket.size = 0;
 
-    mMaxFrame = 20;
+    mMaxFrame = 2;
     mOutSampleRate = 44100;
     mOutChannels = 1;
     mOutFormat = AV_SAMPLE_FMT_S16;
@@ -353,53 +354,57 @@ int AudioDecodeThread::decodePacket(AVPacket *packet) {
         return -1;
     }
 
-    if (packet->stream_index == mAudioDecoder->getStreamIndex()) {
-        // 将数据包送去解码
-        auto pCodecContext = mAudioDecoder->getContext();
-        ret = avcodec_send_packet(pCodecContext, packet);
-        if (ret < 0) {
-            LOGE("Failed to call avcodec_send_packet: %s", av_err2str(ret));
-            return ret;
-        }
+    // 非音频数据包，则直接释放内存并返回
+    if (packet->stream_index != mAudioDecoder->getStreamIndex()) {
+        av_packet_unref(packet);
+        return ret;
+    }
 
-        while (ret == 0 && !mAbortRequest) {
-            // 取出解码后的AVFrame
-            ret = avcodec_receive_frame(pCodecContext, mFrame);
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                av_frame_unref(mFrame);
-                break;
-            } else if (ret < 0) {
-                LOGE("Failed to call avcodec_receive_frame: %s", av_err2str(ret));
-                av_frame_unref(mFrame);
-                break;
-            }
-            // 将解码后数据帧转码后放入队列
-            if (mFrameQueue != nullptr) {
-                // 音频转码
-                int out_count = reallocBuffer(mFrame->nb_samples);
-                ret = swr_convert(pSwrContext, &mBuffer, out_count,
-                                  (const uint8_t **) mFrame->data, mFrame->nb_samples);
-                if (ret <= 0) {
-                    LOGE("Failed to call swr_convert : %s", av_err2str(ret));
-                    av_frame_unref(mFrame);
-                    break;
-                }
-                // 复制转码后的数据到AVMediaData中
-                auto data = new AVMediaData();
-                data->sample_size = out_count;
-                data->sample = (uint8_t *) malloc((size_t)data->sample_size);
-                memcpy(data->sample, mBuffer, (size_t)data->sample_size);
-                data->type = MediaAudio;
-                data->pts = calculatePts(mFrame->pts, mAudioDecoder->getStream()->time_base);
-                // 将数据放入帧队列中
-                mFrameQueue->push(data);
-                // 比较播放结束位置的pts
-                if (mEndPosition > 0 && data->pts >= mEndPosition) {
-                    mDecodeEnd = true;
-                }
-            }
+    // 将数据包送去解码
+    auto pCodecContext = mAudioDecoder->getContext();
+    ret = avcodec_send_packet(pCodecContext, packet);
+    if (ret < 0) {
+        LOGE("Failed to call avcodec_send_packet: %s", av_err2str(ret));
+        return ret;
+    }
+
+    while (ret == 0 && !mAbortRequest) {
+        // 取出解码后的AVFrame
+        ret = avcodec_receive_frame(pCodecContext, mFrame);
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             av_frame_unref(mFrame);
+            break;
+        } else if (ret < 0) {
+            LOGE("Failed to call avcodec_receive_frame: %s", av_err2str(ret));
+            av_frame_unref(mFrame);
+            break;
         }
+        // 将解码后数据帧转码后放入队列
+        if (mFrameQueue != nullptr) {
+            // 音频转码
+            int out_count = reallocBuffer(mFrame->nb_samples);
+            ret = swr_convert(pSwrContext, &mBuffer, out_count,
+                              (const uint8_t **) mFrame->data, mFrame->nb_samples);
+            if (ret <= 0) {
+                LOGE("Failed to call swr_convert : %s", av_err2str(ret));
+                av_frame_unref(mFrame);
+                break;
+            }
+            // 复制转码后的数据到AVMediaData中
+            auto data = new AVMediaData();
+            data->sample_size = out_count;
+            data->sample = (uint8_t *) malloc((size_t)data->sample_size);
+            memcpy(data->sample, mBuffer, (size_t)data->sample_size);
+            data->type = MediaAudio;
+            data->pts = calculatePts(mFrame->pts, mAudioDecoder->getStream()->time_base);
+            // 将数据放入帧队列中
+            mFrameQueue->push(data);
+            // 比较播放结束位置的pts
+            if (mEndPosition > 0 && data->pts >= mEndPosition) {
+                mDecodeEnd = true;
+            }
+        }
+        av_frame_unref(mFrame);
     }
     return ret;
 }

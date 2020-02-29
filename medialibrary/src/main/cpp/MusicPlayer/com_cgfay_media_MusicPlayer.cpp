@@ -33,19 +33,19 @@ JNI_OnLoad(JavaVM *vm, void *reserved) {
 }
 
 //-------------------------------------- JNI回调监听器 ----------------------------------------------
-class JNIOnPlayListener : public OnPlayListener {
+class JNIOnPlayListener : public StreamPlayListener {
 public:
     JNIOnPlayListener(JavaVM *vm, JNIEnv *env, jobject listener);
 
     virtual ~JNIOnPlayListener();
 
-    void onPlaying(float pts) override;
+    void onPlaying(AVMediaType type, float pts) override;
 
-    void onSeekComplete() override;
+    void onSeekComplete(AVMediaType type) override;
 
-    void onCompletion() override;
+    void onCompletion(AVMediaType type) override;
 
-    void onError(int errorCode, const char *msg) override;
+    void onError(AVMediaType type, int errorCode, const char *msg) override;
 
 private:
     JNIOnPlayListener() = delete;
@@ -91,7 +91,10 @@ JNIOnPlayListener::~JNIOnPlayListener() {
     }
 }
 
-void JNIOnPlayListener::onPlaying(float pts) {
+void JNIOnPlayListener::onPlaying(AVMediaType type, float pts) {
+    if (type != AVMEDIA_TYPE_AUDIO) {
+        return;
+    }
     if (jmid_onPlaying != nullptr) {
         JNIEnv *jniEnv;
         if (javaVM->AttachCurrentThread(&jniEnv, nullptr) != JNI_OK) {
@@ -102,7 +105,10 @@ void JNIOnPlayListener::onPlaying(float pts) {
     }
 }
 
-void JNIOnPlayListener::onSeekComplete() {
+void JNIOnPlayListener::onSeekComplete(AVMediaType type) {
+    if (type != AVMEDIA_TYPE_AUDIO) {
+        return;
+    }
     if (jmid_onSeekComplete != nullptr) {
         JNIEnv *jniEnv;
         if (javaVM->AttachCurrentThread(&jniEnv, nullptr) != JNI_OK) {
@@ -113,7 +119,10 @@ void JNIOnPlayListener::onSeekComplete() {
     }
 }
 
-void JNIOnPlayListener::onCompletion() {
+void JNIOnPlayListener::onCompletion(AVMediaType type) {
+    if (type != AVMEDIA_TYPE_AUDIO) {
+        return;
+    }
     if (jmid_onCompletion != nullptr) {
         JNIEnv *jniEnv;
         if (javaVM->AttachCurrentThread(&jniEnv, nullptr) != JNI_OK) {
@@ -124,7 +133,10 @@ void JNIOnPlayListener::onCompletion() {
     }
 }
 
-void JNIOnPlayListener::onError(int errorCode, const char *msg) {
+void JNIOnPlayListener::onError(AVMediaType type, int errorCode, const char *msg) {
+    if (type != AVMEDIA_TYPE_AUDIO) {
+        return;
+    }
     if (jmid_onError != nullptr) {
         JNIEnv *jniEnv;
         if (javaVM->AttachCurrentThread(&jniEnv, nullptr) != JNI_OK) {

@@ -5,13 +5,13 @@
 #ifndef MUSICPLAYER_H
 #define MUSICPLAYER_H
 
-#include <audio/AudioPlayer.h>
-#include <audio/AudioSLPlayer.h>
-#include <reader/AudioReader.h>
+#include <audio/AudioPlay.h>
+#include <audio/AudioSLPlay.h>
 #include <SafetyQueue.h>
 #include <SonicAudioTranscoder.h>
 #include <Resampler.h>
-#include "decoder/AudioDecodeThread.h"
+#include <decoder/AudioDecodeThread.h>
+#include <player/AudioStreamPlayer.h>
 
 class OnPlayListener {
 public:
@@ -35,7 +35,7 @@ public:
 
     virtual ~MusicPlayer();
 
-    void setOnPlayingListener(std::shared_ptr<OnPlayListener> listener);
+    void setOnPlayingListener(std::shared_ptr<StreamPlayListener> listener);
 
     void setDataSource(const char *path);
 
@@ -61,40 +61,11 @@ public:
 
     bool isPlaying();
 
-    int onAudioProvider(short **buffer, int bufSize);
 
     void release();
 
 private:
-    Mutex mMutex;
-    AudioDecodeThread *mAudioThread;
-    std::shared_ptr<AudioProvider> mAudioProvider;
-    std::shared_ptr<AudioPlayer> mAudioPlayer;
-    std::shared_ptr<OnPlayListener> mPlayListener;
-    SafetyQueue<AVMediaData *> *mAudioFrame;
-    std::shared_ptr<SonicAudioTranscoder> mAudioTranscoder;
-
-    float mSpeed;
-    int mSampleRate;
-    int mChannels;
-    bool mLooping;
-    bool mPrepared;
-    bool mPlaying;
-    int64_t mAudioPts;
-};
-
-class MusicAudioProvider : public AudioProvider {
-public:
-    MusicAudioProvider();
-
-    virtual ~MusicAudioProvider();
-
-    int onAudioProvide(short **buffer, int bufSize) override;
-
-    void setPlayer(MusicPlayer *player);
-
-private:
-    MusicPlayer *player;
+    std::shared_ptr<AudioStreamPlayer> mAudioPlayer;
 };
 
 #endif //MUSICPLAYER_H

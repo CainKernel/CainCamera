@@ -2,8 +2,8 @@
 // Created by CainHuang on 2020-01-14.
 //
 
-#ifndef AUDIOPLAYER_H
-#define AUDIOPLAYER_H
+#ifndef AUDIOPLAY_H_H
+#define AUDIOPLAY_H_H
 
 #include "../AVMediaHeader.h"
 
@@ -14,12 +14,15 @@ public:
     virtual int onAudioProvide(short **buffer, int size) = 0;
 };
 
-class AudioPlayer {
+/**
+ * base audio player
+ */
+class AudioPlay {
 
 public:
-    AudioPlayer(const std::shared_ptr<AudioProvider> &audioProvider);
+    AudioPlay(const std::shared_ptr<AudioProvider> &audioProvider);
 
-    virtual ~AudioPlayer();
+    virtual ~AudioPlay() = default;
 
     virtual int open(int sampleRate, int channels) = 0;
 
@@ -55,4 +58,4 @@ protected:
 };
 
 
-#endif //AUDIOPLAYER_H
+#endif //AUDIOPLAY_H_H

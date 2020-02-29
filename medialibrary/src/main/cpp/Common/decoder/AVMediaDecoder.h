@@ -6,7 +6,7 @@
 #define AVMEDIADECODER_H
 
 #include "demuxer/AVMediaDemuxer.h"
-#include "reader/OnDecodeListener.h"
+#include "OnDecodeListener.h"
 
 /**
  * 媒体解码器基类

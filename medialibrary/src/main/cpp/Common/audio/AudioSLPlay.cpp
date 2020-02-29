@@ -2,18 +2,18 @@
 // Created by CainHuang on 2020-01-14.
 //
 
-#include "AudioSLPlayer.h"
+#include "AudioSLPlay.h"
 
-AudioSLPlayer::AudioSLPlayer(const std::shared_ptr<AudioProvider> &audioProvider)
-              : AudioPlayer(audioProvider) {
-    LOGD("AudioSLPlayer::constructor()");
+AudioSLPlay::AudioSLPlay(const std::shared_ptr<AudioProvider> &audioProvider)
+              : AudioPlay(audioProvider) {
+    LOGD("AudioSLPlay::constructor()");
     reset();
     createEngine();
 }
 
-AudioSLPlayer::~AudioSLPlayer() {
+AudioSLPlay::~AudioSLPlay() {
     release();
-    LOGD("AudioSLPlayer::destructor()");
+    LOGD("AudioSLPlay::destructor()");
 }
 
 /**
@@ -22,7 +22,7 @@ AudioSLPlayer::~AudioSLPlayer() {
  * @param context
  */
 void slBufferPCMCallBack(SLAndroidSimpleBufferQueueItf bf, void *context) {
-    auto player = (AudioSLPlayer *) context;
+    auto player = (AudioSLPlay *) context;
     player->receiveAudioData();
 }
 
@@ -32,8 +32,8 @@ void slBufferPCMCallBack(SLAndroidSimpleBufferQueueItf bf, void *context) {
  * @param channels
  * @return
  */
-int AudioSLPlayer::open(int sampleRate, int channels) {
-    LOGD("AudioSLPlayer::open()");
+int AudioSLPlay::open(int sampleRate, int channels) {
+    LOGD("AudioSLPlay::open()");
     SLresult result;
     // 创建播放器
     SLDataLocator_OutputMix outputMix = {SL_DATALOCATOR_OUTPUTMIX, slOutputMixObject};
@@ -143,10 +143,10 @@ int AudioSLPlayer::open(int sampleRate, int channels) {
 /**
  * 开始播放
  */
-void AudioSLPlayer::start() {
-    LOGD("AudioSLPlayer::start()");
+void AudioSLPlay::start() {
+    LOGD("AudioSLPlay::start()");
     if (!mInited) {
-        LOGD("AudioSLPlayer has not inited!");
+        LOGD("AudioSLPlay has not inited!");
         return;
     }
     mAbortRequest = false;
@@ -163,8 +163,8 @@ void AudioSLPlayer::start() {
 /**
  * 停止播放
  */
-void AudioSLPlayer::stop() {
-    LOGD("AudioSLPlayer::stop()");
+void AudioSLPlay::stop() {
+    LOGD("AudioSLPlay::stop()");
     mAbortRequest = true;
     mCondition.signal();
     if (mAudioThread && mAudioThread->isActive()) {
@@ -177,8 +177,8 @@ void AudioSLPlayer::stop() {
 /**
  * 暂停
  */
-void AudioSLPlayer::pause() {
-    LOGD("AudioSLPlayer::pause()");
+void AudioSLPlay::pause() {
+    LOGD("AudioSLPlay::pause()");
     mPauseRequest = true;
     mCondition.signal();
 }
@@ -186,8 +186,8 @@ void AudioSLPlayer::pause() {
 /**
  * 继续播放
  */
-void AudioSLPlayer::resume() {
-    LOGD("AudioSLPlayer::resume()");
+void AudioSLPlay::resume() {
+    LOGD("AudioSLPlay::resume()");
     mPauseRequest = false;
     mCondition.signal();
 }
@@ -195,8 +195,8 @@ void AudioSLPlayer::resume() {
 /**
  * 清空缓冲区
  */
-void AudioSLPlayer::flush() {
-    LOGD("AudioSLPlayer::flush()");
+void AudioSLPlay::flush() {
+    LOGD("AudioSLPlay::flush()");
     if (slBufferQueueItf != nullptr) {
         (*slBufferQueueItf)->Clear(slBufferQueueItf);
     }
@@ -207,7 +207,7 @@ void AudioSLPlayer::flush() {
  * @param leftVolume    左音量
  * @param rightVolume   右音量
  */
-void AudioSLPlayer::setStereoVolume(float leftVolume, float rightVolume) {
+void AudioSLPlay::setStereoVolume(float leftVolume, float rightVolume) {
     if (slVolumeItf != nullptr) {
         SLmillibel level = getAmplificationLevel((leftVolume + rightVolume) / 2);
         SLresult result = (*slVolumeItf)->SetVolumeLevel(slVolumeItf, level);
@@ -217,11 +217,11 @@ void AudioSLPlayer::setStereoVolume(float leftVolume, float rightVolume) {
     }
 }
 
-void AudioSLPlayer::run() {
+void AudioSLPlay::run() {
     audioPlay();
 }
 
-void AudioSLPlayer::reset() {
+void AudioSLPlay::reset() {
     slObject = nullptr;
     slEngine = nullptr;
     slOutputMixObject = nullptr;
@@ -236,7 +236,7 @@ void AudioSLPlayer::reset() {
     mInited = false;
 }
 
-void AudioSLPlayer::release() {
+void AudioSLPlay::release() {
     stop();
     mInited = false;
     if (slPlayerObject != nullptr) {
@@ -266,7 +266,7 @@ void AudioSLPlayer::release() {
 /**
  * 创建引擎
  */
-int AudioSLPlayer::createEngine() {
+int AudioSLPlay::createEngine() {
     SLresult result;
 
     // 创建一个SL引擎对象
@@ -313,7 +313,7 @@ int AudioSLPlayer::createEngine() {
  * 获取音频数据
  * @return
  */
-int AudioSLPlayer::receiveAudioData() {
+int AudioSLPlay::receiveAudioData() {
     SLresult slRet;
     int size = 0;
 
@@ -345,7 +345,7 @@ int AudioSLPlayer::receiveAudioData() {
 /**
  * 音频播放
  */
-void AudioSLPlayer::audioPlay() {
+void AudioSLPlay::audioPlay() {
     int audio = 1;
     bool init = false;
     SLuint32 state;
@@ -396,7 +396,7 @@ void AudioSLPlayer::audioPlay() {
  * @param sampleRate
  * @return
  */
-SLuint32 AudioSLPlayer::getSLSampleRate(int sampleRate) {
+SLuint32 AudioSLPlay::getSLSampleRate(int sampleRate) {
     switch (sampleRate) {
         case 8000: {
             return SL_SAMPLINGRATE_8;
@@ -448,7 +448,7 @@ SLuint32 AudioSLPlayer::getSLSampleRate(int sampleRate) {
  * @param volumeLevel
  * @return
  */
-SLmillibel AudioSLPlayer::getAmplificationLevel(float volumeLevel) {
+SLmillibel AudioSLPlay::getAmplificationLevel(float volumeLevel) {
     if (volumeLevel < 0.00000001) {
         return SL_MILLIBEL_MIN;
     }

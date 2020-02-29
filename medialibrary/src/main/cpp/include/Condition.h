@@ -48,6 +48,7 @@ public:
 
     status_t wait(Mutex& mutex);
     status_t waitRelative(Mutex& mutex, nsecs_t reltime);
+    status_t waitRelativeMs(Mutex& mutex, nsecs_t times);
     void signal();
     void signal(WakeUpType type) {
         if (type == WAKE_UP_ONE) {
@@ -99,6 +100,10 @@ inline status_t Condition::waitRelative(Mutex &mutex, nsecs_t reltime) {
         ts.tv_sec  += 1;
     }
     return -pthread_cond_timedwait(&mCond, &mutex.mMutex, &ts);
+}
+
+inline status_t Condition::waitRelativeMs(Mutex &mutex, nsecs_t times) {
+    return waitRelative(mutex, times * 1000000);
 }
 
 inline void Condition::signal() {

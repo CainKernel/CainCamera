@@ -21,6 +21,16 @@ public:
         queue.push(element);
     }
 
+    T front() {
+        std::lock_guard<std::mutex> lock(mutex);
+        return queue.front();
+    }
+
+    T back() {
+        std::lock_guard<std::mutex> lock(mutex);
+        return queue.back();
+    }
+
     T pop() {
         std::lock_guard<std::mutex> lock(mutex);
         T ret = queue.front();
@@ -35,7 +45,7 @@ public:
 
     int size() {
         std::lock_guard<std::mutex> lock(mutex);
-        return queue.size();
+        return static_cast<int>(queue.size());
     }
 private:
     mutable std::mutex mutex;

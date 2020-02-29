@@ -5,207 +5,106 @@
 #include "MusicPlayer.h"
 
 MusicPlayer::MusicPlayer() {
-    LOGD("MusicPlayer::constructor()");
-    mSpeed = 1.0f;
-    mLooping = false;
-    mPrepared = false;
-    mPlaying = false;
-    mPlayListener = nullptr;
-    mAudioTranscoder = nullptr;
-    mSampleRate = 44100;
-    mChannels = 2;
-    mAudioPts = 0;
-
-    mAudioFrame = new SafetyQueue<AVMediaData *>();
-    mAudioThread = new AudioDecodeThread(mAudioFrame);
-    mAudioThread->setOutput(mSampleRate, mChannels);
-    mAudioProvider = std::make_shared<MusicAudioProvider>();
-    auto provider = std::dynamic_pointer_cast<MusicAudioProvider>(mAudioProvider);
-    provider->setPlayer(this);
-    mAudioPlayer = std::make_shared<AudioSLPlayer>(mAudioProvider);
-    mAudioTranscoder = std::make_shared<SonicAudioTranscoder>(mSampleRate, mChannels);
+    mAudioPlayer = std::make_shared<AudioStreamPlayer>();
 }
 
 MusicPlayer::~MusicPlayer() {
     release();
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer.reset();
+        mAudioPlayer = nullptr;
+    }
     LOGD("MusicPlayer::destructor()");
 }
 
 void MusicPlayer::release() {
-    LOGD("MusicPlayer::release()");
-    stop();
-    if (mAudioThread != nullptr) {
-        delete mAudioThread;
-        mAudioThread = nullptr;
-    }
-    if (mAudioFrame != nullptr) {
-        delete mAudioFrame;
-        mAudioFrame = nullptr;
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->release();
     }
 }
 
-void MusicPlayer::setOnPlayingListener(std::shared_ptr<OnPlayListener> listener) {
-    if (mPlayListener != nullptr) {
-        mPlayListener.reset();
+void MusicPlayer::setOnPlayingListener(std::shared_ptr<StreamPlayListener> listener) {
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->setOnPlayingListener(listener);
     }
-    mPlayListener = listener;
 }
 
 void MusicPlayer::setDataSource(const char *path) {
-    if (mAudioThread != nullptr) {
-        mAudioThread->setDataSource(path);
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->setDataSource(path);
     }
 }
 
 void MusicPlayer::setSpeed(float speed) {
-    mMutex.lock();
-    mSpeed = speed;
-    mMutex.unlock();
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->setSpeed(speed);
+    }
 }
 
 void MusicPlayer::setLooping(bool looping) {
-    mLooping = looping;
-    if (mAudioThread != nullptr) {
-        mAudioThread->setLooping(looping);
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->setLooping(looping);
     }
 }
 
 void MusicPlayer::setRange(float start, float end) {
-    if (mAudioThread != nullptr) {
-        mAudioThread->setRange(start, end);
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->setRange(start, end);
     }
 }
 
 void MusicPlayer::setVolume(float leftVolume, float rightVolume) {
     if (mAudioPlayer != nullptr) {
-        mAudioPlayer->setStereoVolume(leftVolume, rightVolume);
+        mAudioPlayer->setVolume(leftVolume, rightVolume);
     }
 }
 
 void MusicPlayer::start() {
     LOGD("MusicPlayer::start()");
-    if (!mAudioThread || !mAudioPlayer) {
-        return;
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->start();
     }
-    if (!mPrepared) {
-        int ret = mAudioThread->prepare();
-        if (ret < 0) {
-            return;
-        }
-        ret = mAudioPlayer->open(mSampleRate, mChannels);
-        if (ret < 0) {
-            return;
-        }
-        mPrepared = true;
-    }
-    mAudioThread->start();
-    mAudioPlayer->start();
-    mPlaying = true;
 }
 
 void MusicPlayer::pause() {
     LOGD("MusicPlayer::pause()");
-    mPlaying = false;
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->pause();
-    }
-    if (mAudioThread != nullptr) {
-        mAudioThread->pause();
     }
 }
 
 void MusicPlayer::stop() {
     LOGD("MusicPlayer::stop()");
-    mPlaying = false;
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->stop();
-    }
-    if (mAudioThread != nullptr) {
-        mAudioThread->stop();
     }
 }
 
 void MusicPlayer::seekTo(float timeMs) {
-    if (mAudioThread != nullptr) {
-        mAudioThread->seekTo(timeMs);
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->seekTo(timeMs);
     }
-    mAudioPts = timeMs;
 }
 
 float MusicPlayer::getDuration() {
-    if (mAudioThread != nullptr) {
-        return mAudioThread->getDuration();
+    if (mAudioPlayer != nullptr) {
+        return mAudioPlayer->getDuration();
     }
     return 0;
 }
 
 bool MusicPlayer::isLooping() {
-    return mLooping;
+    if (mAudioPlayer != nullptr) {
+        return mAudioPlayer->isLooping();
+    }
+    return false;
 }
 
 bool MusicPlayer::isPlaying() {
-    return mPlaying;
-}
-
-int MusicPlayer::onAudioProvider(short **buffer, int bufSize) {
-    if (mAudioFrame == nullptr) {
-        LOGE("audio frame is null or exit!");
-        return 0;
+    if (mAudioPlayer != nullptr) {
+        return mAudioPlayer->isPlaying();
     }
-    // 等待解码数据
-    while (!mPlaying || mAudioFrame->empty()) {
-        av_usleep(10 * 1000);
-    }
-    mMutex.lock();
-    if (mAudioTranscoder != nullptr && mSpeed != mAudioTranscoder->getSpeed()) {
-        mAudioTranscoder->setSpeed(mSpeed);
-        mAudioTranscoder->flush();
-    }
-    mMutex.unlock();
-    if (!mAudioFrame->empty()) {
-        int size = 0;
-        while (true) {
-            if (mAudioFrame->empty()) {
-                break;
-            }
-            auto data = mAudioFrame->pop();
-            size = mAudioTranscoder->transcode(data, buffer, bufSize, mAudioPts);
-            if (size > 0) {
-                break;
-            }
-        }
-
-        // 播放回调
-        if (size > 0) {
-            if (mPlayListener != nullptr) {
-                mPlayListener->onPlaying(mAudioPts);
-            } else {
-                LOGD("audio play size: %d, pts(ms): %d", size, mAudioPts);
-            }
-        }
-        return size;
-    }
-    return 0;
-}
-
-// ----------------------------------------- 音频播放回调 --------------------------------------------
-MusicAudioProvider::MusicAudioProvider() {
-    this->player = nullptr;
-}
-
-MusicAudioProvider::~MusicAudioProvider() {
-    player = nullptr;
-}
-
-int MusicAudioProvider::onAudioProvide(short **buffer, int bufSize) {
-    if (player) {
-        return player->onAudioProvider(buffer, bufSize);
-    }
-    return 0;
-}
-
-void MusicAudioProvider::setPlayer(MusicPlayer *player) {
-    this->player = player;
+    return false;
 }
 
 

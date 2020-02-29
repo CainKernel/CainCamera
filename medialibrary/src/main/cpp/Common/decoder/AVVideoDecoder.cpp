@@ -6,7 +6,7 @@
 
 AVVideoDecoder::AVVideoDecoder(const std::shared_ptr<AVMediaDemuxer> &mediaDemuxer)
         : AVMediaDecoder(mediaDemuxer) {
-
+    pCodecName = "h264_mediacodec";
 }
 
 AVVideoDecoder::~AVVideoDecoder() {
