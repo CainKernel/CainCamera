@@ -165,8 +165,8 @@ int AudioStreamPlayer::onAudioProvider(short **buffer, int bufSize) {
     mMutex.lock();
     if (mAudioTranscoder != nullptr && mSpeed != mAudioTranscoder->getSpeed()) {
         mAudioTranscoder->setSpeed(mSpeed);
+        mAudioTranscoder->flush();
     }
-    mAudioTranscoder->flush();
     mMutex.unlock();
     if (!mFrameQueue->empty()) {
         int size = 0;
