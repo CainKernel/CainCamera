@@ -7,7 +7,8 @@
 VideoStreamPlayer::VideoStreamPlayer(const std::shared_ptr<StreamPlayListener> &listener) {
     LOGD("VideoStreamPlayer::constructor()");
     mFrameQueue = new SafetyQueue<Picture *>();
-    mVideoThread = new VideoDecodeThread(mFrameQueue);
+    mVideoThread = std::make_shared<DecodeVideoThread>();
+    mVideoThread->setDecodeFrameQueue(mFrameQueue);
     mVideoProvider = std::make_shared<VideoStreamProvider>();
     auto provider = std::dynamic_pointer_cast<VideoStreamProvider>(mVideoProvider);
     provider->setPlayer(this);
@@ -34,7 +35,8 @@ void VideoStreamPlayer::release() {
     LOGD("VideoStreamPlayer::release()");
     stop();
     if (mVideoThread != nullptr) {
-        delete mVideoThread;
+        mVideoThread->stop();
+        mVideoThread.reset();
         mVideoThread = nullptr;
     }
     if (mConvertFrame != nullptr) {
@@ -151,8 +153,12 @@ bool VideoStreamPlayer::isPlaying() {
 
 int VideoStreamPlayer::onVideoProvide(uint8_t *buffer, int width, int height, AVPixelFormat format) {
     int result = 0;
+    if (mVideoThread == nullptr) {
+        LOGE("video thread is no exit!");
+        return 0;
+    }
     if (mFrameQueue == nullptr) {
-        LOGE("video frame is null or exit!");
+        LOGE("video frame is null or not exit!");
         return result;
     }
 

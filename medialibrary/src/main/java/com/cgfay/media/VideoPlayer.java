@@ -4,16 +4,21 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.view.Surface;
 
 import androidx.annotation.NonNull;
 
-public class MusicPlayer {
+/**
+ * 视频播放器
+ */
+public class VideoPlayer {
 
-    private static final String TAG = "MusicPlayer";
+    private static final String TAG = "VideoPlayer";
 
     static {
         System.loadLibrary("ffmpeg");
-        System.loadLibrary("musicplayer");
+        System.loadLibrary("yuv");
+        System.loadLibrary("videoplayer");
     }
 
     // 初始化
@@ -22,9 +27,15 @@ public class MusicPlayer {
     private native void nativeRelease(long handle);
     // 播放监听器
     private native void setOnPlayListener(long handle, Object listener);
-    // 设置音乐路径
+    // 设置路径
     private native void setDataSource(long handle, String path);
-    // 设置音乐播放速度
+    // 设置音频解码器名称
+    private native void setAudioDecoder(long handle, String decoder);
+    // 设置视频解码器名称
+    private native void setVideoDecoder(long handle, String decoder);
+    // 设置Surface
+    private native void setVideoSurface(long handle, Surface surface);
+    // 设置播放速度
     private native void setSpeed(long handle, float speed);
     // 设置是否重新播放
     private native void setLooping(long handle, boolean looping);
@@ -53,7 +64,7 @@ public class MusicPlayer {
     private EventHandler mEventHandler;
     private OnPlayListener mPlayListener;
 
-    public MusicPlayer() {
+    public VideoPlayer() {
         Looper looper;
         if ((looper = Looper.myLooper()) != null) {
             mEventHandler = new EventHandler(this, looper);
@@ -113,6 +124,18 @@ public class MusicPlayer {
     public void setDataSource(String path) {
         mPath = path;
         setDataSource(handle, path);
+    }
+
+    public void setAudioDecoder(String decoder) {
+        setAudioDecoder(handle, decoder);
+    }
+
+    public void setVideoDecoder(String decoder) {
+        setVideoDecoder(handle, decoder);
+    }
+
+    public void setSurface(Surface surface) {
+        setVideoSurface(handle, surface);
     }
 
     public void setSpeed(float speed) {
@@ -176,16 +199,16 @@ public class MusicPlayer {
     private static final int PLAYER_ERROR = 3;
 
     private class EventHandler extends Handler {
-        private MusicPlayer mMusicPlayer;
+        private VideoPlayer mVideoPlayer;
 
-        public EventHandler(MusicPlayer mp, Looper looper) {
+        public EventHandler(VideoPlayer mp, Looper looper) {
             super(looper);
-            mMusicPlayer = mp;
+            mVideoPlayer = mp;
         }
 
         @Override
         public void handleMessage(@NonNull Message msg) {
-            if (mMusicPlayer == null) {
+            if (mVideoPlayer == null) {
                 return;
             }
 

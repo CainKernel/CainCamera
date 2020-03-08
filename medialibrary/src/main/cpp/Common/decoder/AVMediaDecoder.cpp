@@ -85,7 +85,7 @@ int AVMediaDecoder::openDecoder(std::map<std::string, std::string> decodeOptions
         pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
     }
     if (!pCodec) {
-        LOGE("Failed to find %s codec", av_get_media_type_string(getMediaType()));
+        LOGE("Failed to find %s codec: %s", av_get_media_type_string(getMediaType()), avcodec_get_name(pCodecCtx->codec_id));
         return AVERROR(EINVAL);
     }
     pCodecCtx->codec_id = pCodec->id;
@@ -97,7 +97,7 @@ int AVMediaDecoder::openDecoder(std::map<std::string, std::string> decodeOptions
         av_dict_set(&options, (*it).first.c_str(), (*it).second.c_str(), 0);
     }
     if ((ret = avcodec_open2(pCodecCtx, pCodec, &options)) < 0) {
-        LOGE("Failed to open %s codec, result: %d", av_get_media_type_string(getMediaType()), ret);
+        LOGE("Failed to open %s codec, result: %s", av_get_media_type_string(getMediaType()), av_err2str(ret));
         av_dict_free(&options);
         return ret;
     }

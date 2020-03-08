@@ -75,6 +75,16 @@
             android:background="@android:color/transparent"
             android:textColor="@color/white"
             android:text="@string/btn_music_player"/>
+
+        <Button
+            android:id="@+id/btn_video_player"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp5"
+            android:background="@android:color/transparent"
+            android:textColor="@color/white"
+            android:text="@string/btn_video_player"
+            android:visibility="gone"/>
     </LinearLayout>
 
 </FrameLayout>

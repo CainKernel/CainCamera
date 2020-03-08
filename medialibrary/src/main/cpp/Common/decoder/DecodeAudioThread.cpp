@@ -2,12 +2,12 @@
 // Created by CainHuang on 2020-02-22.
 //
 
-#include "AudioDecodeThread.h"
+#include "DecodeAudioThread.h"
 
-AudioDecodeThread::AudioDecodeThread(SafetyQueue<AVMediaData *> *frameQueue) {
-    LOGD("AudioDecodeThread::constructor()");
+DecodeAudioThread::DecodeAudioThread() {
+    LOGD("DecodeAudioThread::constructor()");
     av_register_all();
-    mFrameQueue = frameQueue;
+    mFrameQueue = nullptr;
     mAudioDemuxer = std::make_shared<AVMediaDemuxer>();
     mAudioDecoder = std::make_shared<AVAudioDecoder>(mAudioDemuxer);
 
@@ -16,7 +16,7 @@ AudioDecodeThread::AudioDecodeThread(SafetyQueue<AVMediaData *> *frameQueue) {
     mPacket.data = nullptr;
     mPacket.size = 0;
 
-    mMaxFrame = 2;
+    mMaxFrame = 5;
     mOutSampleRate = 44100;
     mOutChannels = 1;
     mOutFormat = AV_SAMPLE_FMT_S16;
@@ -35,16 +35,16 @@ AudioDecodeThread::AudioDecodeThread(SafetyQueue<AVMediaData *> *frameQueue) {
     mEndPosition = -1;
 }
 
-AudioDecodeThread::~AudioDecodeThread() {
+DecodeAudioThread::~DecodeAudioThread() {
     release();
-    LOGD("AudioDecodeThread::destructor()");
+    LOGD("DecodeAudioThread::destructor()");
 }
 
 /**
  * 释放资源
  */
-void AudioDecodeThread::release() {
-    LOGD("AudioDecodeThread::release()");
+void DecodeAudioThread::release() {
+    LOGD("DecodeAudioThread::release()");
     if (mAudioDecoder != nullptr) {
         mAudioDecoder->closeDecoder();
         mAudioDecoder.reset();
@@ -69,37 +69,45 @@ void AudioDecodeThread::release() {
 }
 
 /**
+ * 绑定解码帧队列
+ * @param frameQueue
+ */
+void DecodeAudioThread::setDecodeFrameQueue(SafetyQueue<AVMediaData *> *frameQueue) {
+    mFrameQueue = frameQueue;
+}
+
+/**
  * 设置数据源
  */
-void AudioDecodeThread::setDataSource(const char *url) {
+void DecodeAudioThread::setDataSource(const char *url) {
     mAudioDemuxer->setInputPath(url);
 }
 
 /**
  * 设置输入格式参数
  */
-void AudioDecodeThread::setInputFormat(const char *format) {
+void DecodeAudioThread::setInputFormat(const char *format) {
     mAudioDemuxer->setInputFormat(format);
 }
 
 /**
  * 设置解码器名称
  */
-void AudioDecodeThread::setDecodeName(const char *decoder) {
+void DecodeAudioThread::setDecodeName(const char *decoder) {
     mAudioDecoder->setDecoder(decoder);
 }
 
 /**
  * 添加解封装参数
  */
-void AudioDecodeThread::addFormatOptions(std::string key, std::string value) {
+void DecodeAudioThread::addFormatOptions(std::string key, std::string value) {
     mFormatOptions[key] = value;
 }
 
 /**
  * 添加解码参数
  */
-void AudioDecodeThread::addDecodeOptions(std::string key, std::string value) {
+void DecodeAudioThread::addDecodeOptions(std::string key, std::string value) {
     mDecodeOptions[key] = value;
 }
 
@@ -109,7 +117,7 @@ void AudioDecodeThread::addDecodeOptions(std::string key, std::string value) {
  * @param channel       声道数
  * @param format        采样格式
  */
-void AudioDecodeThread::setOutput(int sampleRate, int channel, AVSampleFormat format) {
+void DecodeAudioThread::setOutput(int sampleRate, int channel, AVSampleFormat format) {
     mOutSampleRate = sampleRate;
     mOutChannels = channel;
     mOutFormat = format;
@@ -120,7 +128,7 @@ void AudioDecodeThread::setOutput(int sampleRate, int channel, AVSampleFormat fo
  * @param timeMs
  * @return
  */
-void AudioDecodeThread::seekTo(float timeMs) {
+void DecodeAudioThread::seekTo(float timeMs) {
     mSeekRequest = true;
     mSeekTime = timeMs;
     mCondition.signal();
@@ -130,7 +138,7 @@ void AudioDecodeThread::seekTo(float timeMs) {
  * 设置循环解码
  * @param looping
  */
-void AudioDecodeThread::setLooping(bool looping) {
+void DecodeAudioThread::setLooping(bool looping) {
     mLooping = looping;
     mCondition.signal();
 }
@@ -140,7 +148,7 @@ void AudioDecodeThread::setLooping(bool looping) {
  * @param start
  * @param end
  */
-void AudioDecodeThread::setRange(float start, float end) {
+void DecodeAudioThread::setRange(float start, float end) {
     mStartPosition = start;
     mEndPosition = end;
     mCondition.signal();
@@ -150,9 +158,9 @@ void AudioDecodeThread::setRange(float start, float end) {
  * 准备解码
  * @return 准备结果
  */
-int AudioDecodeThread::prepare() {
+int DecodeAudioThread::prepare() {
     int ret;
-    LOGD("AudioDecodeThread::prepare()");
+    LOGD("DecodeAudioThread::prepare()");
     // 打开解封装器
     ret = mAudioDemuxer->openDemuxer(mFormatOptions);
     if (ret < 0) {
@@ -180,8 +188,8 @@ int AudioDecodeThread::prepare() {
 /**
  * 开始
  */
-void AudioDecodeThread::start() {
-    LOGD("AudioDecodeThread::start()");
+void DecodeAudioThread::start() {
+    LOGD("DecodeAudioThread::start()");
     mAbortRequest = false;
     mPauseRequest = false;
     mCondition.signal();
@@ -196,8 +204,8 @@ void AudioDecodeThread::start() {
 /**
  * 暂停
  */
-void AudioDecodeThread::pause() {
-    LOGD("AudioDecodeThread::pause()");
+void DecodeAudioThread::pause() {
+    LOGD("DecodeAudioThread::pause()");
     mPauseRequest = true;
     mCondition.signal();
 }
@@ -205,8 +213,8 @@ void AudioDecodeThread::pause() {
 /**
  * 停止
  */
-void AudioDecodeThread::stop() {
-    LOGD("AudioDecodeThread::stop()");
+void DecodeAudioThread::stop() {
+    LOGD("DecodeAudioThread::stop()");
     mAbortRequest = true;
     mCondition.signal();
     if (mThread != nullptr && mThread->isActive()) {
@@ -221,8 +229,8 @@ void AudioDecodeThread::stop() {
 /**
  * 刷新缓冲区
  */
-void AudioDecodeThread::flush() {
-    LOGD("AudioDecodeThread::flush()");
+void DecodeAudioThread::flush() {
+    LOGD("DecodeAudioThread::flush()");
     if (mAudioDecoder != nullptr) {
         mAudioDecoder->flushBuffer();
     }
@@ -237,21 +245,21 @@ void AudioDecodeThread::flush() {
     }
 }
 
-int64_t AudioDecodeThread::getDuration() {
+int64_t DecodeAudioThread::getDuration() {
     return mAudioDemuxer->getDuration();
 }
 
-void AudioDecodeThread::run() {
+void DecodeAudioThread::run() {
     readPacket();
 }
 
 /**
  * 读取数据包并解码
  */
-int AudioDecodeThread::readPacket() {
+int DecodeAudioThread::readPacket() {
     int ret = 0;
     mDecodeEnd = false;
-    LOGD("AudioDecodeThread::readePacket");
+    LOGD("DecodeAudioThread::readePacket");
     // 初始化转码上下文
     initResampleContext();
 
@@ -300,7 +308,7 @@ int AudioDecodeThread::readPacket() {
                 break;
             }
             // 等待音频帧消耗完
-            if (!mFrameQueue->empty()) {
+            if (mFrameQueue != nullptr && !mFrameQueue->empty()) {
                 mCondition.waitRelative(mMutex, 50 * 1000000);
                 mMutex.unlock();
                 continue;
@@ -335,14 +343,14 @@ int AudioDecodeThread::readPacket() {
         decodePacket(&mPacket);
         av_packet_unref(&mPacket);
     }
-    LOGD("AudioDecodeThread exit!");
+    LOGD("DecodeAudioThread exit!");
     return ret;
 }
 
 /**
  * 解码数据包
  */
-int AudioDecodeThread::decodePacket(AVPacket *packet) {
+int DecodeAudioThread::decodePacket(AVPacket *packet) {
 
     int ret = 0;
 
@@ -412,7 +420,7 @@ int AudioDecodeThread::decodePacket(AVPacket *packet) {
 /**
  * 初始化重采样上下文
  */
-void AudioDecodeThread::initResampleContext() {
+void DecodeAudioThread::initResampleContext() {
     if (!mAudioDecoder) {
         return;
     }
@@ -431,15 +439,15 @@ void AudioDecodeThread::initResampleContext() {
  * 是否需要解码等待
  * @return
  */
-bool AudioDecodeThread::isDecodeWaiting() {
-    return (mFrameQueue && mFrameQueue->size() >= mMaxFrame);
+bool DecodeAudioThread::isDecodeWaiting() {
+    return (mFrameQueue != nullptr && mFrameQueue->size() >= mMaxFrame);
 }
 
 /**
  * 重新分配内存
  * @param nb_samples 采样点数量
  */
-int AudioDecodeThread::reallocBuffer(int nb_samples) {
+int DecodeAudioThread::reallocBuffer(int nb_samples) {
     int bufferSize = av_samples_get_buffer_size(nullptr, mOutChannels, nb_samples, mOutFormat, 1);
     if (bufferSize > mMaxBufferSize) {
         mBuffer = (uint8_t *) realloc(mBuffer, bufferSize);
@@ -456,6 +464,6 @@ int AudioDecodeThread::reallocBuffer(int nb_samples) {
  * @param time_base
  * @return
  */
-int64_t AudioDecodeThread::calculatePts(int64_t pts, AVRational time_base) {
+int64_t DecodeAudioThread::calculatePts(int64_t pts, AVRational time_base) {
     return (int64_t)(av_q2d(time_base) * 1000 * pts);
 }

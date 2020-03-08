@@ -10,7 +10,7 @@
 #include <SafetyQueue.h>
 #include <SonicAudioTranscoder.h>
 #include <Resampler.h>
-#include <decoder/AudioDecodeThread.h>
+#include <decoder/DecodeAudioThread.h>
 #include <player/AudioStreamPlayer.h>
 
 class OnPlayListener {

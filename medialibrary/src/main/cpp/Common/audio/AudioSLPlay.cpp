@@ -347,7 +347,6 @@ int AudioSLPlay::receiveAudioData() {
  */
 void AudioSLPlay::audioPlay() {
     int audio = 1;
-    bool init = false;
     SLuint32 state;
     while (true) {
         mMutex.lock();
@@ -372,10 +371,9 @@ void AudioSLPlay::audioPlay() {
         // 切换播放状态
         if (slPlayItf != nullptr) {
             (*slPlayItf)->GetPlayState(slPlayItf, &state);
-            if (!init || state == SL_PLAYSTATE_STOPPED) {
+            if (state != SL_PLAYSTATE_PLAYING) {
                 (*slPlayItf)->SetPlayState(slPlayItf, SL_PLAYSTATE_PLAYING);
                 (*slBufferQueueItf)->Enqueue(slBufferQueueItf, &audio, 1);
-                init = true;
             } else if (state == SL_PLAYSTATE_PAUSED) {
                 (*slPlayItf)->SetPlayState(slPlayItf, SL_PLAYSTATE_PLAYING);
             } else if (state == SL_PLAYSTATE_PLAYING) {

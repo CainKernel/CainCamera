@@ -9,6 +9,7 @@
     <string name="btn_edit_music_merge">添加背景音乐</string>
     <string name="btn_ff_media_record">使用 FFmpeg 录制视频</string>
     <string name="btn_music_player">音乐播放器测试</string>
+    <string name="btn_video_player">视频播放器测试</string>
 
     <!-- 添加背景音乐部分 -->
     <string name="tv_test_source_voice">原声音量</string>

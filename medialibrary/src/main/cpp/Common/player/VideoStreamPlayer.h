@@ -8,7 +8,7 @@
 #include <video/VideoPlay.h>
 #include <video/AVideoPlay.h>
 #include <SafetyQueue.h>
-#include <decoder/VideoDecodeThread.h>
+#include <decoder/DecodeVideoThread.h>
 #include "StreamPlayListener.h"
 
 /**
@@ -55,7 +55,7 @@ private:
 
 private:
     Mutex mMutex;
-    VideoDecodeThread *mVideoThread;
+    std::shared_ptr<DecodeVideoThread> mVideoThread;
     std::shared_ptr<VideoProvider> mVideoProvider;
     std::shared_ptr<VideoPlay> mVideoPlayer;
     std::weak_ptr<StreamPlayListener> mPlayListener;

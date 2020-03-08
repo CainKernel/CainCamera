@@ -2,12 +2,12 @@
 // Created by CainHuang on 2020-02-24.
 //
 
-#include "VideoDecodeThread.h"
+#include "DecodeVideoThread.h"
 
-VideoDecodeThread::VideoDecodeThread(SafetyQueue<Picture*> *frameQueue) {
-    LOGD("VideoDecodeThread::constructor()");
+DecodeVideoThread::DecodeVideoThread() {
+    LOGD("DecodeVideoThread::constructor()");
     av_register_all();
-    mFrameQueue = frameQueue;
+    mFrameQueue = nullptr;
     mVideoDemuxer = std::make_shared<AVMediaDemuxer>();
     mVideoDecoder = std::make_shared<AVVideoDecoder>(mVideoDemuxer);
 
@@ -16,7 +16,7 @@ VideoDecodeThread::VideoDecodeThread(SafetyQueue<Picture*> *frameQueue) {
     mPacket.data = nullptr;
     mPacket.size = 0;
 
-    mMaxFrame = 2;
+    mMaxFrame = 5;
     mThread = nullptr;
     mAbortRequest = true;
     mPauseRequest = true;
@@ -26,13 +26,13 @@ VideoDecodeThread::VideoDecodeThread(SafetyQueue<Picture*> *frameQueue) {
     mEndPosition = -1;
 }
 
-VideoDecodeThread::~VideoDecodeThread() {
+DecodeVideoThread::~DecodeVideoThread() {
     release();
-    LOGD("VideoDecodeThread::destructor()");
+    LOGD("DecodeVideoThread::destructor()");
 }
 
-void VideoDecodeThread::release() {
-    LOGD("VideoDecodeThread::release()");
+void DecodeVideoThread::release() {
+    LOGD("DecodeVideoThread::release()");
     if (mVideoDecoder != nullptr) {
         mVideoDecoder->closeDecoder();
         mVideoDecoder.reset();
@@ -47,8 +47,16 @@ void VideoDecodeThread::release() {
     mFrameQueue = nullptr;
 }
 
-void VideoDecodeThread::setDataSource(const char *url) {
-    LOGD("VideoDecodeThread::setDataSource(): %s", url);
+/**
+ * 设置解码后的存放队列
+ * @param frameQueue
+ */
+void DecodeVideoThread::setDecodeFrameQueue(SafetyQueue<Picture *> *frameQueue) {
+    mFrameQueue = frameQueue;
+}
+
+void DecodeVideoThread::setDataSource(const char *url) {
+    LOGD("DecodeVideoThread::setDataSource(): %s", url);
     mVideoDemuxer->setInputPath(url);
 }
 
@@ -56,8 +64,8 @@ void VideoDecodeThread::setDataSource(const char *url) {
  * 指定解封装格式名称，比如pcm、aac、h264、mp4之类的
  * @param format
  */
-void VideoDecodeThread::setInputFormat(const char *format) {
-    LOGD("VideoDecodeThread::setInputFormat(): %s", format);
+void DecodeVideoThread::setInputFormat(const char *format) {
+    LOGD("DecodeVideoThread::setInputFormat(): %s", format);
     mVideoDemuxer->setInputFormat(format);
 }
 
@@ -65,24 +73,24 @@ void VideoDecodeThread::setInputFormat(const char *format) {
  * 指定解码器名称
  * @param decoder
  */
-void VideoDecodeThread::setDecodeName(const char *decoder) {
-    LOGD("VideoDecodeThread::setDecodeName(): %s", decoder);
+void DecodeVideoThread::setDecodeName(const char *decoder) {
+    LOGD("DecodeVideoThread::setDecodeName(): %s", decoder);
     mVideoDecoder->setDecoder(decoder);
 }
 
 /**
  * 添加解封装参数
  */
-void VideoDecodeThread::addFormatOptions(std::string key, std::string value) {
-    LOGD("VideoDecodeThread::addFormatOptions(): {%s, %s}", key.c_str(), value.c_str());
+void DecodeVideoThread::addFormatOptions(std::string key, std::string value) {
+    LOGD("DecodeVideoThread::addFormatOptions(): {%s, %s}", key.c_str(), value.c_str());
     mFormatOptions[key] = value;
 }
 
 /**
  * 添加解码参数
  */
-void VideoDecodeThread::addDecodeOptions(std::string key, std::string value) {
-    LOGD("VideoDecodeThread::addDecodeOptions(): {%s, %s}", key.c_str(), value.c_str());
+void DecodeVideoThread::addDecodeOptions(std::string key, std::string value) {
+    LOGD("DecodeVideoThread::addDecodeOptions(): {%s, %s}", key.c_str(), value.c_str());
     mDecodeOptions[key] = value;
 }
 
@@ -90,8 +98,8 @@ void VideoDecodeThread::addDecodeOptions(std::string key, std::string value) {
  * 跳转到某个时间
  * @param timeMs
  */
-void VideoDecodeThread::seekTo(float timeMs) {
-    LOGD("VideoDecodeThread::seekTo(): %f ms", timeMs);
+void DecodeVideoThread::seekTo(float timeMs) {
+    LOGD("DecodeVideoThread::seekTo(): %f ms", timeMs);
     mSeekRequest = true;
     mSeekTime = timeMs;
     mCondition.signal();
@@ -101,8 +109,8 @@ void VideoDecodeThread::seekTo(float timeMs) {
  * 设置是否需要循环解码
  * @param looping
  */
-void VideoDecodeThread::setLooping(bool looping) {
-    LOGD("VideoDecodeThread::setLooping(): %d", looping);
+void DecodeVideoThread::setLooping(bool looping) {
+    LOGD("DecodeVideoThread::setLooping(): %d", looping);
     mLooping = looping;
     mCondition.signal();
 }
@@ -112,8 +120,8 @@ void VideoDecodeThread::setLooping(bool looping) {
  * @param start
  * @param end
  */
-void VideoDecodeThread::setRange(float start, float end) {
-    LOGD("VideoDecodeThread::setRange(): {%f, %f}", start, end);
+void DecodeVideoThread::setRange(float start, float end) {
+    LOGD("DecodeVideoThread::setRange(): {%f, %f}", start, end);
     mStartPosition = start;
     mEndPosition = end;
     mCondition.signal();
@@ -123,9 +131,9 @@ void VideoDecodeThread::setRange(float start, float end) {
  * 准备解码
  * @return
  */
-int VideoDecodeThread::prepare() {
+int DecodeVideoThread::prepare() {
     int ret;
-    LOGD("VideoDecodeThread::prepare()");
+    LOGD("DecodeVideoThread::prepare()");
     // 打开解封装器
     ret = mVideoDemuxer->openDemuxer(mFormatOptions);
     if (ret < 0) {
@@ -153,8 +161,8 @@ int VideoDecodeThread::prepare() {
 /**
  * 开始解码
  */
-void VideoDecodeThread::start() {
-    LOGD("VideoDecodeThread::start()");
+void DecodeVideoThread::start() {
+    LOGD("DecodeVideoThread::start()");
     mAbortRequest = false;
     mPauseRequest = false;
     mCondition.signal();
@@ -169,8 +177,8 @@ void VideoDecodeThread::start() {
 /**
  * 暂停解码
  */
-void VideoDecodeThread::pause() {
-    LOGD("VideoDecodeThread::pause()");
+void DecodeVideoThread::pause() {
+    LOGD("DecodeVideoThread::pause()");
     mPauseRequest = true;
     mCondition.signal();
 }
@@ -178,8 +186,8 @@ void VideoDecodeThread::pause() {
 /**
  * 停止解码
  */
-void VideoDecodeThread::stop() {
-    LOGD("VideoDecodeThread::stop()");
+void DecodeVideoThread::stop() {
+    LOGD("DecodeVideoThread::stop()");
     mAbortRequest = true;
     mCondition.signal();
     if (mThread != nullptr && mThread->isActive()) {
@@ -194,8 +202,8 @@ void VideoDecodeThread::stop() {
 /**
  * 清空解码缓冲区和视频帧队列
  */
-void VideoDecodeThread::flush() {
-    LOGD("VideoDecodeThread::flush()");
+void DecodeVideoThread::flush() {
+    LOGD("DecodeVideoThread::flush()");
     if (mVideoDecoder != nullptr) {
         mVideoDecoder->flushBuffer();
     }
@@ -211,39 +219,39 @@ void VideoDecodeThread::flush() {
 /**
  * 获取宽度
  */
-int VideoDecodeThread::getWidth() {
+int DecodeVideoThread::getWidth() {
     return mVideoDecoder->getWidth();
 }
 
 /**
  * 获取高度
  */
-int VideoDecodeThread::getHeight() {
+int DecodeVideoThread::getHeight() {
     return mVideoDecoder->getHeight();
 }
 
 /**
  * 获取平均帧率
  */
-int VideoDecodeThread::getAvgFrameRate() {
+int DecodeVideoThread::getAvgFrameRate() {
     return mVideoDecoder->getFrameRate();
 }
 
 /**
  * 获取时长(ms)
  */
-int64_t VideoDecodeThread::getDuration() {
+int64_t DecodeVideoThread::getDuration() {
     return mVideoDemuxer->getDuration();
 }
 
 /**
  * 获取旋转角度
  */
-double VideoDecodeThread::getRotation() {
+double DecodeVideoThread::getRotation() {
     return mVideoDecoder->getRotation();
 }
 
-void VideoDecodeThread::run() {
+void DecodeVideoThread::run() {
     readPacket();
 }
 
@@ -251,11 +259,11 @@ void VideoDecodeThread::run() {
  * 读取数据包并解码
  * @return
  */
-int VideoDecodeThread::readPacket() {
+int DecodeVideoThread::readPacket() {
 
     int ret = 0;
     mDecodeEnd = false;
-    LOGD("VideoDecodeThread::readePacket");
+    LOGD("DecodeVideoThread::readePacket");
 
     if (mStartPosition >= 0) {
         mVideoDemuxer->seekTo(mStartPosition);
@@ -334,7 +342,7 @@ int VideoDecodeThread::readPacket() {
         decodePacket(&mPacket);
         av_packet_unref(&mPacket);
     }
-    LOGD("VideoDecodeThread exit!");
+    LOGD("DecodeVideoThread exit!");
     return ret;
 }
 
@@ -343,7 +351,7 @@ int VideoDecodeThread::readPacket() {
  * @param packet
  * @return 0为解码成功，小于为解码失败
  */
-int VideoDecodeThread::decodePacket(AVPacket *packet) {
+int DecodeVideoThread::decodePacket(AVPacket *packet) {
     int ret = 0;
 
     if (!packet || packet->stream_index < 0) {
@@ -405,7 +413,7 @@ int VideoDecodeThread::decodePacket(AVPacket *packet) {
  * 是否需要解码等待
  * @return
  */
-bool VideoDecodeThread::isDecodeWaiting() {
+bool DecodeVideoThread::isDecodeWaiting() {
     return (mFrameQueue && mFrameQueue->size() >= mMaxFrame);
 }
 
@@ -415,7 +423,7 @@ bool VideoDecodeThread::isDecodeWaiting() {
  * @param time_base
  * @return
  */
-int64_t VideoDecodeThread::calculatePts(int64_t pts, AVRational time_base) {
+int64_t DecodeVideoThread::calculatePts(int64_t pts, AVRational time_base) {
     return (int64_t)(av_q2d(time_base) * 1000 * pts);
 }
 
@@ -423,7 +431,7 @@ int64_t VideoDecodeThread::calculatePts(int64_t pts, AVRational time_base) {
  * 释放帧对象
  * @param frame
  */
-void VideoDecodeThread::freeFrame(AVFrame *frame) {
+void DecodeVideoThread::freeFrame(AVFrame *frame) {
     if (frame) {
         av_frame_unref(frame);
         av_frame_free(&frame);
@@ -433,7 +441,7 @@ void VideoDecodeThread::freeFrame(AVFrame *frame) {
 /**
  * 跳转到某个帧
  */
-void VideoDecodeThread::seekFrame() {
+void DecodeVideoThread::seekFrame() {
     mSeekRequest = false;
     mVideoDemuxer->seekTo(mSeekTime);
     mSeekTime = -1;

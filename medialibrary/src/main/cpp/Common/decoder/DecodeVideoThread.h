@@ -1,9 +1,9 @@
 //
-// Created by CainHuang on 2020-02-22.
+// Created by CainHuang on 2020-02-24.
 //
 
-#ifndef AUDIODECODETHREAD_H
-#define AUDIODECODETHREAD_H
+#ifndef DECODEVIDEOTHREAD_H
+#define DECODEVIDEOTHREAD_H
 
 #include <AVMediaHeader.h>
 #include <map>
@@ -11,15 +11,20 @@
 #include <decoder/AVAudioDecoder.h>
 #include <AVMediaData.h>
 #include <SafetyQueue.h>
+#include "AVVideoDecoder.h"
 
-/**
- * 音频解码线程
- */
-class AudioDecodeThread : public Runnable {
+typedef struct Picture {
+    float pts;
+    AVFrame *frame;
+} Picture;
+
+class DecodeVideoThread : public Runnable {
 public:
-    AudioDecodeThread(SafetyQueue<AVMediaData *> *frameQueue);
+    DecodeVideoThread();
 
-    virtual ~AudioDecodeThread();
+    virtual ~DecodeVideoThread();
+
+    void setDecodeFrameQueue(SafetyQueue<Picture *> *frameQueue);
 
     void setDataSource(const char *url);
 
@@ -30,8 +35,6 @@ public:
     void addFormatOptions(std::string key, std::string value);
 
     void addDecodeOptions(std::string key, std::string value);
-
-    void setOutput(int sampleRate, int channel, AVSampleFormat format = AV_SAMPLE_FMT_S16);
 
     void seekTo(float timeMs);
 
@@ -48,7 +51,15 @@ public:
 
     void stop();
 
+    int getWidth();
+
+    int getHeight();
+
+    int getAvgFrameRate();
+
     int64_t getDuration();
+
+    double getRotation();
 
     void run() override;
 
@@ -61,13 +72,13 @@ private:
 
     int decodePacket(AVPacket *packet);
 
-    void initResampleContext();
-
     bool isDecodeWaiting();
 
-    int reallocBuffer(int nb_samples);
-
     int64_t calculatePts(int64_t pts, AVRational time_base);
+
+    void freeFrame(AVFrame *frame);
+
+    void seekFrame();
 
 private:
     Mutex mMutex;
@@ -77,31 +88,24 @@ private:
     std::map<std::string, std::string> mFormatOptions;
     std::map<std::string, std::string> mDecodeOptions;
 
-    std::shared_ptr<AVMediaDemuxer> mAudioDemuxer;
-    std::shared_ptr<AVAudioDecoder> mAudioDecoder;
+    std::shared_ptr<AVMediaDemuxer> mVideoDemuxer;
+    std::shared_ptr<AVVideoDecoder> mVideoDecoder;
 
-    SafetyQueue<AVMediaData *> *mFrameQueue;
-
-    int mMaxBufferSize;
-    int mOutSampleRate;
-    int mOutChannels;
-    AVSampleFormat mOutFormat;
-
-    SwrContext *pSwrContext;
-    AVFrame *mFrame;
-    uint8_t *mBuffer;
+    SafetyQueue<Picture *> *mFrameQueue;
     AVPacket mPacket;
     int mMaxFrame;
     bool mAbortRequest;
     bool mPauseRequest;
     bool mLooping;
+
     bool mSeekRequest;
     float mSeekTime;
 
     bool mDecodeEnd;
     float mStartPosition;
     float mEndPosition;
+
 };
 
 
-#endif //AUDIODECODETHREAD_H
+#endif //DECODEVIDEOTHREAD_H

@@ -17,7 +17,8 @@ AudioStreamPlayer::AudioStreamPlayer(const std::shared_ptr<StreamPlayListener> &
     mCurrentPts = 0;
 
     mFrameQueue = new SafetyQueue<AVMediaData *>();
-    mAudioThread = new AudioDecodeThread(mFrameQueue);
+    mAudioThread = std::make_shared<DecodeAudioThread>();
+    mAudioThread->setDecodeFrameQueue(mFrameQueue);
     mAudioThread->setOutput(mSampleRate, mChannels);
     mAudioProvider = std::make_shared<StreamAudioProvider>();
     auto provider = std::dynamic_pointer_cast<StreamAudioProvider>(mAudioProvider);
@@ -35,7 +36,8 @@ void AudioStreamPlayer::release() {
     LOGD("AudioStreamPlayer::release()");
     stop();
     if (mAudioThread != nullptr) {
-        delete mAudioThread;
+        mAudioThread->stop();
+        mAudioThread.reset();
         mAudioThread = nullptr;
     }
     if (mFrameQueue != nullptr) {
@@ -153,9 +155,10 @@ bool AudioStreamPlayer::isPlaying() {
     return mPlaying;
 }
 
-int AudioStreamPlayer::onAudioProvider(short **buffer, int bufSize) {
+int AudioStreamPlayer::onAudioProvide(short **buffer, int bufSize) {
+    LOGD("providing audio");
     if (mFrameQueue == nullptr) {
-        LOGE("audio frame is null or exit!");
+        LOGE("audio frame is null or not exit!");
         return 0;
     }
     // 等待解码数据
@@ -205,7 +208,7 @@ StreamAudioProvider::~StreamAudioProvider() {
 
 int StreamAudioProvider::onAudioProvide(short **buffer, int bufSize) {
     if (player) {
-        return player->onAudioProvider(buffer, bufSize);
+        return player->onAudioProvide(buffer, bufSize);
     }
     return 0;
 }

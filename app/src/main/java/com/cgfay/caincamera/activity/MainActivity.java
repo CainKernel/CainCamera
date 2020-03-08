@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_edit_music_merge).setOnClickListener(this);
         findViewById(R.id.btn_ff_media_record).setOnClickListener(this);
         findViewById(R.id.btn_music_player).setOnClickListener(this);
+        findViewById(R.id.btn_video_player).setOnClickListener(this);
     }
 
     @Override
@@ -127,6 +128,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_music_player: {
                 musicPlayerTest();
+                break;
+            }
+
+            case R.id.btn_video_player: {
+                videoPlayerTest();
                 break;
             }
         }
@@ -216,6 +222,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void musicPlayerTest() {
         startActivity(new Intent(MainActivity.this, MusicPlayerActivity.class));
-        finish();
+    }
+
+    private void videoPlayerTest() {
+        MediaPicker.from(this)
+                .showCapture(true)
+                .showImage(false)
+                .showVideo(true)
+                .setMediaSelector(new VideoPlayerTestSelector())
+                .show();
+    }
+
+    private class VideoPlayerTestSelector implements OnMediaSelector {
+        @Override
+        public void onMediaSelect(@NonNull Context context, @NonNull List<MediaData> mediaDataList) {
+            if (mediaDataList.size() == 1) {
+                Intent intent = new Intent(context, VideoPlayerActivity.class);
+                intent.putExtra(VideoPlayerActivity.PATH, mediaDataList.get(0).getPath());
+                context.startActivity(intent);
+            }
+        }
     }
 }

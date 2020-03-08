@@ -5,13 +5,9 @@ set(common_dir ../Common)
 include_directories(${common_dir})
 
 # 添加源文件
-add_library( musicplayer
+add_library( videoplayer
 
              SHARED
-
-             # audio
-             ${common_dir}/audio/AudioPlay.cpp
-             ${common_dir}/audio/AudioSLPlay.cpp
 
              #demuxer
              ${common_dir}/demuxer/AVMediaDemuxer.cpp
@@ -19,7 +15,10 @@ add_library( musicplayer
              # decode
              ${common_dir}/decoder/AVAudioDecoder.cpp
              ${common_dir}/decoder/AVMediaDecoder.cpp
+             ${common_dir}/decoder/AVVideoDecoder.cpp
+        
              ${common_dir}/decoder/DecodeAudioThread.cpp
+             ${common_dir}/decoder/DecodeVideoThread.cpp
 
              # common
              ${common_dir}/AVFrameFilter.cpp
@@ -32,17 +31,30 @@ add_library( musicplayer
 
              # player
              ${common_dir}/player/AudioStreamPlayer.cpp
+             ${common_dir}/player/VideoStreamPlayer.cpp
+
+             # audio
+             ${common_dir}/audio/AudioPlay.cpp
+             ${common_dir}/audio/AudioSLPlay.cpp
+
+             # video
+             ${common_dir}/video/AVideoPlay.cpp
 
              # 播放器
-             MusicPlayer.cpp
-             com_cgfay_media_MusicPlayer.cpp)
+             FFMediaPlayer.cpp
+             com_cgfay_media_VideoPlayer.cpp)
 
 
-target_link_libraries( musicplayer
+target_link_libraries( videoplayer
 
                        ffmpeg
+                       yuv
 
                        android
+                       jnigraphics
+                       mediandk
+                       EGL
+                       ${GLES-lib}
                        OpenSLES
                        log )
 

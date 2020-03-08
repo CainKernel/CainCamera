@@ -47,5 +47,8 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/MediaPlayer)
 # 音乐播放器
 add_subdirectory(${CMAKE_SOURCE_DIR}/MusicPlayer)
 
+# 视频播放器
+add_subdirectory(${CMAKE_SOURCE_DIR}/VideoPlayer)
+
 # 媒体编辑器
 add_subdirectory(${CMAKE_SOURCE_DIR}/MediaEditor)

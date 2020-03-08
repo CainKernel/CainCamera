@@ -10,7 +10,7 @@
 #include <SafetyQueue.h>
 #include <SonicAudioTranscoder.h>
 #include <Resampler.h>
-#include <decoder/AudioDecodeThread.h>
+#include <decoder/DecodeAudioThread.h>
 #include "StreamPlayListener.h"
 
 /**
@@ -50,13 +50,13 @@ public:
 
     bool isPlaying();
 
-    int onAudioProvider(short **buffer, int bufSize);
+    int onAudioProvide(short **buffer, int bufSize);
 
     void release();
 
 private:
     Mutex mMutex;
-    AudioDecodeThread *mAudioThread;
+    std::shared_ptr<DecodeAudioThread> mAudioThread;
     std::shared_ptr<AudioProvider> mAudioProvider;
     std::shared_ptr<AudioPlay> mAudioPlayer;
     std::shared_ptr<StreamPlayListener> mPlayListener;
