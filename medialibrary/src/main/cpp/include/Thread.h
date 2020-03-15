@@ -55,6 +55,9 @@ protected:
 
     virtual void run();
 
+    void lock();
+
+    void unlock();
 protected:
     Mutex mMutex;
     Condition mCondition;
@@ -109,22 +112,28 @@ inline void Thread::start() {
     }
     // wait thread to run
     mMutex.lock();
-    while (!mRunning) {
+    while (!isActive()) {
         mCondition.wait(mMutex);
     }
     mMutex.unlock();
 }
 
 inline void Thread::join() {
-    if (mId == -1) {
+    if (mId == -1 || !isActive()) {
+        mId == -1;
+        mNeedJoin = false;
         return;
     }
-    Mutex::Autolock lock(mMutex);
     if (mId != -1 && mNeedJoin) {
         pthread_join(mId, NULL);
     }
     mNeedJoin = false;
     mId = -1;
+    mMutex.lock();
+    while (isActive()) {
+        mCondition.wait(mMutex);
+    }
+    mMutex.unlock();
 }
 
 inline  void Thread::detach() {
@@ -199,5 +208,12 @@ inline void Thread::run() {
     // do nothing
 }
 
+inline void Thread::lock() {
+    mMutex.lock();
+}
+
+inline void Thread::unlock() {
+    mMutex.unlock();
+}
 
 #endif //THREAD_H

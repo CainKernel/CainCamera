@@ -31,9 +31,10 @@ void AVideoPlay::start() {
     if (!mVideoThread) {
         mVideoThread = new Thread(this, Priority_High);
     }
-    if (mVideoThread && !mVideoThread->isActive()) {
+    if (!mVideoThread->isActive()) {
         mVideoThread->start();
     }
+    LOGD("AVideoPlay::start() Success");
 }
 
 void AVideoPlay::stop() {
@@ -45,6 +46,7 @@ void AVideoPlay::stop() {
         delete mVideoThread;
         mVideoThread = nullptr;
     }
+    LOGD("AVideoPlay::stopSuccess()");
 }
 
 void AVideoPlay::pause() {
@@ -79,31 +81,31 @@ void AVideoPlay::release() {
 void AVideoPlay::videoPlay() {
     // 绘制时的缓冲区
     ANativeWindow_Buffer outBuffer;
-    ANativeWindow_Buffer *buffer = &outBuffer;
     int result = 0;
     while (true) {
 
         mMutex.lock();
         if (mAbortRequest) {
-            LOGD("exiting...");
+            LOGD("AVideoPlay::exiting...");
             mMutex.unlock();
             break;
         }
 
-        if (mPauseRequest) {
-            LOGD("pause....");
+        if (mPauseRequest && !mForceRender) {
+            LOGD("AVideoPlay::pause....");
             mCondition.wait(mMutex);
             mMutex.unlock();
             continue;
         }
 
         // 如果此时没有窗口，则等待10毫秒继续下一轮刷新
-        if (!mWindow || mWidth <= 0 || mHeight <= 0) {
+        if (mWidth <= 0 || mHeight <= 0) {
             mCondition.waitRelativeMs(mMutex, 10);
             mMutex.unlock();
             continue;
         }
 
+        // 初始化缓冲区
         if (!mBuffer) {
             int buffer_size = av_image_get_buffer_size(AV_PIX_FMT_RGBA, mWidth, mHeight, 1);
             mBuffer = (uint8_t *) av_malloc(buffer_size * sizeof(uint8_t));
@@ -113,15 +115,14 @@ void AVideoPlay::videoPlay() {
         if (mVideoProvider.lock() != nullptr) {
             // 这里返回的是rgba的linesize
             result = mVideoProvider.lock()->onVideoProvide(mBuffer, mWidth, mHeight, AV_PIX_FMT_RGBA);
-            if (result > 0) {
+            if (result > 0 && mWindow != nullptr) {
                 ANativeWindow_setBuffersGeometry(mWindow, mWidth, mHeight, WINDOW_FORMAT_RGBA_8888);
-                ANativeWindow_lock(mWindow, &outBuffer, NULL);
+                ANativeWindow_lock(mWindow, &outBuffer, nullptr);
                 // 对齐处理
                 uint8_t *bits = (uint8_t *) outBuffer.bits;
                 for (int h = 0; h < mHeight; h++) {
                     memcpy(bits + h * outBuffer.stride * 4,
-                           mBuffer + h * result,
-                           result);
+                           mBuffer + h * result, result);
                 }
                 ANativeWindow_unlockAndPost(mWindow);
             }
@@ -130,7 +131,7 @@ void AVideoPlay::videoPlay() {
         // 按照mRefreshRate fps 的频率刷新
         if (mRefreshRate > 0 && !mForceRender) {
             mCondition.waitRelativeMs(mMutex, static_cast<nsecs_t>(1000.0f / mRefreshRate));
-        } else { // 否则10毫秒刷新一次
+        } else if (!mForceRender) { // 否则10毫秒刷新一次
             mCondition.waitRelativeMs(mMutex, 10);
         }
         mForceRender = false;

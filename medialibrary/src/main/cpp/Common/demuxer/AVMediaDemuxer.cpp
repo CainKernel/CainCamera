@@ -81,7 +81,7 @@ int AVMediaDemuxer::openDemuxer(std::map<std::string, std::string> formatOptions
  * @param timeMs 时间/ms
  * @return
  */
-int AVMediaDemuxer::seekTo(float timeMs, int stream_index) {
+int AVMediaDemuxer::seekTo(float timeMs) {
     if (mDuration <= 0) {
         return -1;
     }
@@ -91,16 +91,68 @@ int AVMediaDemuxer::seekTo(float timeMs, int stream_index) {
     if (start_time > 0 && start_time != AV_NOPTS_VALUE) {
         seek_pos += start_time;
     }
-//    int seekFlags = 0;
-//    seekFlags &= ~AVSEEK_FLAG_BYTE;
-//    int ret = avformat_seek_file(pFormatCtx, -1, INT64_MIN, seek_pos, INT64_MAX, seekFlags);
-    int ret = av_seek_frame(pFormatCtx, stream_index, seek_pos, AVSEEK_FLAG_BACKWARD);
+    int seekFlags = 0;
+    seekFlags &= ~AVSEEK_FLAG_BYTE;
+    int ret = avformat_seek_file(pFormatCtx, -1, INT64_MIN, seek_pos, INT64_MAX, seekFlags);
     if (ret < 0) {
         LOGE("%s: could not seek to time(ms): %0.3f\n", mInputPath, (double)seek_pos / AV_TIME_BASE * 1000);
         return ret;
     }
     LOGD("seek success: time(ms): %.3f, position: %d", timeMs, seek_pos);
     return ret;
+}
+
+/**
+ * 定位音频帧
+ * @param timeMs
+ * @param stream_index
+ * @return
+ */
+int AVMediaDemuxer::seekAudio(float timeMs, int stream_index) {
+    if (mDuration <= 0) {
+        return -1;
+    }
+    int64_t start_time = 0;
+    int64_t seek_pos = av_rescale(timeMs, AV_TIME_BASE, 1000);
+    start_time = pFormatCtx ? pFormatCtx->start_time : 0;
+    if (start_time > 0 && start_time != AV_NOPTS_VALUE) {
+        seek_pos += start_time;
+    }
+    int seekFlags = 0;
+    seekFlags &= ~AVSEEK_FLAG_BYTE;
+    int ret = avformat_seek_file(pFormatCtx, stream_index, INT64_MIN, seek_pos, INT64_MAX, seekFlags);
+    if (ret < 0) {
+        LOGE("%s: audio stream could not seek to time(ms): %0.3f\n", mInputPath, (double)seek_pos / AV_TIME_BASE * 1000);
+        return ret;
+    }
+    LOGD("seek audio success: time(ms): %.3f, position: %d", timeMs, seek_pos);
+    return ret;
+}
+
+/**
+ * 定位/跳转视频数据
+ * @param timeMs
+ * @param stream_index
+ * @param flag
+ * @return
+ */
+int64_t AVMediaDemuxer::seekVideo(int64_t time, int stream_index, int flag) {
+    if (mDuration <= 0) {
+        return -1;
+    }
+    // 偏移时间
+    int64_t start_time = 0;
+    start_time = pFormatCtx ? pFormatCtx->start_time : 0;
+    if (start_time > 0 && start_time != AV_NOPTS_VALUE) {
+        time += start_time;
+    }
+    int ret = av_seek_frame(pFormatCtx, stream_index, time, flag);
+    if (ret < 0) {
+        LOGE("%s: video stream could not seek to position: %ld\n", mInputPath, time);
+        return ret;
+    }
+    LOGD("seek video success: stream_index: %d, position: %ld", stream_index, time);
+    return time;
 }
 
 /**

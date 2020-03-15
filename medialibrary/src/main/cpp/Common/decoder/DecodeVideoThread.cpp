@@ -16,12 +16,14 @@ DecodeVideoThread::DecodeVideoThread() {
     mPacket.data = nullptr;
     mPacket.size = 0;
 
-    mMaxFrame = 5;
+    mMaxFrame = MAX_FRAME / 3;
     mThread = nullptr;
     mAbortRequest = true;
     mPauseRequest = true;
+    mDecodeOnPause = false;
     mSeekRequest = false;
     mSeekTime = -1;
+    mSeekPos = -1;
     mStartPosition = -1;
     mEndPosition = -1;
 }
@@ -92,6 +94,16 @@ void DecodeVideoThread::addFormatOptions(std::string key, std::string value) {
 void DecodeVideoThread::addDecodeOptions(std::string key, std::string value) {
     LOGD("DecodeVideoThread::addDecodeOptions(): {%s, %s}", key.c_str(), value.c_str());
     mDecodeOptions[key] = value;
+}
+
+/**
+ * 设置解码
+ * @param decodeOnPause
+ */
+void DecodeVideoThread::setDecodeOnPause(bool decodeOnPause) {
+    LOGD("DecodeVideoThread::setDecodeOnPause(): %d", decodeOnPause);
+    mDecodeOnPause = decodeOnPause;
+    mCondition.signal();
 }
 
 /**
@@ -210,8 +222,10 @@ void DecodeVideoThread::flush() {
     if (mFrameQueue != nullptr) {
         while (mFrameQueue->size() > 0) {
             auto picture = mFrameQueue->pop();
-            freeFrame(picture->frame);
-            free(picture);
+            if (picture) {
+                freeFrame(picture->frame);
+                free(picture);
+            }
         }
     }
 }
@@ -233,7 +247,7 @@ int DecodeVideoThread::getHeight() {
 /**
  * 获取平均帧率
  */
-int DecodeVideoThread::getAvgFrameRate() {
+int DecodeVideoThread::getFrameRate() {
     return mVideoDecoder->getFrameRate();
 }
 
@@ -251,6 +265,10 @@ double DecodeVideoThread::getRotation() {
     return mVideoDecoder->getRotation();
 }
 
+bool DecodeVideoThread::isSeeking() {
+    return mSeekRequest;
+}
+
 void DecodeVideoThread::run() {
     readPacket();
 }
@@ -266,7 +284,7 @@ int DecodeVideoThread::readPacket() {
     LOGD("DecodeVideoThread::readePacket");
 
     if (mStartPosition >= 0) {
-        mVideoDemuxer->seekTo(mStartPosition);
+        mVideoDemuxer->seekAudio(mStartPosition);
     }
 
     while (true) {
@@ -282,12 +300,15 @@ int DecodeVideoThread::readPacket() {
         // 定位处理
         if (mSeekRequest) {
             seekFrame();
+            mSeekTime = -1;
+            mSeekRequest = false;
+            mCondition.signal();
             mMutex.unlock();
             continue;
         }
 
-        // 处于暂停状态下，睡眠10毫秒继续下一轮循环
-        if (mPauseRequest) {
+        // 处于暂停状态下，暂停解码
+        if (mPauseRequest && !mDecodeOnPause) {
             mCondition.wait(mMutex);
             mMutex.unlock();
             continue;
@@ -324,26 +345,39 @@ int DecodeVideoThread::readPacket() {
         }
         mMutex.unlock();
 
-        // 读取数据包
-        ret = mVideoDemuxer->readFrame(&mPacket);
-        // 解码到结尾位置，如果需要循环播放，则记录解码完成标记，等待队列消耗完
-        if (ret == AVERROR_EOF && mLooping) {
-            mDecodeEnd = true;
-            LOGD("need to decode looping");
-            continue;
-        } else if (ret < 0) { // 解码出错直接退出解码线程
-            LOGE("Failed to call av_read_frame: %s", av_err2str(ret));
+        ret = readAndDecode();
+        if (ret < 0) {
             break;
         }
-        if (mPacket.stream_index < 0 || mPacket.stream_index != mVideoDecoder->getStreamIndex()) {
-            av_packet_unref(&mPacket);
-            continue;
-        }
-        decodePacket(&mPacket);
-        av_packet_unref(&mPacket);
     }
     LOGD("DecodeVideoThread exit!");
     return ret;
+}
+
+/**
+ * 读取并解码
+ * @return
+ */
+int DecodeVideoThread::readAndDecode() {
+    // 读取数据包
+    int ret = mVideoDemuxer->readFrame(&mPacket);
+    // 解码到结尾位置，如果需要循环播放，则记录解码完成标记，等待队列消耗完
+    if (ret == AVERROR_EOF && mLooping) {
+        mDecodeEnd = true;
+        LOGD("need to decode looping");
+        return 0;
+    } else if (ret < 0) { // 解码出错直接退出解码线程
+        LOGE("Failed to call av_read_frame: %s", av_err2str(ret));
+        return ret;
+    }
+    if (mPacket.stream_index < 0 || mPacket.stream_index != mVideoDecoder->getStreamIndex()
+        || (mPacket.flags & AV_PKT_FLAG_CORRUPT)) {
+        av_packet_unref(&mPacket);
+        return 0;
+    }
+    decodePacket(&mPacket);
+    av_packet_unref(&mPacket);
+    return 0;
 }
 
 /**
@@ -387,6 +421,17 @@ int DecodeVideoThread::decodePacket(AVPacket *packet) {
             LOGE("Failed to call avcodec_receive_frame: %s", av_err2str(ret));
             freeFrame(frame);
             break;
+        }
+
+        // 定位到实际的帧中，关键帧立即上屏
+        if (mSeekPos > 0 && frame->pts > 0 /*&& !(packet->flags & AV_PKT_FLAG_KEY)*/) {
+            if (frame->pts < mSeekPos) {
+                LOGD("skip video frame.pos: %ld, seek pos: %ld", time, mSeekTime);
+                freeFrame(frame);
+                break;
+            } else {
+                mSeekPos = -1;
+            }
         }
 
         // 将解码后数据帧转码后放入队列
@@ -442,8 +487,50 @@ void DecodeVideoThread::freeFrame(AVFrame *frame) {
  * 跳转到某个帧
  */
 void DecodeVideoThread::seekFrame() {
-    mSeekRequest = false;
-    mVideoDemuxer->seekTo(mSeekTime);
-    mSeekTime = -1;
+    int64_t ret;
+    int stream_index;
+    if (!mVideoDecoder || mSeekTime == -1) {
+        return;
+    }
+
+    // 定位到某个帧中，如果队列已经存在，则直接返回不做处理
+    float frame_duration = 1000.0f / mVideoDecoder->getFrameRate();
+    bool hasSeek = false;
+    while (mFrameQueue->size() > 0) {
+        Picture *picture = nullptr;
+        picture = mFrameQueue->pop();
+        if (picture != nullptr) {
+            if (picture->pts + 2 * frame_duration < mSeekTime && picture->pts + frame_duration >= mSeekTime) {
+                hasSeek = true;
+            }
+            LOGD("seek queue picture time: %f, mSeekTime: %f", picture->pts, mSeekTime);
+            freeFrame(picture->frame);
+            free(picture);
+            if (hasSeek) {
+                break;
+            }
+        }
+    }
+
+    // 存在定位帧，则直接退出，seekTime重置
+    if (hasSeek) {
+        mSeekPos = -1;
+        return;
+    }
+
+    // 定位到实际位置中
+    stream_index = mVideoDecoder->getStreamIndex();
+    int64_t time = (int64_t)(mSeekTime / (1000.0f * av_q2d(mVideoDecoder->getStream()->time_base)));
+    ret = mVideoDemuxer->seekVideo(time, stream_index, AVSEEK_FLAG_BACKWARD);
+    if (ret < 0) {
+        return;
+    }
+    mSeekTime = ret;
+    // 清空队列的数据
     flush();
+
+    // 解码得到先要的帧
+    while (mFrameQueue->empty()) {
+        readAndDecode();
+    }
 }

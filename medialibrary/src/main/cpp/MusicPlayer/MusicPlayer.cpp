@@ -10,16 +10,14 @@ MusicPlayer::MusicPlayer() {
 
 MusicPlayer::~MusicPlayer() {
     release();
-    if (mAudioPlayer != nullptr) {
-        mAudioPlayer.reset();
-        mAudioPlayer = nullptr;
-    }
     LOGD("MusicPlayer::destructor()");
 }
 
 void MusicPlayer::release() {
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->release();
+        mAudioPlayer.reset();
+        mAudioPlayer = nullptr;
     }
 }
 

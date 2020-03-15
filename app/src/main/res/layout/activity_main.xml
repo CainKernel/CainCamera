@@ -84,7 +84,7 @@
             android:background="@android:color/transparent"
             android:textColor="@color/white"
             android:text="@string/btn_video_player"
-            android:visibility="gone"/>
+            android:visibility="visible"/>
     </LinearLayout>
 
 </FrameLayout>

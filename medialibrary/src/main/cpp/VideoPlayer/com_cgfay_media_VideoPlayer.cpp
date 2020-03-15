@@ -208,9 +208,14 @@ Java_com_cgfay_media_VideoPlayer_setVideoDecoder(JNIEnv *env, jobject thiz, jlon
 extern "C" JNIEXPORT void JNICALL
 Java_com_cgfay_media_VideoPlayer_setVideoSurface(JNIEnv *env, jobject thiz, jlong handle, jobject surface) {
     auto player = (FFMediaPlayer *) handle;
-    if (player != nullptr && surface != nullptr) {
-        auto window = ANativeWindow_fromSurface(env, surface);
-        player->setVideoSurface(window);
+    if (player != nullptr) {
+        if (surface != nullptr) {
+            auto window = ANativeWindow_fromSurface(env, surface);
+            player->setVideoSurface(window);
+        } else {
+            player->setVideoSurface(nullptr);
+        }
+
     }
 }
 
@@ -240,6 +245,14 @@ Java_com_cgfay_media_VideoPlayer_setRange(JNIEnv *env, jobject thiz, jlong handl
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_com_cgfay_media_VideoPlayer_setVolume(JNIEnv *env, jobject thiz, jlong handle, jfloat leftVolume, jfloat rightVolume) {
+    auto player = (FFMediaPlayer *) handle;
+    if (player != nullptr) {
+        player->setVolume(leftVolume, rightVolume);
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_com_cgfay_media_VideoPlayer_start(JNIEnv *env, jobject thiz, jlong handle) {
     auto player = (FFMediaPlayer *) handle;
     if (player != nullptr) {
@@ -264,6 +277,15 @@ Java_com_cgfay_media_VideoPlayer_stop(JNIEnv *env, jobject thiz, jlong handle) {
 }
 
 extern "C" JNIEXPORT void JNICALL
+Java_com_cgfay_media_VideoPlayer_setDecodeOnPause(JNIEnv *env, jobject thiz, jlong handle, jboolean decodeOnPause) {
+    auto player = (FFMediaPlayer *) handle;
+    if (player != nullptr) {
+        player->setDecodeOnPause(decodeOnPause);
+    }
+}
+
+
+extern "C" JNIEXPORT void JNICALL
 Java_com_cgfay_media_VideoPlayer_seekTo(JNIEnv *env, jobject thiz, jlong handle, jfloat timeMs) {
     auto player = (FFMediaPlayer *) handle;
     if (player != nullptr) {
@@ -276,6 +298,24 @@ Java_com_cgfay_media_VideoPlayer_getDuration(JNIEnv *env, jobject thiz, jlong ha
     auto player = (FFMediaPlayer *) handle;
     if (player != nullptr) {
         return player->getDuration();
+    }
+    return 0;
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_com_cgfay_media_VideoPlayer_getVideoWidth(JNIEnv *env, jobject thiz, jlong handle) {
+    auto player = (FFMediaPlayer *) handle;
+    if (player != nullptr) {
+        return player->getVideoWidth();
+    }
+    return 0;
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_com_cgfay_media_VideoPlayer_getVideoHeight(JNIEnv *env, jobject thiz, jlong handle) {
+    auto player = (FFMediaPlayer *) handle;
+    if (player != nullptr) {
+        return player->getVideoHeight();
     }
     return 0;
 }

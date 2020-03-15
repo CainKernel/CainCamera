@@ -23,7 +23,6 @@ add_library( videoplayer
              # common
              ${common_dir}/AVFrameFilter.cpp
              ${common_dir}/AVMediaData.cpp
-             ${common_dir}/Handler.cpp
              ${common_dir}/MessageQueue.cpp
              ${common_dir}/Resampler.cpp
              ${common_dir}/sonic.cpp
@@ -31,6 +30,7 @@ add_library( videoplayer
 
              # player
              ${common_dir}/player/AudioStreamPlayer.cpp
+             ${common_dir}/player/AVMediaPlayer.cpp
              ${common_dir}/player/VideoStreamPlayer.cpp
 
              # audio

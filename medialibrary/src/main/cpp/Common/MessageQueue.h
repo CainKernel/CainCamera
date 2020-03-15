@@ -8,8 +8,6 @@
 #include <SafetyQueue.h>
 #include <Thread.h>
 
-class Handler;
-
 class Message {
 public:
     Message();
@@ -23,8 +21,6 @@ public:
     Message(int what, int arg1, int arg2, void *obj);
 
     virtual ~Message();
-
-    int execute();
 
     inline int getWhat() {
         return what;
@@ -42,7 +38,6 @@ public:
         return obj;
     }
 
-    Handler *target;
 private:
     int what;
     int arg1;
@@ -58,9 +53,11 @@ public:
 
     void flush();
 
-    void enqueueMessage(Message *msg);
+    void pushMessage(Message *msg);
 
-    Message *dequeueMessage(bool block = false);
+    Message *popMessage(bool block = false);
+
+    Message *front();
 
     int size();
 

@@ -13,6 +13,8 @@
 #include <SafetyQueue.h>
 #include "AVVideoDecoder.h"
 
+#define MAX_FRAME 30
+
 typedef struct Picture {
     float pts;
     AVFrame *frame;
@@ -36,6 +38,8 @@ public:
 
     void addDecodeOptions(std::string key, std::string value);
 
+    void setDecodeOnPause(bool decodeOnPause);
+
     void seekTo(float timeMs);
 
     void setLooping(bool looping);
@@ -55,11 +59,13 @@ public:
 
     int getHeight();
 
-    int getAvgFrameRate();
+    int getFrameRate();
 
     int64_t getDuration();
 
     double getRotation();
+
+    bool isSeeking();
 
     void run() override;
 
@@ -69,6 +75,8 @@ private:
     void release();
 
     int readPacket();
+
+    int readAndDecode();
 
     int decodePacket(AVPacket *packet);
 
@@ -98,8 +106,10 @@ private:
     bool mPauseRequest;
     bool mLooping;
 
+    bool mDecodeOnPause;    // 允许暂停状态下解码标志
     bool mSeekRequest;
-    float mSeekTime;
+    float mSeekTime; // 毫秒(ms)
+    int64_t mSeekPos;
 
     bool mDecodeEnd;
     float mStartPosition;

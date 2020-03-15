@@ -55,7 +55,6 @@ public:
     void release();
 
 private:
-    Mutex mMutex;
     std::shared_ptr<DecodeAudioThread> mAudioThread;
     std::shared_ptr<AudioProvider> mAudioProvider;
     std::shared_ptr<AudioPlay> mAudioPlayer;

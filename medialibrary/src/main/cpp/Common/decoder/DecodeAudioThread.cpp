@@ -264,7 +264,7 @@ int DecodeAudioThread::readPacket() {
     initResampleContext();
 
     if (mStartPosition >= 0) {
-        mAudioDemuxer->seekTo(mStartPosition);
+        mAudioDemuxer->seekAudio(mStartPosition);
     }
 
     while (true) {
@@ -280,7 +280,7 @@ int DecodeAudioThread::readPacket() {
         // 定位处理
         if (mSeekRequest) {
             mSeekRequest = false;
-            mAudioDemuxer->seekTo(mSeekTime);
+            mAudioDemuxer->seekAudio(mSeekTime);
             mSeekTime = -1;
             flush();
             mMutex.unlock();

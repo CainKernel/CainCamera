@@ -1,32 +1,39 @@
 //
-// Created by CainHuang on 2020-02-24.
+// Created by CainHuang on 2020-03-14.
 //
 
-#include "FFMediaPlayer.h"
+#include "AVMediaPlayer.h"
 
-FFMediaPlayer::FFMediaPlayer() {
+AVMediaPlayer::AVMediaPlayer() {
     LOGD("FFMediaPlayer::constructor()");
-    mThread = nullptr;
-    mStreamPlayListener = std::make_shared<MediaStreamPlayerListener>(this);
-    mVideoPlayer = std::make_shared<VideoStreamPlayer>(mStreamPlayListener);
-//    mAudioPlayer = std::make_shared<AudioStreamPlayer>(mStreamPlayListener);
+    mVideoPlayer = std::make_shared<VideoStreamPlayer>(/*mStreamPlayListener*/);
+    mAudioPlayer = std::make_shared<AudioStreamPlayer>(/*mStreamPlayListener*/);
     mMessageQueue = std::unique_ptr<MessageQueue>(new MessageQueue());
+    mLooping = false;
 }
 
-FFMediaPlayer::~FFMediaPlayer() {
+AVMediaPlayer::~AVMediaPlayer() {
     release();
-    LOGD("FFMediaPlayer::destructor()");
+    LOGD("AVMediaPlayer::destructor()");
 }
 
-void FFMediaPlayer::setVideoPlayListener(std::shared_ptr<OnPlayListener> listener) {
-    if (mPlayListener != nullptr) {
-        mPlayListener.reset();
-        mPlayListener = nullptr;
+void AVMediaPlayer::release() {
+    LOGD("AVMediaPlayer::release()");
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->release();
     }
-    mPlayListener = listener;
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->release();
+    }
+    if (mMessageQueue != nullptr) {
+        mMessageQueue->flush();
+        mMessageQueue.reset();
+        mMessageQueue = nullptr;
+    }
 }
 
-void FFMediaPlayer::setDataSource(const char *path) {
+void AVMediaPlayer::setDataSource(const char *path) {
+    LOGD("AVMediaPlayer::setDataSource(): %s", path);
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->setDataSource(path);
     }
@@ -35,19 +42,23 @@ void FFMediaPlayer::setDataSource(const char *path) {
     }
 }
 
-void FFMediaPlayer::setAudioDecoder(const char *decoder) {
+void AVMediaPlayer::setAudioDecoder(const char *decoder) {
+    LOGD("AVMediaPlayer::setAudioDecoder(): %s", decoder);
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->setDecoderName(decoder);
     }
 }
 
-void FFMediaPlayer::setVideoDecoder(const char *decoder) {
+void AVMediaPlayer::setVideoDecoder(const char *decoder) {
+    LOGD("AVMediaPlayer::setVideoDecoder(): %s", decoder);
     if (mVideoPlayer != nullptr) {
         mVideoPlayer->setDecoderName(decoder);
     }
 }
 
-void FFMediaPlayer::setVideoSurface(ANativeWindow *window) {
+#if defined(__ANDROID__)
+void AVMediaPlayer::setVideoSurface(ANativeWindow *window) {
+    LOGD("AVMediaPlayer::setVideoSurface()");
     if (mVideoPlayer != nullptr) {
         auto play = mVideoPlayer->getPlayer();
         auto videoPlayer = std::dynamic_pointer_cast<AVideoPlay>(play);
@@ -56,8 +67,10 @@ void FFMediaPlayer::setVideoSurface(ANativeWindow *window) {
         }
     }
 }
+#endif
 
-void FFMediaPlayer::setSpeed(float speed) {
+void AVMediaPlayer::setSpeed(float speed) {
+    LOGD("AVMediaPlayer::setSpeed(): %.2f", speed);
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->setSpeed(speed);
     }
@@ -66,7 +79,8 @@ void FFMediaPlayer::setSpeed(float speed) {
     }
 }
 
-void FFMediaPlayer::setLooping(bool looping) {
+void AVMediaPlayer::setLooping(bool looping) {
+    LOGD("AVMediaPlayer::setLooping(): %d", looping);
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->setLooping(looping);
     }
@@ -75,7 +89,8 @@ void FFMediaPlayer::setLooping(bool looping) {
     }
 }
 
-void FFMediaPlayer::setRange(float start, float end) {
+void AVMediaPlayer::setRange(float start, float end) {
+    LOGD("AVMediaPlayer::setRange(): {%.2f, %.2f}", start, end);
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->setRange(start, end);
     }
@@ -84,29 +99,33 @@ void FFMediaPlayer::setRange(float start, float end) {
     }
 }
 
-void FFMediaPlayer::setVolume(float leftVolume, float rightVolume) {
+void AVMediaPlayer::setVolume(float leftVolume, float rightVolume) {
+    LOGD("AVMediaPlayer::setVolume(): {%.2f, %.2f}", leftVolume, rightVolume);
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->setVolume(leftVolume, rightVolume);
     }
 }
 
-void FFMediaPlayer::start() {
+void AVMediaPlayer::start() {
+    LOGD("AVMediaPlayer::start()");
     if (mThread == nullptr) {
         mThread = new Thread(this);
     }
     if (!mThread->isActive()) {
+        mMessageQueue->pushMessage(new Message(OPT_START));
+        mCondition.signal();
         mThread->start();
     }
-    mMessageQueue->pushMessage(new Message(OPT_START));
-    mCondition.signal();
 }
 
-void FFMediaPlayer::pause() {
+void AVMediaPlayer::pause() {
+    LOGD("AVMediaPlayer::pause()");
     mMessageQueue->pushMessage(new Message(OPT_PAUSE));
     mCondition.signal();
 }
 
-void FFMediaPlayer::stop() {
+void AVMediaPlayer::stop() {
+    LOGD("AVMediaPlayer::stop()");
     mMessageQueue->pushMessage(new Message(OPT_STOP));
     mCondition.signal();
     if (mThread != nullptr) {
@@ -116,18 +135,14 @@ void FFMediaPlayer::stop() {
     }
 }
 
-void FFMediaPlayer::setDecodeOnPause(bool decodeOnPause) {
-    if (mVideoPlayer != nullptr) {
-        mVideoPlayer->setDecodeOnPause(decodeOnPause);
-    }
-}
-
-void FFMediaPlayer::seekTo(float timeMs) {
-    mMessageQueue->pushMessage(new Message(OPT_SEEK, (int)(timeMs * 1000), -1));
+void AVMediaPlayer::seekTo(float timeMs) {
+    LOGD("AVMediaPlayer::seekTo(): %.2f", timeMs);
+    float *ptr = &timeMs;
+    mMessageQueue->pushMessage(new Message(OPT_SEEK, ptr));
     mCondition.signal();
 }
 
-float FFMediaPlayer::getDuration() {
+float AVMediaPlayer::getDuration() {
     float duration = 0;
     if (mAudioPlayer != nullptr) {
         duration = mAudioPlayer->getDuration();
@@ -138,51 +153,36 @@ float FFMediaPlayer::getDuration() {
     return duration;
 }
 
-int FFMediaPlayer::getVideoWidth() {
+int AVMediaPlayer::getVideoWidth() {
     if (mVideoPlayer != nullptr) {
         return mVideoPlayer->getVideoWidth();
     }
     return 0;
 }
 
-int FFMediaPlayer::getVideoHeight() {
+int AVMediaPlayer::getVideoHeight() {
     if (mVideoPlayer != nullptr) {
         return mVideoPlayer->getVideoHeight();
     }
     return 0;
 }
 
-bool FFMediaPlayer::isLooping() {
-    return mVideoPlayer->isLooping();
+bool AVMediaPlayer::isLooping() {
+    return mLooping;
 }
 
-bool FFMediaPlayer::isPlaying() {
-    return mVideoPlayer->isPlaying();
-}
-
-void FFMediaPlayer::release() {
+bool AVMediaPlayer::isPlaying() {
+    bool playing = false;
     if (mAudioPlayer != nullptr) {
-        mAudioPlayer->release();
-        mAudioPlayer.reset();
-        mAudioPlayer = nullptr;
+        playing |= mAudioPlayer->isPlaying();
     }
     if (mVideoPlayer != nullptr) {
-        mVideoPlayer->release();
-        mVideoPlayer.reset();
-        mVideoPlayer = nullptr;
+        playing |= mVideoPlayer->isPlaying();
     }
-    if (mMessageQueue != nullptr) {
-        mMessageQueue->flush();
-        mMessageQueue.reset();
-        mMessageQueue = nullptr;
-    }
+    return playing;
 }
 
-std::shared_ptr<OnPlayListener> FFMediaPlayer::getPlayListener() {
-    return mPlayListener;
-}
-
-void FFMediaPlayer::run() {
+void AVMediaPlayer::run() {
     bool abortRequest = false;
     while (true) {
 
@@ -207,7 +207,6 @@ void FFMediaPlayer::run() {
                 if (mAudioPlayer != nullptr) {
                     mAudioPlayer->start();
                 }
-                LOGD("start success");
                 break;
             }
 
@@ -219,7 +218,6 @@ void FFMediaPlayer::run() {
                 if (mAudioPlayer != nullptr) {
                     mAudioPlayer->pause();
                 }
-                LOGD("pause finish");
                 break;
             }
 
@@ -232,18 +230,27 @@ void FFMediaPlayer::run() {
                     mVideoPlayer->stop();
                 }
                 abortRequest = true;
-                LOGD("stop success");
                 break;
             }
 
             // 定位
             case OPT_SEEK: {
-                float timeMs = message->getArg1() / 1000.0f;
-                if (mAudioPlayer != nullptr) {
-                    mAudioPlayer->seekTo(timeMs);
-                }
+                float *timeMs = (float *)message->getObj();
                 if (mVideoPlayer != nullptr) {
-                    mVideoPlayer->seekTo(timeMs);
+                    mVideoPlayer->seekTo(*timeMs);
+                }
+                if (mAudioPlayer != nullptr) {
+                    mAudioPlayer->seekTo(*timeMs);
+                }
+                auto nextMsg = mMessageQueue->front();
+                if (nextMsg->getWhat() == OPT_SEEK) {
+                    if (mAudioPlayer != nullptr) {
+                        mAudioPlayer->pause();
+                    }
+                } else {
+                    if (mAudioPlayer != nullptr) {
+                        mAudioPlayer->start();
+                    }
                 }
                 break;
             }
@@ -252,38 +259,5 @@ void FFMediaPlayer::run() {
                 break;
             }
         }
-        delete message;
-    }
-}
-
-MediaStreamPlayerListener::MediaStreamPlayerListener(FFMediaPlayer *player) {
-    this->player = player;
-}
-
-MediaStreamPlayerListener::~MediaStreamPlayerListener() {
-    this->player = nullptr;
-}
-
-void MediaStreamPlayerListener::onPlaying(AVMediaType type, float pts) {
-    if (player != nullptr && player->getPlayListener() != nullptr) {
-        player->getPlayListener()->onPlaying(pts);
-    }
-}
-
-void MediaStreamPlayerListener::onSeekComplete(AVMediaType type) {
-    if (player != nullptr && player->getPlayListener() != nullptr) {
-        player->getPlayListener()->onSeekComplete();
-    }
-}
-
-void MediaStreamPlayerListener::onCompletion(AVMediaType type) {
-    if (player != nullptr && player->getPlayListener() != nullptr) {
-        player->getPlayListener()->onCompletion();
-    }
-}
-
-void MediaStreamPlayerListener::onError(AVMediaType type, int errorCode, const char *msg) {
-    if (player != nullptr && player->getPlayListener() != nullptr) {
-        player->getPlayListener()->onError(errorCode, msg);
     }
 }

@@ -36,9 +36,15 @@ public:
 
     void stop();
 
+    void setDecodeOnPause(bool decodeOnPause);
+
     void seekTo(float timeMs);
 
     float getDuration();
+
+    int getVideoWidth();
+
+    int getVideoHeight();
 
     bool isLooping();
 
@@ -69,6 +75,7 @@ private:
     bool mLooping;
     bool mPrepared;
     bool mPlaying;
+    bool mExit;
 
     float mCurrentPts;
 };

@@ -66,9 +66,7 @@ void AudioStreamPlayer::setDecoderName(const char *decoder) {
 }
 
 void AudioStreamPlayer::setSpeed(float speed) {
-    mMutex.lock();
     mSpeed = speed;
-    mMutex.unlock();
 }
 
 void AudioStreamPlayer::setLooping(bool looping) {
@@ -131,6 +129,9 @@ void AudioStreamPlayer::stop() {
     if (mAudioThread != nullptr) {
         mAudioThread->stop();
     }
+    if (mAudioTranscoder != nullptr) {
+        mAudioTranscoder->flush();
+    }
 }
 
 void AudioStreamPlayer::seekTo(float timeMs) {
@@ -156,21 +157,15 @@ bool AudioStreamPlayer::isPlaying() {
 }
 
 int AudioStreamPlayer::onAudioProvide(short **buffer, int bufSize) {
-    LOGD("providing audio");
     if (mFrameQueue == nullptr) {
         LOGE("audio frame is null or not exit!");
         return 0;
     }
     // 等待解码数据
-    while (!mPlaying || mFrameQueue->empty()) {
-        av_usleep(10 * 1000);
-    }
-    mMutex.lock();
     if (mAudioTranscoder != nullptr && mSpeed != mAudioTranscoder->getSpeed()) {
         mAudioTranscoder->setSpeed(mSpeed);
         mAudioTranscoder->flush();
     }
-    mMutex.unlock();
     if (!mFrameQueue->empty()) {
         int size = 0;
         while (true) {
@@ -178,6 +173,9 @@ int AudioStreamPlayer::onAudioProvide(short **buffer, int bufSize) {
                 break;
             }
             auto data = mFrameQueue->pop();
+            if (!data) {
+                break;
+            }
             size = mAudioTranscoder->transcode(data, buffer, bufSize, mCurrentPts);
             if (size > 0) {
                 break;

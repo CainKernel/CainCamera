@@ -240,6 +240,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Intent intent = new Intent(context, VideoPlayerActivity.class);
                 intent.putExtra(VideoPlayerActivity.PATH, mediaDataList.get(0).getPath());
                 context.startActivity(intent);
+                finish();
             }
         }
     }

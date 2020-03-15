@@ -3,7 +3,6 @@
 //
 
 #include "MessageQueue.h"
-#include "Handler.h"
 
 MessageQueue::MessageQueue(const char *name) {
     init();
@@ -46,12 +45,12 @@ bool MessageQueue::empty() {
     return queue.empty();
 }
 
-void MessageQueue::enqueueMessage(Message *msg) {
+void MessageQueue::pushMessage(Message *msg) {
     std::unique_lock<std::mutex> lock(mutex);
     queue.push(msg);
 }
 
-Message *MessageQueue::dequeueMessage(bool block) {
+Message *MessageQueue::popMessage(bool block) {
     Message *msg = nullptr;
     std::unique_lock<std::mutex> lock(mutex);
     for (;;) {
@@ -71,26 +70,30 @@ Message *MessageQueue::dequeueMessage(bool block) {
     return msg;
 }
 
-Message::Message() : target(nullptr) {}
+Message *MessageQueue::front() {
+    Message *msg = nullptr;
+    std::unique_lock<std::mutex> lock(mutex);
+    if (queue.size() > 0) {
+        msg = queue.front();
+    }
+    return msg;
+}
 
-Message::Message(int what) : target(nullptr), what(what) {}
 
-Message::Message(int what, int arg1, int arg2) : target(nullptr), what(what), arg1(arg1),
-                                                 arg2(arg2) {}
-
-Message::Message(int what, void *obj) : target(nullptr), what(what), obj(obj) {}
-
-Message::Message(int what, int arg1, int arg2, void *obj) : target(nullptr), what(what),
-                                                            arg1(arg1), arg2(arg2), obj(obj) {}
+Message::Message() {}
 
 Message::~Message() {
-
-}
-
-int Message::execute() {
-    if (target) {
-        target->handleMessage(this);
-        return 0;
+    if (obj) {
+        free(obj);
+        obj = nullptr;
     }
-    return -1;
 }
+
+Message::Message(int what) : what(what), arg1(-1), arg2(-1), obj(nullptr) {}
+
+Message::Message(int what, int arg1, int arg2) : what(what), arg1(arg1), arg2(arg2), obj(nullptr) {}
+
+Message::Message(int what, void *obj) : what(what), obj(obj), arg1(-1), arg2(-1) {}
+
+Message::Message(int what, int arg1, int arg2, void *obj) : what(what), arg1(arg1), arg2(arg2),
+                                                            obj(obj) {}

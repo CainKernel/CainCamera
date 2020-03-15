@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment;
 
 import com.cgfay.caincamera.R;
 import com.cgfay.media.VideoPlayer;
+import com.cgfay.uitls.utils.DisplayUtils;
 
 
 public class VideoPlayerFragment  extends Fragment {
@@ -75,23 +76,16 @@ public class VideoPlayerFragment  extends Fragment {
 
     @Override
     public void onPause() {
-        super.onPause();
         if (mVideoPlayer != null) {
             mVideoPlayer.pause();
         }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (mVideoPlayer != null) {
-            mVideoPlayer.stop();
-        }
+        super.onPause();
     }
 
     @Override
     public void onDestroy() {
         if (mVideoPlayer != null) {
+            mVideoPlayer.stop();
             mVideoPlayer.release();
             mVideoPlayer = null;
         }
@@ -100,13 +94,10 @@ public class VideoPlayerFragment  extends Fragment {
 
     private void initView(@NonNull View rootView) {
         mSurfaceView = rootView.findViewById(R.id.video_view);
-        ViewGroup.LayoutParams params = mSurfaceView.getLayoutParams();
-        params.width = 1080;
-        params.height = 853;
-        mSurfaceView.setLayoutParams(params);
         mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
+                Log.d("CainMedia", "surfaceCreated: ");
                 if (mVideoPlayer != null) {
                     mVideoPlayer.setSurface(holder.getSurface());
                 }
@@ -114,12 +105,15 @@ public class VideoPlayerFragment  extends Fragment {
 
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
+                Log.d("CainMedia", "surfaceChanged: ");
             }
 
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
-
+                Log.d("CainMedia", "surfaceDestroyed: ");
+                if (mVideoPlayer != null) {
+                    mVideoPlayer.setSurface(null);
+                }
             }
         });
         mBtnPlay = rootView.findViewById(R.id.btn_stop_play);
@@ -172,12 +166,18 @@ public class VideoPlayerFragment  extends Fragment {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
+                if (mVideoPlayer != null) {
+                    mVideoPlayer.pause();
+                    mVideoPlayer.setDecodeOnPause(true);
+                }
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+//                if (mVideoPlayer != null) {
+//                    mVideoPlayer.start();
+//                    mVideoPlayer.setDecodeOnPause(false);
+//                }
             }
         });
 
@@ -190,7 +190,9 @@ public class VideoPlayerFragment  extends Fragment {
         }
     }
 
+    private boolean inited = false;
     private void initPlayer(@NonNull String path) {
+        inited = false;
         mVideoPlayer = new VideoPlayer();
         mVideoPlayer.setDataSource(path);
         mVideoPlayer.setSpeed(1.0f);
@@ -198,7 +200,17 @@ public class VideoPlayerFragment  extends Fragment {
         mVideoPlayer.setOnPlayListener(new VideoPlayer.OnPlayListener() {
             @Override
             public void onPlaying(float pts) {
-
+                if (!inited) {
+                    inited = true;
+                    ViewGroup.LayoutParams params = mSurfaceView.getLayoutParams();
+                    params.width = DisplayUtils.getScreenWidth(getContext());
+                    params.height = mVideoPlayer.getVideoHeight() * params.width / mVideoPlayer.getVideoWidth();
+                    Log.d(TAG, "onPlaying: width " + params.width + ", height " + params.height);
+                    mSurfaceView.setLayoutParams(params);
+                    mProgressBar.setMax((int)mVideoPlayer.getDuration());
+                }
+//                int progress = (int)(pts * 100.0f / mVideoPlayer.getDuration());
+//                mProgressBar.setProgress(progress);
             }
 
             @Override
@@ -222,13 +234,15 @@ public class VideoPlayerFragment  extends Fragment {
     private void seekTo(float progress) {
         mHandler.post(() -> {
             if (mVideoPlayer != null) {
-                float pts = progress / 100.0f * mVideoPlayer.getDuration();
-                Log.d(TAG, "seekTo: " + pts + ", duration: " + mVideoPlayer.getDuration());
-                if (pts <= mVideoPlayer.getDuration()) {
-                    mVideoPlayer.seekTo(pts);
-                } else {
-                    mVideoPlayer.seekTo(0);
-                }
+//                float pts = progress / 100.0f * mVideoPlayer.getDuration();
+//                Log.d(TAG, "seekTo: " + pts + ", duration: " + mVideoPlayer.getDuration());
+//                if (pts <= mVideoPlayer.getDuration()) {
+//                    mVideoPlayer.seekTo(pts);
+//                } else {
+//                    mVideoPlayer.seekTo(0);
+//                }
+                Log.d(TAG, "seekTo: " + progress);
+                mVideoPlayer.seekTo(progress);
             }
         });
     }

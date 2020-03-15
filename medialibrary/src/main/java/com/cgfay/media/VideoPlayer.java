@@ -49,10 +49,16 @@ public class VideoPlayer {
     private native void pause(long handle);
     // 停止播放
     private native void stop(long handle);
+    // 设置处于暂停状态下，是否可以解码，用于连续seek场景使用
+    private native void setDecodeOnPause(long handle, boolean decodeOnPause);
     // 定位
     private native void seekTo(long handle, float timeMs);
     // 获取时长
     private native float getDuration(long handle);
+    // 获取视频宽度
+    private native int getVideoWidth(long handle);
+    // 获取视频高度
+    private native int getVideoHeight(long handle);
     // 是否循环播放
     private native boolean isLooping(long handle);
     // 是否正在播放中
@@ -166,12 +172,24 @@ public class VideoPlayer {
         stop(handle);
     }
 
+    public void setDecodeOnPause(boolean decodeOnPause) {
+        setDecodeOnPause(handle, decodeOnPause);
+    }
+
     public void seekTo(float timeMs) {
         seekTo(handle, timeMs);
     }
 
     public float getDuration() {
         return getDuration(handle);
+    }
+
+    public int getVideoWidth() {
+        return getVideoWidth(handle);
+    }
+
+    public int getVideoHeight() {
+        return getVideoHeight(handle);
     }
 
     public boolean isLooping() {

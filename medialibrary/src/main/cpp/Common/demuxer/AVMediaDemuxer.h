@@ -27,8 +27,13 @@ public:
     int openDemuxer(std::map<std::string, std::string> formatOptions);
 
     // 定位到某个时间(ms)
-    int seekTo(float timeMs, int stream_index = -1);
+    int seekTo(float timeMs);
 
+    // 定位到某个时间(ms)
+    int seekAudio(float timeMs, int stream_index = -1);
+
+    // 定位到某个位置(pts)
+    int64_t seekVideo(int64_t time, int stream_index = -1, int flag = AVSEEK_FLAG_BYTE);
     // 读取
     int readFrame(AVPacket *packet);
 

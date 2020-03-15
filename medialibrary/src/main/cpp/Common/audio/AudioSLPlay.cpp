@@ -9,6 +9,8 @@ AudioSLPlay::AudioSLPlay(const std::shared_ptr<AudioProvider> &audioProvider)
     LOGD("AudioSLPlay::constructor()");
     reset();
     createEngine();
+    mBufferNumber = 2;
+    mBufferQueue = new SafetyQueue<short *>();
 }
 
 AudioSLPlay::~AudioSLPlay() {
@@ -22,8 +24,7 @@ AudioSLPlay::~AudioSLPlay() {
  * @param context
  */
 void slBufferPCMCallBack(SLAndroidSimpleBufferQueueItf bf, void *context) {
-    auto player = (AudioSLPlay *) context;
-    player->receiveAudioData();
+
 }
 
 /**
@@ -41,7 +42,7 @@ int AudioSLPlay::open(int sampleRate, int channels) {
 
     SLDataLocator_AndroidSimpleBufferQueue android_queue = {
             SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,
-            OPENSLES_BUFFERS
+            (SLuint32)mBufferNumber
     };
 
     // 根据通道数设置通道mask
@@ -113,7 +114,7 @@ int AudioSLPlay::open(int sampleRate, int channels) {
     }
 
     // 注册队列回调处理对象
-    result = (*slBufferQueueItf)->RegisterCallback(slBufferQueueItf, slBufferPCMCallBack, this);
+    result = (*slBufferQueueItf)->RegisterCallback(slBufferQueueItf, nullptr, this);
     if (result != SL_RESULT_SUCCESS) {
         LOGE("%s: slBufferQueueItf->RegisterCallback() failed", __func__);
         return -1;
@@ -129,8 +130,11 @@ int AudioSLPlay::open(int sampleRate, int channels) {
     LOGI("OpenSL-ES: frame_per_buffer = %d frames\n", framePerBuffer);
     LOGI("OpenSL-ES: buffer size      = %d bytes\n",  mMaxBufferSize);
 
-    if (mBuffer == nullptr) {
-        mBuffer = (short *) malloc((size_t)mMaxBufferSize);
+    // 创建缓冲区
+    for (int i = 0; i < mBufferNumber; ++i) {
+        auto buffer = (short *) malloc((size_t)mMaxBufferSize);
+        memset(buffer, 0, (size_t)mMaxBufferSize);
+        mBufferQueue->push(buffer);
     }
     // 获取采样率
     mSampleRate = format_pcm.samplesPerSec / 1000;
@@ -155,9 +159,10 @@ void AudioSLPlay::start() {
     if (!mAudioThread) {
         mAudioThread = new Thread(this, Priority_High);
     }
-    if (mAudioThread && !mAudioThread->isActive()) {
+    if (!mAudioThread->isActive()) {
         mAudioThread->start();
     }
+    LOGD("AudioSLPlay::start() success");
 }
 
 /**
@@ -167,11 +172,12 @@ void AudioSLPlay::stop() {
     LOGD("AudioSLPlay::stop()");
     mAbortRequest = true;
     mCondition.signal();
-    if (mAudioThread && mAudioThread->isActive()) {
+    if (mAudioThread != nullptr) {
         mAudioThread->join();
         delete mAudioThread;
         mAudioThread = nullptr;
     }
+    LOGD("AudioSLPlay::stop() success");
 }
 
 /**
@@ -197,9 +203,8 @@ void AudioSLPlay::resume() {
  */
 void AudioSLPlay::flush() {
     LOGD("AudioSLPlay::flush()");
-    if (slBufferQueueItf != nullptr) {
-        (*slBufferQueueItf)->Clear(slBufferQueueItf);
-    }
+    mFlushRequest = true;
+    mCondition.signal();
 }
 
 /**
@@ -208,13 +213,13 @@ void AudioSLPlay::flush() {
  * @param rightVolume   右音量
  */
 void AudioSLPlay::setStereoVolume(float leftVolume, float rightVolume) {
-    if (slVolumeItf != nullptr) {
-        SLmillibel level = getAmplificationLevel((leftVolume + rightVolume) / 2);
-        SLresult result = (*slVolumeItf)->SetVolumeLevel(slVolumeItf, level);
-        if (result != SL_RESULT_SUCCESS) {
-            LOGE("slVolumeItf->SetVolumeLevel failed %d\n", (int)result);
-        }
+    LOGD("AudioSLPlay::setStereoVolume(): {%.2f, %.2f}", leftVolume, rightVolume);
+    if (!mUpdateVolume) {
+        mLeftVolume = leftVolume;
+        mRightVolume = rightVolume;
+        mUpdateVolume = true;
     }
+    mCondition.signal();
 }
 
 void AudioSLPlay::run() {
@@ -231,8 +236,9 @@ void AudioSLPlay::reset() {
     slBufferQueueItf = nullptr;
     mAbortRequest = true;
     mPauseRequest = false;
+    mFlushRequest = false;
+    mUpdateVolume = false;
     mAudioThread = nullptr;
-    mBuffer = nullptr;
     mInited = false;
 }
 
@@ -257,9 +263,14 @@ void AudioSLPlay::release() {
         slObject = nullptr;
         slEngine = nullptr;
     }
-    if (mBuffer != nullptr) {
-        free(mBuffer);
-        mBuffer = nullptr;
+    // 释放缓冲区内存
+    if (mBufferQueue != nullptr) {
+        while (mBufferQueue->size() > 0) {
+            auto buffer = mBufferQueue->pop();
+            free(buffer);
+        }
+        delete mBufferQueue;
+        mBufferQueue = nullptr;
     }
 }
 
@@ -310,83 +321,191 @@ int AudioSLPlay::createEngine() {
 }
 
 /**
- * 获取音频数据
- * @return
- */
-int AudioSLPlay::receiveAudioData() {
-    SLresult slRet;
-    int size = 0;
-
-    // 通过回调填充PCM数据
-    if (nullptr != mAudioProvider.lock()) {
-        size = mAudioProvider.lock()->onAudioProvide(&mBuffer, mMaxBufferSize);
-        if (size > mMaxBufferSize) {
-            mMaxBufferSize = size;
-        }
-    }
-
-    // 将缓冲数据放入数据流中
-    if (size > 0 && mBuffer != nullptr) {
-        (*slPlayItf)->SetPlayState(slPlayItf, SL_PLAYSTATE_PLAYING);
-        slRet = (*slBufferQueueItf)->Enqueue(slBufferQueueItf, mBuffer, (SLuint32) size);
-        if (slRet == SL_RESULT_SUCCESS) {
-            // do nothing
-        } else if (slRet == SL_RESULT_BUFFER_INSUFFICIENT) {
-            // don't retry, just pass through
-            LOGE("SL_RESULT_BUFFER_INSUFFICIENT\n");
-        } else {
-            LOGE("slBufferQueueItf->Enqueue() = %d\n", (int)slRet);
-            return -1;
-        }
-    }
-    return 0;
-}
-
-/**
  * 音频播放
  */
 void AudioSLPlay::audioPlay() {
-    int audio = 1;
-    SLuint32 state;
+    int size = 0;
+    LOGD("AudioSLPlay::audioPlay()");
+    if (!mAbortRequest && !mPauseRequest) {
+        enginePlay();
+    }
     while (true) {
+
+        // 获取缓冲队列状态
+        SLAndroidSimpleBufferQueueState slState = {0};
+        SLresult slRet = (*slBufferQueueItf)->GetState(slBufferQueueItf, &slState);
+        if (slRet != SL_RESULT_SUCCESS) {
+            LOGE("%s: slBufferQueueItf->GetState() failed\n", __func__);
+            mMutex.unlock();
+        }
+
+        // 判断暂停或者队列中缓冲区填满了
+        mMutex.lock();
+        while (!mAbortRequest && (slState.count >= mBufferNumber)) {
+            mCondition.waitRelativeMs(mMutex, 5);
+            slRet = (*slBufferQueueItf)->GetState(slBufferQueueItf, &slState);
+            if (slRet != SL_RESULT_SUCCESS) {
+                LOGE("%s: slBufferQueueItf->GetState() failed\n", __func__);
+                mMutex.unlock();
+            }
+        }
+        // 刷新缓冲区
+        if (mFlushRequest) {
+            engineFlush();
+            mFlushRequest = false;
+        }
+        mMutex.unlock();
+
+        // 退出播放线程
         mMutex.lock();
         if (mAbortRequest) {
-            flush();
-            if (slPlayItf != nullptr) {
-                (*slPlayItf)->SetPlayState(slPlayItf, SL_PLAYSTATE_STOPPED);
-            }
+            LOGD("AudioSLPlay::exiting...");
             mMutex.unlock();
             break;
         }
 
+        // 暂停继续
         if (mPauseRequest) {
-            if (slPlayItf != nullptr) {
-                (*slPlayItf)->SetPlayState(slPlayItf, SL_PLAYSTATE_PAUSED);
-            }
+            LOGD("AudioSLPlay::pause...");
             mCondition.wait(mMutex);
             mMutex.unlock();
             continue;
         }
+        mMutex.unlock();
 
-        // 切换播放状态
-        if (slPlayItf != nullptr) {
-            (*slPlayItf)->GetPlayState(slPlayItf, &state);
-            if (state != SL_PLAYSTATE_PLAYING) {
-                (*slPlayItf)->SetPlayState(slPlayItf, SL_PLAYSTATE_PLAYING);
-                (*slBufferQueueItf)->Enqueue(slBufferQueueItf, &audio, 1);
-            } else if (state == SL_PLAYSTATE_PAUSED) {
-                (*slPlayItf)->SetPlayState(slPlayItf, SL_PLAYSTATE_PLAYING);
-            } else if (state == SL_PLAYSTATE_PLAYING) {
+        // 从缓冲队列中取出缓冲区对象，不存在则说明已经退出播放线程，直接退出
+        short *buffer = nullptr;
+        if (mBufferQueue != nullptr && !mBufferQueue->empty()) {
+            buffer = mBufferQueue->pop();
+        }
+        if (!buffer) {
+            break;
+        }
 
-            } else {
-                LOGE("unknown audio play state");
+        // 通过回调填充PCM数据
+        mMutex.lock();
+        if (nullptr != mAudioProvider.lock()) {
+            size = mAudioProvider.lock()->onAudioProvide(&buffer, mMaxBufferSize);
+            if (size > mMaxBufferSize) {
+                mMaxBufferSize = size;
             }
         }
-        // 等待50毫秒查询下一轮数据
-        mCondition.waitRelative(mMutex, 50 * 1000000);
+        // buffer用完放回队列中
+        if (size <= 0 && buffer) {
+            if (mBufferQueue != nullptr) {
+                mBufferQueue->push(buffer);
+            } else {
+                free(buffer);
+            }
+        }
         mMutex.unlock();
+
+        // 更新音量
+        if (mUpdateVolume) {
+            engineSetVolume();
+            mUpdateVolume = false;
+        }
+
+        // 退出播放线程
+        if (mAbortRequest) {
+            engineFlush();
+            break;
+        }
+
+        if (size > 0) {
+            if (!isEnginePlaying()) {
+                enginePlay();
+            }
+            slRet = (*slBufferQueueItf)->Enqueue(slBufferQueueItf, buffer, (SLuint32)size);
+            // buffer用完放回去
+            if (mBufferQueue != nullptr) {
+                mBufferQueue->push(buffer);
+            } else {
+                free(buffer);
+            }
+            if (slRet == SL_RESULT_SUCCESS) {
+                // do nothing
+            } else if (slRet == SL_RESULT_BUFFER_INSUFFICIENT) {
+                // don't retry, just pass through
+                LOGE("SL_RESULT_BUFFER_INSUFFICIENT\n");
+            } else {
+                LOGE("slBufferQueueItf->Enqueue() = %d\n", (int)slRet);
+                break;
+            }
+        }
     }
+    mMutex.unlock();
+    engineStop();
+    engineFlush();
     LOGD("audio play thread exit!");
+}
+
+/**
+ * 引擎暂停
+ */
+void AudioSLPlay::enginePause() {
+    LOGD("AudioSLPlay::enginePause()");
+    if (slPlayItf != nullptr) {
+        (*slPlayItf)->SetPlayState(slPlayItf, SL_PLAYSTATE_PAUSED);
+    }
+}
+
+/**
+ * 引擎停止
+ */
+void AudioSLPlay::engineStop() {
+    LOGD("AudioSLPlay::engineStop()");
+    if (slPlayItf != nullptr) {
+        (*slPlayItf)->SetPlayState(slPlayItf, SL_PLAYSTATE_STOPPED);
+    }
+}
+
+/**
+ * 引擎播放
+ */
+void AudioSLPlay::enginePlay() {
+    LOGD("AudioSLPlay::enginePlay()");
+    if (slPlayItf != nullptr) {
+        (*slPlayItf)->SetPlayState(slPlayItf, SL_PLAYSTATE_PLAYING);
+    }
+}
+
+/**
+ * 引擎刷新缓冲区
+ */
+void AudioSLPlay::engineFlush() {
+    LOGD("AudioSLPlay::engineFlush()");
+    if (slBufferQueueItf != nullptr) {
+        (*slBufferQueueItf)->Clear(slBufferQueueItf);
+    }
+}
+
+/**
+ * 是否处于播放状态
+ * @return
+ */
+bool AudioSLPlay::isEnginePlaying() {
+    if (slPlayItf != nullptr) {
+        SLuint32 state;
+        SLresult result = (*slPlayItf)->GetPlayState(slPlayItf, &state);
+        if (result == SL_RESULT_SUCCESS) {
+            return (state == SL_PLAYSTATE_PLAYING);
+        }
+    }
+    return false;
+}
+
+/**
+ * 引擎设置音量
+ */
+void AudioSLPlay::engineSetVolume() {
+    if (slVolumeItf != NULL) {
+        SLmillibel level = getAmplificationLevel((mLeftVolume + mRightVolume) / 2);
+        SLresult result = (*slVolumeItf)->SetVolumeLevel(slVolumeItf, level);
+        if (result != SL_RESULT_SUCCESS) {
+            LOGE("slVolumeItf->SetVolumeLevel failed %d\n", (int)result);
+        }
+    }
 }
 
 /**
