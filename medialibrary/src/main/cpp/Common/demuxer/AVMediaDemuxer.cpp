@@ -125,7 +125,7 @@ int AVMediaDemuxer::seekAudio(float timeMs, int stream_index) {
         LOGE("%s: audio stream could not seek to time(ms): %0.3f\n", mInputPath, (double)seek_pos / AV_TIME_BASE * 1000);
         return ret;
     }
-    LOGD("seek audio success: time(ms): %.3f, position: %d", timeMs, seek_pos);
+    LOGD("seek audio success: time(ms): %.3f, position: %ld, ret: %d", timeMs, seek_pos, ret);
     return ret;
 }
 
@@ -148,7 +148,7 @@ int64_t AVMediaDemuxer::seekVideo(int64_t time, int stream_index, int flag) {
     }
     int ret = av_seek_frame(pFormatCtx, stream_index, time, flag);
     if (ret < 0) {
-        LOGE("%s: video stream could not seek to position: %ld\n", mInputPath, time);
+        LOGE("%s: video stream could not seek to position: %ld， seek error msg: %s\n", mInputPath, time, av_err2str(ret));
         return ret;
     }
     LOGD("seek video success: stream_index: %d, position: %ld", stream_index, time);

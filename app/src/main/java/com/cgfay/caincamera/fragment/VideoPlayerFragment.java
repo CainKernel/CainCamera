@@ -183,10 +183,12 @@ public class VideoPlayerFragment  extends Fragment {
 
         mTextPath = rootView.findViewById(R.id.tv_path);
         Bundle bundle = getArguments();
-        String path = bundle.getString(PATH);
-        if (!TextUtils.isEmpty(path)) {
-            mTextPath.setText(path);
-            initPlayer(path);
+        if (bundle  != null) {
+            String path = bundle.getString(PATH);
+            if (!TextUtils.isEmpty(path)) {
+                mTextPath.setText(path);
+                initPlayer(path);
+            }
         }
     }
 
@@ -209,8 +211,6 @@ public class VideoPlayerFragment  extends Fragment {
                     mSurfaceView.setLayoutParams(params);
                     mProgressBar.setMax((int)mVideoPlayer.getDuration());
                 }
-//                int progress = (int)(pts * 100.0f / mVideoPlayer.getDuration());
-//                mProgressBar.setProgress(progress);
             }
 
             @Override
@@ -234,13 +234,6 @@ public class VideoPlayerFragment  extends Fragment {
     private void seekTo(float progress) {
         mHandler.post(() -> {
             if (mVideoPlayer != null) {
-//                float pts = progress / 100.0f * mVideoPlayer.getDuration();
-//                Log.d(TAG, "seekTo: " + pts + ", duration: " + mVideoPlayer.getDuration());
-//                if (pts <= mVideoPlayer.getDuration()) {
-//                    mVideoPlayer.seekTo(pts);
-//                } else {
-//                    mVideoPlayer.seekTo(0);
-//                }
                 Log.d(TAG, "seekTo: " + progress);
                 mVideoPlayer.seekTo(progress);
             }

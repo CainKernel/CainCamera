@@ -35,6 +35,7 @@ public:
 
     virtual void requestRender() = 0;
 
+    virtual bool isPlaying() = 0;
 protected:
     std::weak_ptr<VideoProvider> mVideoProvider;
     int mWidth;

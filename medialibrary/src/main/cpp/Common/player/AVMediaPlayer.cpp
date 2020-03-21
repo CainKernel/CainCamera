@@ -201,34 +201,19 @@ void AVMediaPlayer::run() {
         switch(what) {
             // 开始
             case OPT_START: {
-                if (mVideoPlayer != nullptr) {
-                    mVideoPlayer->start();
-                }
-                if (mAudioPlayer != nullptr) {
-                    mAudioPlayer->start();
-                }
+                startPlayer();
                 break;
             }
 
             // 暂停
             case OPT_PAUSE: {
-                if (mVideoPlayer != nullptr) {
-                    mVideoPlayer->pause();
-                }
-                if (mAudioPlayer != nullptr) {
-                    mAudioPlayer->pause();
-                }
+                pausePlayer();
                 break;
             }
 
             // 停止
             case OPT_STOP: {
-                if (mAudioPlayer != nullptr) {
-                    mAudioPlayer->stop();
-                }
-                if (mVideoPlayer != nullptr) {
-                    mVideoPlayer->stop();
-                }
+                stopPlayer();
                 abortRequest = true;
                 break;
             }
@@ -236,22 +221,7 @@ void AVMediaPlayer::run() {
             // 定位
             case OPT_SEEK: {
                 float *timeMs = (float *)message->getObj();
-                if (mVideoPlayer != nullptr) {
-                    mVideoPlayer->seekTo(*timeMs);
-                }
-                if (mAudioPlayer != nullptr) {
-                    mAudioPlayer->seekTo(*timeMs);
-                }
-                auto nextMsg = mMessageQueue->front();
-                if (nextMsg->getWhat() == OPT_SEEK) {
-                    if (mAudioPlayer != nullptr) {
-                        mAudioPlayer->pause();
-                    }
-                } else {
-                    if (mAudioPlayer != nullptr) {
-                        mAudioPlayer->start();
-                    }
-                }
+                seekPlayer(*timeMs);
                 break;
             }
 
@@ -259,5 +229,56 @@ void AVMediaPlayer::run() {
                 break;
             }
         }
+        delete message;
+    }
+}
+
+/**
+ * 播放器开启
+ */
+void AVMediaPlayer::startPlayer() {
+    LOGD("AVMediaPlayer::startPlayer()");
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->start();
+    }
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->start();
+    }
+}
+
+/**
+ * 暂停播放器
+ */
+void AVMediaPlayer::pausePlayer() {
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->pause();
+    }
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->pause();
+    }
+}
+
+/**
+ * 停止播放器
+ */
+void AVMediaPlayer::stopPlayer() {
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->stop();
+    }
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->stop();
+    }
+}
+
+/**
+ * 定位到某个位置
+ * @param timeMs
+ */
+void AVMediaPlayer::seekPlayer(float timeMs) {
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->seekTo(timeMs);
+    }
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->seekTo(timeMs);
     }
 }

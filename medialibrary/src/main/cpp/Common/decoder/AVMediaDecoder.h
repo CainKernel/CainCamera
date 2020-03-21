@@ -23,9 +23,6 @@ public:
     // 打开解码器
     virtual int openDecoder(std::map<std::string, std::string> decodeOptions);
 
-    // 解码一个数据包
-    virtual int decodePacket(AVPacket *packet, OnDecodeListener *listener, int *gotFrame);
-
     // 关闭解码器
     virtual void closeDecoder();
 

@@ -62,6 +62,7 @@ void AVideoPlay::resume() {
 }
 
 void AVideoPlay::requestRender() {
+    LOGD("AVideoPlay::requestRender()");
     mForceRender = true;
     mCondition.signal();
 }
@@ -131,11 +132,20 @@ void AVideoPlay::videoPlay() {
         // 按照mRefreshRate fps 的频率刷新
         if (mRefreshRate > 0 && !mForceRender) {
             mCondition.waitRelativeMs(mMutex, static_cast<nsecs_t>(1000.0f / mRefreshRate));
-        } else if (!mForceRender) { // 否则10毫秒刷新一次
-            mCondition.waitRelativeMs(mMutex, 10);
+        } else if (!mForceRender) { // 否则16毫秒刷新一次
+            mCondition.waitRelativeMs(mMutex, 16);
         }
         mForceRender = false;
         mMutex.unlock();
+        mCondition.signal();
     }
     LOGD("video play thread exit!");
+}
+
+/**
+ * 是否正在播放阶段
+ * @return
+ */
+bool AVideoPlay::isPlaying() {
+    return !(mAbortRequest || mPauseRequest);
 }

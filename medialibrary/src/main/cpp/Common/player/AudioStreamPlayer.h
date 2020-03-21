@@ -54,7 +54,24 @@ public:
 
     void release();
 
+    // 解码开始回调
+    void onDecodeStart();
+
+    // 解码结束回调
+    void onDecodeFinish();
+
+    // seek结束回调
+    void onSeekComplete(float seekTime);
+
+    // seek出错回调
+    void onSeekError(int ret);
+
 private:
+    // 清空队列
+    void flushQueue();
+
+private:
+    std::shared_ptr<OnDecodeListener> mDecodeListener;
     std::shared_ptr<DecodeAudioThread> mAudioThread;
     std::shared_ptr<AudioProvider> mAudioProvider;
     std::shared_ptr<AudioPlay> mAudioPlayer;
@@ -71,6 +88,9 @@ private:
     int64_t mCurrentPts;
 };
 
+/**
+ * 音频播放线程提供者
+ */
 class StreamAudioProvider : public AudioProvider {
 public:
     StreamAudioProvider();
@@ -80,6 +100,27 @@ public:
     int onAudioProvide(short **buffer, int bufSize) override;
 
     void setPlayer(AudioStreamPlayer *player);
+
+private:
+    AudioStreamPlayer *player;
+};
+
+/**
+ * 音频解码监听器
+ */
+class AudioDecodeListener : public OnDecodeListener {
+public:
+    AudioDecodeListener(AudioStreamPlayer *player);
+
+    virtual ~AudioDecodeListener();
+
+    void onDecodeStart(AVMediaType type) override;
+
+    void onDecodeFinish(AVMediaType type) override;
+
+    void onSeekComplete(AVMediaType type, float seekTime) override;
+
+    void onSeekError(AVMediaType type, int ret) override;
 
 private:
     AudioStreamPlayer *player;

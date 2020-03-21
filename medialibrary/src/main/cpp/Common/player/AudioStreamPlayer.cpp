@@ -16,9 +16,11 @@ AudioStreamPlayer::AudioStreamPlayer(const std::shared_ptr<StreamPlayListener> &
     mChannels = 2;
     mCurrentPts = 0;
 
+    mDecodeListener = std::make_shared<AudioDecodeListener>(this);
     mFrameQueue = new SafetyQueue<AVMediaData *>();
     mAudioThread = std::make_shared<DecodeAudioThread>();
     mAudioThread->setDecodeFrameQueue(mFrameQueue);
+    mAudioThread->setOnDecodeListener(mDecodeListener);
     mAudioThread->setOutput(mSampleRate, mChannels);
     mAudioProvider = std::make_shared<StreamAudioProvider>();
     auto provider = std::dynamic_pointer_cast<StreamAudioProvider>(mAudioProvider);
@@ -39,6 +41,10 @@ void AudioStreamPlayer::release() {
         mAudioThread->stop();
         mAudioThread.reset();
         mAudioThread = nullptr;
+    }
+    if (mDecodeListener != nullptr) {
+        mDecodeListener.reset();
+        mDecodeListener = nullptr;
     }
     if (mFrameQueue != nullptr) {
         delete mFrameQueue;
@@ -132,13 +138,13 @@ void AudioStreamPlayer::stop() {
     if (mAudioTranscoder != nullptr) {
         mAudioTranscoder->flush();
     }
+    flushQueue();
 }
 
 void AudioStreamPlayer::seekTo(float timeMs) {
     if (mAudioThread != nullptr) {
         mAudioThread->seekTo(timeMs);
     }
-    mCurrentPts = timeMs;
 }
 
 float AudioStreamPlayer::getDuration() {
@@ -154,6 +160,37 @@ bool AudioStreamPlayer::isLooping() {
 
 bool AudioStreamPlayer::isPlaying() {
     return mPlaying;
+}
+
+/**
+ * 清空对立
+ */
+void AudioStreamPlayer::flushQueue() {
+    if (mFrameQueue != nullptr) {
+        while (mFrameQueue->size() > 0) {
+            auto data = mFrameQueue->pop();
+            if (data != nullptr) {
+                data->free();
+                delete data;
+            }
+        }
+    }
+}
+
+void AudioStreamPlayer::onDecodeStart() {
+    LOGD("AudioStreamPlayer::onDecodeStart()");
+}
+
+void AudioStreamPlayer::onDecodeFinish() {
+    LOGD("AudioStreamPlayer::onDecodeFinish()");
+}
+
+void AudioStreamPlayer::onSeekComplete(float seekTime) {
+    LOGD("AudioStreamPlayer::onSeekComplete(): %f", seekTime);
+}
+
+void AudioStreamPlayer::onSeekError(int ret) {
+    LOGE("AudioStreamPlayer::onSeekError: %s", av_err2str(ret));
 }
 
 int AudioStreamPlayer::onAudioProvide(short **buffer, int bufSize) {
@@ -195,6 +232,7 @@ int AudioStreamPlayer::onAudioProvide(short **buffer, int bufSize) {
     return 0;
 }
 
+// ------------------------------------ 播放线程回调 ------------------------------------------------
 
 StreamAudioProvider::StreamAudioProvider() {
     this->player = nullptr;
@@ -213,4 +251,38 @@ int StreamAudioProvider::onAudioProvide(short **buffer, int bufSize) {
 
 void StreamAudioProvider::setPlayer(AudioStreamPlayer *player) {
     this->player = player;
+}
+
+// ------------------------------------ 解码线程监听器 ------------------------------------------------
+
+AudioDecodeListener::AudioDecodeListener(AudioStreamPlayer *player) : player(player) {
+
+}
+
+AudioDecodeListener::~AudioDecodeListener() {
+    player = nullptr;
+}
+
+void AudioDecodeListener::onDecodeStart(AVMediaType type) {
+    if (type == AVMEDIA_TYPE_AUDIO && player != nullptr) {
+        player->onDecodeStart();
+    }
+}
+
+void AudioDecodeListener::onDecodeFinish(AVMediaType type) {
+    if (type == AVMEDIA_TYPE_AUDIO && player != nullptr) {
+        player->onDecodeFinish();
+    }
+}
+
+void AudioDecodeListener::onSeekComplete(AVMediaType type, float seekTime) {
+    if (type == AVMEDIA_TYPE_AUDIO && player != nullptr) {
+        player->onSeekComplete(seekTime);
+    }
+}
+
+void AudioDecodeListener::onSeekError(AVMediaType type, int ret) {
+    if (type == AVMEDIA_TYPE_AUDIO && player != nullptr) {
+        player->onSeekError(ret);
+    }
 }

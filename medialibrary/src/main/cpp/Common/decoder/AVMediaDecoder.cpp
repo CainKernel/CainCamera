@@ -110,62 +110,6 @@ int AVMediaDecoder::openDecoder(std::map<std::string, std::string> decodeOptions
 }
 
 /**
- * 解码数据包
- * @param packet
- * @param gotFrame
- * @return
- */
-int AVMediaDecoder::decodePacket(AVPacket *packet, OnDecodeListener *listener, int *gotFrame) {
-    int ret = 0;
-
-    if (!packet || packet->stream_index < 0) {
-        return -1;
-    }
-
-    if (packet->stream_index == mStreamIndex) {
-        // 将数据包送去解码
-        ret = avcodec_send_packet(pCodecCtx, packet);
-        if (ret < 0) {
-            LOGE("Failed to call avcodec_send_packet: %s", av_err2str(ret));
-            return ret;
-        }
-
-        // 一个AVPacket的解码，这里要用while的原因是，一个AVPacket中可能存在多个音频帧(AVFrame)
-        while (ret >= 0) {
-
-            AVFrame *frame = av_frame_alloc();
-            if (!frame) {
-                LOGE("Failed to allocate audio AVFrame");
-                ret = -1;
-                break;
-            }
-
-            // 取出解码后的AVFrame
-            ret = avcodec_receive_frame(pCodecCtx, frame);
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                av_frame_unref(frame);
-                av_frame_free(&frame);
-                break;
-            } else if (ret < 0) {
-                LOGE("Failed to call avcodec_receive_frame: %s", av_err2str(ret));
-                av_frame_unref(frame);
-                av_frame_free(&frame);
-                break;
-            }
-
-            // 将解码后的帧送出去
-            if (listener != nullptr) {
-                listener->onDecodedFrame(frame, getMediaType());
-            } else {
-                av_frame_unref(frame);
-                av_frame_free(&frame);
-            }
-        }
-    }
-    return ret;
-}
-
-/**
  * 关闭解码器
  */
 void AVMediaDecoder::closeDecoder() {

@@ -21,6 +21,8 @@ public:
 
     virtual ~DecodeAudioThread();
 
+    void setOnDecodeListener(const std::shared_ptr<OnDecodeListener> &listener);
+
     void setDecodeFrameQueue(SafetyQueue<AVMediaData *> *frameQueue);
 
     void setDataSource(const char *url);
@@ -55,6 +57,8 @@ public:
     void run() override;
 
 private:
+    void seekFrame();
+
     void flush();
 
     void release();
@@ -79,6 +83,7 @@ private:
     std::map<std::string, std::string> mFormatOptions;
     std::map<std::string, std::string> mDecodeOptions;
 
+    std::weak_ptr<OnDecodeListener> mDecodeListener;
     std::shared_ptr<AVMediaDemuxer> mAudioDemuxer;
     std::shared_ptr<AVAudioDecoder> mAudioDecoder;
 

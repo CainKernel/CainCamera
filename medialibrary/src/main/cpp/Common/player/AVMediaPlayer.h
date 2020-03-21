@@ -74,6 +74,14 @@ public:
 private:
     void run() override;
 
+    void startPlayer();
+
+    void pausePlayer();
+
+    void stopPlayer();
+
+    void seekPlayer(float timeMs);
+
 private:
     Mutex mMutex;
     Condition mCondition;

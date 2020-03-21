@@ -23,7 +23,6 @@ DecodeVideoThread::DecodeVideoThread() {
     mDecodeOnPause = false;
     mSeekRequest = false;
     mSeekTime = -1;
-    mSeekPos = -1;
     mStartPosition = -1;
     mEndPosition = -1;
 }
@@ -47,6 +46,16 @@ void DecodeVideoThread::release() {
     }
     mAbortRequest = true;
     mFrameQueue = nullptr;
+}
+
+/**
+ * 设置解码监听器
+ * @param listener
+ */
+void DecodeVideoThread::setOnDecodeListener(const std::shared_ptr<OnDecodeListener> &listener) {
+    LOGD("DecodeVideoThread::setOnDecodeListener()");
+    mDecodeListener = listener;
+    mCondition.signal();
 }
 
 /**
@@ -219,15 +228,6 @@ void DecodeVideoThread::flush() {
     if (mVideoDecoder != nullptr) {
         mVideoDecoder->flushBuffer();
     }
-    if (mFrameQueue != nullptr) {
-        while (mFrameQueue->size() > 0) {
-            auto picture = mFrameQueue->pop();
-            if (picture) {
-                freeFrame(picture->frame);
-                free(picture);
-            }
-        }
-    }
 }
 
 /**
@@ -262,11 +262,8 @@ int64_t DecodeVideoThread::getDuration() {
  * 获取旋转角度
  */
 double DecodeVideoThread::getRotation() {
+    AutoMutex lock(mMutex);
     return mVideoDecoder->getRotation();
-}
-
-bool DecodeVideoThread::isSeeking() {
-    return mSeekRequest;
 }
 
 void DecodeVideoThread::run() {
@@ -283,6 +280,10 @@ int DecodeVideoThread::readPacket() {
     mDecodeEnd = false;
     LOGD("DecodeVideoThread::readePacket");
 
+    // 解码开始回调
+    if (mDecodeListener.lock() != nullptr) {
+        mDecodeListener.lock()->onDecodeStart(AVMEDIA_TYPE_VIDEO);
+    }
     if (mStartPosition >= 0) {
         mVideoDemuxer->seekAudio(mStartPosition);
     }
@@ -350,6 +351,12 @@ int DecodeVideoThread::readPacket() {
             break;
         }
     }
+
+    // 解码结束回调
+    if (mDecodeListener.lock() != nullptr) {
+        mDecodeListener.lock()->onDecodeFinish(AVMEDIA_TYPE_VIDEO);
+    }
+
     LOGD("DecodeVideoThread exit!");
     return ret;
 }
@@ -423,14 +430,12 @@ int DecodeVideoThread::decodePacket(AVPacket *packet) {
             break;
         }
 
-        // 定位到实际的帧中，关键帧立即上屏
-        if (mSeekPos > 0 && frame->pts > 0 /*&& !(packet->flags & AV_PKT_FLAG_KEY)*/) {
-            if (frame->pts < mSeekPos) {
-                LOGD("skip video frame.pos: %ld, seek pos: %ld", time, mSeekTime);
-                freeFrame(frame);
-                break;
+        // 计算出实际的pts值
+        if (frame->pts == AV_NOPTS_VALUE) {
+            if (frame->pkt_dts != AV_NOPTS_VALUE) {
+                frame->pts = frame->pkt_dts;
             } else {
-                mSeekPos = -1;
+                frame->pts = av_frame_get_best_effort_timestamp(frame);
             }
         }
 
@@ -492,45 +497,25 @@ void DecodeVideoThread::seekFrame() {
     if (!mVideoDecoder || mSeekTime == -1) {
         return;
     }
-
-    // 定位到某个帧中，如果队列已经存在，则直接返回不做处理
-    float frame_duration = 1000.0f / mVideoDecoder->getFrameRate();
-    bool hasSeek = false;
-    while (mFrameQueue->size() > 0) {
-        Picture *picture = nullptr;
-        picture = mFrameQueue->pop();
-        if (picture != nullptr) {
-            if (picture->pts + 2 * frame_duration < mSeekTime && picture->pts + frame_duration >= mSeekTime) {
-                hasSeek = true;
-            }
-            LOGD("seek queue picture time: %f, mSeekTime: %f", picture->pts, mSeekTime);
-            freeFrame(picture->frame);
-            free(picture);
-            if (hasSeek) {
-                break;
-            }
-        }
-    }
-
-    // 存在定位帧，则直接退出，seekTime重置
-    if (hasSeek) {
-        mSeekPos = -1;
-        return;
-    }
-
     // 定位到实际位置中
     stream_index = mVideoDecoder->getStreamIndex();
     int64_t time = (int64_t)(mSeekTime / (1000.0f * av_q2d(mVideoDecoder->getStream()->time_base)));
     ret = mVideoDemuxer->seekVideo(time, stream_index, AVSEEK_FLAG_BACKWARD);
     if (ret < 0) {
+        // seek出错回调
+        if (mDecodeListener.lock() != nullptr) {
+            mDecodeListener.lock()->onSeekError(AVMEDIA_TYPE_VIDEO, ret);
+        }
         return;
     }
-    mSeekTime = ret;
+
+    // 计算出准确的seek time
+    float seekTime = (float)(ret * 1000.0f * av_q2d(mVideoDecoder->getStream()->time_base));
+
+    // seek结束回调
+    if (mDecodeListener.lock() != nullptr) {
+        mDecodeListener.lock()->onSeekComplete(AVMEDIA_TYPE_VIDEO, seekTime);
+    }
     // 清空队列的数据
     flush();
-
-    // 解码得到先要的帧
-    while (mFrameQueue->empty()) {
-        readAndDecode();
-    }
 }

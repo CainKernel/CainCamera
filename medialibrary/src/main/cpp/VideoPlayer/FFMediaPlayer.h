@@ -10,6 +10,7 @@
 #include <player/AudioStreamPlayer.h>
 #include <player/VideoStreamPlayer.h>
 #include <MessageQueue.h>
+#include <player/OnPlayListener.h>
 
 /**
  * 播放器操作类型
@@ -20,19 +21,6 @@ enum player_operation_type {
     OPT_PAUSE = 2,  // 暂停
     OPT_STOP = 3,   // 停止
     OPT_SEEK = 4,   // 定位
-};
-
-class OnPlayListener {
-public:
-    virtual ~OnPlayListener() = default;
-
-    virtual void onPlaying(float pts) = 0;
-
-    virtual void onSeekComplete() = 0;
-
-    virtual void onCompletion() = 0;
-
-    virtual void onError(int errorCode, const char *msg) = 0;
 };
 
 class FFMediaPlayer : Runnable {
@@ -85,6 +73,14 @@ public:
 
 private:
     void run() override;
+
+    void startPlayer();
+
+    void pausePlayer();
+
+    void stopPlayer();
+
+    void seekPlayer(float timeMs);
 
 private:
     Mutex mMutex;

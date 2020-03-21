@@ -9,7 +9,7 @@ FFMediaPlayer::FFMediaPlayer() {
     mThread = nullptr;
     mStreamPlayListener = std::make_shared<MediaStreamPlayerListener>(this);
     mVideoPlayer = std::make_shared<VideoStreamPlayer>(mStreamPlayListener);
-//    mAudioPlayer = std::make_shared<AudioStreamPlayer>(mStreamPlayListener);
+    mAudioPlayer = std::make_shared<AudioStreamPlayer>(mStreamPlayListener);
     mMessageQueue = std::unique_ptr<MessageQueue>(new MessageQueue());
 }
 
@@ -201,50 +201,27 @@ void FFMediaPlayer::run() {
         switch(what) {
             // 开始
             case OPT_START: {
-                if (mVideoPlayer != nullptr) {
-                    mVideoPlayer->start();
-                }
-                if (mAudioPlayer != nullptr) {
-                    mAudioPlayer->start();
-                }
-                LOGD("start success");
+                startPlayer();
                 break;
             }
 
             // 暂停
             case OPT_PAUSE: {
-                if (mVideoPlayer != nullptr) {
-                    mVideoPlayer->pause();
-                }
-                if (mAudioPlayer != nullptr) {
-                    mAudioPlayer->pause();
-                }
-                LOGD("pause finish");
+                pausePlayer();
                 break;
             }
 
             // 停止
             case OPT_STOP: {
-                if (mAudioPlayer != nullptr) {
-                    mAudioPlayer->stop();
-                }
-                if (mVideoPlayer != nullptr) {
-                    mVideoPlayer->stop();
-                }
+                stopPlayer();
                 abortRequest = true;
-                LOGD("stop success");
                 break;
             }
 
             // 定位
             case OPT_SEEK: {
                 float timeMs = message->getArg1() / 1000.0f;
-                if (mAudioPlayer != nullptr) {
-                    mAudioPlayer->seekTo(timeMs);
-                }
-                if (mVideoPlayer != nullptr) {
-                    mVideoPlayer->seekTo(timeMs);
-                }
+                seekPlayer(timeMs);
                 break;
             }
 
@@ -253,6 +230,57 @@ void FFMediaPlayer::run() {
             }
         }
         delete message;
+    }
+}
+
+/**
+ * 开始播放
+ */
+void FFMediaPlayer::startPlayer() {
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->start();
+    }
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->start();
+    }
+    LOGD("start success");
+}
+
+/**
+ * 暂停播放器
+ */
+void FFMediaPlayer::pausePlayer() {
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->pause();
+    }
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->pause();
+    }
+    LOGD("pause finish");
+}
+
+/**
+ * 停止播放器
+ */
+void FFMediaPlayer::stopPlayer() {
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->stop();
+    }
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->stop();
+    }
+}
+
+/**
+ * 跳转到某个时间点
+ * @param timeMs    跳转时间(ms)
+ */
+void FFMediaPlayer::seekPlayer(float timeMs) {
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->seekTo(timeMs);
+    }
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->seekTo(timeMs);
     }
 }
 
@@ -265,19 +293,19 @@ MediaStreamPlayerListener::~MediaStreamPlayerListener() {
 }
 
 void MediaStreamPlayerListener::onPlaying(AVMediaType type, float pts) {
-    if (player != nullptr && player->getPlayListener() != nullptr) {
+    if (type == AVMEDIA_TYPE_VIDEO && player != nullptr && player->getPlayListener() != nullptr) {
         player->getPlayListener()->onPlaying(pts);
     }
 }
 
 void MediaStreamPlayerListener::onSeekComplete(AVMediaType type) {
-    if (player != nullptr && player->getPlayListener() != nullptr) {
+    if (type == AVMEDIA_TYPE_VIDEO && player != nullptr && player->getPlayListener() != nullptr) {
         player->getPlayListener()->onSeekComplete();
     }
 }
 
 void MediaStreamPlayerListener::onCompletion(AVMediaType type) {
-    if (player != nullptr && player->getPlayListener() != nullptr) {
+    if (type == AVMEDIA_TYPE_VIDEO && player != nullptr && player->getPlayListener() != nullptr) {
         player->getPlayListener()->onCompletion();
     }
 }

@@ -13,19 +13,6 @@
 #include <decoder/DecodeAudioThread.h>
 #include <player/AudioStreamPlayer.h>
 
-class OnPlayListener {
-public:
-    virtual ~OnPlayListener() = default;
-
-    virtual void onPlaying(float pts) = 0;
-
-    virtual void onSeekComplete() = 0;
-
-    virtual void onCompletion() = 0;
-
-    virtual void onError(int errorCode, const char *msg) = 0;
-};
-
 /**
  * 音乐播放器
  */
@@ -60,7 +47,6 @@ public:
     bool isLooping();
 
     bool isPlaying();
-
 
     void release();
 

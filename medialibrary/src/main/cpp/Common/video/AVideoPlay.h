@@ -27,6 +27,8 @@ public:
 
     void requestRender() override;
 
+    bool isPlaying() override;
+
     void run() override;
 
 private:

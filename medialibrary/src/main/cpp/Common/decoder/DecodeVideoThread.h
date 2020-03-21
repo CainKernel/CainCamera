@@ -26,6 +26,8 @@ public:
 
     virtual ~DecodeVideoThread();
 
+    void setOnDecodeListener(const std::shared_ptr<OnDecodeListener> &listener);
+
     void setDecodeFrameQueue(SafetyQueue<Picture *> *frameQueue);
 
     void setDataSource(const char *url);
@@ -65,8 +67,6 @@ public:
 
     double getRotation();
 
-    bool isSeeking();
-
     void run() override;
 
 private:
@@ -96,6 +96,7 @@ private:
     std::map<std::string, std::string> mFormatOptions;
     std::map<std::string, std::string> mDecodeOptions;
 
+    std::weak_ptr<OnDecodeListener> mDecodeListener;
     std::shared_ptr<AVMediaDemuxer> mVideoDemuxer;
     std::shared_ptr<AVVideoDecoder> mVideoDecoder;
 
@@ -109,7 +110,6 @@ private:
     bool mDecodeOnPause;    // 允许暂停状态下解码标志
     bool mSeekRequest;
     float mSeekTime; // 毫秒(ms)
-    int64_t mSeekPos;
 
     bool mDecodeEnd;
     float mStartPosition;

@@ -69,6 +69,15 @@ void DecodeAudioThread::release() {
 }
 
 /**
+ * 设置解码监听器
+ * @param listener
+ */
+void DecodeAudioThread::setOnDecodeListener(const std::shared_ptr<OnDecodeListener> &listener) {
+    mDecodeListener = listener;
+    mCondition.signal();
+}
+
+/**
  * 绑定解码帧队列
  * @param frameQueue
  */
@@ -227,21 +236,31 @@ void DecodeAudioThread::stop() {
 }
 
 /**
+ * 定位某个位置
+ */
+void DecodeAudioThread::seekFrame() {
+    int ret = mAudioDemuxer->seekAudio(mSeekTime);
+    if (ret < 0) {
+        // seek 出错回调
+        if (mDecodeListener.lock() != nullptr) {
+            mDecodeListener.lock()->onSeekError(AVMEDIA_TYPE_AUDIO, ret);
+        }
+        return;
+    }
+    flush();
+    // seek结束回调
+    if (mDecodeListener.lock() != nullptr) {
+        mDecodeListener.lock()->onSeekComplete(AVMEDIA_TYPE_AUDIO, mSeekTime);
+    }
+}
+
+/**
  * 刷新缓冲区
  */
 void DecodeAudioThread::flush() {
     LOGD("DecodeAudioThread::flush()");
     if (mAudioDecoder != nullptr) {
         mAudioDecoder->flushBuffer();
-    }
-    if (mFrameQueue != nullptr) {
-        while (mFrameQueue->size() > 0) {
-            auto data = mFrameQueue->pop();
-            if (data != nullptr) {
-                data->free();
-                delete data;
-            }
-        }
     }
 }
 
@@ -263,6 +282,10 @@ int DecodeAudioThread::readPacket() {
     // 初始化转码上下文
     initResampleContext();
 
+    // 解码开始回调
+    if (mDecodeListener.lock() != nullptr) {
+        mDecodeListener.lock()->onDecodeStart(AVMEDIA_TYPE_AUDIO);
+    }
     if (mStartPosition >= 0) {
         mAudioDemuxer->seekAudio(mStartPosition);
     }
@@ -279,10 +302,10 @@ int DecodeAudioThread::readPacket() {
 
         // 定位处理
         if (mSeekRequest) {
+            seekFrame();
             mSeekRequest = false;
-            mAudioDemuxer->seekAudio(mSeekTime);
             mSeekTime = -1;
-            flush();
+            mCondition.signal();
             mMutex.unlock();
             continue;
         }
@@ -343,6 +366,12 @@ int DecodeAudioThread::readPacket() {
         decodePacket(&mPacket);
         av_packet_unref(&mPacket);
     }
+
+    // 解码结束回调
+    if (mDecodeListener.lock() != nullptr) {
+        mDecodeListener.lock()->onDecodeFinish(AVMEDIA_TYPE_AUDIO);
+    }
+
     LOGD("DecodeAudioThread exit!");
     return ret;
 }
