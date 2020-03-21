@@ -31,6 +31,7 @@ add_library( musicplayer
 
              # player
              ${common_dir}/player/AudioStreamPlayer.cpp
+             ${common_dir}/player/Timestamp.cpp
 
              # 播放器
              MusicPlayer.cpp

@@ -174,10 +174,10 @@ public class VideoPlayerFragment  extends Fragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-//                if (mVideoPlayer != null) {
-//                    mVideoPlayer.start();
-//                    mVideoPlayer.setDecodeOnPause(false);
-//                }
+                if (mVideoPlayer != null) {
+                    mVideoPlayer.start();
+                    mVideoPlayer.setDecodeOnPause(false);
+                }
             }
         });
 

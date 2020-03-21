@@ -12,6 +12,7 @@
 #include <Resampler.h>
 #include <decoder/DecodeAudioThread.h>
 #include "StreamPlayListener.h"
+#include "Timestamp.h"
 
 /**
  * 音频流播放器
@@ -21,6 +22,8 @@ public:
     AudioStreamPlayer(const std::shared_ptr<StreamPlayListener> &listener = nullptr);
 
     virtual ~AudioStreamPlayer();
+
+    void setTimestamp(std::shared_ptr<Timestamp> timestamp);
 
     void setOnPlayingListener(std::shared_ptr<StreamPlayListener> listener);
 
@@ -78,6 +81,7 @@ private:
     std::shared_ptr<StreamPlayListener> mPlayListener;
     SafetyQueue<AVMediaData *> *mFrameQueue;
     std::shared_ptr<SonicAudioTranscoder> mAudioTranscoder;
+    std::weak_ptr<Timestamp> mTimestamp;
 
     float mSpeed;
     int mSampleRate;

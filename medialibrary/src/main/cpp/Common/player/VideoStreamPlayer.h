@@ -10,6 +10,7 @@
 #include <SafetyQueue.h>
 #include <decoder/DecodeVideoThread.h>
 #include "StreamPlayListener.h"
+#include "Timestamp.h"
 
 /**
  * 视频流播放器
@@ -19,6 +20,8 @@ public:
     VideoStreamPlayer(const std::shared_ptr<StreamPlayListener> &listener = nullptr);
 
     virtual ~VideoStreamPlayer();
+
+    void setTimestamp(std::shared_ptr<Timestamp> timestamp);
 
     void setDataSource(const char *path);
 
@@ -87,6 +90,9 @@ private:
     // 获取seek的时间
     float getSeekTime();
 
+    // 获取倍速
+    float getSpeed();
+
     // 渲染一帧图片
     int renderFrame(uint8_t *buffer, int width, int height, AVPixelFormat format);
 private:
@@ -98,6 +104,7 @@ private:
     std::shared_ptr<VideoPlay> mVideoPlayer;
     std::weak_ptr<StreamPlayListener> mPlayListener;
     SafetyQueue<Picture *> *mFrameQueue;
+    std::weak_ptr<Timestamp> mTimestamp;
 
     SwsContext *pSwsContext;
 

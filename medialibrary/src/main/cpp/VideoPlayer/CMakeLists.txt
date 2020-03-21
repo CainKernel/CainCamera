@@ -31,6 +31,7 @@ add_library( videoplayer
              # player
              ${common_dir}/player/AudioStreamPlayer.cpp
              ${common_dir}/player/AVMediaPlayer.cpp
+             ${common_dir}/player/Timestamp.cpp
              ${common_dir}/player/VideoStreamPlayer.cpp
 
              # audio

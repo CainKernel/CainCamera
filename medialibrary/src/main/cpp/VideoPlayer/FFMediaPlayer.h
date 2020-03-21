@@ -11,6 +11,7 @@
 #include <player/VideoStreamPlayer.h>
 #include <MessageQueue.h>
 #include <player/OnPlayListener.h>
+#include <player/Timestamp.h>
 
 /**
  * 播放器操作类型
@@ -91,6 +92,7 @@ private:
     std::shared_ptr<AudioStreamPlayer> mAudioPlayer;
     std::shared_ptr<VideoStreamPlayer> mVideoPlayer;
     std::unique_ptr<MessageQueue> mMessageQueue;
+    std::shared_ptr<Timestamp> mTimestamp;
 };
 
 class MediaStreamPlayerListener : public StreamPlayListener {

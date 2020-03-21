@@ -56,6 +56,15 @@ void VideoStreamPlayer::release() {
     }
 }
 
+/**
+ * 设置时间戳对象
+ * @param timestamp
+ */
+void VideoStreamPlayer::setTimestamp(std::shared_ptr<Timestamp> timestamp) {
+    mTimestamp = timestamp;
+    mCondition.signal();
+}
+
 void VideoStreamPlayer::setDataSource(const char *path) {
     if (mVideoThread != nullptr) {
         mVideoThread->setDataSource(path);
@@ -69,9 +78,9 @@ void VideoStreamPlayer::setDecoderName(const char *decoder) {
 }
 
 void VideoStreamPlayer::setSpeed(float speed) {
-    mMutex.lock();
+    AutoMutex lock(mMutex);
     mSpeed = speed;
-    mMutex.unlock();
+    mCondition.signal();
 }
 
 void VideoStreamPlayer::setLooping(bool looping) {
@@ -254,6 +263,9 @@ void VideoStreamPlayer::freeFrame(AVFrame *frame) {
 void VideoStreamPlayer::setCurrentTimestamp(float timeStamp) {
     AutoMutex lock(mMutex);
     mCurrentPts = timeStamp;
+    if (mTimestamp.lock() != nullptr) {
+        mTimestamp.lock()->setVideoTime(timeStamp);
+    }
 }
 
 /**
@@ -262,6 +274,9 @@ void VideoStreamPlayer::setCurrentTimestamp(float timeStamp) {
  */
 float VideoStreamPlayer::getCurrentTimestamp() {
     AutoMutex lock(mMutex);
+    if (mTimestamp.lock() != nullptr) {
+        return mTimestamp.lock()->getClock();
+    }
     return mCurrentPts;
 }
 
@@ -286,6 +301,15 @@ float VideoStreamPlayer::getSeekTime() {
 }
 
 /**
+ * 获取倍速
+ * @return
+ */
+float VideoStreamPlayer::getSpeed() {
+    AutoMutex lock(mMutex);
+    return mSpeed;
+}
+
+/**
  * 帧提供者
  * @param buffer
  * @param width
@@ -304,7 +328,10 @@ int VideoStreamPlayer::onVideoProvide(uint8_t *buffer, int width, int height, AV
         return result;
     }
 
+    // 刷新时长，表示刷新一个的间隔
     float duration = 1000.0f / mVideoThread->getFrameRate();
+    // 乘上速度，这样就表示一次刷新表示的实际间隔长度
+    duration = duration * getSpeed();
     // 不断从帧队列中取出帧
     while (true) {
 
@@ -334,7 +361,7 @@ int VideoStreamPlayer::onVideoProvide(uint8_t *buffer, int width, int height, AV
                 if (DEBUG && seekTime >= 0) {
                     LOGD("picture queue frame pts(ms): %f, current pts(ms): %f", picture->pts, timestamp);
                 }
-                if (timestamp < 0 || (seekTime < 0 && pts < timestamp) // 下一帧小于当前pts，说明属于seek之后的结果，立即刷新
+                if (timestamp < 0 || (seekTime < 0 && pts < timestamp && pts > timestamp - duration)
                     || (seekTime >= 0 && (pts > timestamp - duration || pts > seekTime - duration)) // 处于seeking状态，判断队列中的pts小于当前位置
                     || (pts - timestamp) > fmax(duration - 10, 0)) {  // 接近下一帧的时间
                     freeFrame(mCurrentFrame);

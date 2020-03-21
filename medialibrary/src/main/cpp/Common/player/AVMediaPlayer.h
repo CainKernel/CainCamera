@@ -5,12 +5,16 @@
 #ifndef AVMEDIAPLAYER_H
 #define AVMEDIAPLAYER_H
 
-#include <Thread.h>
+#if defined(_ANDROID__)
+#include <android/native_window.h>
+#endif
+
 #include <SafetyQueue.h>
-#include <MessageQueue.h>
 #include "StreamPlayListener.h"
 #include "AudioStreamPlayer.h"
 #include "VideoStreamPlayer.h"
+#include <MessageQueue.h>
+#include "OnPlayListener.h"
 
 /**
  * 播放器操作类型

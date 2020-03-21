@@ -7,10 +7,14 @@
 FFMediaPlayer::FFMediaPlayer() {
     LOGD("FFMediaPlayer::constructor()");
     mThread = nullptr;
+    mMessageQueue = std::unique_ptr<MessageQueue>(new MessageQueue());
+    mTimestamp = std::make_shared<Timestamp>();
     mStreamPlayListener = std::make_shared<MediaStreamPlayerListener>(this);
     mVideoPlayer = std::make_shared<VideoStreamPlayer>(mStreamPlayListener);
+    mVideoPlayer->setTimestamp(mTimestamp);
+
     mAudioPlayer = std::make_shared<AudioStreamPlayer>(mStreamPlayListener);
-    mMessageQueue = std::unique_ptr<MessageQueue>(new MessageQueue());
+    mAudioPlayer->setTimestamp(mTimestamp);
 }
 
 FFMediaPlayer::~FFMediaPlayer() {
@@ -175,6 +179,10 @@ void FFMediaPlayer::release() {
         mMessageQueue->flush();
         mMessageQueue.reset();
         mMessageQueue = nullptr;
+    }
+    if (mTimestamp != nullptr) {
+        mTimestamp.reset();
+        mTimestamp = nullptr;
     }
 }
 

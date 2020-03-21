@@ -52,6 +52,10 @@ void AudioStreamPlayer::release() {
     }
 }
 
+void AudioStreamPlayer::setTimestamp(std::shared_ptr<Timestamp> timestamp) {
+    mTimestamp = timestamp;
+}
+
 void AudioStreamPlayer::setOnPlayingListener(std::shared_ptr<StreamPlayListener> listener) {
     if (mPlayListener != nullptr && mPlayListener != listener) {
         mPlayListener.reset();
@@ -209,7 +213,10 @@ int AudioStreamPlayer::onAudioProvide(short **buffer, int bufSize) {
             if (mFrameQueue->empty()) {
                 break;
             }
-            auto data = mFrameQueue->pop();
+            AVMediaData *data = nullptr;
+            if (!mFrameQueue->empty()) {
+                data = mFrameQueue->pop();
+            }
             if (!data) {
                 break;
             }
@@ -221,6 +228,11 @@ int AudioStreamPlayer::onAudioProvide(short **buffer, int bufSize) {
 
         // 播放回调
         if (size > 0) {
+            // 更新时钟
+            if (mTimestamp.lock() != nullptr) {
+                mTimestamp.lock()->setAudioTime(mCurrentPts);
+                mCurrentPts = mTimestamp.lock()->getClock();
+            }
             if (mPlayListener != nullptr) {
                 mPlayListener->onPlaying(AVMEDIA_TYPE_AUDIO, mCurrentPts);
             } else {
