@@ -47,6 +47,8 @@ public:
 
     virtual ~JNIOnPlayListener();
 
+    void onPrepared() override;
+
     void onPlaying(float pts) override;
 
     void onSeekComplete() override;
@@ -60,6 +62,7 @@ private:
 
     JavaVM *javaVM;
     jobject mJniListener;
+    jmethodID jmid_onPrepared;
     jmethodID jmid_onPlaying;
     jmethodID jmid_onSeekComplete;
     jmethodID jmid_onCompletion;
@@ -79,11 +82,13 @@ JNIOnPlayListener::JNIOnPlayListener(JavaVM *vm, JNIEnv *env, jobject listener) 
         javaClass = env->GetObjectClass(listener);
     }
     if (javaClass != nullptr) {
+        jmid_onPrepared = env->GetMethodID(javaClass, "onPrepared", "()V");
         jmid_onPlaying = env->GetMethodID(javaClass, "onPlaying", "(F)V");
         jmid_onSeekComplete = env->GetMethodID(javaClass, "onSeekComplete", "()V");
         jmid_onCompletion = env->GetMethodID(javaClass, "onCompletion", "()V");
         jmid_onError = env->GetMethodID(javaClass, "onError", "(ILjava/lang/String;)V");
     } else {
+        jmid_onPrepared = nullptr;
         jmid_onPlaying = nullptr;
         jmid_onSeekComplete = nullptr;
         jmid_onCompletion = nullptr;
@@ -96,6 +101,17 @@ JNIOnPlayListener::~JNIOnPlayListener() {
         JNIEnv *env = getJNIEnv();
         env->DeleteGlobalRef(mJniListener);
         mJniListener = nullptr;
+    }
+}
+
+void JNIOnPlayListener::onPrepared() {
+    if (jmid_onPrepared != nullptr) {
+        JNIEnv *jniEnv;
+        if (javaVM->AttachCurrentThread(&jniEnv, nullptr) != JNI_OK) {
+            return;
+        }
+        jniEnv->CallVoidMethod(mJniListener, jmid_onPrepared);
+        javaVM->DetachCurrentThread();
     }
 }
 
@@ -154,6 +170,7 @@ void JNIOnPlayListener::onError(int errorCode, const char *msg) {
 extern "C" JNIEXPORT jlong JNICALL
 Java_com_cgfay_media_VideoPlayer_nativeInit(JNIEnv *env, jobject thiz) {
     auto player = new FFMediaPlayer();
+    player->init();
     return (jlong)player;
 }
 
@@ -249,6 +266,14 @@ Java_com_cgfay_media_VideoPlayer_setVolume(JNIEnv *env, jobject thiz, jlong hand
     auto player = (FFMediaPlayer *) handle;
     if (player != nullptr) {
         player->setVolume(leftVolume, rightVolume);
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_cgfay_media_VideoPlayer_prepare(JNIEnv *env, jobject thiz, jlong handle) {
+    auto player = (FFMediaPlayer *) handle;
+    if (player != nullptr) {
+        player->prepare();
     }
 }
 

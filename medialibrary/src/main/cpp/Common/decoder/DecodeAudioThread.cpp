@@ -248,10 +248,6 @@ void DecodeAudioThread::seekFrame() {
         return;
     }
     flush();
-    // seek结束回调
-    if (mDecodeListener.lock() != nullptr) {
-        mDecodeListener.lock()->onSeekComplete(AVMEDIA_TYPE_AUDIO, mSeekTime);
-    }
 }
 
 /**
@@ -302,11 +298,16 @@ int DecodeAudioThread::readPacket() {
 
         // 定位处理
         if (mSeekRequest) {
+            float seekTime = mSeekTime >= 0 ? mSeekTime : 0;
             seekFrame();
             mSeekRequest = false;
             mSeekTime = -1;
             mCondition.signal();
             mMutex.unlock();
+            // seek结束回调
+            if (mDecodeListener.lock() != nullptr) {
+                mDecodeListener.lock()->onSeekComplete(AVMEDIA_TYPE_AUDIO, seekTime);
+            }
             continue;
         }
 
@@ -427,6 +428,8 @@ int DecodeAudioThread::decodePacket(AVPacket *packet) {
                 av_frame_unref(mFrame);
                 break;
             }
+            // 计算出实际的pts值
+            mFrame->pts = av_frame_get_best_effort_timestamp(mFrame);
             // 复制转码后的数据到AVMediaData中
             auto data = new AVMediaData();
             data->sample_size = out_count;

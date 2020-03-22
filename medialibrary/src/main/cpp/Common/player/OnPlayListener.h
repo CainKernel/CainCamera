@@ -12,6 +12,8 @@ class OnPlayListener {
 public:
     virtual ~OnPlayListener() = default;
 
+    virtual void onPrepared() = 0;
+
     virtual void onPlaying(float pts) = 0;
 
     virtual void onSeekComplete() = 0;

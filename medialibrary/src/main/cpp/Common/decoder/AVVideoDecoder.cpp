@@ -29,6 +29,7 @@ void AVVideoDecoder::initMetadata() {
         mFrameRate = 30;
         pCodecCtx->time_base = av_inv_q(av_d2q(mFrameRate, 100000));
     }
+    LOGD("frame rate = %d", mFrameRate);
 }
 
 int AVVideoDecoder::getWidth() {

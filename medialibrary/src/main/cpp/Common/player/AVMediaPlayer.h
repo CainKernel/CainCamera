@@ -17,18 +17,6 @@
 #include "OnPlayListener.h"
 
 /**
- * 播放器操作类型
- */
-enum player_operation_type {
-    OPT_NOP = 0,    // 没有任何处理
-    OPT_START = 1,  // 开始
-    OPT_PAUSE = 2,  // 暂停
-    OPT_STOP = 3,   // 停止
-    OPT_SEEK = 4,   // 定位
-};
-
-
-/**
  * 媒体播放器
  */
 class AVMediaPlayer : Runnable {

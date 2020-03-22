@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment;
 import com.cgfay.caincamera.R;
 import com.cgfay.media.VideoPlayer;
 import com.cgfay.uitls.utils.DisplayUtils;
+import com.cgfay.uitls.utils.StringUtils;
 
 
 public class VideoPlayerFragment  extends Fragment {
@@ -34,6 +35,7 @@ public class VideoPlayerFragment  extends Fragment {
     private SeekBar mSpeedBar;
     private SeekBar mProgressBar;
     private TextView mTextPath;
+    private TextView mCurrentPosition;
 
     private VideoPlayer mVideoPlayer;
     private Handler mHandler;
@@ -190,27 +192,30 @@ public class VideoPlayerFragment  extends Fragment {
                 initPlayer(path);
             }
         }
+        mCurrentPosition = rootView.findViewById(R.id.tv_current_position);
     }
 
-    private boolean inited = false;
     private void initPlayer(@NonNull String path) {
-        inited = false;
         mVideoPlayer = new VideoPlayer();
         mVideoPlayer.setDataSource(path);
         mVideoPlayer.setSpeed(1.0f);
         mVideoPlayer.setLooping(true);
         mVideoPlayer.setOnPlayListener(new VideoPlayer.OnPlayListener() {
+
+            @Override
+            public void onPrepared() {
+                ViewGroup.LayoutParams params = mSurfaceView.getLayoutParams();
+                params.width = DisplayUtils.getScreenWidth(getContext());
+                params.height = mVideoPlayer.getVideoHeight() * params.width / mVideoPlayer.getVideoWidth();
+                Log.d(TAG, "onPlaying: width " + params.width + ", height " + params.height);
+                mSurfaceView.setLayoutParams(params);
+                mProgressBar.setMax((int)mVideoPlayer.getDuration());
+            }
+
             @Override
             public void onPlaying(float pts) {
-                if (!inited) {
-                    inited = true;
-                    ViewGroup.LayoutParams params = mSurfaceView.getLayoutParams();
-                    params.width = DisplayUtils.getScreenWidth(getContext());
-                    params.height = mVideoPlayer.getVideoHeight() * params.width / mVideoPlayer.getVideoWidth();
-                    Log.d(TAG, "onPlaying: width " + params.width + ", height " + params.height);
-                    mSurfaceView.setLayoutParams(params);
-                    mProgressBar.setMax((int)mVideoPlayer.getDuration());
-                }
+                mProgressBar.setProgress((int) pts);
+                mCurrentPosition.setText(StringUtils.generateStandardTime((int)pts));
             }
 
             @Override
@@ -229,6 +234,7 @@ public class VideoPlayerFragment  extends Fragment {
             }
         });
         mVideoPlayer.setSurface(mSurfaceView.getHolder().getSurface());
+        mVideoPlayer.prepare();
     }
 
     private void seekTo(float progress) {

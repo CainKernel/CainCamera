@@ -22,6 +22,18 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
         <TextView
+            android:id="@+id/tv_current_position"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/dp20"
+            android:textSize="@dimen/dp16"
+            android:textColor="@color/black"
+            android:text="hahhaha"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/tv_player_progress"/>
+
+        <TextView
             android:id="@+id/tv_player_progress"
             android:layout_width="@dimen/dp80"
             android:layout_height="@dimen/dp40"

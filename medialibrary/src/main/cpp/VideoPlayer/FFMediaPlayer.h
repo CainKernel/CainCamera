@@ -13,22 +13,13 @@
 #include <player/OnPlayListener.h>
 #include <player/Timestamp.h>
 
-/**
- * 播放器操作类型
- */
-enum player_operation_type {
-    OPT_NOP = 0,    // 没有任何处理
-    OPT_START = 1,  // 开始
-    OPT_PAUSE = 2,  // 暂停
-    OPT_STOP = 3,   // 停止
-    OPT_SEEK = 4,   // 定位
-};
-
 class FFMediaPlayer : Runnable {
 public:
     FFMediaPlayer();
 
     virtual ~FFMediaPlayer();
+
+    void init();
 
     void setVideoPlayListener(std::shared_ptr<OnPlayListener> listener);
 
@@ -47,6 +38,8 @@ public:
     void setRange(float start, float end);
 
     void setVolume(float leftVolume, float rightVolume);
+
+    void prepare();
 
     void start();
 
@@ -70,10 +63,17 @@ public:
 
     void release();
 
-    std::shared_ptr<OnPlayListener> getPlayListener();
+    void onPlaying(float pts);
 
+    void onSeekComplete(AVMediaType type);
+
+    void onCompletion(AVMediaType type);
+
+    void onError(int errorCode, const char *msg);
 private:
     void run() override;
+
+    void preparePlayer();
 
     void startPlayer();
 

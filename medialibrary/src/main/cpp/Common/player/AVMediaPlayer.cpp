@@ -112,7 +112,7 @@ void AVMediaPlayer::start() {
         mThread = new Thread(this);
     }
     if (!mThread->isActive()) {
-        mMessageQueue->pushMessage(new Message(OPT_START));
+        mMessageQueue->pushMessage(new Message(MSG_REQUEST_START));
         mCondition.signal();
         mThread->start();
     }
@@ -120,13 +120,13 @@ void AVMediaPlayer::start() {
 
 void AVMediaPlayer::pause() {
     LOGD("AVMediaPlayer::pause()");
-    mMessageQueue->pushMessage(new Message(OPT_PAUSE));
+    mMessageQueue->pushMessage(new Message(MSG_REQUEST_PAUSE));
     mCondition.signal();
 }
 
 void AVMediaPlayer::stop() {
     LOGD("AVMediaPlayer::stop()");
-    mMessageQueue->pushMessage(new Message(OPT_STOP));
+    mMessageQueue->pushMessage(new Message(MSG_REQUEST_STOP));
     mCondition.signal();
     if (mThread != nullptr) {
         mThread->join();
@@ -138,7 +138,7 @@ void AVMediaPlayer::stop() {
 void AVMediaPlayer::seekTo(float timeMs) {
     LOGD("AVMediaPlayer::seekTo(): %.2f", timeMs);
     float *ptr = &timeMs;
-    mMessageQueue->pushMessage(new Message(OPT_SEEK, ptr));
+    mMessageQueue->pushMessage(new Message(MSG_REQUEST_SEEK, ptr));
     mCondition.signal();
 }
 
@@ -200,26 +200,26 @@ void AVMediaPlayer::run() {
         int what = message->getWhat();
         switch(what) {
             // 开始
-            case OPT_START: {
+            case MSG_REQUEST_START: {
                 startPlayer();
                 break;
             }
 
             // 暂停
-            case OPT_PAUSE: {
+            case MSG_REQUEST_PAUSE: {
                 pausePlayer();
                 break;
             }
 
             // 停止
-            case OPT_STOP: {
+            case MSG_REQUEST_STOP: {
                 stopPlayer();
                 abortRequest = true;
                 break;
             }
 
             // 定位
-            case OPT_SEEK: {
+            case MSG_REQUEST_SEEK: {
                 float *timeMs = (float *)message->getObj();
                 seekPlayer(*timeMs);
                 break;

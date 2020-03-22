@@ -43,6 +43,8 @@ public class VideoPlayer {
     private native void setRange(long handle, float start, float end);
     // 设置播放声音
     private native void setVolume(long handle, float leftVolume, float rightVolume);
+    // 准备
+    private native void prepare(long handle);
     // 开始播放
     private native void start(long handle);
     // 暂停播放
@@ -84,6 +86,14 @@ public class VideoPlayer {
         handle = nativeInit();
         if (handle != 0) {
             setOnPlayListener(handle, new OnPlayListener() {
+
+                @Override
+                public void onPrepared() {
+                    if (mEventHandler != null) {
+                        mEventHandler.sendEmptyMessage(PLAYER_PREPARED);
+                    }
+                }
+
                 @Override
                 public void onPlaying(float pts) {
                     if (mEventHandler != null) {
@@ -160,6 +170,10 @@ public class VideoPlayer {
         setVolume(handle, leftVolume, rightVolume);
     }
 
+    public void prepare() {
+        prepare(handle);
+    }
+
     public void start() {
         start(handle);
     }
@@ -202,6 +216,8 @@ public class VideoPlayer {
 
     public interface OnPlayListener {
 
+        void onPrepared();
+
         void onPlaying(float pts);
 
         void onSeekComplete();
@@ -211,10 +227,11 @@ public class VideoPlayer {
         void onError(int errorCode, String msg);
     }
 
-    private static final int PLAYER_PLAYING = 0;
-    private static final int PLAYER_SEEKCOMPLETE = 1;
-    private static final int PLAYER_COMPLETION = 2;
-    private static final int PLAYER_ERROR = 3;
+    private static final int PLAYER_PREPARED = 1;
+    private static final int PLAYER_PLAYING = 2;
+    private static final int PLAYER_SEEKCOMPLETE = 3;
+    private static final int PLAYER_COMPLETION = 4;
+    private static final int PLAYER_ERROR = 5;
 
     private class EventHandler extends Handler {
         private VideoPlayer mVideoPlayer;
@@ -231,6 +248,13 @@ public class VideoPlayer {
             }
 
             switch (msg.what) {
+                case PLAYER_PREPARED: {
+                    if (mPlayListener != null) {
+                        mPlayListener.onPrepared();
+                    }
+                    break;
+                }
+
                 case PLAYER_PLAYING: {
                     if (mPlayListener != null) {
                         mPlayListener.onPlaying((float)msg.obj);

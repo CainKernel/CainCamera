@@ -13,6 +13,7 @@ SonicAudioTranscoder::SonicAudioTranscoder(int sampleRate, int channelCount, flo
     sonicSetSpeed(sonic, speed);
     sonicSetPitch(sonic, 1.0);
     sonicSetRate(sonic, 1.0);
+    sonicFlushStream(sonic);
     putBufferSize = 4096;
     putAudioBuffer = (short *) malloc(putBufferSize);
     isExit = false;

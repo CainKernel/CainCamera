@@ -181,6 +181,13 @@ void AudioStreamPlayer::flushQueue() {
     }
 }
 
+void AudioStreamPlayer::setCurrentTimestamp(float timeStamp) {
+    mCurrentPts = timeStamp;
+    if (mTimestamp.lock() != nullptr) {
+        mTimestamp.lock()->setVideoTime(timeStamp);
+    }
+}
+
 void AudioStreamPlayer::onDecodeStart() {
     LOGD("AudioStreamPlayer::onDecodeStart()");
 }
@@ -191,6 +198,7 @@ void AudioStreamPlayer::onDecodeFinish() {
 
 void AudioStreamPlayer::onSeekComplete(float seekTime) {
     LOGD("AudioStreamPlayer::onSeekComplete(): %f", seekTime);
+    setCurrentTimestamp(seekTime);
 }
 
 void AudioStreamPlayer::onSeekError(int ret) {
@@ -231,12 +239,12 @@ int AudioStreamPlayer::onAudioProvide(short **buffer, int bufSize) {
             // 更新时钟
             if (mTimestamp.lock() != nullptr) {
                 mTimestamp.lock()->setAudioTime(mCurrentPts);
-                mCurrentPts = mTimestamp.lock()->getClock();
+                mCurrentPts = (int64_t)(mTimestamp.lock()->getClock());
             }
             if (mPlayListener != nullptr) {
                 mPlayListener->onPlaying(AVMEDIA_TYPE_AUDIO, mCurrentPts);
             } else {
-                LOGD("audio play size: %d, pts(ms): %d", size, mCurrentPts);
+                LOGD("audio play size: %d, pts(ms): %ld", size, mCurrentPts);
             }
         }
         return size;

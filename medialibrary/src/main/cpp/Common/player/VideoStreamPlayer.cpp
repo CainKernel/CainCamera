@@ -29,6 +29,7 @@ VideoStreamPlayer::VideoStreamPlayer(const std::shared_ptr<StreamPlayListener> &
     mExit = true;
     mPlayListener = listener;
     mCurrentPts = -1;
+    mNextFramePts = -1;
     mForceRender = false;
     mSeekTime = -1;
 }
@@ -179,11 +180,7 @@ void VideoStreamPlayer::seekTo(float timeMs) {
     }
     // 存在seek的位置，则直接退出，并回调seek成功
     if (hasSeek) {
-        if (mDecodeListener != nullptr) {
-            mDecodeListener->onSeekComplete(AVMEDIA_TYPE_VIDEO, timeMs);
-        } else {
-            onSeekComplete(timeMs);
-        }
+        onSeekComplete(timeMs);
         return;
     }
 
@@ -329,9 +326,21 @@ int VideoStreamPlayer::onVideoProvide(uint8_t *buffer, int width, int height, AV
     }
 
     // 刷新时长，表示刷新一个的间隔
-    float duration = 1000.0f / mVideoThread->getFrameRate();
-    // 乘上速度，这样就表示一次刷新表示的实际间隔长度
+    float duration = 1000.0f / mVideoPlayer->getRefteshRate();
+    // 乘上速度，这样就表示一次刷新代表实际的时间间隔
     duration = duration * getSpeed();
+    // 帧间平均间隔
+    float frame_duration = 1000.0f / mVideoThread->getFrameRate();
+    // 如果下一帧的时间大于主时钟并且超出刷新间隔，说明这次刷新还是拿上一次的帧
+    // mNextFramePts - main pts - duration > duration / 2
+    if (mNextFramePts > mVideoThread->getDuration()) {
+        mNextFramePts = 0;
+    }
+    if (getSeekTime() < 0 && (mNextFramePts > mCurrentPts && mNextFramePts - mCurrentPts <= 2 * frame_duration && mNextFramePts - duration > getCurrentTimestamp())) {
+        // 更新当前视频时钟
+        setCurrentTimestamp(mCurrentPts + duration);
+        return result;
+    }
     // 不断从帧队列中取出帧
     while (true) {
 
@@ -363,10 +372,11 @@ int VideoStreamPlayer::onVideoProvide(uint8_t *buffer, int width, int height, AV
                 }
                 if (timestamp < 0 || (seekTime < 0 && pts < timestamp && pts > timestamp - duration)
                     || (seekTime >= 0 && (pts > timestamp - duration || pts > seekTime - duration)) // 处于seeking状态，判断队列中的pts小于当前位置
-                    || (pts - timestamp) > fmax(duration - 10, 0)) {  // 接近下一帧的时间
+                    || (pts - timestamp) > fmax(duration / 2.0f, 0)) {  // 接近下一帧的时间
                     freeFrame(mCurrentFrame);
                     mCurrentFrame = frame;
                     setCurrentTimestamp(pts);
+                    mNextFramePts = pts + frame_duration;
                     if (seekTime >= 0) {
                         LOGD("VideoStreamPlayer:: seek current picture time: %f", timestamp);
                     }
@@ -384,6 +394,7 @@ int VideoStreamPlayer::onVideoProvide(uint8_t *buffer, int width, int height, AV
             } else {
                 mCurrentFrame = frame;
                 setCurrentTimestamp(pts);
+                mNextFramePts = pts + frame_duration;
                 break;
             }
         }
@@ -531,11 +542,16 @@ void VideoStreamPlayer::onDecodeFinish() {
 }
 
 void VideoStreamPlayer::onSeekComplete(float seekTime) {
-    LOGD("VideoStreamPlayer::onSeekComplete(): seekTime: %f, seeked time: %f", mSeekTime, seekTime);
+    LOGD("VideoStreamPlayer::onSeekComplete(): seekTime: %f", seekTime);
+    setCurrentTimestamp(seekTime);
     mForceRender = true;
     mCondition.signal();
     if (mVideoPlayer != nullptr) {
         mVideoPlayer->requestRender();
+    }
+    // seek 完成回调
+    if (mPlayListener.lock() != nullptr) {
+        mPlayListener.lock()->onSeekComplete(AVMEDIA_TYPE_VIDEO);
     }
 }
 

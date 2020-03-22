@@ -119,6 +119,7 @@ private:
     float mSeekTime;
 
     float mCurrentPts;
+    float mNextFramePts;
 };
 
 /**

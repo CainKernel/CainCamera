@@ -86,7 +86,7 @@ private:
 
     void freeFrame(AVFrame *frame);
 
-    void seekFrame();
+    int seekFrame();
 
 private:
     Mutex mMutex;

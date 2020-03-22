@@ -73,6 +73,9 @@ private:
     // 清空队列
     void flushQueue();
 
+    // 设置当前播放时间戳
+    void setCurrentTimestamp(float timeStamp);
+
 private:
     std::shared_ptr<OnDecodeListener> mDecodeListener;
     std::shared_ptr<DecodeAudioThread> mAudioThread;

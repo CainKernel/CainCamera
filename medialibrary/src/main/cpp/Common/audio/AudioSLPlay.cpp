@@ -385,6 +385,7 @@ void AudioSLPlay::audioPlay() {
         // 通过回调填充PCM数据
         mMutex.lock();
         if (nullptr != mAudioProvider.lock()) {
+            memset(buffer, 0, mMaxBufferSize);
             size = mAudioProvider.lock()->onAudioProvide(&buffer, mMaxBufferSize);
             if (size > mMaxBufferSize) {
                 mMaxBufferSize = size;

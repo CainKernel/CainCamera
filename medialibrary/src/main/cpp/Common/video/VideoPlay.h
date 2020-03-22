@@ -23,6 +23,9 @@ public:
     // 设置刷新频率
     void setRefreshRate(float rate);
 
+    // 获取刷新频率
+    float getRefteshRate();
+
     void setOutput(int width, int height);
 
     virtual void start() = 0;
@@ -49,6 +52,10 @@ inline VideoPlay::VideoPlay(const std::shared_ptr<VideoProvider> &videoProvider)
 
 inline void VideoPlay::setRefreshRate(float rate) {
     mRefreshRate = rate;
+}
+
+inline float VideoPlay::getRefteshRate() {
+    return mRefreshRate;
 }
 
 inline void VideoPlay::setOutput(int width, int height) {
