@@ -41,6 +41,8 @@ public class CameraRenderer extends Thread {
 
     private @Nullable CameraRenderHandler mHandler;
 
+    // 截屏
+    private GLImageReader mImageReader;
     // EGL共享上下文
     private EglCore mEglCore;
     // 预览用的EGLSurface
@@ -148,6 +150,9 @@ public class CameraRenderer extends Thread {
      */
     public void setTextureSize(int width, int height) {
         mRenderManager.setTextureSize(width, height);
+        if (mImageReader != null) {
+            mImageReader.init(width, height);
+        }
     }
 
     /**
@@ -163,6 +168,10 @@ public class CameraRenderer extends Thread {
      */
     void release() {
         Log.d(TAG, "release: ");
+        if (mImageReader != null) {
+            mImageReader.release();
+            mImageReader = null;
+        }
         if (mDisplaySurface != null) {
             mDisplaySurface.makeCurrent();
         }
@@ -350,16 +359,6 @@ public class CameraRenderer extends Thread {
         // 绘制渲染
         mCurrentTexture = mRenderManager.drawFrame(mInputTexture, mMatrix);
 
-        // 执行拍照
-        if (mCameraParam.isTakePicture) {
-            synchronized (mSync) {
-                ByteBuffer buffer = mDisplaySurface.getCurrentFrame();
-                mCameraParam.captureCallback.onCapture(buffer,
-                        mDisplaySurface.getWidth(), mDisplaySurface.getHeight());
-                mCameraParam.isTakePicture = false;
-            }
-        }
-
         // 录制视频
         if (mWeakPresenter.get() != null) {
             mWeakPresenter.get().onRecordFrameAvailable(mCurrentTexture, timeStamp);
@@ -370,6 +369,24 @@ public class CameraRenderer extends Thread {
 
         // 显示到屏幕
         mDisplaySurface.swapBuffers();
+
+        // 执行拍照
+        synchronized (mSync) {
+            if (mCameraParam.isTakePicture) {
+                if (mImageReader == null) {
+                    mImageReader = new GLImageReader(mEglCore.getEGLContext(), bitmap -> {
+                        if (mCameraParam.captureCallback != null) {
+                            mCameraParam.captureCallback.onCapture(bitmap);
+                        }
+                    });
+                    mImageReader.init(mRenderManager.getTextureWidth(), mRenderManager.getTextureHeight());
+                }
+                if (mImageReader != null) {
+                    mImageReader.drawFrame(mCurrentTexture);
+                }
+                mCameraParam.isTakePicture = false;
+            }
+        }
 
         // 计算渲染帧率
         calculateFps();

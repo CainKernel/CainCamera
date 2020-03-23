@@ -397,6 +397,30 @@ public class BitmapUtils {
         }
     }
 
+    /**
+     * 保存图片
+     * @param filePath
+     * @param bitmap
+     */
+    public static void saveBitmap(String filePath, Bitmap bitmap) {
+        if (bitmap == null) {
+            return;
+        }
+        BufferedOutputStream bos = null;
+        try {
+            bos = new BufferedOutputStream(new FileOutputStream(filePath));
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            bitmap.recycle();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            if (bos != null) try {
+                bos.close();
+            } catch (IOException e) {
+                // do nothing
+            }
+        }
+    }
 
     /**
      * 获取图片旋转角度

@@ -344,6 +344,22 @@ public final class RenderManager {
     }
 
     /**
+     * 获取纹理宽度
+     * @return
+     */
+    public int getTextureWidth() {
+        return mTextureWidth;
+    }
+
+    /**
+     * 获取纹理高度
+     * @return
+     */
+    public int getTextureHeight() {
+        return mTextureHeight;
+    }
+
+    /**
      * 设置纹理显示大小
      * @param width
      * @param height

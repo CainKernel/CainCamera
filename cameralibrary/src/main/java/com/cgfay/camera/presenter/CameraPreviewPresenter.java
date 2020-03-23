@@ -3,6 +3,7 @@ package com.cgfay.camera.presenter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import androidx.annotation.NonNull;
 
@@ -643,16 +644,11 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
     }
 
     // ------------------------------------ 拍照截屏回调 --------------------------------------------
-    /**
-     * 截屏回调
-     * @param buffer
-     * @param width
-     * @param height
-     */
+
     @Override
-    public void onCapture(final ByteBuffer buffer, final int width, final int height) {
+    public void onCapture(Bitmap bitmap) {
         String filePath = PathConstraints.getImageCachePath(mActivity);
-        BitmapUtils.saveBitmap(filePath, buffer, width, height);
+        BitmapUtils.saveBitmap(filePath, bitmap);
         if (mCameraParam.captureListener != null) {
             mCameraParam.captureListener.onMediaSelectedListener(filePath, OnPreviewCaptureListener.MediaTypePicture);
         }

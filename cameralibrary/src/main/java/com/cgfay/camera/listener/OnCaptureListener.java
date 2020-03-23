@@ -1,6 +1,7 @@
 package com.cgfay.camera.listener;
 
-import java.nio.ByteBuffer;
+import android.graphics.Bitmap;
+
 
 /**
  * 截帧监听器
@@ -8,5 +9,5 @@ import java.nio.ByteBuffer;
  */
 public interface OnCaptureListener {
     // 截帧回调
-    void onCapture(ByteBuffer buffer, int width, int height);
+    void onCapture(Bitmap bitmap);
 }
