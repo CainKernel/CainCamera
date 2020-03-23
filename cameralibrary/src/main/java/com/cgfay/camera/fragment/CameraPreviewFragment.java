@@ -506,16 +506,26 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
      * 显示设置页面
      */
     private void showSettingFragment() {
+        if (mFragmentAnimating) {
+            return;
+        }
         if (mSettingFragment == null) {
             mSettingFragment = new PreviewSettingFragment();
         }
         mSettingFragment.addStateChangedListener(mStateChangedListener);
         mSettingFragment.setEnableChangeFlash(mCameraParam.supportFlash);
-        getChildFragmentManager()
-                .beginTransaction()
-                .add(R.id.fragment_bottom_container, mSettingFragment, FRAGMENT_TAG)
-                .addToBackStack(FRAGMENT_TAG)
-                .commitAllowingStateLoss();
+        if (!mSettingFragment.isAdded()) {
+            getChildFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.fragment_bottom_container, mSettingFragment, FRAGMENT_TAG)
+                    .addToBackStack(FRAGMENT_TAG)
+                    .commitAllowingStateLoss();
+        } else {
+            getChildFragmentManager()
+                    .beginTransaction()
+                    .show(mSettingFragment)
+                    .commitAllowingStateLoss();
+        }
         showFragmentAnimating();
     }
 
@@ -523,17 +533,21 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
      * 显示动态贴纸页面
      */
     private void showStickers() {
+        if (mFragmentAnimating) {
+            return;
+        }
         if (mResourcesFragment == null) {
             mResourcesFragment = new PreviewResourceFragment();
         }
         mResourcesFragment.addOnChangeResourceListener((data) -> {
             mPreviewPresenter.changeResource(data);
         });
-        getChildFragmentManager()
-                .beginTransaction()
-                .add(R.id.fragment_bottom_container, mResourcesFragment, FRAGMENT_TAG)
-                .addToBackStack(FRAGMENT_TAG)
-                .commitAllowingStateLoss();
+        if (!mResourcesFragment.isAdded()) {
+            getChildFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.fragment_bottom_container, mResourcesFragment, FRAGMENT_TAG)
+                    .commitAllowingStateLoss();
+        }
         showFragmentAnimating(false);
     }
 
@@ -541,6 +555,9 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
      * 显示滤镜页面
      */
     private void showEffectFragment() {
+        if (mFragmentAnimating) {
+            return;
+        }
         if (mEffectFragment == null) {
             mEffectFragment = new PreviewEffectFragment();
         }
@@ -554,11 +571,17 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             mPreviewPresenter.changeDynamicMakeup(makeup);
         });
         mEffectFragment.scrollToCurrentFilter(mPreviewPresenter.getFilterIndex());
-        getChildFragmentManager()
-                .beginTransaction()
-                .add(R.id.fragment_bottom_container, mEffectFragment, FRAGMENT_TAG)
-                .addToBackStack(FRAGMENT_TAG)
-                .commitAllowingStateLoss();
+        if (!mEffectFragment.isAdded()) {
+            getChildFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.fragment_bottom_container, mEffectFragment, FRAGMENT_TAG)
+                    .commitAllowingStateLoss();
+        } else {
+            getChildFragmentManager()
+                    .beginTransaction()
+                    .show(mEffectFragment)
+                    .commitAllowingStateLoss();
+        }
         showFragmentAnimating();
     }
 
@@ -639,7 +662,10 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private void removeFragment() {
         Fragment fragment = getChildFragmentManager().findFragmentByTag(FRAGMENT_TAG);
         if (fragment != null) {
-            getChildFragmentManager().popBackStack();
+            getChildFragmentManager()
+                    .beginTransaction()
+                    .remove(fragment)
+                    .commitAllowingStateLoss();
         }
     }
 
