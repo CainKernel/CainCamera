@@ -108,6 +108,10 @@ private:
     bool mDecodeEnd;
     float mStartPosition;
     float mEndPosition;
+
+    // 计算出来的下一帧时间戳
+    int64_t mNextPts;
+    AVRational mNextTimebase;
 };
 
 

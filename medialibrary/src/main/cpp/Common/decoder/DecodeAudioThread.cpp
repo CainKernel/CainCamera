@@ -33,6 +33,8 @@ DecodeAudioThread::DecodeAudioThread() {
     mSeekTime = -1;
     mStartPosition = -1;
     mEndPosition = -1;
+
+    mNextPts = AV_NOPTS_VALUE;
 }
 
 DecodeAudioThread::~DecodeAudioThread() {
@@ -298,6 +300,7 @@ int DecodeAudioThread::readPacket() {
 
         // 定位处理
         if (mSeekRequest) {
+            mNextPts = AV_NOPTS_VALUE;
             float seekTime = mSeekTime >= 0 ? mSeekTime : 0;
             seekFrame();
             mSeekRequest = false;
@@ -420,7 +423,10 @@ int DecodeAudioThread::decodePacket(AVPacket *packet) {
         // 将解码后数据帧转码后放入队列
         if (mFrameQueue != nullptr) {
             // 音频转码
-            int out_count = reallocBuffer(mFrame->nb_samples);
+            int resample_nb_samples = (int)av_rescale_rnd(swr_get_delay(pSwrContext, mFrame->sample_rate) + mFrame->nb_samples,
+                                                          mOutSampleRate,
+                                                          mFrame->sample_rate, AV_ROUND_INF);
+            int out_count = reallocBuffer(resample_nb_samples);
             ret = swr_convert(pSwrContext, &mBuffer, out_count,
                               (const uint8_t **) mFrame->data, mFrame->nb_samples);
             if (ret <= 0) {
@@ -429,14 +435,27 @@ int DecodeAudioThread::decodePacket(AVPacket *packet) {
                 break;
             }
             // 计算出实际的pts值
-            mFrame->pts = av_frame_get_best_effort_timestamp(mFrame);
+            AVRational tb = (AVRational){1, mFrame->sample_rate};
+            if (mFrame->pts != AV_NOPTS_VALUE) {
+                mFrame->pts = av_rescale_q(mFrame->pts, av_codec_get_pkt_timebase(mAudioDecoder->getContext()), tb);
+            } else if (mNextPts != AV_NOPTS_VALUE) {
+                mFrame->pts = av_rescale_q(mNextPts, mNextTimebase, tb);
+            } else {
+                // 如果都没找到，说明需要重新从FFmpeg中获取猜测当前的时间戳
+                mFrame->pts = av_frame_get_best_effort_timestamp(mFrame);
+            }
+            // 如果pts存在数值，则计算出下一帧的时间戳，防止下一帧音频数据可能不存在PTS值
+            if (mFrame->pts != AV_NOPTS_VALUE) {
+                mNextPts = mFrame->pts + mFrame->nb_samples;
+                mNextTimebase = tb;
+            }
             // 复制转码后的数据到AVMediaData中
             auto data = new AVMediaData();
             data->sample_size = out_count;
             data->sample = (uint8_t *) malloc((size_t)data->sample_size);
             memcpy(data->sample, mBuffer, (size_t)data->sample_size);
             data->type = MediaAudio;
-            data->pts = calculatePts(mFrame->pts, mAudioDecoder->getStream()->time_base);
+            data->pts = calculatePts(mFrame->pts, (AVRational){1, mFrame->sample_rate});
             // 将数据放入帧队列中
             mFrameQueue->push(data);
             // 比较播放结束位置的pts
