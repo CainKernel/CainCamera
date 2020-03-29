@@ -5,18 +5,18 @@
     <uses-permission android:name="com.qti.permission.PROFILER" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /> <!-- 存储权限 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 相机权限 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.FLASHLIGHT" /> <!-- 位置权限 -->
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- 录音权限 -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" /> <!-- 获取设备信息权限 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" /> <!-- opengles版本控制 -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-feature
         android:glEsVersion="0x00030000"
         android:required="true" />
@@ -30,7 +30,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/NoActionBarTheme">
-        <activity android:name=".activity.VideoPlayerActivity"></activity>
+        <activity android:name=".activity.VideoPlayerActivity"/>
         <activity android:name=".activity.MusicPlayerActivity" />
         <activity android:name=".activity.MainActivity">
             <intent-filter>
@@ -45,13 +45,13 @@
             android:theme="@style/NoActionBarTheme" />
         <activity
             android:name=".activity.FFMediaRecordActivity"
-            android:theme="@style/NoActionBarTheme" /> <!-- 全面屏兼容逻辑 -->
+            android:theme="@style/NoActionBarTheme" />
         <meta-data
             android:name="android.max_aspect"
-            android:value="2.4" />
+            android:value="2.4" />         <!-- 全面屏处理 -->
         <meta-data
             android:name="android.notch_support"
-            android:value="true" />
+            android:value="true" />        <!-- 刘海屏处理 -->
     </application>
 
 </manifest>

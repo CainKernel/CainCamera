@@ -25,8 +25,6 @@ public:
 
     void setTimestamp(std::shared_ptr<Timestamp> timestamp);
 
-    void setOnPlayingListener(std::shared_ptr<StreamPlayListener> listener);
-
     void setDataSource(const char *path);
 
     void setDecoderName(const char *decoder);
@@ -38,6 +36,8 @@ public:
     void setRange(float start, float end);
 
     void setVolume(float leftVolume, float rightVolume);
+
+    void prepare();
 
     void start();
 
@@ -81,7 +81,7 @@ private:
     std::shared_ptr<DecodeAudioThread> mAudioThread;
     std::shared_ptr<AudioProvider> mAudioProvider;
     std::shared_ptr<AudioPlay> mAudioPlayer;
-    std::shared_ptr<StreamPlayListener> mPlayListener;
+    std::weak_ptr<StreamPlayListener> mPlayListener;
     SafetyQueue<AVMediaData *> *mFrameQueue;
     std::shared_ptr<SonicAudioTranscoder> mAudioTranscoder;
     std::weak_ptr<Timestamp> mTimestamp;

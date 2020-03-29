@@ -12,6 +12,7 @@ AVMediaDemuxer::AVMediaDemuxer() {
 }
 
 AVMediaDemuxer::~AVMediaDemuxer() {
+    closeDemuxer();
     if (mInputPath) {
         av_freep(&mInputPath);
         mInputPath = nullptr;

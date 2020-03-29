@@ -1,7 +1,10 @@
 package com.cgfay.picker;
 
 import android.os.Bundle;
+
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 import com.cgfay.picker.fragment.MediaPickerFragment;
 import com.cgfay.picker.selector.OnMediaSelector;
@@ -112,21 +115,25 @@ public final class MediaPickerBuilder {
         if (activity == null) {
             return;
         }
+        FragmentManager fragmentManager = null;
+        if (mMediaPicker.getFragment() != null) {
+            fragmentManager = mMediaPicker.getFragment().getChildFragmentManager();
+        } else {
+            fragmentManager = activity.getSupportFragmentManager();
+        }
+        Fragment oldFragment = fragmentManager.findFragmentByTag(MediaPickerFragment.TAG);
+        if (oldFragment != null) {
+            fragmentManager.beginTransaction()
+                    .remove(oldFragment)
+                    .commitAllowingStateLoss();
+        }
         MediaPickerFragment fragment = new MediaPickerFragment();
         fragment.setOnMediaSelector(mMediaSelector);
         Bundle bundle = new Bundle();
         bundle.putSerializable(MediaPicker.PICKER_PARAMS, mPickerParam);
         fragment.setArguments(bundle);
-        if (mMediaPicker.getFragment() != null) {
-            mMediaPicker.getFragment().getChildFragmentManager()
-                    .beginTransaction()
-                    .add(fragment, MediaPickerFragment.TAG)
-                    .commitAllowingStateLoss();
-        } else {
-            activity.getSupportFragmentManager()
-                    .beginTransaction()
-                    .add(fragment, MediaPickerFragment.TAG)
-                    .commitAllowingStateLoss();
-        }
+        fragmentManager.beginTransaction()
+                .add(fragment, MediaPickerFragment.TAG)
+                .commitAllowingStateLoss();
     }
 }

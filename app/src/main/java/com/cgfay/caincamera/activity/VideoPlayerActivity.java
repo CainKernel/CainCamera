@@ -1,6 +1,7 @@
 package com.cgfay.caincamera.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
 
@@ -17,13 +18,18 @@ public class VideoPlayerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_play);
-        if (savedInstanceState == null) {
-            String path = getIntent().getStringExtra(PATH);
-            VideoPlayerFragment fragment = VideoPlayerFragment.newInstance(path);
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(FRAGMENT_VIDEO_PLAYER);
+        if (fragment != null) {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.fragment_container, fragment, FRAGMENT_VIDEO_PLAYER)
-                    .commit();
+                    .remove(fragment)
+                    .commitAllowingStateLoss();
         }
+        String path = getIntent().getStringExtra(PATH);
+        VideoPlayerFragment playerFragment = VideoPlayerFragment.newInstance(path);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, playerFragment, FRAGMENT_VIDEO_PLAYER)
+                .commit();
     }
 }

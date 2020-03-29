@@ -376,7 +376,7 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
             mSeeking = false;
         });
 
-        mCainMediaPlayer.setOnCurrentPositionListener((current, duration) -> {
+        mCainMediaPlayer.setOnCurrentPositionListener((mp, current, duration) -> {
             if (!mSeeking) {
                 if (current > (mCutRange + mCutStart) * mVideoSpeed.getSpeed()) {
                     mCainMediaPlayer.seekTo(mCutStart * mVideoSpeed.getSpeed());

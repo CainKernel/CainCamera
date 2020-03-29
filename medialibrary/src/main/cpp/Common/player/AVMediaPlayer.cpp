@@ -1,15 +1,22 @@
 //
-// Created by CainHuang on 2020-03-14.
+// Created by CainHuang on 2020-02-24.
 //
 
 #include "AVMediaPlayer.h"
 
 AVMediaPlayer::AVMediaPlayer() {
-    LOGD("FFMediaPlayer::constructor()");
-    mVideoPlayer = std::make_shared<VideoStreamPlayer>(/*mStreamPlayListener*/);
-    mAudioPlayer = std::make_shared<AudioStreamPlayer>(/*mStreamPlayListener*/);
+    LOGD("AVMediaPlayer::constructor()");
+    mThread = nullptr;
     mMessageQueue = std::unique_ptr<MessageQueue>(new MessageQueue());
-    mLooping = false;
+    mTimestamp = std::make_shared<Timestamp>();
+    mStreamPlayListener = std::make_shared<MediaPlayerListener>(this);
+    mVideoPlayer = std::make_shared<VideoStreamPlayer>(mStreamPlayListener);
+    mVideoPlayer->setTimestamp(mTimestamp);
+
+    mAudioPlayer = std::make_shared<AudioStreamPlayer>(mStreamPlayListener);
+    mAudioPlayer->setTimestamp(mTimestamp);
+    mPlayListener = nullptr;
+    mAbortRequest = true;
 }
 
 AVMediaPlayer::~AVMediaPlayer() {
@@ -17,47 +24,91 @@ AVMediaPlayer::~AVMediaPlayer() {
     LOGD("AVMediaPlayer::destructor()");
 }
 
+void AVMediaPlayer::init() {
+    mAbortRequest = false;
+    mCondition.signal();
+    if (mThread == nullptr) {
+        mThread = new Thread(this);
+    }
+    if (!mThread->isActive()) {
+        mThread->start();
+    }
+}
+
 void AVMediaPlayer::release() {
-    LOGD("AVMediaPlayer::release()");
+    mAbortRequest = true;
+    mCondition.signal();
+    if (mThread != nullptr) {
+        mThread->join();
+        delete mThread;
+        mThread = nullptr;
+    }
+    if (mPlayListener != nullptr) {
+        mPlayListener.reset();
+        mPlayListener = nullptr;
+    }
+    if (mStreamPlayListener != nullptr) {
+        mStreamPlayListener.reset();
+        mStreamPlayListener = nullptr;
+    }
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->release();
+        mAudioPlayer.reset();
+        mAudioPlayer = nullptr;
     }
     if (mVideoPlayer != nullptr) {
         mVideoPlayer->release();
+        mVideoPlayer.reset();
+        mVideoPlayer = nullptr;
     }
     if (mMessageQueue != nullptr) {
         mMessageQueue->flush();
         mMessageQueue.reset();
         mMessageQueue = nullptr;
     }
+    if (mTimestamp != nullptr) {
+        mTimestamp.reset();
+        mTimestamp = nullptr;
+    }
 }
 
-void AVMediaPlayer::setDataSource(const char *path) {
-    LOGD("AVMediaPlayer::setDataSource(): %s", path);
+void AVMediaPlayer::setOnPlayingListener(std::shared_ptr<OnPlayListener> listener) {
+    if (mPlayListener != nullptr) {
+        mPlayListener.reset();
+        mPlayListener = nullptr;
+    }
+    mPlayListener = listener;
+}
+
+status_t AVMediaPlayer::setDataSource(const char *url, int64_t offset, const char *headers) {
+    LOGD("AVMediaPlayer::setDataSource(): %s, offset: %d, headers: %s", url, offset, headers);
     if (mAudioPlayer != nullptr) {
-        mAudioPlayer->setDataSource(path);
+        mAudioPlayer->setDataSource(url);
     }
     if (mVideoPlayer != nullptr) {
-        mVideoPlayer->setDataSource(path);
+        mVideoPlayer->setDataSource(url);
     }
+    return OK;
 }
 
-void AVMediaPlayer::setAudioDecoder(const char *decoder) {
+status_t AVMediaPlayer::setAudioDecoder(const char *decoder) {
     LOGD("AVMediaPlayer::setAudioDecoder(): %s", decoder);
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->setDecoderName(decoder);
     }
+    return OK;
 }
 
-void AVMediaPlayer::setVideoDecoder(const char *decoder) {
+status_t AVMediaPlayer::setVideoDecoder(const char *decoder) {
     LOGD("AVMediaPlayer::setVideoDecoder(): %s", decoder);
     if (mVideoPlayer != nullptr) {
         mVideoPlayer->setDecoderName(decoder);
     }
+    return OK;
 }
 
 #if defined(__ANDROID__)
-void AVMediaPlayer::setVideoSurface(ANativeWindow *window) {
+status_t AVMediaPlayer::setVideoSurface(ANativeWindow *window) {
     LOGD("AVMediaPlayer::setVideoSurface()");
     if (mVideoPlayer != nullptr) {
         auto play = mVideoPlayer->getPlayer();
@@ -66,10 +117,11 @@ void AVMediaPlayer::setVideoSurface(ANativeWindow *window) {
             videoPlayer->setOutputSurface(window);
         }
     }
+    return OK;
 }
 #endif
 
-void AVMediaPlayer::setSpeed(float speed) {
+status_t AVMediaPlayer::setSpeed(float speed) {
     LOGD("AVMediaPlayer::setSpeed(): %.2f", speed);
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->setSpeed(speed);
@@ -77,9 +129,10 @@ void AVMediaPlayer::setSpeed(float speed) {
     if (mVideoPlayer != nullptr) {
         mVideoPlayer->setSpeed(speed);
     }
+    return OK;
 }
 
-void AVMediaPlayer::setLooping(bool looping) {
+status_t AVMediaPlayer::setLooping(bool looping) {
     LOGD("AVMediaPlayer::setLooping(): %d", looping);
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->setLooping(looping);
@@ -87,9 +140,10 @@ void AVMediaPlayer::setLooping(bool looping) {
     if (mVideoPlayer != nullptr) {
         mVideoPlayer->setLooping(looping);
     }
+    return OK;
 }
 
-void AVMediaPlayer::setRange(float start, float end) {
+status_t AVMediaPlayer::setRange(float start, float end) {
     LOGD("AVMediaPlayer::setRange(): {%.2f, %.2f}", start, end);
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->setRange(start, end);
@@ -97,49 +151,64 @@ void AVMediaPlayer::setRange(float start, float end) {
     if (mVideoPlayer != nullptr) {
         mVideoPlayer->setRange(start, end);
     }
+    return OK;
 }
 
-void AVMediaPlayer::setVolume(float leftVolume, float rightVolume) {
+status_t AVMediaPlayer::setVolume(float leftVolume, float rightVolume) {
     LOGD("AVMediaPlayer::setVolume(): {%.2f, %.2f}", leftVolume, rightVolume);
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->setVolume(leftVolume, rightVolume);
     }
+    return OK;
 }
 
-void AVMediaPlayer::start() {
+status_t AVMediaPlayer::setMute(bool mute) {
+    return OK;
+}
+
+status_t AVMediaPlayer::prepare() {
+    LOGD("AVMediaPlayer::prepare()");
+    mMessageQueue->pushMessage(new Message(MSG_REQUEST_PREPARE));
+    mCondition.signal();
+    return OK;
+}
+
+status_t AVMediaPlayer::start() {
     LOGD("AVMediaPlayer::start()");
-    if (mThread == nullptr) {
-        mThread = new Thread(this);
-    }
-    if (!mThread->isActive()) {
-        mMessageQueue->pushMessage(new Message(MSG_REQUEST_START));
-        mCondition.signal();
-        mThread->start();
-    }
+    mMessageQueue->pushMessage(new Message(MSG_REQUEST_START));
+    mCondition.signal();
+    return OK;
 }
 
-void AVMediaPlayer::pause() {
+status_t AVMediaPlayer::pause() {
     LOGD("AVMediaPlayer::pause()");
     mMessageQueue->pushMessage(new Message(MSG_REQUEST_PAUSE));
     mCondition.signal();
+    return OK;
 }
 
-void AVMediaPlayer::stop() {
+status_t AVMediaPlayer::stop() {
     LOGD("AVMediaPlayer::stop()");
     mMessageQueue->pushMessage(new Message(MSG_REQUEST_STOP));
     mCondition.signal();
-    if (mThread != nullptr) {
-        mThread->join();
-        delete mThread;
-        mThread = nullptr;
-    }
+    return OK;
 }
 
-void AVMediaPlayer::seekTo(float timeMs) {
-    LOGD("AVMediaPlayer::seekTo(): %.2f", timeMs);
-    float *ptr = &timeMs;
-    mMessageQueue->pushMessage(new Message(MSG_REQUEST_SEEK, ptr));
+status_t AVMediaPlayer::setDecodeOnPause(bool decodeOnPause) {
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->setDecodeOnPause(decodeOnPause);
+    }
+    return OK;
+}
+
+status_t AVMediaPlayer::seekTo(float timeMs) {
+    mMessageQueue->pushMessage(new Message(MSG_REQUEST_SEEK, (int)(timeMs * 1000), -1));
     mCondition.signal();
+    return OK;
+}
+
+long AVMediaPlayer::getCurrentPosition() {
+    return 0;
 }
 
 float AVMediaPlayer::getDuration() {
@@ -151,6 +220,10 @@ float AVMediaPlayer::getDuration() {
         duration = mVideoPlayer->getDuration();
     }
     return duration;
+}
+
+int AVMediaPlayer::getRotate() {
+    return 0;
 }
 
 int AVMediaPlayer::getVideoWidth() {
@@ -168,25 +241,45 @@ int AVMediaPlayer::getVideoHeight() {
 }
 
 bool AVMediaPlayer::isLooping() {
-    return mLooping;
+    return mVideoPlayer->isLooping();
 }
 
 bool AVMediaPlayer::isPlaying() {
-    bool playing = false;
-    if (mAudioPlayer != nullptr) {
-        playing |= mAudioPlayer->isPlaying();
+    return mVideoPlayer->isPlaying();
+}
+
+void AVMediaPlayer::onPlaying(float pts) {
+    mMessageQueue->pushMessage(new Message(MSG_CURRENT_POSITION, pts, getDuration()));
+    mCondition.signal();
+}
+
+void AVMediaPlayer::onSeekComplete(AVMediaType type) {
+    if (type == AVMEDIA_TYPE_VIDEO) {
+        mMessageQueue->pushMessage(new Message(MSG_SEEK_COMPLETE));
+        mCondition.signal();
     }
-    if (mVideoPlayer != nullptr) {
-        playing |= mVideoPlayer->isPlaying();
+}
+
+void AVMediaPlayer::onCompletion(AVMediaType type) {
+    mMessageQueue->pushMessage(new Message(MSG_COMPLETED));
+    mCondition.signal();
+}
+
+void AVMediaPlayer::notify(int msg, int arg1, int arg2) {
+    mMessageQueue->pushMessage(new Message(msg, arg1, arg2));
+    mCondition.signal();
+}
+
+void AVMediaPlayer::postEvent(int what, int arg1, int arg2, void *obj) {
+    if (mPlayListener != nullptr) {
+        mPlayListener->notify(what, arg1, arg2, obj);
     }
-    return playing;
 }
 
 void AVMediaPlayer::run() {
-    bool abortRequest = false;
     while (true) {
 
-        if (abortRequest) {
+        if (mAbortRequest) {
             break;
         }
 
@@ -196,9 +289,143 @@ void AVMediaPlayer::run() {
         }
         mMutex.unlock();
 
-        auto message = mMessageQueue->popMessage();
-        int what = message->getWhat();
+        auto msg = mMessageQueue->popMessage();
+        if (!msg) {
+            continue;
+        }
+        int what = msg->getWhat();
         switch(what) {
+
+            // 刷新缓冲区
+            case MSG_FLUSH: {
+                LOGD("MediaPlayer is flushing.\n");
+                break;
+            }
+
+            // 播放出错
+            case MSG_ERROR: {
+                LOGD("MediaPlayer occurs error: %d\n", msg->getArg1());
+                postEvent(MEDIA_ERROR, msg->getArg1(), 0);
+                break;
+            }
+
+            // 准备完成回调
+            case MSG_PREPARED: {
+                LOGD("MediaPlayer is prepared.\n");
+                postEvent(MEDIA_PREPARED);
+                break;
+            }
+
+            // 开始播放回调
+            case MSG_STARTED: {
+                LOGD("MediaPlayer is started!");
+                postEvent(MEDIA_STARTED);
+                break;
+            }
+
+            // 播放完成回调
+            case MSG_COMPLETED: {
+                LOGD("MediaPlayer is playback completed.\n");
+                postEvent(MEDIA_PLAYBACK_COMPLETE);
+                break;
+            }
+
+            // 视频大小发生变化回调
+            case MSG_VIDEO_SIZE_CHANGED: {
+                LOGD("MediaPlayer is video size changing: %d, %d\n", msg->getArg1(), msg->getArg2());
+                postEvent(MEDIA_SET_VIDEO_SIZE, msg->getArg1(), msg->getArg2());
+                break;
+            }
+
+            // sar发生变化回调
+            case MSG_SAR_CHANGED: {
+                LOGD("MediaPlayer is sar changing: %d, %d\n", msg->getArg1(), msg->getArg2());
+                postEvent(MEDIA_SET_VIDEO_SAR, msg->getArg1(), msg->getArg2());
+                break;
+            }
+
+            // 视频开始渲染回调
+            case MSG_VIDEO_RENDERING_START: {
+                LOGD("MediaPlayer is video playing.\n");
+                break;
+            }
+
+            // 音频开始播放回调
+            case MSG_AUDIO_RENDERING_START: {
+                LOGD("MediaPlayer is audio playing.\n");
+                break;
+            }
+
+            // 视频旋转改变回调
+            case MSG_VIDEO_ROTATION_CHANGED: {
+                LOGD("MediaPlayer's video rotation is changing: %d\n", msg->getArg1());
+                break;
+            }
+
+            // 打开音频解码器回调
+            case MSG_AUDIO_START: {
+                LOGD("MediaPlayer starts audio decoder.\n");
+                break;
+            }
+
+            // 打开解码器回调
+            case MSG_VIDEO_START: {
+                LOGD("MediaPlayer starts video decoder.\n");
+                break;
+            }
+
+            // 打开输入文件回调
+            case MSG_OPEN_INPUT: {
+                LOGD("MediaPlayer is opening input file.\n");
+                break;
+            }
+
+            // 查找媒体流信息回调
+            case MSG_FIND_STREAM_INFO: {
+                LOGD("CanMediaPlayer is finding media stream info.\n");
+                break;
+            }
+
+            // 准备解码器回调
+            case MSG_PREPARE_DECODER: {
+                LOGD("MediaPlayer is preparing decoder.\n");
+                break;
+            }
+
+            // 开始缓冲回调
+            case MSG_BUFFERING_START: {
+                LOGD("CanMediaPlayer is buffering start.\n");
+                postEvent(MEDIA_INFO, MEDIA_INFO_BUFFERING_START, msg->getArg1());
+                break;
+            }
+
+            // 缓冲结束回调
+            case MSG_BUFFERING_END: {
+                LOGD("MediaPlayer is buffering finish.\n");
+                postEvent(MEDIA_INFO, MEDIA_INFO_BUFFERING_END, msg->getArg1());
+                break;
+            }
+
+            // 缓冲区更新回调
+            case MSG_BUFFERING_UPDATE: {
+                LOGD("MediaPlayer is buffering: %d, %d", msg->getArg1(), msg->getArg2());
+                postEvent(MEDIA_BUFFERING_UPDATE, msg->getArg1(), msg->getArg2());
+                break;
+            }
+
+            // 跳转完成回调
+            case MSG_SEEK_COMPLETE: {
+                LOGD("MediaPlayer seeks completed!\n");
+                postEvent(MEDIA_SEEK_COMPLETE);
+                break;
+            }
+
+            // 准备操作
+            case MSG_REQUEST_PREPARE: {
+                preparePlayer();
+                break;
+            }
+
             // 开始
             case MSG_REQUEST_START: {
                 startPlayer();
@@ -214,36 +441,56 @@ void AVMediaPlayer::run() {
             // 停止
             case MSG_REQUEST_STOP: {
                 stopPlayer();
-                abortRequest = true;
                 break;
             }
 
             // 定位
             case MSG_REQUEST_SEEK: {
-                float *timeMs = (float *)message->getObj();
-                seekPlayer(*timeMs);
+                float timeMs = msg->getArg1() / 1000.0f;
+                seekPlayer(timeMs);
+                break;
+            }
+
+            // 播放进度回调
+            case MSG_CURRENT_POSITION: {
+                postEvent(MEDIA_CURRENT, msg->getArg1(), msg->getArg2());
                 break;
             }
 
             default: {
+                LOGE("MediaPlayer unknown MSG_xxx(%d)\n", msg->getWhat());
                 break;
             }
         }
-        delete message;
+        delete msg;
     }
 }
 
 /**
- * 播放器开启
+ * 准备回调
+ */
+void AVMediaPlayer::preparePlayer() {
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->prepare();
+    }
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer->prepare();
+    }
+    mMessageQueue->pushMessage(new Message(MSG_PREPARED));
+    mCondition.signal();
+}
+
+/**
+ * 开始播放
  */
 void AVMediaPlayer::startPlayer() {
-    LOGD("AVMediaPlayer::startPlayer()");
     if (mVideoPlayer != nullptr) {
         mVideoPlayer->start();
     }
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->start();
     }
+    LOGD("start success");
 }
 
 /**
@@ -256,6 +503,7 @@ void AVMediaPlayer::pausePlayer() {
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->pause();
     }
+    LOGD("pause finish");
 }
 
 /**
@@ -271,14 +519,51 @@ void AVMediaPlayer::stopPlayer() {
 }
 
 /**
- * 定位到某个位置
- * @param timeMs
+ * 跳转到某个时间点
+ * @param timeMs    跳转时间(ms)
  */
 void AVMediaPlayer::seekPlayer(float timeMs) {
-    if (mVideoPlayer != nullptr) {
-        mVideoPlayer->seekTo(timeMs);
-    }
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->seekTo(timeMs);
     }
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->seekTo(timeMs);
+    }
+}
+
+MediaPlayerListener::MediaPlayerListener(AVMediaPlayer *player) {
+    this->player = player;
+}
+
+MediaPlayerListener::~MediaPlayerListener() {
+    this->player = nullptr;
+    LOGD("MediaPlayerListener::destructor()");
+}
+
+void MediaPlayerListener::onPrepared(AVMediaType type) {
+
+}
+
+void MediaPlayerListener::onPlaying(AVMediaType type, float pts) {
+    if (type == AVMEDIA_TYPE_AUDIO) {
+        if (player != nullptr) {
+            player->onPlaying(pts);
+        }
+    }
+}
+
+void MediaPlayerListener::onSeekComplete(AVMediaType type) {
+    if (player != nullptr ) {
+        player->onSeekComplete(type);
+    }
+}
+
+void MediaPlayerListener::onCompletion(AVMediaType type) {
+    if (player != nullptr ) {
+        player->onCompletion(type);
+    }
+}
+
+void MediaPlayerListener::onError(AVMediaType type, int errorCode, const char *msg) {
+
 }

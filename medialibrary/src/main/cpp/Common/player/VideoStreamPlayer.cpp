@@ -51,9 +51,22 @@ void VideoStreamPlayer::release() {
         mDecodeListener.reset();
         mDecodeListener = nullptr;
     }
+    if (pSwsContext != nullptr) {
+        sws_freeContext(pSwsContext);
+        pSwsContext = nullptr;
+    }
     if (mConvertFrame != nullptr) {
         freeFrame(mConvertFrame);
         mConvertFrame = nullptr;
+    }
+    if (mCurrentFrame != nullptr) {
+        freeFrame(mCurrentFrame);
+        mCurrentFrame = nullptr;
+    }
+    if (mFrameQueue != nullptr) {
+        flushQueue();
+        delete(mFrameQueue);
+        mFrameQueue = nullptr;
     }
 }
 
@@ -97,8 +110,8 @@ void VideoStreamPlayer::setRange(float start, float end) {
     }
 }
 
-void VideoStreamPlayer::start() {
-    LOGD("VideoStreamPlayer::start()");
+void VideoStreamPlayer::prepare() {
+    LOGD("VideoStreamPlayer::prepare()");
     if (!mVideoThread || !mVideoPlayer) {
         return;
     }
@@ -109,6 +122,14 @@ void VideoStreamPlayer::start() {
         }
         mPrepared = true;
     }
+    // 准备完成回调
+    if (mPlayListener.lock() != nullptr) {
+        mPlayListener.lock()->onPrepared(AVMEDIA_TYPE_VIDEO);
+    }
+}
+
+void VideoStreamPlayer::start() {
+    LOGD("VideoStreamPlayer::start()");
     mExit = false;
     mVideoThread->start();
 //    mVideoPlayer->setRefreshRate(mVideoThread->getFrameRate());

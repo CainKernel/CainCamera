@@ -15,6 +15,19 @@ AVideoPlay::AVideoPlay(const std::shared_ptr<VideoProvider> &videoProvider)
     mBuffer = nullptr;
 }
 
+AVideoPlay::~AVideoPlay() {
+    stop();
+    if (mWindow != nullptr) {
+        ANativeWindow_release(mWindow);
+        mWindow = nullptr;
+    }
+    if (mBuffer) {
+        free(mBuffer);
+        mBuffer = nullptr;
+    }
+    LOGD("AVideoPlay::destructor()");
+}
+
 void AVideoPlay::setOutputSurface(ANativeWindow *window) {
     if (mWindow != nullptr) {
         ANativeWindow_release(mWindow);

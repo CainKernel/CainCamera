@@ -10,6 +10,7 @@ DecodeVideoThread::DecodeVideoThread() {
     mFrameQueue = nullptr;
     mVideoDemuxer = std::make_shared<AVMediaDemuxer>();
     mVideoDecoder = std::make_shared<AVVideoDecoder>(mVideoDemuxer);
+    mVideoDecoder->setDecoder("h264_mediacodec");
 
     // 初始化数据包
     av_init_packet(&mPacket);
@@ -33,6 +34,7 @@ DecodeVideoThread::~DecodeVideoThread() {
 }
 
 void DecodeVideoThread::release() {
+    stop();
     LOGD("DecodeVideoThread::release()");
     if (mVideoDecoder != nullptr) {
         mVideoDecoder->closeDecoder();
@@ -44,6 +46,7 @@ void DecodeVideoThread::release() {
         mVideoDemuxer.reset();
         mVideoDemuxer = nullptr;
     }
+    av_packet_unref(&mPacket);
     mAbortRequest = true;
     mFrameQueue = nullptr;
 }
@@ -164,8 +167,8 @@ int DecodeVideoThread::prepare() {
         return ret;
     }
 
-    // 打开音频解码器
-    if (mVideoDemuxer->hasAudioStream()) {
+    // 打开视频解码器
+    if (mVideoDemuxer->hasVideoStream()) {
         ret = mVideoDecoder->openDecoder(mDecodeOptions);
         if (ret < 0) {
             LOGE("Failed to open audio decoder");

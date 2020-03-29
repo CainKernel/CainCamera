@@ -37,30 +37,40 @@ AudioStreamPlayer::~AudioStreamPlayer() {
 void AudioStreamPlayer::release() {
     LOGD("AudioStreamPlayer::release()");
     stop();
+    if (mDecodeListener != nullptr) {
+        mDecodeListener.reset();
+        mDecodeListener = nullptr;
+    }
     if (mAudioThread != nullptr) {
         mAudioThread->stop();
         mAudioThread.reset();
         mAudioThread = nullptr;
     }
-    if (mDecodeListener != nullptr) {
-        mDecodeListener.reset();
-        mDecodeListener = nullptr;
+    if (mAudioProvider != nullptr) {
+        mAudioProvider.reset();
+        mAudioProvider = nullptr;
+    }
+    if (mAudioPlayer != nullptr) {
+        mAudioPlayer.reset();
+        mAudioPlayer = nullptr;
     }
     if (mFrameQueue != nullptr) {
         delete mFrameQueue;
         mFrameQueue = nullptr;
     }
+    if (mFrameQueue != nullptr) {
+        flushQueue();
+        delete mFrameQueue;
+        mFrameQueue = nullptr;
+    }
+    if (mAudioTranscoder != nullptr) {
+        mAudioTranscoder.reset();
+        mAudioTranscoder = nullptr;
+    }
 }
 
 void AudioStreamPlayer::setTimestamp(std::shared_ptr<Timestamp> timestamp) {
     mTimestamp = timestamp;
-}
-
-void AudioStreamPlayer::setOnPlayingListener(std::shared_ptr<StreamPlayListener> listener) {
-    if (mPlayListener != nullptr && mPlayListener != listener) {
-        mPlayListener.reset();
-    }
-    mPlayListener = listener;
 }
 
 void AudioStreamPlayer::setDataSource(const char *path) {
@@ -98,8 +108,8 @@ void AudioStreamPlayer::setVolume(float leftVolume, float rightVolume) {
     }
 }
 
-void AudioStreamPlayer::start() {
-    LOGD("AudioStreamPlayer::start()");
+void AudioStreamPlayer::prepare() {
+    LOGD("AudioStreamPlayer::prepare()");
     if (!mAudioThread || !mAudioPlayer) {
         return;
     }
@@ -113,6 +123,17 @@ void AudioStreamPlayer::start() {
             return;
         }
         mPrepared = true;
+    }
+    // 准备完成回调
+    if (mPlayListener.lock() != nullptr) {
+        mPlayListener.lock()->onPrepared(AVMEDIA_TYPE_AUDIO);
+    }
+}
+
+void AudioStreamPlayer::start() {
+    LOGD("AudioStreamPlayer::start()");
+    if (!mAudioThread || !mAudioPlayer) {
+        return;
     }
     mAudioThread->start();
     mAudioPlayer->start();
@@ -199,6 +220,10 @@ void AudioStreamPlayer::onDecodeFinish() {
 void AudioStreamPlayer::onSeekComplete(float seekTime) {
     LOGD("AudioStreamPlayer::onSeekComplete(): %f", seekTime);
     setCurrentTimestamp(seekTime);
+    // seek 完成回调
+    if (mPlayListener.lock() != nullptr) {
+        mPlayListener.lock()->onSeekComplete(AVMEDIA_TYPE_VIDEO);
+    }
 }
 
 void AudioStreamPlayer::onSeekError(int ret) {
@@ -241,8 +266,8 @@ int AudioStreamPlayer::onAudioProvide(short **buffer, int bufSize) {
                 mTimestamp.lock()->setAudioTime(mCurrentPts);
                 mCurrentPts = (int64_t)(mTimestamp.lock()->getClock());
             }
-            if (mPlayListener != nullptr) {
-                mPlayListener->onPlaying(AVMEDIA_TYPE_AUDIO, mCurrentPts);
+            if (mPlayListener.lock() != nullptr) {
+                mPlayListener.lock()->onPlaying(AVMEDIA_TYPE_AUDIO, mCurrentPts);
             } else {
                 LOGD("audio play size: %d, pts(ms): %ld", size, mCurrentPts);
             }

@@ -33,6 +33,8 @@ public:
 
     void setRange(float start, float end);
 
+    void prepare();
+
     void start();
 
     void pause();

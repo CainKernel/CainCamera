@@ -1,8 +1,9 @@
 # 添加目录
 set(common_dir ../Common)
+set(native_help ../nativehelp)
 
 # 添加头文件路径
-include_directories(${common_dir})
+include_directories(${common_dir} ${native_help})
 
 # 添加源文件
 add_library( videoplayer
@@ -28,12 +29,6 @@ add_library( videoplayer
              ${common_dir}/sonic.cpp
              ${common_dir}/SonicAudioTranscoder.cpp
 
-             # player
-             ${common_dir}/player/AudioStreamPlayer.cpp
-             ${common_dir}/player/AVMediaPlayer.cpp
-             ${common_dir}/player/Timestamp.cpp
-             ${common_dir}/player/VideoStreamPlayer.cpp
-
              # audio
              ${common_dir}/audio/AudioPlay.cpp
              ${common_dir}/audio/AudioSLPlay.cpp
@@ -41,8 +36,14 @@ add_library( videoplayer
              # video
              ${common_dir}/video/AVideoPlay.cpp
 
+             # player
+             ${common_dir}/player/AudioStreamPlayer.cpp
+             ${common_dir}/player/Timestamp.cpp
+             ${common_dir}/player/VideoStreamPlayer.cpp
+             ${common_dir}/player/AVMediaPlayer.cpp
+
              # 播放器
-             FFMediaPlayer.cpp
+             ${native_help}/JNIHelp.cpp
              com_cgfay_media_VideoPlayer.cpp)
 
 

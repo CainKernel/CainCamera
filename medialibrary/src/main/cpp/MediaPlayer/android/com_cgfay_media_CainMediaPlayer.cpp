@@ -8,7 +8,7 @@
 #include <Mutex.h>
 #include <Condition.h>
 #include <Errors.h>
-#include <JNIHelp.h>
+#include "../../nativehelp/JNIHelp.h"
 #include <CainMediaPlayer.h>
 
 extern "C" {
@@ -49,7 +49,7 @@ private:
 };
 
 JNIMediaPlayerListener::JNIMediaPlayerListener(JNIEnv *env, jobject thiz, jobject weak_thiz) {
-// Hold onto the MediaPlayer class for use in calling the static method
+    // Hold onto the MediaPlayer class for use in calling the static method
     // that posts events to the application thread.
     jclass clazz = env->GetObjectClass(thiz);
     if (clazz == NULL) {

@@ -19,6 +19,8 @@ class StreamPlayListener {
 public:
     virtual ~StreamPlayListener() = default;
 
+    virtual void onPrepared(AVMediaType type) = 0;
+
     virtual void onPlaying(AVMediaType type, float pts) = 0;
 
     virtual void onSeekComplete(AVMediaType type) = 0;

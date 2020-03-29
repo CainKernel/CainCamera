@@ -366,21 +366,6 @@ public interface IMediaPlayer {
     public void setMute(boolean mute);
 
     /**
-     * Sets speed on this player.
-     * @param rate
-     */
-    public void setRate(float rate);
-
-    /**
-     * Sets pitch on this player.
-     * @param pitch
-     */
-    public void setPitch(float pitch);
-
-
-
-
-    /**
      * Interface definition for a callback to be invoked when the media
      * source is ready for playback.
      */
@@ -631,4 +616,17 @@ public interface IMediaPlayer {
      */
     public void setOnInfoListener(OnInfoListener listener);
 
+    /**
+     * Interface definition of a callback to be invoked to playing position.
+     */
+    public interface OnCurrentPositionListener {
+
+        void onCurrentPosition(IMediaPlayer mp, long current, long duration);
+    }
+
+    /**
+     * Register a callback to be invoked on playing position.
+     * @param listener
+     */
+    public void setOnCurrentPositionListener(OnCurrentPositionListener listener);
 }

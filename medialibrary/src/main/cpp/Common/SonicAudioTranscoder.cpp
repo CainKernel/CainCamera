@@ -25,6 +25,7 @@ SonicAudioTranscoder::~SonicAudioTranscoder() {
         free(putAudioBuffer);
         putAudioBuffer = nullptr;
     }
+    flush();
     sonicDestroyStream(sonic);
     sonic = nullptr;
 }

@@ -58,7 +58,7 @@ add_library( media_player
 
              # controller
              android/CainMediaPlayer.cpp
-             android/JNIHelp.cpp
+             ../nativehelp/JNIHelp.cpp
              android/com_cgfay_media_CainMediaPlayer.cpp )
 
 # 链接静态库

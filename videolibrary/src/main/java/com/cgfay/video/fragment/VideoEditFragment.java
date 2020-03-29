@@ -719,7 +719,7 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
 
         mCainMediaPlayer.setOnCurrentPositionListener(new CainMediaPlayer.OnCurrentPositionListener() {
             @Override
-            public void onCurrentPosition(long current, long duration) {
+            public void onCurrentPosition(IMediaPlayer mp, long current, long duration) {
                 if (mTvVideoCurrent != null) {
                     mTvVideoCurrent.setText(StringUtils.generateStandardTime((int)current));
                 }

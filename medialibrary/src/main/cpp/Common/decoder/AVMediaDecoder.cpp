@@ -14,7 +14,10 @@ AVMediaDecoder::AVMediaDecoder(std::shared_ptr<AVMediaDemuxer> mediaDemuxer) {
 }
 
 AVMediaDecoder::~AVMediaDecoder() {
-
+    if (pCodecName != nullptr) {
+        av_freep(&pCodecName);
+        pCodecName = nullptr;
+    }
 }
 
 /**

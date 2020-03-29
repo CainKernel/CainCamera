@@ -7,6 +7,11 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.cgfay.media.annotations.AccessedByNative;
+
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+
 public class MusicPlayer {
 
     private static final String TAG = "MusicPlayer";
@@ -14,44 +19,45 @@ public class MusicPlayer {
     static {
         System.loadLibrary("ffmpeg");
         System.loadLibrary("musicplayer");
+        native_init();
     }
 
+    private static native void native_init();
     // 初始化
-    private native long nativeInit();
+    private native void native_setup(Object mediaplayer_this);
+    private native void native_finalize();
     // 释放资源
-    private native void nativeRelease(long handle);
-    // 播放监听器
-    private native void setOnPlayListener(long handle, Object listener);
+    private native void _release();
     // 设置音乐路径
-    private native void setDataSource(long handle, String path);
+    private native void _setDataSource(String path);
     // 设置音乐播放速度
-    private native void setSpeed(long handle, float speed);
+    private native void _setSpeed(float speed);
     // 设置是否重新播放
-    private native void setLooping(long handle, boolean looping);
+    private native void _setLooping(boolean looping);
     // 设置播放区间
-    private native void setRange(long handle, float start, float end);
+    private native void _setRange(float start, float end);
     // 设置播放声音
-    private native void setVolume(long handle, float leftVolume, float rightVolume);
+    private native void _setVolume(float leftVolume, float rightVolume);
+    // 准备播放器
+    private native void _prepare();
     // 开始播放
-    private native void start(long handle);
+    private native void _start();
     // 暂停播放
-    private native void pause(long handle);
+    private native void _pause();
     // 停止播放
-    private native void stop(long handle);
+    private native void _stop();
     // 定位
-    private native void seekTo(long handle, float timeMs);
+    private native void _seekTo(float timeMs);
     // 获取时长
-    private native float getDuration(long handle);
+    private native float _getDuration();
     // 是否循环播放
-    private native boolean isLooping(long handle);
+    private native boolean _isLooping();
     // 是否正在播放中
-    private native boolean isPlaying(long handle);
+    private native boolean _isPlaying();
 
-    private long handle;
-    private String mPath;
-
+    @AccessedByNative
+    private long mNativeContext;
     private EventHandler mEventHandler;
-    private OnPlayListener mPlayListener;
 
     public MusicPlayer() {
         Looper looper;
@@ -63,120 +69,143 @@ public class MusicPlayer {
             mEventHandler = null;
         }
 
-        mPlayListener = null;
-        handle = nativeInit();
-        if (handle != 0) {
-            setOnPlayListener(handle, new OnPlayListener() {
-                @Override
-                public void onPlaying(float pts) {
-                    if (mEventHandler != null) {
-                        mEventHandler.sendMessage(mEventHandler.obtainMessage(PLAYER_PLAYING, pts));
-                    }
-                }
-
-                @Override
-                public void onSeekComplete() {
-                    if (mEventHandler != null) {
-                        mEventHandler.sendEmptyMessage(PLAYER_SEEKCOMPLETE);
-                    }
-                }
-
-                @Override
-                public void onCompletion() {
-                    if (mEventHandler != null) {
-                        mEventHandler.sendEmptyMessage(PLAYER_COMPLETION);
-                    }
-                }
-
-                @Override
-                public void onError(int errorCode, String msg) {
-                    if (mEventHandler != null) {
-                        mEventHandler.sendMessage(mEventHandler.obtainMessage(PLAYER_ERROR, errorCode, -1, msg));
-                    }
-                }
-            });
-        }
+        /* Native setup requires a weak reference to our object.
+         * It's easier to create it here than in C++.
+         */
+        native_setup(new WeakReference<MusicPlayer>(this));
     }
 
     public void release() {
-        if (handle != 0) {
-            nativeRelease(handle);
-            handle = 0;
-        }
-        mPlayListener = null;
+        mOnPreparedListener = null;
+        mOnCompletionListener = null;
+        mOnSeekCompleteListener = null;
+        mOnErrorListener = null;
+        mOnCurrentPositionListener = null;
+        _release();
     }
 
-    public void setOnPlayListener(OnPlayListener listener) {
-        mPlayListener = listener;
+    /**
+     * 设置音乐路径
+     * @param path
+     */
+    public void setDataSource(String path)
+            throws IOException, IllegalArgumentException, SecurityException, IllegalStateException {
+        _setDataSource(path);
     }
 
-    public void setDataSource(String path) {
-        mPath = path;
-        setDataSource(handle, path);
-    }
-
+    /**
+     * 设置播放速度
+     * @param speed
+     */
     public void setSpeed(float speed) {
-        setSpeed(handle, speed);
+        _setSpeed(speed);
     }
 
+    /**
+     * 设置是否循环播放
+     * @param looping
+     */
     public void setLooping(boolean looping) {
-        setLooping(handle, looping);
+        _setLooping(looping);
     }
 
+    /**
+     * 设置播放区间
+     * @param startMs   播放起始位置
+     * @param endMs     播放结束位置
+     */
     public void setRange(float startMs, float endMs) {
-        setRange(handle, startMs, endMs);
+        _setRange(startMs, endMs);
     }
 
+    /**
+     * 设置音量
+     * @param leftVolume    左声道音量
+     * @param rightVolume   右声道音量
+     */
     public void setVolume(float leftVolume, float rightVolume) {
-        setVolume(handle, leftVolume, rightVolume);
+        _setVolume(leftVolume, rightVolume);
     }
 
-    public void start() {
-        start(handle);
+    /**
+     * 准备播放器
+     */
+    public void prepare() throws IllegalStateException {
+        _prepare();
     }
 
-    public void pause() {
-        pause(handle);
+    /**
+     * 开始
+     */
+    public void start() throws IllegalStateException {
+        _start();
     }
 
-    public void stop() {
-        stop(handle);
+    /**
+     * 暂停
+     */
+    public void pause() throws IllegalStateException {
+        _pause();
     }
 
-    public void seekTo(float timeMs) {
-        seekTo(handle, timeMs);
+    /**
+     * 停止
+     */
+    public void stop() throws IllegalStateException {
+        _stop();
     }
 
+    /**
+     * 跳转到某个时间戳
+     * @param timeMs
+     */
+    public void seekTo(float timeMs) throws IllegalStateException {
+        _seekTo(timeMs);
+    }
+
+    /**
+     * 获取时长
+     * @return
+     */
     public float getDuration() {
-        return getDuration(handle);
+        return _getDuration();
     }
 
+    /**
+     * 是否循环播放
+     * @return
+     */
     public boolean isLooping() {
-        return isLooping(handle);
+        return _isLooping();
     }
 
+    /**
+     * 是否正在播放
+     * @return
+     */
     public boolean isPlaying() {
-        return isPlaying(handle);
+        return _isPlaying();
     }
 
-    public interface OnPlayListener {
-
-        void onPlaying(float pts);
-
-        void onSeekComplete();
-
-        void onCompletion();
-
-        void onError(int errorCode, String msg);
+    @Override
+    protected void finalize() throws Throwable {
+        native_finalize();
+        super.finalize();
     }
 
-    private static final int PLAYER_PLAYING = 0;
-    private static final int PLAYER_SEEKCOMPLETE = 1;
-    private static final int PLAYER_COMPLETION = 2;
-    private static final int PLAYER_ERROR = 3;
+    /* Do not change these values without updating their counterparts
+     * in MusicPlayer.h!
+     */
+    private static final int MEDIA_PREPARED = 1;
+    private static final int MEDIA_STARTED = 2;
+    private static final int MEDIA_PLAYBACK_COMPLETE = 3;
+    private static final int MEDIA_SEEK_COMPLETE = 4;
+    private static final int MEDIA_ERROR = 100;
+    private static final int MEDIA_INFO = 200;
+    private static final int MEDIA_CURRENT = 300;
 
     private class EventHandler extends Handler {
-        private MusicPlayer mMusicPlayer;
+        private final MusicPlayer mMusicPlayer;
 
         public EventHandler(MusicPlayer mp, Looper looper) {
             super(looper);
@@ -185,43 +214,240 @@ public class MusicPlayer {
 
         @Override
         public void handleMessage(@NonNull Message msg) {
-            if (mMusicPlayer == null) {
+            if (mMusicPlayer.mNativeContext == 0) {
+                Log.w(TAG, "musicplayer went away with unhandled events");
                 return;
             }
 
             switch (msg.what) {
-                case PLAYER_PLAYING: {
-                    if (mPlayListener != null) {
-                        mPlayListener.onPlaying((float)msg.obj);
+                // 准备完成
+                case MEDIA_PREPARED: {
+                    if (mOnPreparedListener != null) {
+                        mOnPreparedListener.onPrepared(mMusicPlayer);
                     }
                     break;
                 }
 
-                case PLAYER_SEEKCOMPLETE: {
-                    if (mPlayListener != null) {
-                        mPlayListener.onSeekComplete();
+                // 播放完成回调
+                case MEDIA_PLAYBACK_COMPLETE: {
+                    if (mOnCompletionListener != null) {
+                        mOnCompletionListener.onCompletion(mMusicPlayer);
                     }
                     break;
                 }
 
-                case PLAYER_COMPLETION: {
-                    if (mPlayListener != null) {
-                        mPlayListener.onCompletion();
+                // 播放开始回调
+                case MEDIA_STARTED: {
+                    Log.d(TAG, "music player is started!");
+                    break;
+                }
+
+                // 跳转完成回调
+                case MEDIA_SEEK_COMPLETE: {
+                    if (mOnSeekCompleteListener != null) {
+                        mOnSeekCompleteListener.onSeekComplete(mMusicPlayer);
                     }
                     break;
                 }
 
-                case PLAYER_ERROR: {
-                    if (mPlayListener != null) {
-                        mPlayListener.onError(msg.arg1, (String) msg.obj);
+                // 播放出错回调
+                case MEDIA_ERROR: {
+                    Log.e(TAG, "Error (" + msg.arg1 + "," + msg.arg2 + ")");
+                    boolean error_was_handled = false;
+                    if (mOnErrorListener != null) {
+                        error_was_handled = mOnErrorListener.onError(mMusicPlayer, msg.arg1, msg.arg2);
+                    }
+                    if (mOnCompletionListener != null && !error_was_handled) {
+                        mOnCompletionListener.onCompletion(mMusicPlayer);
+                    }
+                    break;
+                }
+
+                // 播放过程中的信息回调
+                case MEDIA_INFO: {
+                    break;
+                }
+
+                // 当前播放进度回调
+                case MEDIA_CURRENT: {
+                    if (mOnCurrentPositionListener != null) {
+                        mOnCurrentPositionListener.onCurrentPosition(mMusicPlayer, msg.arg1, msg.arg2);
                     }
                     break;
                 }
 
                 default: {
                     Log.e(TAG, "Unknown message type " + msg.what);
+                    break;
                 }
             }
         }
     }
+
+    /**
+     * Called from native code when an interesting event happens.  This method
+     * just uses the EventHandler system to post the event back to the main app thread.
+     * We use a weak reference to the original MusicPlayer object so that the native
+     * code is safe from the object disappearing from underneath it.  (This is
+     * the cookie passed to native_setup().)
+     */
+    private static void postEventFromNative(Object mediaplayer_ref,
+                                            int what, int arg1, int arg2, Object obj) {
+        final MusicPlayer mp = (MusicPlayer)((WeakReference) mediaplayer_ref).get();
+        if (mp == null) {
+            return;
+        }
+
+        if (mp.mEventHandler != null) {
+            Message m = mp.mEventHandler.obtainMessage(what, arg1, arg2, obj);
+            mp.mEventHandler.sendMessage(m);
+        }
+    }
+
+    /**
+     * Interface definition for a callback to be invoked when the media
+     * source is ready for playback.
+     */
+    public interface OnPreparedListener {
+        /**
+         * Called when the media file is ready for playback.
+         *
+         * @param mp the MusicPlayer that is ready for playback
+         */
+        void onPrepared(MusicPlayer mp);
+    }
+
+    /**
+     * Register a callback to be invoked when the media source is ready
+     * for playback.
+     *
+     * @param listener the callback that will be run
+     */
+    public void setOnPreparedListener(OnPreparedListener listener) {
+        mOnPreparedListener = listener;
+    }
+
+    private OnPreparedListener mOnPreparedListener;
+
+    /**
+     * Interface definition for a callback to be invoked when playback of
+     * a media source has completed.
+     */
+    public interface OnCompletionListener {
+        /**
+         * Called when the end of a media source is reached during playback.
+         *
+         * @param mp the MediaPlayer that reached the end of the file
+         */
+        void onCompletion(MusicPlayer mp);
+    }
+
+    /**
+     * Register a callback to be invoked when the end of a media source
+     * has been reached during playback.
+     *
+     * @param listener the callback that will be run
+     */
+    public void setOnCompletionListener(OnCompletionListener listener) {
+        mOnCompletionListener = listener;
+    }
+
+    private OnCompletionListener mOnCompletionListener;
+
+    /**
+     * Interface definition of a callback to be invoked indicating
+     * the completion of a seek operation.
+     */
+    public interface OnSeekCompleteListener {
+        /**
+         * Called to indicate the completion of a seek operation.
+         *
+         * @param mp the MediaPlayer that issued the seek operation
+         */
+        void onSeekComplete(MusicPlayer mp);
+    }
+
+    /**
+     * Register a callback to be invoked when a seek operation has been
+     * completed.
+     *
+     * @param listener the callback that will be run
+     */
+    public void setOnSeekCompleteListener(OnSeekCompleteListener listener) {
+        mOnSeekCompleteListener = listener;
+    }
+
+    private OnSeekCompleteListener mOnSeekCompleteListener;
+
+    /* Do not change these values without updating their counterparts
+     * in MusicPlayer.h!
+     */
+    /**
+     * Unspecified media player error.
+     */
+    public static final int MEDIA_ERROR_UNKNOWN = 1;
+
+    /** Media server died. In this case, the application must release the
+     * MediaPlayer object and instantiate a new one.
+     */
+    public static final int MEDIA_ERROR_SERVER_DIED = 100;
+
+    /** The video is streamed and its container is not valid for progressive
+     * playback i.e the video's index (e.g moov atom) is not at the start of the
+     * file.
+     */
+    public static final int MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK = 200;
+
+    /**
+     * Interface definition of a callback to be invoked when there
+     * has been an error during an asynchronous operation (other errors
+     * will throw exceptions at method call time).
+     */
+    public interface OnErrorListener {
+        /**
+         * Called to indicate an error.
+         *
+         * @param mp      the MediaPlayer the error pertains to
+         * @param what    the type of error that has occurred:
+         * <ul>
+         * <li>{@link #MEDIA_ERROR_UNKNOWN}
+         * <li>{@link #MEDIA_ERROR_SERVER_DIED}
+         * </ul>
+         * @param extra an extra code, specific to the error. Typically
+         * implementation dependant.
+         * @return True if the method handled the error, false if it didn't.
+         * Returning false, or not having an OnErrorListener at all, will
+         * cause the OnCompletionListener to be called.
+         */
+        boolean onError(MusicPlayer mp, int what, int extra);
+    }
+
+    /**
+     * Register a callback to be invoked when an error has happened
+     * during an asynchronous operation.
+     *
+     * @param listener the callback that will be run
+     */
+    public void setOnErrorListener(OnErrorListener listener) {
+        mOnErrorListener = listener;
+    }
+    
+    private OnErrorListener mOnErrorListener;
+
+    /**
+     * Interface definition of a callback to be invoked to playing position.
+     */
+    public interface OnCurrentPositionListener {
+
+        void onCurrentPosition(MusicPlayer mp, float current, float duration);
+    }
+
+    /**
+     * Register a callback to be invoked on playing position.
+     * @param listener
+     */
+    public void setOnCurrentPositionListener(OnCurrentPositionListener listener) {
+        mOnCurrentPositionListener = listener;
+    }
+    private OnCurrentPositionListener mOnCurrentPositionListener;
 }

@@ -18,6 +18,8 @@ import androidx.fragment.app.Fragment;
 import com.cgfay.caincamera.R;
 import com.cgfay.media.MusicPlayer;
 
+import java.io.IOException;
+
 public class MusicPlayerFragment extends Fragment {
 
     private static final String TAG = "MusicPlayerFragment";
@@ -165,35 +167,32 @@ public class MusicPlayerFragment extends Fragment {
 
     private void initPlayer(@NonNull String path) {
         mMusicPlayer = new MusicPlayer();
-        mMusicPlayer.setDataSource(path);
         mMusicPlayer.setSpeed(1.0f);
         mMusicPlayer.setLooping(true);
-        mMusicPlayer.setOnPlayListener(new MusicPlayer.OnPlayListener() {
-            @Override
-            public void onPlaying(float pts) {
-                final int progress = (int)(100.0f * pts / mMusicPlayer.getDuration());
-                mHandler.post(() -> {
-                   if (mProgressBar != null) {
-                       mProgressBar.setProgress(progress);
-                   }
-                });
-            }
-
-            @Override
-            public void onSeekComplete() {
-                Log.d(TAG, "onSeekComplete: ");
-            }
-
-            @Override
-            public void onCompletion() {
-                Log.d(TAG, "onCompletion: ");
-            }
-
-            @Override
-            public void onError(int errorCode, String msg) {
-                Log.d(TAG, "onError: errorCode - " + errorCode + ", msg: " + msg);
-            }
+        mMusicPlayer.setOnCurrentPositionListener((mp, current, duration) -> {
+            final int progress = (int)(100.0f * current / duration);
+            mHandler.post(() -> {
+                if (mProgressBar != null) {
+                    mProgressBar.setProgress(progress);
+                }
+            });
         });
+        mMusicPlayer.setOnCompletionListener(mp -> {
+            Log.d(TAG, "onCompletion: ");
+        });
+        mMusicPlayer.setOnSeekCompleteListener(mp -> {
+            Log.d(TAG, "onSeekComplete: ");
+        });
+        mMusicPlayer.setOnErrorListener((mp, what, extra) -> {
+            Log.d(TAG, "onError: " + what + ", extra - " + extra);
+            return true;
+        });
+        try {
+            mMusicPlayer.setDataSource(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mMusicPlayer.prepare();
     }
 
     private void seekTo(float progress) {

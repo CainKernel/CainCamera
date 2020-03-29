@@ -59,6 +59,10 @@ void DecodeAudioThread::release() {
     }
     mAbortRequest = true;
     mFrameQueue = nullptr;
+    if (pSwrContext != nullptr) {
+        swr_free(&pSwrContext);
+        pSwrContext = nullptr;
+    }
     if (mBuffer) {
         free(mBuffer);
         mBuffer = nullptr;
@@ -68,6 +72,7 @@ void DecodeAudioThread::release() {
         av_frame_free(&mFrame);
         mFrame = nullptr;
     }
+    av_packet_unref(&mPacket);
 }
 
 /**

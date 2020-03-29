@@ -12,15 +12,7 @@ class OnPlayListener {
 public:
     virtual ~OnPlayListener() = default;
 
-    virtual void onPrepared() = 0;
-
-    virtual void onPlaying(float pts) = 0;
-
-    virtual void onSeekComplete() = 0;
-
-    virtual void onCompletion() = 0;
-
-    virtual void onError(int errorCode, const char *msg) = 0;
+    virtual void notify(int msg, int arg1, int arg2, void *obj) = 0;
 };
 
 #endif //ONPLAYLISTENER_H

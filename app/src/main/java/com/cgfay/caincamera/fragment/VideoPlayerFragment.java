@@ -18,9 +18,12 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.cgfay.caincamera.R;
+import com.cgfay.media.IMediaPlayer;
 import com.cgfay.media.VideoPlayer;
 import com.cgfay.uitls.utils.DisplayUtils;
 import com.cgfay.uitls.utils.StringUtils;
+
+import java.io.IOException;
 
 
 public class VideoPlayerFragment  extends Fragment {
@@ -37,6 +40,7 @@ public class VideoPlayerFragment  extends Fragment {
     private TextView mTextPath;
     private TextView mCurrentPosition;
 
+    private volatile boolean mSeeking;
     private VideoPlayer mVideoPlayer;
     private Handler mHandler;
 
@@ -197,43 +201,43 @@ public class VideoPlayerFragment  extends Fragment {
 
     private void initPlayer(@NonNull String path) {
         mVideoPlayer = new VideoPlayer();
-        mVideoPlayer.setDataSource(path);
         mVideoPlayer.setSpeed(1.0f);
         mVideoPlayer.setLooping(true);
-        mVideoPlayer.setOnPlayListener(new VideoPlayer.OnPlayListener() {
-
-            @Override
-            public void onPrepared() {
+        mVideoPlayer.setOnPreparedListener(mp -> {
+            Log.d(TAG, "onPrepared: ");
+            if (getContext() != null) {
                 ViewGroup.LayoutParams params = mSurfaceView.getLayoutParams();
                 params.width = DisplayUtils.getScreenWidth(getContext());
                 params.height = mVideoPlayer.getVideoHeight() * params.width / mVideoPlayer.getVideoWidth();
                 Log.d(TAG, "onPlaying: width " + params.width + ", height " + params.height);
                 mSurfaceView.setLayoutParams(params);
-                mProgressBar.setMax((int)mVideoPlayer.getDuration());
-            }
-
-            @Override
-            public void onPlaying(float pts) {
-                mProgressBar.setProgress((int) pts);
-                mCurrentPosition.setText(StringUtils.generateStandardTime((int)pts));
-            }
-
-            @Override
-            public void onSeekComplete() {
-
-            }
-
-            @Override
-            public void onCompletion() {
-
-            }
-
-            @Override
-            public void onError(int errorCode, String msg) {
-
+                mProgressBar.setMax((int) mVideoPlayer.getDuration());
             }
         });
+        mVideoPlayer.setOnCurrentPositionListener((mp, current, duration) -> {
+            if (mSeeking) {
+                return;
+            }
+            mProgressBar.setProgress((int) current);
+            mCurrentPosition.setText(StringUtils.generateStandardTime((int)current));
+        });
+        mVideoPlayer.setOnCompletionListener(mp -> Log.d(TAG, "onCompletion: "));
+        mVideoPlayer.setOnErrorListener((mp, what, extra) -> {
+            Log.d(TAG, "onError: what - " + what + ", extra - " + extra);
+            return false;
+        });
+        mVideoPlayer.setOnSeekCompleteListener(mp -> {
+            Log.d(TAG, "onSeekComplete: ");
+            mHandler.postDelayed(()-> {
+                mSeeking = false;
+            }, 100);
+        });
         mVideoPlayer.setSurface(mSurfaceView.getHolder().getSurface());
+        try {
+            mVideoPlayer.setDataSource(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         mVideoPlayer.prepare();
     }
 
@@ -241,6 +245,7 @@ public class VideoPlayerFragment  extends Fragment {
         mHandler.post(() -> {
             if (mVideoPlayer != null) {
                 Log.d(TAG, "seekTo: " + progress);
+                mSeeking = true;
                 mVideoPlayer.seekTo(progress);
             }
         });

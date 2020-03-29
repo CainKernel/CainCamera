@@ -812,7 +812,6 @@ public class CainMediaPlayer implements IMediaPlayer {
      * Sets speed on this player.
      * @param rate
      */
-    @Override
     public void setRate(float rate) {
         _setRate(rate);
     }
@@ -822,7 +821,6 @@ public class CainMediaPlayer implements IMediaPlayer {
      * Sets pitch on this player.
      * @param pitch
      */
-    @Override
     public void setPitch(float pitch) {
         _setPitch(pitch);
     }
@@ -1018,7 +1016,7 @@ public class CainMediaPlayer implements IMediaPlayer {
 
                 case MEDIA_CURRENT: {
                     if (mOnCurrentPositionListener != null) {
-                        mOnCurrentPositionListener.onCurrentPosition(msg.arg1, msg.arg2);
+                        mOnCurrentPositionListener.onCurrentPosition(mMediaPlayer, msg.arg1, msg.arg2);
                     }
                     break;
                 }
@@ -1144,17 +1142,10 @@ public class CainMediaPlayer implements IMediaPlayer {
     private OnInfoListener mOnInfoListener;
 
     /**
-     * Interface definition of a callback to be invoked to playing position.
-     */
-    public interface OnCurrentPositionListener {
-
-        void onCurrentPosition(long current, long duration);
-    }
-
-    /**
      * Register a callback to be invoked on playing position.
      * @param listener
      */
+    @Override
     public void setOnCurrentPositionListener(OnCurrentPositionListener listener) {
         mOnCurrentPositionListener = listener;
     }

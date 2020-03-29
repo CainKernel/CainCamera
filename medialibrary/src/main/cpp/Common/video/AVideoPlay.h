@@ -15,6 +15,8 @@ class AVideoPlay : public VideoPlay, public Runnable {
 public:
     AVideoPlay(const std::shared_ptr<VideoProvider> &videoProvider);
 
+    virtual ~AVideoPlay();
+
     void setOutputSurface(ANativeWindow *window);
 
     void start() override;
