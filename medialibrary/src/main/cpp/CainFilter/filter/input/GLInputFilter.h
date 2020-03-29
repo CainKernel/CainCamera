@@ -6,7 +6,7 @@
 #define GLINPUTFILTER_H
 
 #include "filter/GLFilter.h"
-#include "common/CoordinateUtils.h"
+#include <base/CoordinateUtils.h>
 
 #include <cstdint>
 

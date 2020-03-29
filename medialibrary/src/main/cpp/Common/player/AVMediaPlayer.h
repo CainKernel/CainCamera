@@ -27,6 +27,7 @@ enum media_player_event_type {
     MEDIA_ERROR             = 100,
     MEDIA_INFO              = 200,
     MEDIA_CURRENT           = 300,
+    MEDIA_VIDEO_CURRENT     = 301,
 
     MEDIA_SET_VIDEO_SAR = 10001
 };
@@ -146,6 +147,10 @@ public:
     bool isLooping();
 
     bool isPlaying();
+
+    bool hasAudio();
+
+    bool hasVideo();
 
     void onPlaying(float pts);
 

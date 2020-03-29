@@ -664,6 +664,7 @@ public class VideoPlayer implements IMediaPlayer {
         mOnInfoListener = null;
         mOnVideoSizeChangedListener = null;
         mOnCurrentPositionListener = null;
+        mOnVideoPositionListener = null;
         _release();
     }
 
@@ -836,6 +837,7 @@ public class VideoPlayer implements IMediaPlayer {
     private static final int MEDIA_ERROR = 100;
     private static final int MEDIA_INFO = 200;
     private static final int MEDIA_CURRENT = 300;
+    private static final int MEDIA_VIDEO_CURRENT = 301;
 
     private class EventHandler extends Handler {
         private VideoPlayer mVideoPlayer;
@@ -928,6 +930,14 @@ public class VideoPlayer implements IMediaPlayer {
                 case MEDIA_CURRENT: {
                     if (mOnCurrentPositionListener != null) {
                         mOnCurrentPositionListener.onCurrentPosition(mVideoPlayer, msg.arg1, msg.arg2);
+                    }
+                    break;
+                }
+
+                // 当前视频播放进度回调
+                case MEDIA_VIDEO_CURRENT: {
+                    if (mOnVideoPositionListener != null) {
+                        mOnVideoPositionListener.onVideoPosition(mVideoPlayer, msg.arg1, msg.arg2);
                     }
                     break;
                 }
@@ -1054,7 +1064,7 @@ public class VideoPlayer implements IMediaPlayer {
 
     /**
      * Register a callback to be invoked on playing position.
-     * @param listener
+     * @param listener the callback that will be run
      */
     @Override
     public void setOnCurrentPositionListener(OnCurrentPositionListener listener) {
@@ -1062,4 +1072,23 @@ public class VideoPlayer implements IMediaPlayer {
     }
 
     private OnCurrentPositionListener mOnCurrentPositionListener;
+
+
+    /**
+     * Interface definition of a callback to be invoked to video stream playing position.
+     */
+    public interface OnVideoPositionListener {
+
+        void onVideoPosition(IMediaPlayer mp, float current, float duration);
+    }
+
+    /**
+     * Register a callback to be invoked on video stream playing position.
+     * @param listener the callback that will be run
+     */
+    public void setVideoPositionListener(OnVideoPositionListener listener) {
+        mOnVideoPositionListener = listener;
+    }
+
+    private OnVideoPositionListener mOnVideoPositionListener;
 }

@@ -2,7 +2,7 @@
 // Created by CainHuang on 2019/3/22.
 //
 
-#include <common/OpenGLUtils.h>
+#include <base/OpenGLUtils.h>
 #include "GLFrameBlurMixFilter.h"
 
 const std::string kFrameBlurMixFragmentShader = SHADER_TO_STRING(

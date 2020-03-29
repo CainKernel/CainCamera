@@ -113,3 +113,12 @@ float Timestamp::getClock() {
     update();
     return mMainClock;
 }
+
+/**
+ * 获取当前视频时钟
+ * @return
+ */
+float Timestamp::getVideoClock() {
+    std::lock_guard<std::mutex> lock(mutex);
+    return mVideoClock >= 0 ? mVideoClock : mMainClock;
+}

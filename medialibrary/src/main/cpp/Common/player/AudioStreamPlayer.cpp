@@ -187,6 +187,13 @@ bool AudioStreamPlayer::isPlaying() {
     return mPlaying;
 }
 
+bool AudioStreamPlayer::hasAudio() {
+    if (mAudioThread != nullptr) {
+        return mAudioThread->hasAudio();
+    }
+    return false;
+}
+
 /**
  * 清空对立
  */

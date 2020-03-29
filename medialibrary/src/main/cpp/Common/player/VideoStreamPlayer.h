@@ -47,6 +47,8 @@ public:
 
     float getDuration();
 
+    int getRotate();
+
     int getVideoWidth();
 
     int getVideoHeight();
@@ -54,6 +56,8 @@ public:
     bool isLooping();
 
     bool isPlaying();
+
+    bool hasVideo();
 
     int onVideoProvide(uint8_t *buffer, int width, int height, AVPixelFormat format);
 

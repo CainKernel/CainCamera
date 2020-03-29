@@ -2,7 +2,7 @@
 // Created by CainHuang on 2019/3/21.
 //
 
-#include <common/OpenGLUtils.h>
+#include <base/OpenGLUtils.h>
 #include "GL64LookupTableFilter.h"
 
 const std::string k64LutFragmentShader = SHADER_TO_STRING(

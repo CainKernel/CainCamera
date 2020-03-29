@@ -10,10 +10,10 @@
 #include "FrameBuffer.h"
 #include "FilterManager.h"
 
-#include "common/EglHelper.h"
-#include "common/OpenGLUtils.h"
-#include "common/vecmath.h"
-#include "common/CoordinateUtils.h"
+#include "base/EglHelper.h"
+#include "base/OpenGLUtils.h"
+#include "base/vecmath.h"
+#include "base/CoordinateUtils.h"
 
 // 基础滤镜
 #include "filter/GLGaussianBlurFilter.h"

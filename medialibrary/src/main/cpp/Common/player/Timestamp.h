@@ -41,6 +41,8 @@ public:
     // 获取时钟
     float getClock();
 
+    // 获取视频时钟
+    float getVideoClock();
 private:
     // 更新时间戳
     void update();

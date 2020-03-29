@@ -20,13 +20,14 @@ add_library( cainfilter
 
         FilterManager.cpp
         FrameBuffer.cpp
+        PixelBuffer.cpp
 
-        # 公共类
-        common/CainEGLContext.cpp
-        common/EglHelper.cpp
-        common/OpenGLUtils.cpp
-        common/CoordinateUtils.cpp
-        common/vecmath.cpp
+        # 公共基础类
+        base/CainEGLContext.cpp
+        base/EglHelper.cpp
+        base/OpenGLUtils.cpp
+        base/CoordinateUtils.cpp
+        base/vecmath.cpp
 
         # 基础滤镜
         filter/GL64LookupTableFilter.cpp

@@ -2,7 +2,7 @@
 // Created by CainHuang on 2019/3/13.
 //
 
-#include "common/OpenGLUtils.h"
+#include "base/OpenGLUtils.h"
 #include <AndroidLog.h>
 #include "GLInputYUV420PFilter.h"
 

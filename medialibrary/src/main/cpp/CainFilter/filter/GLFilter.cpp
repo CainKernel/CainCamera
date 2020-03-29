@@ -3,7 +3,7 @@
 //
 
 #include <cstdlib>
-#include "../common/OpenGLUtils.h"
+#include <base/OpenGLUtils.h>
 #include "GLFilter.h"
 #include <AndroidLog.h>
 

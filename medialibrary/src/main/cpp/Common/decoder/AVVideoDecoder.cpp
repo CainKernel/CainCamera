@@ -6,7 +6,9 @@
 
 AVVideoDecoder::AVVideoDecoder(const std::shared_ptr<AVMediaDemuxer> &mediaDemuxer)
         : AVMediaDecoder(mediaDemuxer) {
-
+    mWidth = 0;
+    mHeight = 0;
+    mRotate = 0;
 }
 
 AVVideoDecoder::~AVVideoDecoder() {
@@ -29,6 +31,7 @@ void AVVideoDecoder::initMetadata() {
         mFrameRate = 30;
         pCodecCtx->time_base = av_inv_q(av_d2q(mFrameRate, 100000));
     }
+    mRotate = (int) calculateRotation();
     LOGD("frame rate = %d", mFrameRate);
 }
 
@@ -40,6 +43,10 @@ int AVVideoDecoder::getHeight() {
     return mHeight;
 }
 
+int AVVideoDecoder::getRotate() {
+    return mRotate;
+}
+
 int AVVideoDecoder::getFrameRate() {
     return mFrameRate;
 }
@@ -49,10 +56,10 @@ AVPixelFormat AVVideoDecoder::getFormat() {
 }
 
 /**
- * 获取视频的旋转角度
+ * 计算出视频的旋转角度
  * @return
  */
-double AVVideoDecoder::getRotation() {
+double AVVideoDecoder::calculateRotation() {
     if (!pStream) {
         return 0;
     }

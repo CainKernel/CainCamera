@@ -61,7 +61,8 @@ enum player_message_type {
     MSG_REQUEST_STOP            = 0x203,    // 停止播放器
     MSG_REQUEST_SEEK            = 0x204,    // 跳转到某个位置
 
-    MSG_CURRENT_POSITION        = 0x300,    // 当前时钟
+    MSG_CURRENT_POSITION        = 0x300,    // 当前播放时钟
+    MSG_VIDEO_CURRENT_POSITION  = 0x301,    // 当前视频流播放时钟
 };
 
 #endif //STREAMPLAYLISTENER_H

@@ -71,7 +71,9 @@ void DecodeVideoThread::setDecodeFrameQueue(SafetyQueue<Picture *> *frameQueue) 
 
 void DecodeVideoThread::setDataSource(const char *url) {
     LOGD("DecodeVideoThread::setDataSource(): %s", url);
-    mVideoDemuxer->setInputPath(url);
+    if (mVideoDemuxer != nullptr) {
+        mVideoDemuxer->setInputPath(url);
+    }
 }
 
 /**
@@ -80,7 +82,9 @@ void DecodeVideoThread::setDataSource(const char *url) {
  */
 void DecodeVideoThread::setInputFormat(const char *format) {
     LOGD("DecodeVideoThread::setInputFormat(): %s", format);
-    mVideoDemuxer->setInputFormat(format);
+    if (mVideoDemuxer != nullptr) {
+        mVideoDemuxer->setInputFormat(format);
+    }
 }
 
 /**
@@ -89,7 +93,9 @@ void DecodeVideoThread::setInputFormat(const char *format) {
  */
 void DecodeVideoThread::setDecodeName(const char *decoder) {
     LOGD("DecodeVideoThread::setDecodeName(): %s", decoder);
-    mVideoDecoder->setDecoder(decoder);
+    if (mVideoDecoder != nullptr) {
+        mVideoDecoder->setDecoder(decoder);
+    }
 }
 
 /**
@@ -237,36 +243,56 @@ void DecodeVideoThread::flush() {
  * 获取宽度
  */
 int DecodeVideoThread::getWidth() {
-    return mVideoDecoder->getWidth();
+    if (mVideoDecoder != nullptr) {
+        return mVideoDecoder->getWidth();
+    }
+    return 0;
 }
 
 /**
  * 获取高度
  */
 int DecodeVideoThread::getHeight() {
-    return mVideoDecoder->getHeight();
+    if (mVideoDecoder != nullptr) {
+        return mVideoDecoder->getHeight();
+    }
+    return 0;
+}
+
+/**
+ * 获取旋转角度
+ */
+int DecodeVideoThread::getRotate() {
+    if (mVideoDecoder != nullptr) {
+        return mVideoDecoder->getRotate();
+    }
+    return 0;
 }
 
 /**
  * 获取平均帧率
  */
 int DecodeVideoThread::getFrameRate() {
-    return mVideoDecoder->getFrameRate();
+    if (mVideoDecoder != nullptr) {
+        return mVideoDecoder->getFrameRate();
+    }
 }
 
 /**
  * 获取时长(ms)
  */
 int64_t DecodeVideoThread::getDuration() {
-    return mVideoDemuxer->getDuration();
+    if (mVideoDemuxer != nullptr) {
+        return mVideoDemuxer->getDuration();
+    }
+    return 0;
 }
 
-/**
- * 获取旋转角度
- */
-double DecodeVideoThread::getRotation() {
-    AutoMutex lock(mMutex);
-    return mVideoDecoder->getRotation();
+bool DecodeVideoThread::hasVideo() {
+    if (mVideoDemuxer != nullptr) {
+        return mVideoDemuxer->hasVideoStream();
+    }
+    return false;
 }
 
 void DecodeVideoThread::run() {
@@ -378,6 +404,9 @@ int DecodeVideoThread::readPacket() {
  * @return
  */
 int DecodeVideoThread::readAndDecode() {
+    if (mVideoDemuxer == nullptr) {
+        return -1;
+    }
     // 读取数据包
     int ret = mVideoDemuxer->readFrame(&mPacket);
     // 解码到结尾位置，如果需要循环播放，则记录解码完成标记，等待队列消耗完

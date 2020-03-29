@@ -21,13 +21,18 @@ public:
 
     int getHeight();
 
+    int getRotate();
+
     int getFrameRate();
 
     AVPixelFormat getFormat();
 
-    double getRotation();
+protected:
+    // 计算出视频的旋转角度
+    double calculateRotation();
 
 protected:
+    // 初始化视频metadata
     void initMetadata() override;
 
 private:
@@ -35,6 +40,7 @@ private:
     int mHeight;
     AVPixelFormat mPixelFormat;
     int mFrameRate;
+    int mRotate;
 };
 
 

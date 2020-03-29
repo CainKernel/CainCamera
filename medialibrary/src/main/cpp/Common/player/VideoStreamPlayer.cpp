@@ -133,8 +133,8 @@ void VideoStreamPlayer::start() {
     mExit = false;
     mVideoThread->start();
 //    mVideoPlayer->setRefreshRate(mVideoThread->getFrameRate());
-    LOGD("width: %d, height: %d, rotation: %.2f", mVideoThread->getWidth(), mVideoThread->getHeight(),
-            mVideoThread->getRotation());
+    LOGD("width: %d, height: %d, rotation: %d", mVideoThread->getWidth(), mVideoThread->getHeight(),
+            mVideoThread->getRotate());
     mVideoPlayer->setOutput(mVideoThread->getWidth(), mVideoThread->getHeight());
     mVideoPlayer->start();
     mPlaying = true;
@@ -222,6 +222,13 @@ float VideoStreamPlayer::getDuration() {
     return 0;
 }
 
+int VideoStreamPlayer::getRotate() {
+    if (mVideoThread != nullptr) {
+        return mVideoThread->getRotate();
+    }
+    return 0;
+}
+
 int VideoStreamPlayer::getVideoWidth() {
     if (mVideoThread != nullptr) {
         return mVideoThread->getWidth();
@@ -242,6 +249,13 @@ bool VideoStreamPlayer::isLooping() {
 
 bool VideoStreamPlayer::isPlaying() {
     return mPlaying;
+}
+
+bool VideoStreamPlayer::hasVideo() {
+    if (mVideoThread != nullptr) {
+        return mVideoThread->hasVideo();
+    }
+    return false;
 }
 
 std::shared_ptr<VideoPlay> VideoStreamPlayer::getPlayer() {

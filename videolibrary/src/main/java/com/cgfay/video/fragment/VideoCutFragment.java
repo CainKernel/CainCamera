@@ -29,8 +29,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
 import com.cgfay.media.CainMediaEditor;
-import com.cgfay.media.CainMediaPlayer;
 import com.cgfay.media.VideoEditorUtil;
+import com.cgfay.media.VideoPlayer;
 import com.cgfay.uitls.utils.DensityUtils;
 import com.cgfay.uitls.utils.DisplayUtils;
 import com.cgfay.uitls.utils.FileUtils;
@@ -75,7 +75,7 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
     private long mCutRange = 15000;
     private long mVideoDuration;
     private boolean mSeeking = false;
-    private CainMediaPlayer mCainMediaPlayer;
+    private VideoPlayer mMediaPlayer;
     private AudioManager mAudioManager;
     private CainMediaEditor mMediaEditor;
 
@@ -135,13 +135,10 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
 
         mVideoSpeedLevelBar = mContentView.findViewById(R.id.video_crop_speed_bar);
         mVideoSpeedLevelBar.setOnSpeedChangedListener(speed -> {
-            if (mCainMediaPlayer != null) {
+            if (mMediaPlayer != null) {
                 mVideoSpeed = speed;
-                float rate = speed.getSpeed();
-                float pitch = 1.0f / rate;
-                mCainMediaPlayer.setRate(rate);
-                mCainMediaPlayer.setPitch(pitch);
-                mCainMediaPlayer.seekTo(mCutStart);
+                mMediaPlayer.setSpeed(speed.getSpeed());
+                mMediaPlayer.seekTo(mCutStart);
                 if (mVideoCutViewBar != null) {
                     mVideoCutViewBar.setSpeed(mVideoSpeed);
                 }
@@ -180,18 +177,11 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        Log.d(TAG, "onStart: ");
-        initMediaPlayer();
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume: ");
-        if (mCainMediaPlayer != null) {
-            mCainMediaPlayer.resume();
+        if (mMediaPlayer != null) {
+            mMediaPlayer.resume();
         }
     }
 
@@ -199,8 +189,8 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
     public void onPause() {
         super.onPause();
         Log.d(TAG, "onPause: ");
-        if (mCainMediaPlayer != null) {
-            mCainMediaPlayer.pause();
+        if (mMediaPlayer != null) {
+            mMediaPlayer.pause();
         }
     }
 
@@ -220,9 +210,9 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
             mAudioManager.abandonAudioFocus(null);
             mAudioManager = null;
         }
-        if (mCainMediaPlayer != null) {
-            mCainMediaPlayer.reset();
-            mCainMediaPlayer = null;
+        if (mMediaPlayer != null) {
+            mMediaPlayer.reset();
+            mMediaPlayer = null;
         }
         if (mSurface != null) {
             mSurface.release();
@@ -344,85 +334,79 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
         }
     };
 
-    private void initMediaPlayer() {
-        if (mCainMediaPlayer == null) {
-            mCainMediaPlayer = new CainMediaPlayer();
-        }
-    }
-
     private void openMediaPlayer() {
         mContentView.setKeepScreenOn(true);
-        mCainMediaPlayer.setOnPreparedListener(mp -> {
-            mVideoDuration = mCainMediaPlayer.getDuration();
-            mp.start();
-        });
-        mCainMediaPlayer.setOnVideoSizeChangedListener((mediaPlayer, width, height) -> {
-            if (mediaPlayer.getRotate() % 180 != 0) {
-                mVideoPlayerView.setVideoSize(height, width);
-            } else {
-                mVideoPlayerView.setVideoSize(width, height);
+        if (mMediaPlayer == null) {
+            mMediaPlayer = new VideoPlayer();
+            mMediaPlayer.setLooping(true);
+            mMediaPlayer.setVideoDecoder("h264_mediacodec");
+            try {
+                mMediaPlayer.setDataSource(mVideoPath);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+        }
+        mMediaPlayer.setOnPreparedListener(mp -> {
+            mVideoDuration = mMediaPlayer.getDuration();
         });
-        mCainMediaPlayer.setOnCompletionListener(mp -> {
+        mMediaPlayer.setOnVideoSizeChangedListener((mediaPlayer, width, height) -> {
+            mVideoPlayerView.setVideoSize(width, height);
+            mVideoPlayerView.setRotation(mediaPlayer.getRotate());
+        });
+        mMediaPlayer.setOnCompletionListener(mp -> {
             Log.d(TAG, "openMediaPlayer: onComplete");
         });
 
-        mCainMediaPlayer.setOnErrorListener((mp, what, extra) -> {
+        mMediaPlayer.setOnErrorListener((mp, what, extra) -> {
             Log.d(TAG, "onError: what = " + what + ", extra = " + extra);
             return false;
         });
 
-        mCainMediaPlayer.setOnSeekCompleteListener(mp -> {
+        mMediaPlayer.setOnSeekCompleteListener(mp -> {
             mSeeking = false;
         });
 
-        mCainMediaPlayer.setOnCurrentPositionListener((mp, current, duration) -> {
+        mMediaPlayer.setOnCurrentPositionListener((mp, current, duration) -> {
             if (!mSeeking) {
                 if (current > (mCutRange + mCutStart) * mVideoSpeed.getSpeed()) {
-                    mCainMediaPlayer.seekTo(mCutStart * mVideoSpeed.getSpeed());
+                    mMediaPlayer.seekTo(mCutStart * mVideoSpeed.getSpeed());
                     mSeeking = true;
                 }
             }
         });
 
-        try {
-            mCainMediaPlayer.setDataSource(mVideoPath);
-            if (mSurfaceTexture != null) {
-                if (mSurface != null) {
-                    mSurface.release();
-                }
-                mSurface = new Surface(mSurfaceTexture);
-                mCainMediaPlayer.setSurface(mSurface);
+        if (mSurfaceTexture != null) {
+            if (mSurface != null) {
+                mSurface.release();
             }
-            mCainMediaPlayer.setOption(CainMediaPlayer.OPT_CATEGORY_PLAYER, "vcodec", "h264_mediacodec");
-            mCainMediaPlayer.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
+            mSurface = new Surface(mSurfaceTexture);
+            mMediaPlayer.setSurface(mSurface);
         }
-        mCainMediaPlayer.start();
+        mMediaPlayer.prepare();
+        mMediaPlayer.start();
     }
 
 
     private VideoCutViewBar.OnVideoCropViewBarListener mOnVideoCropViewBarListener = new VideoCutViewBar.OnVideoCropViewBarListener() {
         @Override
         public void onTouchDown() {
-            if (mCainMediaPlayer != null) {
-                mCainMediaPlayer.pause();
+            if (mMediaPlayer != null) {
+                mMediaPlayer.pause();
             }
         }
 
         @Override
         public void onTouchUp() {
-            if (mCainMediaPlayer != null) {
-                mCainMediaPlayer.resume();
+            if (mMediaPlayer != null) {
+                mMediaPlayer.resume();
             }
         }
 
         @Override
         public void onTouchChange(long time) {
             mCutStart = time;
-            if (mCainMediaPlayer != null) {
-                mCainMediaPlayer.seekTo(mCutStart);
+            if (mMediaPlayer != null) {
+                mMediaPlayer.seekTo(mCutStart);
             }
         }
 
@@ -433,8 +417,8 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
             if (mTextVideoCropSelected != null) {
                 mTextVideoCropSelected.setText(mActivity.getString(R.string.video_crop_selected_time, (int)(range/1000L)));
             }
-            if (mCainMediaPlayer != null) {
-                mCainMediaPlayer.seekTo(mCutStart);
+            if (mMediaPlayer != null) {
+                mMediaPlayer.seekTo(mCutStart);
             }
         }
 
@@ -449,8 +433,8 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
      */
     private void cutVideo() {
         mLayoutProgress.setVisibility(View.VISIBLE);
-        if (mCainMediaPlayer != null) {
-            mCainMediaPlayer.pause();
+        if (mMediaPlayer != null) {
+            mMediaPlayer.pause();
         }
         if (mMediaEditor == null) {
             mMediaEditor = new CainMediaEditor();
@@ -493,8 +477,8 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
                     public void onError(String msg) {
                         mActivity.runOnUiThread(() -> {
                             Toast.makeText(mActivity, "processing error：" + msg, Toast.LENGTH_SHORT).show();
-                            if (mCainMediaPlayer != null) {
-                                mCainMediaPlayer.start();
+                            if (mMediaPlayer != null) {
+                                mMediaPlayer.start();
                             }
                         });
                     }

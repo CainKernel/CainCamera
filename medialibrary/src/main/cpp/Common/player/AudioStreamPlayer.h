@@ -53,6 +53,8 @@ public:
 
     bool isPlaying();
 
+    bool hasAudio();
+
     int onAudioProvide(short **buffer, int bufSize);
 
     void release();

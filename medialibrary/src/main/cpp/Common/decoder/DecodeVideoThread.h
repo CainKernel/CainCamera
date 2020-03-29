@@ -61,11 +61,13 @@ public:
 
     int getHeight();
 
+    int getRotate();
+
     int getFrameRate();
 
     int64_t getDuration();
 
-    double getRotation();
+    bool hasVideo();
 
     void run() override;
 

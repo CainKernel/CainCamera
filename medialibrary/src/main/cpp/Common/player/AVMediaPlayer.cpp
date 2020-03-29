@@ -223,6 +223,9 @@ float AVMediaPlayer::getDuration() {
 }
 
 int AVMediaPlayer::getRotate() {
+    if (mVideoPlayer != nullptr) {
+        return mVideoPlayer->getRotate();
+    }
     return 0;
 }
 
@@ -241,20 +244,51 @@ int AVMediaPlayer::getVideoHeight() {
 }
 
 bool AVMediaPlayer::isLooping() {
-    return mVideoPlayer->isLooping();
+    bool loop = false;
+    if (mAudioPlayer != nullptr) {
+        loop |= mAudioPlayer->isLooping();
+    }
+    if (mVideoPlayer != nullptr) {
+        loop |= mVideoPlayer->isLooping();
+    }
+    return loop;
 }
 
 bool AVMediaPlayer::isPlaying() {
-    return mVideoPlayer->isPlaying();
+    bool playing = false;
+    if (mAudioPlayer != nullptr) {
+        playing |= mAudioPlayer->isPlaying();
+    }
+    if (mVideoPlayer != nullptr) {
+        playing |= mVideoPlayer->isPlaying();
+    }
+    return playing;
+}
+
+bool AVMediaPlayer::hasAudio() {
+    if (mAudioPlayer != nullptr) {
+        return mAudioPlayer->hasAudio();
+    }
+    return false;
+}
+
+bool AVMediaPlayer::hasVideo() {
+    if (mVideoPlayer != nullptr) {
+        return mVideoPlayer->hasVideo();
+    }
+    return false;
 }
 
 void AVMediaPlayer::onPlaying(float pts) {
     mMessageQueue->pushMessage(new Message(MSG_CURRENT_POSITION, pts, getDuration()));
     mCondition.signal();
+    if (hasVideo()) {
+        notify(MSG_VIDEO_CURRENT_POSITION, mTimestamp->getVideoClock(), getDuration());
+    }
 }
 
 void AVMediaPlayer::onSeekComplete(AVMediaType type) {
-    if (type == AVMEDIA_TYPE_VIDEO) {
+    if (type == AVMEDIA_TYPE_VIDEO && hasVideo()) {
         mMessageQueue->pushMessage(new Message(MSG_SEEK_COMPLETE));
         mCondition.signal();
     }
@@ -457,6 +491,12 @@ void AVMediaPlayer::run() {
                 break;
             }
 
+            // 视频流播放进度回调
+            case MSG_VIDEO_CURRENT_POSITION: {
+                postEvent(MEDIA_VIDEO_CURRENT, msg->getArg1(), msg->getArg2());
+                break;
+            }
+
             default: {
                 LOGE("MediaPlayer unknown MSG_xxx(%d)\n", msg->getWhat());
                 break;
@@ -476,7 +516,12 @@ void AVMediaPlayer::preparePlayer() {
     if (mAudioPlayer != nullptr) {
         mAudioPlayer->prepare();
     }
+    // 准备完成消息
     mMessageQueue->pushMessage(new Message(MSG_PREPARED));
+    // 视频大小发生变化的消息
+    if (mVideoPlayer != nullptr && mVideoPlayer->hasVideo()) {
+        mMessageQueue->pushMessage(new Message(MSG_VIDEO_SIZE_CHANGED, mVideoPlayer->getVideoWidth(), mVideoPlayer->getVideoHeight()));
+    }
     mCondition.signal();
 }
 
@@ -545,10 +590,14 @@ void MediaPlayerListener::onPrepared(AVMediaType type) {
 }
 
 void MediaPlayerListener::onPlaying(AVMediaType type, float pts) {
-    if (type == AVMEDIA_TYPE_AUDIO) {
-        if (player != nullptr) {
-            player->onPlaying(pts);
-        }
+    if (!player) {
+        return;
+    }
+    // 存在视频流，则优先使用视频流的时间戳
+    if (player->hasVideo() && type == AVMEDIA_TYPE_VIDEO) {
+        player->onPlaying(pts);
+    } else if (player->hasAudio() && type == AVMEDIA_TYPE_AUDIO) {
+        player->onPlaying(pts);
     }
 }
 

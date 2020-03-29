@@ -54,6 +54,8 @@ public:
 
     int64_t getDuration();
 
+    bool hasAudio();
+
     void run() override;
 
 private:

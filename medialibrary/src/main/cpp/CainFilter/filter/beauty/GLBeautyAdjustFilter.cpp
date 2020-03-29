@@ -2,7 +2,7 @@
 // Created by CainHuang on 2019/3/18.
 //
 
-#include <common/OpenGLUtils.h>
+#include <base/OpenGLUtils.h>
 #include "GLBeautyAdjustFilter.h"
 
 const std::string kBeautyAdjustFragmentShader = SHADER_TO_STRING(

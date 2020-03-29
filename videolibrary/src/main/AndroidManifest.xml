@@ -5,11 +5,14 @@
     <application>
         <activity
             android:name=".activity.VideoCutActivity"
+            android:launchMode="singleTop"
             android:theme="@style/VideoTheme" />
         <activity
             android:name=".activity.VideoEditActivity"
+            android:launchMode="singleTop"
             android:theme="@style/VideoTheme" />
         <activity android:name=".activity.MultiVideoActivity"
+            android:launchMode="singleTop"
             android:theme="@style/VideoTheme"/>
     </application>
 

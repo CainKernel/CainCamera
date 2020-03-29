@@ -6,9 +6,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -31,9 +32,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cgfay.filter.glfilter.resource.FilterHelper;
 import com.cgfay.filter.glfilter.resource.bean.ResourceData;
-import com.cgfay.media.CainMediaEditor;
-import com.cgfay.media.CainMediaPlayer;
-import com.cgfay.media.IMediaPlayer;
+import com.cgfay.media.MusicPlayer;
+import com.cgfay.media.VideoPlayer;
 import com.cgfay.uitls.fragment.BackPressedDialogFragment;
 import com.cgfay.uitls.utils.DensityUtils;
 import com.cgfay.uitls.utils.DisplayUtils;
@@ -60,6 +60,7 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     private static final String TAG = "VideoEditFragment";
 
     private Activity mActivity;
+    private Handler mMainHandler;
 
     private String mVideoPath;                      // 视频流路径
     private String mMusicPath;                      // 背景音乐路径
@@ -111,10 +112,10 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
 
 
     // 播放器
-    private MediaPlayer mAudioPlayer;
-    private CainMediaPlayer mCainMediaPlayer;
+    private volatile boolean mSeeking;
+    private MusicPlayer mAudioPlayer;
+    private VideoPlayer mMediaPlayer;
     private AudioManager mAudioManager;
-    private CainMediaEditor mMediaEditor;
     private int mPlayViewWidth;
     private int mPlayViewHeight;
     private int mVideoWidth;
@@ -128,6 +129,7 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     public void onAttach(Context context) {
         super.onAttach(context);
         mActivity = getActivity();
+        mMainHandler = new Handler(Looper.getMainLooper());
     }
 
     @Override
@@ -160,8 +162,8 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         mIvVideoPlay = mContentView.findViewById(R.id.iv_video_play);
         mIvVideoPlay.setOnClickListener(this);
         if (Build.VERSION.SDK_INT >= 21) {
-            mVideoPlayerView.setOutlineProvider(new RoundOutlineProvider(DensityUtils.dp2px(mActivity, 7.5f)));
-            mVideoPlayerView.setClipToOutline(true);
+            mLayoutPlayer.setOutlineProvider(new RoundOutlineProvider(DensityUtils.dp2px(mActivity, 7.5f)));
+            mLayoutPlayer.setClipToOutline(true);
         }
         RelativeLayout.LayoutParams playerParams = (RelativeLayout.LayoutParams) mVideoPlayerView.getLayoutParams();
         if (DisplayUtils.isFullScreenDevice(mActivity)) {
@@ -221,18 +223,10 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        if (mCainMediaPlayer == null) {
-            mCainMediaPlayer = new CainMediaPlayer();
-        }
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
-        if (mCainMediaPlayer != null) {
-            mCainMediaPlayer.resume();
+        if (mMediaPlayer != null) {
+            mMediaPlayer.resume();
             mIvVideoPlay.setVisibility(View.GONE);
         }
         if (mAudioPlayer != null) {
@@ -243,8 +237,8 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     @Override
     public void onPause() {
         super.onPause();
-        if (mCainMediaPlayer != null) {
-            mCainMediaPlayer.pause();
+        if (mMediaPlayer != null) {
+            mMediaPlayer.pause();
             mIvVideoPlay.setVisibility(View.VISIBLE);
         }
         if (mAudioPlayer != null) {
@@ -272,9 +266,9 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             mAudioManager.abandonAudioFocus(null);
             mAudioManager = null;
         }
-        if (mCainMediaPlayer != null) {
-            mCainMediaPlayer.reset();
-            mCainMediaPlayer = null;
+        if (mMediaPlayer != null) {
+            mMediaPlayer.reset();
+            mMediaPlayer = null;
         }
         if (mSurface != null) {
             mSurface.release();
@@ -285,7 +279,7 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             mSurfaceTexture = null;
         }
         if (mAudioPlayer != null) {
-            mAudioPlayer.reset();
+            mAudioPlayer.release();
             mAudioPlayer = null;
         }
         FileUtils.deleteFile(mVideoPath);
@@ -296,8 +290,8 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.video_player_view) {
-            if (mCainMediaPlayer != null) {
-                if (mCainMediaPlayer.isPlaying()) {
+            if (mMediaPlayer != null) {
+                if (mMediaPlayer.isPlaying()) {
                     pausePlayer();
                 } else {
                     resumePlayer();
@@ -343,8 +337,8 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         if (mOnSelectMusicListener != null) {
             mOnSelectMusicListener.onOpenMusicSelectPage();
         }
-        if (mCainMediaPlayer != null) {
-            mCainMediaPlayer.pause();
+        if (mMediaPlayer != null) {
+            mMediaPlayer.pause();
             mIvVideoPlay.setVisibility(View.VISIBLE);
         }
         if (mAudioPlayer != null) {
@@ -420,9 +414,7 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         resetBottomView();
         if (mEffectShowing) {
             showChangeEffectLayout(false);
-            if (mCainMediaPlayer != null) {
-                mCainMediaPlayer.changeEffect(-1);
-            }
+            // todo change effect -1
         }
     }
 
@@ -450,15 +442,12 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             mPlayViewHeight = mLayoutPlayer.getHeight();
             final int minPlayViewHeight = mPlayViewHeight - DensityUtils.dp2px(mActivity, 200);
             final float playerViewScale = mPlayViewWidth/(float)mPlayViewHeight;
-            effectShowAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    effectParams.bottomMargin = (int) (-DensityUtils.dp2px(mActivity, 200) * (float)animation.getAnimatedValue());
-                    mLayoutEffect.setLayoutParams(effectParams);
-                    playerParams.width = (int) ((minPlayViewHeight + ((mPlayViewHeight - minPlayViewHeight)* (float)animation.getAnimatedValue())) * playerViewScale);
-                    playerParams.bottomMargin = (int) (DensityUtils.dp2px(mActivity, 18) * (1f - (float)animation.getAnimatedValue()));
-                    mLayoutPlayer.setLayoutParams(playerParams);
-                }
+            effectShowAnimator.addUpdateListener(animation -> {
+                effectParams.bottomMargin = (int) (-DensityUtils.dp2px(mActivity, 200) * (float)animation.getAnimatedValue());
+                mLayoutEffect.setLayoutParams(effectParams);
+                playerParams.width = (int) ((minPlayViewHeight + ((mPlayViewHeight - minPlayViewHeight)* (float)animation.getAnimatedValue())) * playerViewScale);
+                playerParams.bottomMargin = (int) (DensityUtils.dp2px(mActivity, 18) * (1f - (float)animation.getAnimatedValue()));
+                mLayoutPlayer.setLayoutParams(playerParams);
             });
             animatorSet.playSequentially(effectShowAnimator);
             animatorSet.start();
@@ -478,15 +467,12 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             final LinearLayout.LayoutParams playerParams = (LinearLayout.LayoutParams) mLayoutPlayer.getLayoutParams();
             final int minPlayViewHeight = mPlayViewHeight - DensityUtils.dp2px(mActivity, 200);
             final float playerViewScale = mPlayViewWidth/(float)mPlayViewHeight;
-            effectExitAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    effectParams.bottomMargin = (int) (-DensityUtils.dp2px(mActivity, 200) * (float)animation.getAnimatedValue());
-                    mLayoutEffect.setLayoutParams(effectParams);
-                    playerParams.width = (int) ((minPlayViewHeight + ((mPlayViewHeight - minPlayViewHeight)* (float)animation.getAnimatedValue())) * playerViewScale);
-                    playerParams.bottomMargin = (int) (DensityUtils.dp2px(mActivity, 18) * (1f - (float)animation.getAnimatedValue()));
-                    mLayoutPlayer.setLayoutParams(playerParams);
-                }
+            effectExitAnimator.addUpdateListener(animation -> {
+                effectParams.bottomMargin = (int) (-DensityUtils.dp2px(mActivity, 200) * (float)animation.getAnimatedValue());
+                mLayoutEffect.setLayoutParams(effectParams);
+                playerParams.width = (int) ((minPlayViewHeight + ((mPlayViewHeight - minPlayViewHeight)* (float)animation.getAnimatedValue())) * playerViewScale);
+                playerParams.bottomMargin = (int) (DensityUtils.dp2px(mActivity, 18) * (1f - (float)animation.getAnimatedValue()));
+                mLayoutPlayer.setLayoutParams(playerParams);
             });
             animatorSet.playSequentially(effectExitAnimator);
             animatorSet.start();
@@ -560,8 +546,8 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     }
 
     private void resumePlayer() {
-        if (mCainMediaPlayer != null) {
-            mCainMediaPlayer.resume();
+        if (mMediaPlayer != null) {
+            mMediaPlayer.resume();
         }
         if (mAudioPlayer != null) {
             mAudioPlayer.start();
@@ -570,20 +556,18 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     }
 
     private void seekTo(long timeMs) {
-        if (mCainMediaPlayer != null) {
-            mCainMediaPlayer.resume();
-            mCainMediaPlayer.seekTo(timeMs);
+        if (mMediaPlayer != null) {
+            mMediaPlayer.seekTo(timeMs);
         }
         if (mAudioPlayer != null) {
-            mAudioPlayer.start();
             mAudioPlayer.seekTo((int)timeMs);
         }
         mIvVideoPlay.setVisibility(View.GONE);
     }
 
     private void pausePlayer() {
-        if (mCainMediaPlayer != null) {
-            mCainMediaPlayer.pause();
+        if (mMediaPlayer != null) {
+            mMediaPlayer.pause();
         }
         if (mAudioPlayer != null) {
             mAudioPlayer.pause();
@@ -607,15 +591,15 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     public void setSelectedMusic(String musicPath, long duration) {
         mMusicPath = musicPath;
         mBackgroundDuration = duration;
-        if (mCainMediaPlayer != null) {
-            mCainMediaPlayer.resume();
+        if (mMediaPlayer != null) {
+            mMediaPlayer.resume();
             mIvVideoPlay.setVisibility(View.GONE);
         }
-        if (mAudioPlayer == null) {
-            mAudioPlayer = new MediaPlayer();
-        } else {
-            mAudioPlayer.reset();
+        if (mAudioPlayer != null) {
+            mAudioPlayer.release();
+            mAudioPlayer = null;
         }
+        mAudioPlayer = new MusicPlayer();
         try {
             mAudioPlayer.setDataSource(mMusicPath);
             mAudioPlayer.setLooping(true);
@@ -671,75 +655,59 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
      */
     private void openMediaPlayer() {
         mContentView.setKeepScreenOn(true);
-        mCainMediaPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(final IMediaPlayer mp) {
-                mp.start();
-                mActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mSbEffectSelected != null) {
-                            mSbEffectSelected.setMax(mp.getDuration());
-                            mSbEffectSelected.setProgress(mp.getCurrentPosition());
-                        }
-                        if (mTvVideoCurrent != null) {
-                            mTvVideoCurrent.setText(StringUtils.generateStandardTime((int)mp.getCurrentPosition()));
-                        }
-                        if (mTvVideoDuration != null) {
-                            mTvVideoDuration.setText(StringUtils.generateStandardTime((int)mp.getDuration()));
-                        }
-                    }
-                });
+        if (mMediaPlayer == null) {
+            mMediaPlayer = new VideoPlayer();
+            mMediaPlayer.setLooping(true);
+            mMediaPlayer.setVideoDecoder("h264_mediacodec");
+        }
+        mMediaPlayer.setOnPreparedListener(mp -> {
+            if (mSbEffectSelected != null) {
+                mSbEffectSelected.setMax(mp.getDuration());
+                mSbEffectSelected.setProgress(mp.getCurrentPosition());
+            }
+            if (mTvVideoCurrent != null) {
+                mTvVideoCurrent.setText(StringUtils.generateStandardTime((int)mp.getCurrentPosition()));
+            }
+            if (mTvVideoDuration != null) {
+                mTvVideoDuration.setText(StringUtils.generateStandardTime((int)mp.getDuration()));
             }
         });
-//        mCainMediaPlayer.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener() {
-//            @Override
-//            public void onVideoSizeChanged(IMediaPlayer mediaPlayer, int width, int height) {
-//                if (mediaPlayer.getRotate() % 180 != 0) {
-//                    mVideoPlayerView.setVideoSize(height, width);
-//                } else {
-//                    mVideoPlayerView.setVideoSize(width, height);
-//                }
-//            }
-//        });
-        mCainMediaPlayer.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(IMediaPlayer mp) {
-
-            }
+        mMediaPlayer.setOnVideoSizeChangedListener((mediaPlayer, width, height) -> {
+            mVideoPlayerView.setVideoSize(width, height);
+            mVideoPlayerView.setRotation(mediaPlayer.getRotate());
         });
+        mMediaPlayer.setOnCompletionListener(mp -> Log.d(TAG, "onCompletion: "));
 
-        mCainMediaPlayer.setOnErrorListener(new IMediaPlayer.OnErrorListener() {
-            @Override
-            public boolean onError(IMediaPlayer mp, int what, int extra) {
-                Log.d(TAG, "onError: what = " + what + ", extra = " + extra);
-                return false;
-            }
+        mMediaPlayer.setOnErrorListener((mp, what, extra) -> {
+            Log.d(TAG, "onError: what = " + what + ", extra = " + extra);
+            return false;
         });
-
-        mCainMediaPlayer.setOnCurrentPositionListener(new CainMediaPlayer.OnCurrentPositionListener() {
-            @Override
-            public void onCurrentPosition(IMediaPlayer mp, long current, long duration) {
-                if (mTvVideoCurrent != null) {
-                    mTvVideoCurrent.setText(StringUtils.generateStandardTime((int)current));
+        mMediaPlayer.setVideoPositionListener((mp, current, duration) -> {
+            if (mSeeking) {
+                return;
+            }
+            if (mTvVideoCurrent != null) {
+                mTvVideoCurrent.setText(StringUtils.generateStandardTime((int)current));
+            }
+            if (mSbEffectSelected != null) {
+                if (current > mMediaPlayer.getDuration()) {
+                    current = mMediaPlayer.getDuration();
                 }
-                if (mSbEffectSelected != null) {
-                    mSbEffectSelected.setProgress((float)current);
-                }
+                mSbEffectSelected.setProgress(current);
             }
         });
         try {
-            mCainMediaPlayer.setDataSource(mVideoPath);
+            mMediaPlayer.setDataSource(mVideoPath);
             if (mSurface == null) {
                 mSurface = new Surface(mSurfaceTexture);
             }
-            mCainMediaPlayer.setSurface(mSurface);
-            mCainMediaPlayer.setVolume(mSourceVolumePercent, mSourceVolumePercent);
-            mCainMediaPlayer.setOption(CainMediaPlayer.OPT_CATEGORY_PLAYER, "vcodec", "h264_mediacodec");
-            mCainMediaPlayer.prepare();
+            mMediaPlayer.setSurface(mSurface);
+            mMediaPlayer.setVolume(mSourceVolumePercent, mSourceVolumePercent);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        mMediaPlayer.prepare();
+        mMediaPlayer.start();
     }
 
     /**
@@ -749,18 +717,29 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
         @Override
         public void onProgress(int progress, boolean fromUser) {
             if (fromUser) {
-                Log.d(TAG, "onProgress: progress = " + progress);
+                seekTo(progress);
+                // 更新拖拽时钟
+                if (mTvVideoCurrent != null) {
+                    mTvVideoCurrent.setText(StringUtils.generateStandardTime(progress));
+                }
             }
         }
 
         @Override
         public void onStopTrackingTouch(int progress) {
-            seekTo(progress);
+            mMainHandler.postDelayed(() -> {
+                mSeeking = false;
+            }, 1000);
         }
 
         @Override
         public void onStartTrackingTouch() {
+            mMainHandler.removeCallbacksAndMessages(null);
+            mSeeking = true;
             pausePlayer();
+            if (mMediaPlayer != null) {
+                mMediaPlayer.setDecodeOnPause(true);
+            }
         }
     };
 
@@ -792,9 +771,9 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
                     mAudioPlayer.setVolume(mBackgroundVolumePercent, mBackgroundVolumePercent);
                 }
             } else if (seekBar.getId() == R.id.sb_volume_source) {
-                if (mCainMediaPlayer != null) {
+                if (mMediaPlayer != null) {
                     Log.d(TAG, "onStopTrackingTouch: volume = " + mSourceVolumePercent);
-                    mCainMediaPlayer.setVolume(mSourceVolumePercent, mSourceVolumePercent);
+                    mMediaPlayer.setVolume(mSourceVolumePercent, mSourceVolumePercent);
                 }
             }
         }
@@ -820,23 +799,16 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     /**
      * 滤镜列表改变回调
      */
-    private VideoFilterAdapter.OnFilterChangeListener mFilterChangeListener = new VideoFilterAdapter.OnFilterChangeListener() {
-        @Override
-        public void onFilterChanged(ResourceData resourceData) {
-
-        }
+    private VideoFilterAdapter.OnFilterChangeListener mFilterChangeListener = resourceData -> {
+        Log.d(TAG, "onFilterChanged: ");
     };
 
     /**
      * 特效列表切换
      */
-    private VideoEffectAdapter.OnEffectChangeListener mEffectChangeListener = new VideoEffectAdapter.OnEffectChangeListener() {
-        @Override
-        public void onEffectChanged(EffectType effectType) {
-            if (mCainMediaPlayer != null) {
-                mCainMediaPlayer.changeEffect(effectType.getName());
-            }
-        }
+    private VideoEffectAdapter.OnEffectChangeListener mEffectChangeListener = effectType -> {
+        // todo change effect
+        Log.d(TAG, "onEffectChanged: ");
     };
 
     /**

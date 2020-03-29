@@ -271,6 +271,13 @@ int64_t DecodeAudioThread::getDuration() {
     return mAudioDemuxer->getDuration();
 }
 
+bool DecodeAudioThread::hasAudio() {
+    if (mAudioDemuxer != nullptr) {
+        return mAudioDemuxer->hasAudioStream();
+    }
+    return false;
+}
+
 void DecodeAudioThread::run() {
     readPacket();
 }
