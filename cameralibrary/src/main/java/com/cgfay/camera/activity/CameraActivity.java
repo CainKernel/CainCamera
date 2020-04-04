@@ -71,7 +71,7 @@ public class CameraActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (!mPreviewFragment.onBackPressed()) {
+        if (mPreviewFragment == null || !mPreviewFragment.onBackPressed()) {
             super.onBackPressed();
             overridePendingTransition(0, R.anim.anim_slide_down);
         }
