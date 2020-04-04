@@ -21,7 +21,6 @@ add_library( ffrecorder
 
              # 复用器
              ${common_dir}/muxer/AVMediaMuxer.cpp
-             ${common_dir}/muxer/NdkMediaCodecMuxer.cpp
 
              # 合成器
              ${common_dir}/writer/AVMediaWriter.cpp

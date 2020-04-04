@@ -6,7 +6,7 @@
 #include <sys/system_properties.h>
 #include <AVFormatter.h>
 
-NdkVideoEncoder::NdkVideoEncoder(const std::shared_ptr<NdkMediaCodecMuxer> &mediaMuxer) : NdkMediaEncoder(mediaMuxer) {
+NdkVideoEncoder::NdkVideoEncoder(const std::shared_ptr<AVMediaMuxer> &mediaMuxer) : NdkMediaEncoder(mediaMuxer) {
     mWeakMuxer = mediaMuxer;
     mWidth = 0;
     mHeight = 0;
@@ -125,7 +125,33 @@ int NdkVideoEncoder::openEncoder() {
         return ret;
     }
     mFrameIndex = 0;
+    mStartTimeStamp = 0;
     mPresentationTimeUs = 0;
+
+    // 创建媒体流
+    auto mediaMuxer = mWeakMuxer.lock();
+    AVCodecID codecID = AV_CODEC_ID_NONE;
+    if (!strcmp(VIDEO_MIME_AVC, mMimeType)) {
+        codecID = AV_CODEC_ID_H264;
+    } else if (!strcmp(VIDEO_MIME_HEVC, mMimeType)) {
+        codecID = AV_CODEC_ID_HEVC;
+    }
+    if (codecID == AV_CODEC_ID_NONE) {
+        return 0;
+    }
+    pStream = mediaMuxer->createStream(codecID);
+    if (pStream != nullptr) {
+        mStreamIndex = pStream->index;
+        pStream->time_base = (AVRational){1, mFrameRate};
+        pStream->codecpar->width = mWidth;
+        pStream->codecpar->height = mHeight;
+        pStream->codecpar->bit_rate = mBitrate;
+        pStream->codecpar->level = level;
+        pStream->codecpar->profile = profile;
+        pStream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
+        pStream->codecpar->codec_id = codecID;
+        pStream->codecpar->codec_tag = 0;
+    }
 
     return AMEDIA_OK;
 }
@@ -236,8 +262,15 @@ int NdkVideoEncoder::encodeMediaData(AVMediaData *mediaData, int *gotFrame) {
                     I420toYUV420SemiPlanar(mediaData->image, 0, buffer, mediaData->width, mediaData->height);
                 }
             }
-            AMediaCodec_queueInputBuffer(mMediaCodec, inputIndex, 0, mediaData->length, (uint64_t)mPresentationTimeUs, 0);
-            LOGD("NdkVideoEncoder - encode yuv data: presentationTimeUs: %f, s: %f", mPresentationTimeUs, (mPresentationTimeUs / 1000000.0));
+
+            // 获得当前时间戳
+            if (mediaData->pts > 0) {
+                mPresentationTimeUs = (uint64_t)(mediaData->pts * 1000);
+            } else {
+                calculatePresentationTime();
+            }
+            AMediaCodec_queueInputBuffer(mMediaCodec, (size_t)inputIndex, 0, (size_t)mediaData->length, (uint64_t)mPresentationTimeUs, 0);
+            LOGD("NdkVideoEncoder - encode yuv data: presentationTimeUs: %ld, s: %f, media data pts: %ld", mPresentationTimeUs, (mPresentationTimeUs / 1000000.0), mediaData->pts);
         }
     }
 
@@ -258,31 +291,61 @@ int NdkVideoEncoder::encodeMediaData(AVMediaData *mediaData, int *gotFrame) {
         if (encodeStatus == AMEDIACODEC_INFO_OUTPUT_BUFFERS_CHANGED) {
             // outputBuffers = codec.getOutputBuffers();
         } else if (encodeStatus == AMEDIACODEC_INFO_OUTPUT_FORMAT_CHANGED) {
-            auto mediaMuxer = mWeakMuxer.lock();
-            if (mediaMuxer != nullptr) {
-                AMediaFormat *mediaFormat = AMediaCodec_getOutputFormat(mMediaCodec);
-                mStreamIndex = mediaMuxer->addTrack(mediaFormat);
-                mediaMuxer->start();
-            }
+            LOGD("AMEDIACODEC_INFO_OUTPUT_FORMAT_CHANGED");
         } else if (encodeStatus >= 0) {
-            LOGD("bufferInfo.size=%d bufferInfo.offset=%d", bufferInfo.size, bufferInfo.offset);
             uint8_t* encodeData = AMediaCodec_getOutputBuffer(mMediaCodec, encodeStatus, &outputSize);
             if (encodeData) {
+                // 将编码数据写入复用器中
                 if ((bufferInfo.flags & AMEDIACODEC_BUFFER_FLAG_CODEC_CONFIG) != 0) {
                     LOGD("ignoring BUFFER_FLAG_CODEC_CONFIG");
-                    bufferInfo.size = 0;
-                }
-                if (bufferInfo.size != 0) {
-                    // 计算编码时钟
-                    calculateTimeUs(bufferInfo);
-                    // 将编码数据写入复用器中
+                    // 创建并配置FFmpeg媒体流信息
+                    if (pStream != nullptr) {
+                        if (bufferInfo.size > 0) {
+                            pStream->codecpar->extradata = (uint8_t *) av_mallocz(
+                                    (size_t) (bufferInfo.size + FF_INPUT_BUFFER_PADDING_SIZE));
+                            memcpy(pStream->codecpar->extradata, encodeData,
+                                   (size_t) bufferInfo.size);
+                            pStream->codecpar->extradata_size = bufferInfo.size;
+                        }
+                    }
+                } else {
+                    // 转成AVPacket并写入文件
                     auto mediaMuxer = mWeakMuxer.lock();
-                    if (mediaMuxer != nullptr && mediaMuxer->isStart()) {
-                        LOGD("write video frame: index - %d", mStreamIndex);
-                        mediaMuxer->writeFrame(mStreamIndex, encodeData, &bufferInfo);
+                    if (mediaMuxer != nullptr && mStreamIndex >= 0) {
+
+                        calculateDuration(bufferInfo);
+                        int64_t pts = bufferInfo.presentationTimeUs >= mPresentationTimeUs ? bufferInfo.presentationTimeUs : mPresentationTimeUs;
+
+                        // 创建数据包
+                        AVPacket packet;
+                        av_init_packet(&packet);
+
+                        // 设置数据包参数
+                        packet.stream_index = mStreamIndex;
+                        packet.data = encodeData;
+                        packet.size = bufferInfo.size;
+                        packet.duration = 0;
+                        packet.pts = rescalePts(pts, (AVRational){1, mFrameRate});
+                        packet.dts = packet.pts;
+                        packet.pos = -1;
+
+                        // 计算编码后的pts
+                        av_packet_rescale_ts(&packet, (AVRational){1, mFrameRate}, pStream->time_base);
+
+                        LOGD("NdkVideoEncoder - encode h264 data: %ld, buffer.presentationUs: %ld", packet.pts, bufferInfo.presentationTimeUs);
+
+                        // 是否关键帧
+                        if (bufferInfo.flags == BUFFER_FLAG_KEY_FRAME) {
+                            packet.flags |= AV_PKT_FLAG_KEY;
+                        }
+
+                        // 写入媒体文件中
+                        mediaMuxer->writeFrame(&packet);
+
+                        // 释放内存
+                        av_packet_unref(&packet);
                     }
                     *gotFrame = 1;
-                    calculatePresentationTime();
                 }
             }
             // 释放编码缓冲区
@@ -292,17 +355,30 @@ int NdkVideoEncoder::encodeMediaData(AVMediaData *mediaData, int *gotFrame) {
     return 0;
 }
 
+/**
+ * 编码媒体数据
+ * @param frame
+ * @param gotFame
+ * @return
+ */
+int NdkVideoEncoder::encodeFrame(AVFrame *frame, int *gotFame) {
+    return 0;
+}
+
+/**
+ * 计算时间戳
+ */
 uint64_t NdkVideoEncoder::calculatePresentationTime() {
+    mPresentationTimeUs = (uint64_t)(mFrameIndex * 1000000L / mFrameRate + 132L);
     mFrameIndex++;
-    mPresentationTimeUs = (mFrameIndex * 1000000L / mFrameRate + 132L);
     return mPresentationTimeUs;
 }
 
 /**
- * 计算时钟
+ * 计算编码时长
  * @param bufferInfo
  */
-void NdkVideoEncoder::calculateTimeUs(AMediaCodecBufferInfo bufferInfo) {
+void NdkVideoEncoder::calculateDuration(AMediaCodecBufferInfo bufferInfo) {
     if (mStartTimeStamp == 0) {
         mStartTimeStamp = bufferInfo.presentationTimeUs;
         mDuration = 0;

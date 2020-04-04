@@ -4,7 +4,7 @@
 
 #include "NdkAudioEncoder.h"
 
-NdkAudioEncoder::NdkAudioEncoder(const std::shared_ptr<NdkMediaCodecMuxer> &mediaMuxer) : NdkMediaEncoder(mediaMuxer) {
+NdkAudioEncoder::NdkAudioEncoder(const std::shared_ptr<AVMediaMuxer> &mediaMuxer) : NdkMediaEncoder(mediaMuxer) {
     mBufferSize = AUDIO_BUFFER_SIZE;
 }
 
@@ -71,6 +71,24 @@ int NdkAudioEncoder::openEncoder() {
 
     mTotalBytesRead = 0;
     mPresentationTimeUs = 0;
+
+    // 创建媒体流
+    auto mediaMuxer = mWeakMuxer.lock();
+    if (mediaMuxer != nullptr) {
+        pStream = mediaMuxer->createStream(AV_CODEC_ID_AAC);
+    }
+    if (pStream != nullptr) {
+        mStreamIndex = pStream->index;
+        pStream->time_base = (AVRational){1, mSampleRate};
+        pStream->codecpar->format = AV_SAMPLE_FMT_S16;
+        pStream->codecpar->sample_rate = mSampleRate;
+        pStream->codecpar->channels = mChannelCount;
+        pStream->codecpar->channel_layout = (uint64_t)av_get_default_channel_layout(mChannelCount);
+        pStream->codecpar->bit_rate = mBitrate;
+        pStream->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
+        pStream->codecpar->codec_id = AV_CODEC_ID_AAC;
+        pStream->codecpar->codec_tag = 0;
+    }
 
     return AMEDIA_OK;
 }
@@ -143,38 +161,60 @@ int NdkAudioEncoder::encodeMediaData(AVMediaData *mediaData, int *gotFrame) {
         }
     }
 
-    ssize_t encodeStatus;
+    ssize_t encodeStatus = 0;
     while (encodeStatus != AMEDIACODEC_INFO_TRY_AGAIN_LATER) {
         AMediaCodecBufferInfo bufferInfo;
         encodeStatus = AMediaCodec_dequeueOutputBuffer(mMediaCodec, &bufferInfo, 0);
         if (encodeStatus >= 0) {
             uint8_t *encodeData = AMediaCodec_getOutputBuffer(mMediaCodec, encodeStatus, nullptr/* out_size */);
             if (encodeData) {
-                if ((bufferInfo.flags & AMEDIACODEC_BUFFER_FLAG_CODEC_CONFIG) != 0
-                    && bufferInfo.size != 0) {
-                    AMediaCodec_releaseOutputBuffer(mMediaCodec, encodeStatus, false);
+                if ((bufferInfo.flags & AMEDIACODEC_BUFFER_FLAG_CODEC_CONFIG) != 0) {
+                    // 创建并配置FFmpeg媒体流信息
+                    if (pStream != nullptr) {
+                        if (bufferInfo.size > 0) {
+                            pStream->codecpar->extradata = (uint8_t *) av_mallocz(
+                                    (size_t) (bufferInfo.size + FF_INPUT_BUFFER_PADDING_SIZE));
+                            memcpy(pStream->codecpar->extradata, encodeData,
+                                   (size_t) bufferInfo.size);
+                            pStream->codecpar->extradata_size = bufferInfo.size;
+                        }
+                    }
                 } else {
-                    // 将数据包写入复用器中
+                    // 将编码数据写入复用器中
                     auto mediaMuxer = mWeakMuxer.lock();
-                    if (mediaMuxer != nullptr && mediaMuxer->isStart()) {
-                        mediaMuxer->writeFrame(mStreamIndex, encodeData, &bufferInfo);
+                    if (mediaMuxer != nullptr && mStreamIndex >= 0) {
+                        AVPacket packet;
+                        av_init_packet(&packet);
+
+                        packet.stream_index = mStreamIndex;
+                        packet.data = encodeData;
+                        packet.size = bufferInfo.size;
+                        packet.pts = rescalePts(bufferInfo.presentationTimeUs,
+                                                (AVRational) {1, mSampleRate});
+                        packet.dts = packet.pts;
+                        packet.pos = -1;
+
+                        // 计算编码后的pts
+                        av_packet_rescale_ts(&packet, (AVRational){1, mSampleRate}, pStream->time_base);
+
+                        // 写入媒体文件中
+                        mediaMuxer->writeFrame(&packet);
+                        // 释放内存
+                        av_packet_unref(&packet);
                     }
                     *gotFrame = 1;
-                    AMediaCodec_releaseOutputBuffer(mMediaCodec, encodeStatus, false);
                 }
             } else {
                 *gotFrame = 0;
-                AMediaCodec_releaseOutputBuffer(mMediaCodec, encodeStatus, false);
             }
+            AMediaCodec_releaseOutputBuffer(mMediaCodec, encodeStatus, false);
         } else if (encodeStatus == AMEDIACODEC_INFO_OUTPUT_FORMAT_CHANGED) {
-            auto mediaMuxer = mWeakMuxer.lock();
-            if (mediaMuxer != nullptr) {
-                AMediaFormat *mediaFormat = AMediaCodec_getOutputFormat(mMediaCodec);
-                mStreamIndex = mediaMuxer->addTrack(mediaFormat);
-                mediaMuxer->start();
-                LOGD("audio mStreamIndex: %d", mStreamIndex);
-            }
+            LOGD("AMEDIACODEC_INFO_OUTPUT_FORMAT_CHANGED");
         }
     }
+    return 0;
+}
+
+int NdkAudioEncoder::encodeFrame(AVFrame *frame, int *gotFrame) {
     return 0;
 }

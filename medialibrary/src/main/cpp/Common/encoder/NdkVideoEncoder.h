@@ -22,7 +22,7 @@
 
 class NdkVideoEncoder : public NdkMediaEncoder {
 public:
-    NdkVideoEncoder(const std::shared_ptr<NdkMediaCodecMuxer> &mediaMuxer);
+    NdkVideoEncoder(const std::shared_ptr<AVMediaMuxer> &mediaMuxer);
 
     virtual ~NdkVideoEncoder();
 
@@ -41,16 +41,19 @@ public:
     // 编码媒体数据
     int encodeMediaData(AVMediaData *mediaData, int *gotFrame) override;
 
+    // 编码媒体数据
+    int encodeFrame(AVFrame *frame, int *gotFame) override;
+
 protected:
+    // 计算时间戳
     uint64_t calculatePresentationTime();
 
-    // 计算时钟
-    void calculateTimeUs(AMediaCodecBufferInfo bufferInfo);
+    // 计算录制时长
+    void calculateDuration(AMediaCodecBufferInfo bufferInfo);
 
 private:
-    std::weak_ptr<NdkMediaCodecMuxer> mWeakMuxer;
     AMediaCodec *mMediaCodec;   // 编码器
-    long mStartTimeStamp;       // 上一帧时间戳
+    int64_t mStartTimeStamp;       // 上一帧时间戳
     long mDuration;             // 时长
 
     const char *mMimeType;      // 媒体类型，默认为video/avc，即mp4
@@ -59,7 +62,7 @@ private:
     int mBitrate;               // 比特率
     int mFrameRate;             // 帧率
     int mFrameIndex;            // 帧索引
-    double mPresentationTimeUs; // 当前时长
+    uint64_t mPresentationTimeUs; // 当前时长
 
     // 设备信息
     int mSDKInt;                // SDK 版本号

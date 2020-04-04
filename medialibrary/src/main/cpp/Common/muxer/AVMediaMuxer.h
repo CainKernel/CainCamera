@@ -29,6 +29,9 @@ public:
     // 创建新的媒体流
     AVStream *createStream(AVCodec *encoder);
 
+    // 创建新的媒体流
+    AVStream *createStream(AVCodecID id);
+
     // 写入文件头部信息
     int writeHeader(AVDictionary **options = nullptr);
 

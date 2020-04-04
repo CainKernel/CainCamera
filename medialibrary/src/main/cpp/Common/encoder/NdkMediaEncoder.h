@@ -15,11 +15,11 @@
 
 #include "MediaEncoder.h"
 #include "writer/NdkCodecProfileLevel.h"
-#include "muxer/NdkMediaCodecMuxer.h"
+#include "muxer/AVMediaMuxer.h"
 
 class NdkMediaEncoder {
 public:
-    NdkMediaEncoder(std::shared_ptr<NdkMediaCodecMuxer> mediaMuxer);
+    NdkMediaEncoder(std::shared_ptr<AVMediaMuxer> mediaMuxer);
 
     virtual ~NdkMediaEncoder();
 
@@ -35,11 +35,20 @@ public:
     // 编码媒体数据
     int encodeMediaData(AVMediaData *mediaData);
 
-    // 编码媒体数据
-    virtual int encodeMediaData(AVMediaData *mediaData, int *gotFrame);
+    // 编码一帧数据
+    int encodeFrame(AVFrame *frame);
 
+    // 编码媒体数据
+    virtual int encodeMediaData(AVMediaData *mediaData, int *gotFrame) = 0;
+
+    // 编码一帧数据
+    virtual int encodeFrame(AVFrame *frame, int *gotFrame) = 0;
+
+    // 计算当前数据包的pts
+    int64_t rescalePts(int64_t presentationTimeUs, AVRational time_base);
 protected:
-    std::weak_ptr<NdkMediaCodecMuxer> mWeakMuxer; // 复用器
+    std::weak_ptr<AVMediaMuxer> mWeakMuxer; // 复用器
+    AVStream *pStream;          // 媒体流索引
     AMediaCodec *mMediaCodec;   // 编码器
     int mStreamIndex;           // 媒体流索引
     long mDuration;             // 时长

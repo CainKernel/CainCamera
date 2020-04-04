@@ -9,7 +9,7 @@ FFMediaRecorder::FFMediaRecorder() : mRecordListener(nullptr), mAbortRequest(tru
                                      mStartRequest(false), mExit(true), mRecordThread(nullptr),
                                      mYuvConvertor(nullptr), mFrameFilter(nullptr),
                                      mFrameQueue(nullptr), mMediaWriter(nullptr),
-                                     mMediaCodecWriter(nullptr), mUseHardCodec(false) {
+                                     mMediaCodecWriter(nullptr), mUseHardCodec(true) {
     av_register_all();
     avfilter_register_all();
     mRecordParams = new RecordParams();

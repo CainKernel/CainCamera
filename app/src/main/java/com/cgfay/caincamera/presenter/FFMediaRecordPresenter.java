@@ -154,7 +154,7 @@ public class FFMediaRecordPresenter implements PreviewCallback, FFAudioRecorder.
         mPreviewRotate = mCameraController.getOrientation();
         Log.d(TAG, "startRecord: " + mPreviewRotate);
         mMediaRecorder = new FFMediaRecorder.RecordBuilder(generateOutputPath())
-                .setVideoParams(mRecordWidth, mRecordHeight, AVFormatter.PIXEL_FORMAT_NV21, 25)
+                .setVideoParams(mRecordWidth, mRecordHeight, AVFormatter.PIXEL_FORMAT_NV21, 30)
 //                .setVideoFilter("lutyuv='u=128:v=128'") // 黑白滤镜
 //                .setVideoFilter("noise=alls=20:allf=t+p") // 噪点
 //                .setVideoFilter("boxblur") // 模糊

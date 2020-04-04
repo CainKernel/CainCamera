@@ -86,6 +86,9 @@ int AVMediaEncoder::createEncoder() {
  * @return
  */
 int AVMediaEncoder::openEncoder(std::map<std::string, std::string> mEncodeOptions) {
+    if (pCodecCtx == nullptr || pStream == nullptr) {
+        return -1;
+    }
     AVDictionary *options = nullptr;
     auto it = mEncodeOptions.begin();
     for (; it != mEncodeOptions.end(); it++) {

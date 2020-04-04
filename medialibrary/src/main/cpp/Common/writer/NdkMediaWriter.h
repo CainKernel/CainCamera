@@ -91,7 +91,7 @@ private:
     bool mHasAudio;                 // 是否存在音频流数据
 
     // 编码上下文
-    std::shared_ptr<NdkMediaCodecMuxer> mMediaMuxer; // media muxer
+    std::shared_ptr<AVMediaMuxer> mMediaMuxer; // media muxer
     std::shared_ptr<NdkVideoEncoder> mVideoEncoder;  // video encoder
     std::shared_ptr<NdkAudioEncoder> mAudioEncoder;  // audio encoder
     std::shared_ptr<Resampler> mResampler;           // audio resampler

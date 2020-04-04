@@ -17,7 +17,7 @@
 
 class NdkAudioEncoder : public NdkMediaEncoder {
 public:
-    NdkAudioEncoder(const std::shared_ptr<NdkMediaCodecMuxer> &mediaMuxer);
+    NdkAudioEncoder(const std::shared_ptr<AVMediaMuxer> &mediaMuxer);
 
     virtual ~NdkAudioEncoder();
 
@@ -38,6 +38,9 @@ public:
 
     // 编码媒体数据
     int encodeMediaData(AVMediaData *mediaData, int *gotFrame) override;
+
+    // 编码一帧数据
+    int encodeFrame(AVFrame *frame, int *gotFrame) override;
 
 private:
     int mBitrate;

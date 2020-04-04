@@ -250,7 +250,7 @@ public final class FFMediaRecorder {
             mRotate = 0;
             mMirror = false;
             mPixelFormat = -1;
-            mFrameRate = -1;
+            mFrameRate = 30;
             mMaxBitRate = -1;
             mQuality = 23;
             mVideoEncoder = null;

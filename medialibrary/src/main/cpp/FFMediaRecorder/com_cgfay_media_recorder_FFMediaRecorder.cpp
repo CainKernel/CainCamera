@@ -18,6 +18,10 @@ extern "C" {
 
 static JavaVM *javaVM = nullptr;
 
+uint64_t mRecordStartTime;
+int mFrameIndex;
+int mFrameRate;
+
 static JNIEnv *getJNIEnv() {
     JNIEnv *env;
     assert(javaVM != nullptr);
@@ -289,6 +293,7 @@ Java_com_cgfay_media_recorder_FFMediaRecorder_setVideoParams(JNIEnv *env, jobjec
     if (recorder != nullptr) {
         RecordParams *recordParams = recorder->getRecordParams();
         recordParams->setVideoParams(width, height, frameRate, pixelFormat, maxBitRate, quality);
+        mFrameRate = frameRate;
     }
 }
 
@@ -324,7 +329,14 @@ Java_com_cgfay_media_recorder_FFMediaRecorder_recordVideoFrame(JNIEnv *env, jobj
 
         auto mediaData = new AVMediaData();
         mediaData->setVideo(yuvData, length, width, height, pixelFormat);
-        mediaData->setPts(getCurrentTimeMs());
+        int64_t currentTimeMs = 0;
+        if (mFrameRate == 0) {
+            currentTimeMs = getCurrentTimeMs() - mRecordStartTime;
+        } else {
+            currentTimeMs = mFrameIndex * 1000L / mFrameRate + 132L;
+        }
+        mFrameIndex++;
+        mediaData->setPts(currentTimeMs);
         return recorder->recordFrame(mediaData);
     }
     return -1;
@@ -349,7 +361,7 @@ Java_com_cgfay_media_recorder_FFMediaRecorder_recordAudioFrame(JNIEnv *env, jobj
 
         auto mediaData = new AVMediaData();
         mediaData->setAudio(pcmData, length);
-        mediaData->setPts(getCurrentTimeMs());
+        mediaData->setPts(getCurrentTimeMs() - mRecordStartTime);
         return recorder->recordFrame(mediaData);
     }
     return -1;
@@ -367,6 +379,8 @@ Java_com_cgfay_media_recorder_FFMediaRecorder_startRecord(JNIEnv *env, jobject t
             LOGE("Failed to prepare recorder");
         } else {
             recorder->startRecord();
+            mRecordStartTime = getCurrentTimeMs();
+            mFrameIndex = 0;
         }
     }
 }

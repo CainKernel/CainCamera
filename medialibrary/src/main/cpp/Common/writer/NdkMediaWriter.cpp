@@ -83,8 +83,13 @@ int NdkMediaWriter::openOutputFile() {
     if (mMediaMuxer != nullptr) {
         mMediaMuxer.reset();
     }
-    mMediaMuxer = std::make_shared<NdkMediaCodecMuxer>();
+    mMediaMuxer = std::make_shared<AVMediaMuxer>();
     mMediaMuxer->setOutputPath(mDstUrl);
+    ret = mMediaMuxer->init();
+    if (ret < 0) {
+        LOGI("failed to init media muxer");
+        return AVERROR_UNKNOWN;
+    }
 
     // 打开音频编码器
     if (mHasAudio && (ret = openEncoder(AVMEDIA_TYPE_AUDIO)) < 0) {
@@ -138,14 +143,20 @@ int NdkMediaWriter::openOutputFile() {
         }
     }
 
-    // if has audio or video
-    mMediaMuxer->setHasAudio(mHasAudio);
-    mMediaMuxer->setHasVideo(mHasVideo);
+    // print muxer info
+    mMediaMuxer->printInfo();
 
     // open media muxer
     ret = mMediaMuxer->openMuxer();
     if (ret < 0) {
         LOGE("MediaCodecWriter - failed to open media muxer");
+        return ret;
+    }
+
+    // write file global header
+    ret = mMediaMuxer->writeHeader();
+    if (ret < 0) {
+        LOGE("Failed to write header");
         return ret;
     }
     return ret;
@@ -283,6 +294,11 @@ int NdkMediaWriter::stop() {
 
     // 删除对象
     delete data;
+
+    // 写入文件尾
+    if (mMediaMuxer != nullptr) {
+        mMediaMuxer->writeTrailer();
+    }
 
     return 0;
 }

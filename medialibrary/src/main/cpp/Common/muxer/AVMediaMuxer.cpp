@@ -78,6 +78,23 @@ AVStream* AVMediaMuxer::createStream(AVCodec *encoder) {
     return avformat_new_stream(pFormatCtx, encoder);
 }
 
+AVStream *AVMediaMuxer::createStream(AVCodecID id) {
+    if (!pFormatCtx) {
+        LOGE("AVMediaMuxer - Failed to find muxer context");
+        return nullptr;
+    }
+    if (id == AV_CODEC_ID_NONE) {
+        LOGE("AVMediaMuxer - Failed to find encoder: %s", avcodec_get_name(id));
+        return nullptr;
+    }
+    auto encoder = avcodec_find_encoder(id);
+    if (encoder == nullptr) {
+        LOGE("AVMediaMuxer - Failed to find encoder: %s", avcodec_get_name(id));
+        return nullptr;
+    }
+    return avformat_new_stream(pFormatCtx, encoder);
+}
+
 /**
  * 写入文件头部信息
  * @param options
@@ -87,6 +104,10 @@ int AVMediaMuxer::writeHeader(AVDictionary **options) {
     if (!pFormatCtx) {
         LOGE("AVMediaMuxer - Failed to find muxer context");
         return -1;
+    }
+    // 判断是否需要写入全局头部信息
+    if (!hasGlobalHeader()) {
+        return 0;
     }
     int ret = avformat_write_header(pFormatCtx, options);
     if (ret < 0) {
