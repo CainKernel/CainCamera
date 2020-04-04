@@ -1,5 +1,6 @@
 package com.cgfay.uitls.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Point;
 import android.os.Build;
@@ -95,4 +96,31 @@ public class DisplayUtils {
         return mIsAllScreenDevice;
     }
 
+    /**
+     * 获取显示宽度
+     */
+    public static int getDisplayWidth(Context context) {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        if (wm == null) {
+            return -1;
+        }
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getRealSize(size);
+        return size.x;
+    }
+
+    /**
+     * 获取显示高度
+     */
+    public static int getDisplayHeight(Context context) {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        if (wm == null) {
+            return -1;
+        }
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getRealSize(size);
+        return size.y;
+    }
 }

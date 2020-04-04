@@ -360,6 +360,7 @@ public final class FaceTracker {
          * 释放资源
          */
         private void release() {
+            ConUtil.releaseWakeLock();
             if (facepp != null) {
                 facepp.release();
                 facepp = null;

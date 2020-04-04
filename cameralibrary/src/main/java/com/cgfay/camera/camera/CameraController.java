@@ -56,7 +56,7 @@ public class CameraController implements ICameraController, Camera.PreviewCallba
     public CameraController(@NonNull Activity activity) {
         Log.d(TAG, "CameraController: created！");
         mActivity = activity;
-        mCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
+        mCameraId = CameraApi.hasFrontCamera(activity) ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK;
     }
 
     @Override
@@ -174,8 +174,13 @@ public class CameraController implements ICameraController, Camera.PreviewCallba
 
     @Override
     public void switchCamera() {
-        setFront(!isFront());
-        openCamera();
+        boolean front = !isFront();
+        front = front && CameraApi.hasFrontCamera(mActivity);
+        // 期望值不一致
+        if (front != isFront()) {
+            setFront(front);
+            openCamera();
+        }
     }
 
     @Override

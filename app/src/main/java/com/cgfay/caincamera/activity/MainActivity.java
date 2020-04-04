@@ -232,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .show();
     }
 
-    private class VideoPlayerTestSelector implements OnMediaSelector {
+    private static class VideoPlayerTestSelector implements OnMediaSelector {
         @Override
         public void onMediaSelect(@NonNull Context context, @NonNull List<MediaData> mediaDataList) {
             if (mediaDataList.size() == 1) {

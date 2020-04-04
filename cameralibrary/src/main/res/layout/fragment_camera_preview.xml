@@ -7,14 +7,14 @@
     android:background="@color/video_window_background">
 
     <!-- 预览视图 -->
-    <com.cgfay.camera.widget.AspectFrameLayout
-        android:id="@+id/layout_aspect"
+    <com.cgfay.camera.widget.CameraMeasureFrameLayout
+        android:id="@+id/layout_camera_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-    </com.cgfay.camera.widget.AspectFrameLayout>
+    </com.cgfay.camera.widget.CameraMeasureFrameLayout>
 
     <!--  倒计时  -->
     <com.cgfay.camera.widget.RecordCountDownView
@@ -26,8 +26,8 @@
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/layout_aspect"
-        app:layout_constraintBottom_toBottomOf="@id/layout_aspect"/>
+        app:layout_constraintTop_toTopOf="@id/layout_camera_preview"
+        app:layout_constraintBottom_toBottomOf="@id/layout_camera_preview"/>
 
     <!-- 录制进度条 -->
     <com.cgfay.camera.widget.RecordProgressView
@@ -39,7 +39,7 @@
         app:divider_width="@dimen/dp1"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/layout_aspect"/>
+        app:layout_constraintTop_toTopOf="@+id/layout_camera_preview"/>
 
     <!-- fps 提示 -->
     <TextView
@@ -52,7 +52,7 @@
         android:layout_marginEnd="@dimen/fps_margin"
         android:textColor="@android:color/holo_orange_dark"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/layout_aspect"/>
+        app:layout_constraintTop_toTopOf="@id/layout_camera_preview"/>
 
     <!--  顶部布局  -->
     <com.cgfay.camera.widget.CameraPreviewTopbar
@@ -62,7 +62,7 @@
         android:layout_marginTop="@dimen/dp10"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/layout_aspect"/>
+        app:layout_constraintTop_toTopOf="@id/layout_camera_preview"/>
 
     <!-- 速度选择条 -->
     <com.cgfay.camera.widget.RecordSpeedLevelBar

@@ -18,7 +18,6 @@ import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 
 import android.os.Looper;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.TextureView;
@@ -43,7 +42,7 @@ import com.cgfay.camera.widget.RecordProgressView;
 import com.cgfay.cameralibrary.R;
 import com.cgfay.camera.camera.CameraParam;
 import com.cgfay.camera.model.GalleryType;
-import com.cgfay.camera.widget.AspectFrameLayout;
+import com.cgfay.camera.widget.CameraMeasureFrameLayout;
 import com.cgfay.camera.widget.RecordSpeedLevelBar;
 import com.cgfay.media.recorder.SpeedMode;
 import com.cgfay.picker.MediaPicker;
@@ -54,10 +53,7 @@ import com.cgfay.uitls.dialog.DialogBuilder;
 import com.cgfay.uitls.fragment.MusicPickerFragment;
 import com.cgfay.uitls.fragment.PermissionErrorDialogFragment;
 import com.cgfay.uitls.utils.BrightnessUtils;
-import com.cgfay.uitls.utils.DisplayUtils;
-import com.cgfay.uitls.utils.NotchUtils;
 import com.cgfay.uitls.utils.PermissionUtils;
-import com.cgfay.uitls.utils.StatusBarUtils;
 import com.cgfay.uitls.widget.RoundOutlineProvider;
 import com.cgfay.widget.CameraTabView;
 
@@ -81,7 +77,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     // Fragment主页面
     private View mContentView;
     // 预览部分
-    private AspectFrameLayout mAspectLayout;
+    private CameraMeasureFrameLayout mPreviewLayout;
     private CainTextureView mCameraTextureView;
     // fps显示
     private TextView mFpsView;
@@ -195,36 +191,47 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
 
     private void initPreviewSurface() {
         mFpsView = mContentView.findViewById(R.id.tv_fps);
-        mAspectLayout = mContentView.findViewById(R.id.layout_aspect);
+        mPreviewLayout = mContentView.findViewById(R.id.layout_camera_preview);
         mCameraTextureView = new CainTextureView(mActivity);
         mCameraTextureView.addOnTouchScroller(mTouchScroller);
         mCameraTextureView.addMultiClickListener(mMultiClickListener);
         mCameraTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
-        mAspectLayout.addView(mCameraTextureView);
+        mPreviewLayout.addView(mCameraTextureView);
 
         // 添加圆角显示
         if (Build.VERSION.SDK_INT >= 21) {
             mCameraTextureView.setOutlineProvider(new RoundOutlineProvider(getResources().getDimension(R.dimen.dp7)));
             mCameraTextureView.setClipToOutline(true);
         }
-
-        // 全面屏比例处理
-        if (DisplayUtils.isFullScreenDevice(mActivity)) {
-            DisplayMetrics outMetrics = new DisplayMetrics();
-            mActivity.getWindowManager().getDefaultDisplay().getRealMetrics(outMetrics);
-            int widthPixel = outMetrics.widthPixels;
-            int heightPixel = outMetrics.heightPixels;
-            float height = mActivity.getResources().getDimension(R.dimen.camera_tab_height);
-            // 是否刘海屏
-            if (NotchUtils.hasNotchScreen(mActivity)) {
-                height += StatusBarUtils.getStatusBarHeight(mActivity);
+        mPreviewLayout.setOnMeasureListener(new CameraMeasureFrameLayout.OnMeasureListener() {
+            @Override
+            public void onMeasure(int width, int height) {
+                Log.d(TAG, "onMeasure: " + width + ", height" + height);
+                calculatePreviewLayout(width, height);
             }
-            mAspectLayout.setAspectRatio(widthPixel / (heightPixel - height));
-        }
-        mAspectLayout.requestLayout();
-
+        });
         mProgressView = mContentView.findViewById(R.id.record_progress);
         mCountDownView = mContentView.findViewById(R.id.count_down_view);
+    }
+
+    /**
+     * 计算预览布局
+     */
+    private void calculatePreviewLayout(int widthPixel, int heightPixel) {
+        float height = mActivity.getResources().getDimension(R.dimen.camera_tab_height);
+        if (widthPixel * 1.0f / heightPixel > 9f/16f) {
+            widthPixel = (int)(heightPixel * (9f / 16f));
+            ViewGroup.LayoutParams params = mPreviewLayout.getLayoutParams();
+            params.width = widthPixel;
+            params.height = heightPixel;
+            mPreviewLayout.setLayoutParams(params);
+        } else if (widthPixel * 1.0f / (heightPixel - height) < 9f/16f) {
+            ViewGroup.LayoutParams params = mPreviewLayout.getLayoutParams();
+            params.width = widthPixel;
+            params.height = (int)(heightPixel - height);
+            mPreviewLayout.setLayoutParams(params);
+        }
+        mPreviewLayout.requestLayout();
     }
 
     /**
@@ -546,6 +553,11 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             getChildFragmentManager()
                     .beginTransaction()
                     .add(R.id.fragment_bottom_container, mResourcesFragment, FRAGMENT_TAG)
+                    .commitAllowingStateLoss();
+        } else {
+            getChildFragmentManager()
+                    .beginTransaction()
+                    .show(mResourcesFragment)
                     .commitAllowingStateLoss();
         }
         showFragmentAnimating(false);
