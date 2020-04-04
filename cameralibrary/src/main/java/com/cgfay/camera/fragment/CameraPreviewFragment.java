@@ -36,6 +36,7 @@ import com.cgfay.camera.loader.impl.CameraMediaLoader;
 import com.cgfay.camera.presenter.CameraPreviewPresenter;
 import com.cgfay.camera.widget.CainTextureView;
 import com.cgfay.camera.widget.CameraPreviewTopbar;
+import com.cgfay.camera.widget.PreviewMeasureListener;
 import com.cgfay.camera.widget.RecordButton;
 import com.cgfay.camera.widget.RecordCountDownView;
 import com.cgfay.camera.widget.RecordProgressView;
@@ -203,35 +204,9 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             mCameraTextureView.setOutlineProvider(new RoundOutlineProvider(getResources().getDimension(R.dimen.dp7)));
             mCameraTextureView.setClipToOutline(true);
         }
-        mPreviewLayout.setOnMeasureListener(new CameraMeasureFrameLayout.OnMeasureListener() {
-            @Override
-            public void onMeasure(int width, int height) {
-                Log.d(TAG, "onMeasure: " + width + ", height" + height);
-                calculatePreviewLayout(width, height);
-            }
-        });
+        mPreviewLayout.setOnMeasureListener(new PreviewMeasureListener(mPreviewLayout));
         mProgressView = mContentView.findViewById(R.id.record_progress);
         mCountDownView = mContentView.findViewById(R.id.count_down_view);
-    }
-
-    /**
-     * 计算预览布局
-     */
-    private void calculatePreviewLayout(int widthPixel, int heightPixel) {
-        float height = mActivity.getResources().getDimension(R.dimen.camera_tab_height);
-        if (widthPixel * 1.0f / heightPixel > 9f/16f) {
-            widthPixel = (int)(heightPixel * (9f / 16f));
-            ViewGroup.LayoutParams params = mPreviewLayout.getLayoutParams();
-            params.width = widthPixel;
-            params.height = heightPixel;
-            mPreviewLayout.setLayoutParams(params);
-        } else if (widthPixel * 1.0f / (heightPixel - height) < 9f/16f) {
-            ViewGroup.LayoutParams params = mPreviewLayout.getLayoutParams();
-            params.width = widthPixel;
-            params.height = (int)(heightPixel - height);
-            mPreviewLayout.setLayoutParams(params);
-        }
-        mPreviewLayout.requestLayout();
     }
 
     /**
