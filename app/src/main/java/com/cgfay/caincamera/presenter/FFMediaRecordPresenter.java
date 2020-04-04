@@ -152,6 +152,10 @@ public class FFMediaRecordPresenter implements PreviewCallback, FFAudioRecorder.
             mMediaRecorder.release();
         }
         mPreviewRotate = mCameraController.getOrientation();
+        // 上下翻转
+        if (mCameraController instanceof CameraController && mCameraController.isFront()) {
+            mPreviewRotate = 360 - mPreviewRotate;
+        }
         Log.d(TAG, "startRecord: " + mPreviewRotate);
         mMediaRecorder = new FFMediaRecorder.RecordBuilder(generateOutputPath())
                 .setVideoParams(mRecordWidth, mRecordHeight, AVFormatter.PIXEL_FORMAT_NV21, 30)

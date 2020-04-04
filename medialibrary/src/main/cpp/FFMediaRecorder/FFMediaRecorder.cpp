@@ -9,7 +9,7 @@ FFMediaRecorder::FFMediaRecorder() : mRecordListener(nullptr), mAbortRequest(tru
                                      mStartRequest(false), mExit(true), mRecordThread(nullptr),
                                      mYuvConvertor(nullptr), mFrameFilter(nullptr),
                                      mFrameQueue(nullptr), mMediaWriter(nullptr),
-                                     mMediaCodecWriter(nullptr), mUseHardCodec(true) {
+                                     mUseHardCodec(false) {
     av_register_all();
     avfilter_register_all();
     mRecordParams = new RecordParams();
@@ -62,13 +62,8 @@ void FFMediaRecorder::release() {
     }
     if (mMediaWriter != nullptr) {
         mMediaWriter->release();
-        delete mMediaWriter;
+        mMediaWriter.reset();
         mMediaWriter = nullptr;
-    }
-    if (mMediaCodecWriter != nullptr) {
-        mMediaCodecWriter->release();
-        delete mMediaCodecWriter;
-        mMediaCodecWriter = nullptr;
     }
 }
 
@@ -151,31 +146,18 @@ int FFMediaRecorder::prepare() {
         }
     }
 
+    // 创建媒体写入器
     if (mUseHardCodec) {
-        mMediaCodecWriter = new NdkMediaWriter();
-        mMediaCodecWriter->setUseTimeStamp(true);
-
-        mMediaCodecWriter->setMaxBitRate(params->maxBitRate);
-        mMediaCodecWriter->setOutputPath(params->dstFile);
-        mMediaCodecWriter->setOutputVideo(outputWidth, outputHeight, params->frameRate, pixelFormat);
-        mMediaCodecWriter->setOutputAudio(params->sampleRate, params->channels, sampleFormat);
-
-        ret = mMediaCodecWriter->prepare();
-        if (ret < 0) {
-            release();
-        }
+        mMediaWriter = std::make_shared<NdkMediaWriter>();
     } else {
-        mMediaWriter = new AVMediaWriter();
-        // 设置参数
-        mMediaWriter->setUseTimeStamp(true);
+        mMediaWriter = std::make_shared<AVMediaWriter>();
+    }
+    // 设置参数
+    mMediaWriter->setUseTimeStamp(true);
+    // 软编码时设置编码额外的编码参数和编码器名称
+    if (!mUseHardCodec) {
         mMediaWriter->addEncodeOptions("preset", "ultrafast");
         mMediaWriter->setQuality(params->quality > 0 ? params->quality : 23);
-
-        mMediaWriter->setMaxBitRate(params->maxBitRate);
-        mMediaWriter->setOutputPath(params->dstFile);
-        mMediaWriter->setOutputVideo(outputWidth, outputHeight, params->frameRate, pixelFormat);
-        mMediaWriter->setOutputAudio(params->sampleRate, params->channels, sampleFormat);
-
         // 指定编码器名称
         if (params->videoEncoder != nullptr) {
             mMediaWriter->setVideoEncoderName(params->videoEncoder);
@@ -183,12 +165,16 @@ int FFMediaRecorder::prepare() {
         if (params->audioEncoder != nullptr) {
             mMediaWriter->setAudioEncoderName(params->audioEncoder);
         }
+    }
+    mMediaWriter->setMaxBitRate(params->maxBitRate);
+    mMediaWriter->setOutputPath(params->dstFile);
+    mMediaWriter->setOutputVideo(outputWidth, outputHeight, params->frameRate, pixelFormat);
+    mMediaWriter->setOutputAudio(params->sampleRate, params->channels, sampleFormat);
 
-        // 准备
-        ret = mMediaWriter->prepare();
-        if (ret < 0) {
-            release();
-        }
+    // 准备
+    ret = mMediaWriter->prepare();
+    if (ret < 0) {
+        release();
     }
     return ret;
 }
@@ -328,11 +314,7 @@ void FFMediaRecorder::run() {
                 }
 
                 // 编码
-                if (mUseHardCodec) {
-                    ret = mMediaCodecWriter->encodeMediaData(data);
-                } else {
-                    ret = mMediaWriter->encodeMediaData(data);
-                }
+                ret = mMediaWriter->encodeMediaData(data);
                 if (ret < 0) {
                     LOGE("Failed to encoder media data： %s", data->getName());
                 } else {
@@ -379,11 +361,7 @@ void FFMediaRecorder::run() {
             }
 
             // 编码
-            if (mUseHardCodec) {
-                ret = mMediaCodecWriter->encodeMediaData(data);
-            } else {
-                ret = mMediaWriter->encodeMediaData(data);
-            }
+            ret = mMediaWriter->encodeMediaData(data);
             if (ret < 0) {
                 LOGE("Failed to encoder media data： %s", data->getName());
             } else {
@@ -397,19 +375,11 @@ void FFMediaRecorder::run() {
         }
 
         // 停止文件写入器
-        if (mUseHardCodec) {
-            ret = mMediaCodecWriter->stop();
-        } else {
-            ret = mMediaWriter->stop();
-        }
+        ret = mMediaWriter->stop();
     }
 
     LOGD("FFMediaRecorder exiting...");
-    if (mUseHardCodec) {
-        mMediaCodecWriter->release();
-    } else {
-        mMediaWriter->release();
-    }
+    mMediaWriter->release();
 
     // 录制完成回调
     if (mRecordListener != nullptr) {

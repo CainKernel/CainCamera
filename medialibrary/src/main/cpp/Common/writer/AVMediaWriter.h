@@ -29,19 +29,19 @@ public:
     void setUseTimeStamp(bool use) override;
 
     // 添加编码参数
-    void addEncodeOptions(std::string key, std::string value);
+    void addEncodeOptions(std::string key, std::string value) override;
 
     // 指定音频编码器
-    void setAudioEncoderName(const char *encoder);
+    void setAudioEncoderName(const char *encoder) override;
 
     // 指定视频编码器
-    void setVideoEncoderName(const char *encoder);
+    void setVideoEncoderName(const char *encoder) override;
 
     // 设置最大比特率
     void setMaxBitRate(int maxBitRate) override;
 
     // 设置质量系数
-    void setQuality(int quality);
+    void setQuality(int quality) override;
 
     // 设置视频输出参数
     void setOutputVideo(int width, int height, int frameRate, AVPixelFormat pixelFormat) override;

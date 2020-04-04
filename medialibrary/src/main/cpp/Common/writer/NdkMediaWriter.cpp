@@ -20,8 +20,24 @@ void NdkMediaWriter::setUseTimeStamp(bool use) {
     mUseTimeStamp = use;
 }
 
+void NdkMediaWriter::addEncodeOptions(std::string key, std::string value) {
+    // do nothing
+}
+
+void NdkMediaWriter::setAudioEncoderName(const char *encoder) {
+    // do nothing
+}
+
+void NdkMediaWriter::setVideoEncoderName(const char *encoder) {
+    // do nothing
+}
+
 void NdkMediaWriter::setMaxBitRate(int maxBitRate) {
     mMaxBitRate = maxBitRate;
+}
+
+void NdkMediaWriter::setQuality(int quality) {
+    // do nothing
 }
 
 void NdkMediaWriter::setOutputVideo(int width, int height, int frameRate,

@@ -76,8 +76,7 @@ private:
 
     YuvConvertor *mYuvConvertor;    // Yuv转换器
     AVFrameFilter *mFrameFilter;    // AVFilter处理;
-    AVMediaWriter *mMediaWriter;    // 媒体文件写入
-    NdkMediaWriter *mMediaCodecWriter;  // 硬编码媒体写入器
+    std::shared_ptr<MediaWriter> mMediaWriter;  // 媒体写入器
     bool mUseHardCodec;                 // 是否使用硬编码
 };
 

@@ -10,14 +10,28 @@
 
 class MediaWriter {
 public:
+    virtual ~MediaWriter() = default;
+
     // 设置输出文件
     virtual void setOutputPath(const char *dstUrl) = 0;
 
     // 设置是否使用时间戳形式
     virtual void setUseTimeStamp(bool use) = 0;
 
+    // 添加编码参数
+    virtual void addEncodeOptions(std::string key, std::string value) = 0;
+
+    // 指定音频编码器
+    virtual void setAudioEncoderName(const char *encoder) = 0;
+
+    // 指定视频编码器
+    virtual void setVideoEncoderName(const char *encoder) = 0;
+
     // 设置最大比特率
     virtual void setMaxBitRate(int maxBitRate) = 0;
+
+    // 设置质量系数
+    virtual void setQuality(int quality) = 0;
 
     // 设置视频输出参数
     virtual void setOutputVideo(int width, int height, int frameRate, AVPixelFormat pixelFormat) = 0;

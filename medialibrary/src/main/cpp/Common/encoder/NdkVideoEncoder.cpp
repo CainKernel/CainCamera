@@ -74,7 +74,7 @@ int NdkVideoEncoder::openEncoder() {
     AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_HEIGHT, mHeight);
     AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_BIT_RATE, mBitrate);
     AMediaFormat_setInt32(mediaFormat, "max-bitrate", mBitrate * 2);
-    AMediaFormat_setInt32(mediaFormat, "bitrate-mode", BITRATE_MODE_CBR);
+    AMediaFormat_setInt32(mediaFormat, "bitrate-mode", BITRATE_MODE_VBR);
     AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_FRAME_RATE, mFrameRate);
     if (mCpu[0] == 'm' && mCpu[1] == 't') {
         AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_COLOR_FORMAT, COLOR_FormatYUV420Planar);
