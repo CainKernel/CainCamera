@@ -368,6 +368,14 @@ void VideoStreamGLPlayer::surfaceCreated(ANativeWindow *window) {
     }
 }
 
+void VideoStreamGLPlayer::surfaceChange(int width, int height) {
+    if (mVideoRender != nullptr) {
+        mVideoRender->surfaceChanged(width, height);
+    }
+    mForceRender = true;
+    mCondition.signal();
+}
+
 void VideoStreamGLPlayer::changeFilter(RenderNodeType type, const char *filterName) {
     if (mVideoRender != nullptr) {
         mVideoRender->changeFilter(type, filterName);

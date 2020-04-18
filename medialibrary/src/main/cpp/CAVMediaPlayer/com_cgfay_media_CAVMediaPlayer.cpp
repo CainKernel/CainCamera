@@ -394,6 +394,19 @@ com_cgfay_media_CAVMediaPlayer_setVideoSurface(JNIEnv *env, jobject thiz, jobjec
 }
 
 /**
+ * 设置surface
+ */
+static void
+com_cgfay_media_CAVMediaPlayer_changeSurface(JNIEnv *env, jobject thiz, jint width, jint height) {
+    auto mp = getMediaPlayer(env, thiz);
+    if (mp == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException");
+        return;
+    }
+    process_media_player_call(env, thiz, mp->changeSurface(width, height), nullptr, nullptr);
+}
+
+/**
  * 设置播放速度
  */
 static void
@@ -681,6 +694,7 @@ static const JNINativeMethod gMethods[] = {
         {"_setAudioDecoder", "(Ljava/lang/String;)V", (void *)com_cgfay_media_CAVMediaPlayer_setAudioDecoder},
         {"_setVideoDecoder", "(Ljava/lang/String;)V", (void *)com_cgfay_media_CAVMediaPlayer_setVideoDecoder},
         {"_setVideoSurface", "(Landroid/view/Surface;)V", (void *) com_cgfay_media_CAVMediaPlayer_setVideoSurface},
+        {"_changeSurface", "(II)V", (void *) com_cgfay_media_CAVMediaPlayer_changeSurface},
         {"_setSpeed", "(F)V", (void *) com_cgfay_media_CAVMediaPlayer_setSpeed},
         {"_setLooping", "(Z)V", (void *) com_cgfay_media_CAVMediaPlayer_setLooping},
         {"_setRange", "(FF)V", (void *) com_cgfay_media_CAVMediaPlayer_setRange},

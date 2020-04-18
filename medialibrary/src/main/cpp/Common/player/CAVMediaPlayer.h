@@ -115,6 +115,8 @@ public:
 
 #if defined(__ANDROID__)
     status_t setVideoSurface(ANativeWindow *window);
+
+    status_t changeSurface(int width, int height);
 #endif
 
     status_t setSpeed(float speed);

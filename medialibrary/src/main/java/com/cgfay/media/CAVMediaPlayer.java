@@ -61,6 +61,8 @@ public class CAVMediaPlayer implements IMediaPlayer {
     private native void _setVideoDecoder(String decoder);
     // 设置Surface
     private native void _setVideoSurface(Surface surface);
+    // 改变Surface大小
+    private native void _changeSurface(int width, int height);
     // 设置播放速度
     private native void _setSpeed(float speed);
     // 设置是否循环播放
@@ -194,6 +196,10 @@ public class CAVMediaPlayer implements IMediaPlayer {
         mSurfaceHolder = null;
         _setVideoSurface(surface);
         updateSurfaceScreenOn();
+    }
+
+    public void changeSurface(int width, int height) {
+        _changeSurface(width, height);
     }
 
     /**

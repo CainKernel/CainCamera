@@ -115,6 +115,15 @@ status_t CAVMediaPlayer::setVideoSurface(ANativeWindow *window) {
     }
     return OK;
 }
+
+status_t CAVMediaPlayer::changeSurface(int width, int height) {
+    LOGD("CAVMediaPlayer::changeSurface()");
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->surfaceChange(width, height);
+    }
+    return OK;
+}
+
 #endif
 
 status_t CAVMediaPlayer::setSpeed(float speed) {

@@ -634,7 +634,9 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-
+            if (mMediaPlayer != null) {
+                mMediaPlayer.changeSurface(width, height);
+            }
         }
 
         @Override
@@ -701,10 +703,10 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             }
             mMediaPlayer.setSurface(mSurface);
             mMediaPlayer.setVolume(mSourceVolumePercent, mSourceVolumePercent);
+            mMediaPlayer.prepare();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        mMediaPlayer.prepare();
         mMediaPlayer.start();
     }
 

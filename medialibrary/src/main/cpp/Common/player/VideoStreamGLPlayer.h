@@ -68,6 +68,8 @@ public:
 
     void surfaceCreated(ANativeWindow *window);
 
+    void surfaceChange(int width, int height);
+
     // 切换滤镜
     void changeFilter(RenderNodeType type, const char *filterName);
 
