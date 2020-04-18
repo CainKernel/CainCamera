@@ -643,6 +643,26 @@ com_cgfay_media_CAVMediaPlayer_isPlaying(JNIEnv *env, jobject thiz) {
     return is_playing;
 }
 
+void com_cgfay_media_CAVMediaPlayer_changeFilter(JNIEnv *env, jobject thiz, int node_type, jstring filterName_) {
+    auto mp = getMediaPlayer(env, thiz);
+    if (mp == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException");
+        return;
+    }
+    const char *name = env->GetStringUTFChars(filterName_, 0);
+    mp->changeFilter(node_type, name);
+    env->ReleaseStringUTFChars(filterName_, name);
+}
+
+void com_cgfay_media_CAVMediaPlayer_changeFilterById(JNIEnv *env, jobject thiz, int node_type, jint filterId) {
+    auto mp = getMediaPlayer(env, thiz);
+    if (mp == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException");
+        return;
+    }
+    mp->changeFilter(node_type, filterId);
+}
+
 //--------------------------------------------------------------------------------------------------
 
 static const JNINativeMethod gMethods[] = {
@@ -679,7 +699,9 @@ static const JNINativeMethod gMethods[] = {
         {"_getVideoWidth", "()I", (void *) com_cgfay_media_CAVMediaPlayer_getVideoWidth},
         {"_getVideoHeight", "()I", (void *) com_cgfay_media_CAVMediaPlayer_getVideoHeight},
         {"_isLooping", "()Z", (void *) com_cgfay_media_CAVMediaPlayer_isLooping},
-        {"_isPlaying", "()Z", (void *) com_cgfay_media_CAVMediaPlayer_isPlaying}
+        {"_isPlaying", "()Z", (void *) com_cgfay_media_CAVMediaPlayer_isPlaying},
+        {"_changeFilter", "(ILjava/lang/String;)V", (void *)com_cgfay_media_CAVMediaPlayer_changeFilter},
+        {"_changeFilter", "(II)V", (void *)com_cgfay_media_CAVMediaPlayer_changeFilterById},
 };
 
 /**

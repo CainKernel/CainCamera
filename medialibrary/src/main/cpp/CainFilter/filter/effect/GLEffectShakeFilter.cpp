@@ -54,7 +54,7 @@ void GLEffectShakeFilter::initProgram(const char *vertexShader, const char *frag
 
 void GLEffectShakeFilter::setTimeStamp(double timeStamp) {
     GLFilter::setTimeStamp(timeStamp);
-    double interval = fmod(timeStamp, 40);
+    double interval = fmod(timeStamp, 33);
     offset += (float)(interval * 0.0050f);
     if (offset > 1.0f) {
         offset = 0.0f;

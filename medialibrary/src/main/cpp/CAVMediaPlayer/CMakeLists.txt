@@ -1,9 +1,10 @@
 # 添加目录
+set(filter_dir ../CainFilter)
 set(common_dir ../Common)
 set(native_help ../nativehelp)
 
 # 添加头文件路径
-include_directories(${common_dir} ${native_help})
+include_directories(${filter_dir} ${common_dir} ${native_help})
 
 # 添加源文件
 add_library(cav_player
@@ -35,10 +36,12 @@ add_library(cav_player
 
              # video
              ${common_dir}/video/AVideoPlay.cpp
+             ${common_dir}/video/GLVideoRender.cpp
 
              # player
              ${common_dir}/player/AudioStreamPlayer.cpp
              ${common_dir}/player/Timestamp.cpp
+             ${common_dir}/player/VideoStreamGLPlayer.cpp
              ${common_dir}/player/VideoStreamPlayer.cpp
              ${common_dir}/player/CAVMediaPlayer.cpp
 
@@ -51,6 +54,7 @@ target_link_libraries( cav_player
 
                        ffmpeg
                        yuv
+                       cainfilter
 
                        android
                        jnigraphics

@@ -205,11 +205,6 @@ public class VideoPlayerFragment  extends Fragment {
         mVideoPlayer.setOnPreparedListener(mp -> {
             Log.d(TAG, "onPrepared: ");
             if (getContext() != null) {
-                ViewGroup.LayoutParams params = mSurfaceView.getLayoutParams();
-                params.width = DisplayUtils.getScreenWidth(getContext());
-                params.height = mVideoPlayer.getVideoHeight() * params.width / mVideoPlayer.getVideoWidth();
-                Log.d(TAG, "onPlaying: width " + params.width + ", height " + params.height);
-                mSurfaceView.setLayoutParams(params);
                 mProgressBar.setMax((int) mVideoPlayer.getDuration());
             }
         });

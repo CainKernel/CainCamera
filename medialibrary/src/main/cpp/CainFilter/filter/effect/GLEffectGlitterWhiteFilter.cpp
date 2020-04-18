@@ -43,7 +43,7 @@ void GLEffectGlitterWhiteFilter::initProgram(const char *vertexShader, const cha
 
 void GLEffectGlitterWhiteFilter::setTimeStamp(double timeStamp) {
     GLFilter::setTimeStamp(timeStamp);
-    double interval = fmod(timeStamp, 40);
+    double interval = fmod(timeStamp, 33);
     color += interval * 0.015f;
     if (color > 1.0f) {
         color = 0.0f;

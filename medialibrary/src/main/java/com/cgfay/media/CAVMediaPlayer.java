@@ -100,6 +100,19 @@ public class CAVMediaPlayer implements IMediaPlayer {
     // 是否正在播放中
     private native boolean _isPlaying();
 
+    // 渲染结点类型，跟Native层的RenderNodeType数值保持一致。
+    private static final int NODE_NONE = -1;
+    private static final int NODE_INPUT = 0;
+    private static final int NODE_BEAUTY = 1;
+    private static final int NODE_FACE = 2;
+    private static final int NODE_MAKEUP = 3;
+    private static final int NODE_FILTER = 4;
+    private static final int NODE_EFFECT = 5;
+    private static final int NODE_DISPLAY = 7;
+
+    private native void _changeFilter(int type, String name);
+    private native void _changeFilter(int type, int id);
+
     @AccessedByNative
     private long mNativeContext;
     private SurfaceHolder mSurfaceHolder;
@@ -600,6 +613,38 @@ public class CAVMediaPlayer implements IMediaPlayer {
     @Override
     public boolean isPlaying() {
         return _isPlaying();
+    }
+
+    /**
+     * change filter
+     * @param name filter name
+     */
+    public void changeFilter(String name) {
+        _changeFilter(NODE_FILTER, name);
+    }
+
+    /**
+     * change filter
+     * @param id filter id
+     */
+    public void changeFilter(int id) {
+        _changeFilter(NODE_FILTER, id);
+    }
+
+    /**
+     * change effect
+     * @param name effect name
+     */
+    public void changeEffect(String name) {
+        _changeFilter(NODE_EFFECT, name);
+    }
+
+    /**
+     * change effect
+     * @param id effect id
+     */
+    public void changeEffect(int id) {
+        _changeFilter(NODE_EFFECT, id);
     }
 
     /**

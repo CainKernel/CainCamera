@@ -10,7 +10,7 @@ CAVMediaPlayer::CAVMediaPlayer() {
     mMessageQueue = std::unique_ptr<MessageQueue>(new MessageQueue());
     mTimestamp = std::make_shared<Timestamp>();
     mStreamPlayListener = std::make_shared<MediaPlayerListener>(this);
-    mVideoPlayer = std::make_shared<VideoStreamPlayer>(mStreamPlayListener);
+    mVideoPlayer = std::make_shared<VideoStreamGLPlayer>(mStreamPlayListener);
     mVideoPlayer->setTimestamp(mTimestamp);
 
     mAudioPlayer = std::make_shared<AudioStreamPlayer>(mStreamPlayListener);
@@ -111,11 +111,7 @@ status_t CAVMediaPlayer::setVideoDecoder(const char *decoder) {
 status_t CAVMediaPlayer::setVideoSurface(ANativeWindow *window) {
     LOGD("CAVMediaPlayer::setVideoSurface()");
     if (mVideoPlayer != nullptr) {
-        auto play = mVideoPlayer->getPlayer();
-        auto videoPlayer = std::dynamic_pointer_cast<AVideoPlay>(play);
-        if (videoPlayer != nullptr) {
-            videoPlayer->setOutputSurface(window);
-        }
+        mVideoPlayer->surfaceCreated(window);
     }
     return OK;
 }
@@ -297,6 +293,18 @@ void CAVMediaPlayer::onSeekComplete(AVMediaType type) {
 void CAVMediaPlayer::onCompletion(AVMediaType type) {
     mMessageQueue->pushMessage(new Message(MSG_COMPLETED));
     mCondition.signal();
+}
+
+void CAVMediaPlayer::changeFilter(int type, const char *name) {
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->changeFilter((RenderNodeType)type, name);
+    }
+}
+
+void CAVMediaPlayer::changeFilter(int type, const int id) {
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->changeFilter((RenderNodeType)type, id);
+    }
 }
 
 void CAVMediaPlayer::notify(int msg, int arg1, int arg2) {

@@ -258,8 +258,13 @@ bool VideoStreamPlayer::hasVideo() {
     return false;
 }
 
-std::shared_ptr<VideoPlay> VideoStreamPlayer::getPlayer() {
-    return mVideoPlayer;
+void VideoStreamPlayer::surfaceCreated(ANativeWindow *window) {
+    if (mVideoPlayer != nullptr) {
+        auto videoPlayer = std::dynamic_pointer_cast<AVideoPlay>(mVideoPlayer);
+        if (videoPlayer != nullptr) {
+            videoPlayer->setOutputSurface(window);
+        }
+    }
 }
 
 /**

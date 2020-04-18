@@ -16,6 +16,7 @@
 #include <MessageQueue.h>
 #include <player/OnPlayListener.h>
 #include <player/Timestamp.h>
+#include "VideoStreamGLPlayer.h"
 
 /**
  * 播放器事件类型
@@ -162,6 +163,10 @@ public:
 
     void onCompletion(AVMediaType type);
 
+    void changeFilter(int type, const char *name);
+
+    void changeFilter(int type, const int id);
+
     // 通知回调
     void notify(int msg, int arg1 = -1, int arg2 = -1);
 
@@ -188,7 +193,7 @@ private:
     std::shared_ptr<OnPlayListener> mPlayListener;
     std::shared_ptr<StreamPlayListener> mStreamPlayListener;
     std::shared_ptr<AudioStreamPlayer> mAudioPlayer;
-    std::shared_ptr<VideoStreamPlayer> mVideoPlayer;
+    std::shared_ptr<VideoStreamGLPlayer> mVideoPlayer;
     std::unique_ptr<MessageQueue> mMessageQueue;
     std::shared_ptr<Timestamp> mTimestamp;
 };

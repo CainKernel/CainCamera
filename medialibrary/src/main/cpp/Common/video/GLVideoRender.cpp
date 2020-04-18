@@ -1,11 +1,12 @@
 //
-// Created by cain on 2018/12/30.
+// Created by CainHuang on 2020-04-18.
 //
 
-#include "GLESDevice.h"
+#include <AVMediaHeader.h>
+#include "GLVideoRender.h"
 
-GLESDevice::GLESDevice() {
-    mWindow = NULL;
+GLVideoRender::GLVideoRender() {
+    mWindow = nullptr;
     mSurfaceWidth = 0;
     mSurfaceHeight = 0;
     eglSurface = EGL_NO_SURFACE;
@@ -17,7 +18,7 @@ GLESDevice::GLESDevice() {
 
     mVideoTexture = (Texture *) malloc(sizeof(Texture));
     memset(mVideoTexture, 0, sizeof(Texture));
-    mRenderNode = NULL;
+    mRenderNode = nullptr;
     nodeList = new RenderNodeList();
     nodeList->addNode(new DisplayRenderNode());     // 显示渲染结点
     memset(&filterInfo, 0, sizeof(FilterInfo));
@@ -30,33 +31,30 @@ GLESDevice::GLESDevice() {
     resetTexVertices();
 }
 
-GLESDevice::~GLESDevice() {
-    mMutex.lock();
-    terminate();
-    mMutex.unlock();
+GLVideoRender::~GLVideoRender() {
+    terminate(true);
 }
 
-void GLESDevice::surfaceCreated(ANativeWindow *window) {
-    mMutex.lock();
-    if (mWindow != NULL) {
+void GLVideoRender::surfaceCreated(ANativeWindow *window) {
+    if (mWindow != nullptr) {
         ANativeWindow_release(mWindow);
-        mWindow = NULL;
+        mWindow = nullptr;
         mSurfaceReset = true;
     }
     mWindow = window;
-    if (mWindow != NULL) {
+    if (mWindow != nullptr) {
         mSurfaceWidth = ANativeWindow_getWidth(mWindow);
         mSurfaceHeight = ANativeWindow_getHeight(mWindow);
     }
     mHasSurface = true;
-    mMutex.unlock();
 }
 
-void GLESDevice::terminate() {
-    terminate(true);
+void GLVideoRender::surfaceChanged(int width, int height) {
+    mSurfaceWidth = width;
+    mSurfaceHeight = height;
 }
 
-void GLESDevice::terminate(bool releaseContext) {
+void GLVideoRender::terminate(bool releaseContext) {
     if (eglSurface != EGL_NO_SURFACE) {
         eglHelper->destroySurface(eglSurface);
         eglSurface = EGL_NO_SURFACE;
@@ -70,24 +68,30 @@ void GLESDevice::terminate(bool releaseContext) {
         eglHelper->release();
         mHaveEGlContext = false;
     }
+    // 释放Surface
+    if (releaseContext && mWindow != nullptr) {
+        ANativeWindow_release(mWindow);
+        mWindow = nullptr;
+    }
 }
 
-void GLESDevice::setTimeStamp(double timeStamp) {
-    mMutex.lock();
+/**
+ * 设置时间戳
+ */
+void GLVideoRender::setTimeStamp(double timeStamp) {
     if (nodeList) {
         nodeList->setTimeStamp(timeStamp);
     }
-    mMutex.unlock();
 }
 
-void GLESDevice::onInitTexture(int width, int height, TextureFormat format, BlendMode blendMode,
-                               int rotate) {
-    mMutex.lock();
-
+/**
+ * 初始化纹理
+ */
+void GLVideoRender::initTexture(int width, int height, int rotate) {
     // 创建EGLContext
     if (!mHaveEGlContext) {
         mHaveEGlContext = eglHelper->init(FLAG_TRY_GLES3);
-        ALOGD("mHaveEGlContext = %d", mHaveEGlContext);
+        LOGD("mHaveEGlContext = %d", mHaveEGlContext);
     }
 
     if (!mHaveEGlContext) {
@@ -101,12 +105,12 @@ void GLESDevice::onInitTexture(int width, int height, TextureFormat format, Blen
     }
 
     // 创建/释放EGLSurface
-    if (eglSurface == EGL_NO_SURFACE && mWindow != NULL) {
+    if (eglSurface == EGL_NO_SURFACE && mWindow != nullptr) {
         if (mHasSurface && !mHaveEGLSurface) {
             eglSurface = eglHelper->createSurface(mWindow);
             if (eglSurface != EGL_NO_SURFACE) {
                 mHaveEGLSurface = true;
-                ALOGD("mHaveEGLSurface = %d", mHaveEGLSurface);
+                LOGD("mHaveEGLSurface = %d", mHaveEGLSurface);
             }
         }
     } else if (eglSurface != EGL_NO_SURFACE && mHaveEGLSurface) {
@@ -117,11 +121,11 @@ void GLESDevice::onInitTexture(int width, int height, TextureFormat format, Blen
     }
 
     // 计算帧的宽高，如果不相等，则需要重新计算缓冲区的大小
-    if (mWindow != NULL) {
+    if (mWindow != nullptr) {
         mSurfaceWidth = ANativeWindow_getWidth(mWindow);
         mSurfaceHeight = ANativeWindow_getHeight(mWindow);
     }
-    if (mWindow != NULL && mSurfaceWidth != 0 && mSurfaceHeight != 0) {
+    if (mWindow != nullptr && mSurfaceWidth != 0 && mSurfaceHeight != 0) {
         // 宽高比例不一致时，需要调整缓冲区的大小，这里是以宽度为基准
         if ((mSurfaceWidth / mSurfaceHeight) != (width / height)) {
             mSurfaceHeight = mSurfaceWidth * height / width;
@@ -133,13 +137,13 @@ void GLESDevice::onInitTexture(int width, int height, TextureFormat format, Blen
     mVideoTexture->frameWidth = width;
     mVideoTexture->frameHeight = height;
     mVideoTexture->height = height;
-    mVideoTexture->format = format;
-    mVideoTexture->blendMode = blendMode;
+    mVideoTexture->format = FMT_YUV420P;
+    mVideoTexture->blendMode = BLEND_NONE;
     mVideoTexture->direction = FLIP_NONE;
     eglHelper->makeCurrent(eglSurface);
-    if (mRenderNode == NULL) {
+    if (mRenderNode == nullptr) {
         mRenderNode = new InputRenderNode();
-        if (mRenderNode != NULL) {
+        if (mRenderNode != nullptr) {
             mRenderNode->initFilter(mVideoTexture);
             FrameBuffer *frameBuffer = new FrameBuffer(width, height);
             frameBuffer->init();
@@ -152,55 +156,48 @@ void GLESDevice::onInitTexture(int width, int height, TextureFormat format, Blen
     }
     nodeList->init();
     nodeList->setTextureSize(width, height);
-    mMutex.unlock();
 }
 
-int GLESDevice::onUpdateYUV(uint8_t *yData, int yPitch, uint8_t *uData, int uPitch, uint8_t *vData,
-                            int vPitch) {
+/**
+ * 更新上载yuv纹理数据
+ * @param yData
+ * @param yPitch
+ * @param uData
+ * @param uPitch
+ * @param vData
+ * @param vPitch
+ * @return
+ */
+int GLVideoRender::uploadData(uint8_t *yData, int yPitch, uint8_t *uData, int uPitch, uint8_t *vData,
+                          int vPitch) {
     if (!mHaveEGlContext) {
         return -1;
     }
-    mMutex.lock();
     mVideoTexture->pitches[0] = yPitch;
     mVideoTexture->pitches[1] = uPitch;
     mVideoTexture->pitches[2] = vPitch;
     mVideoTexture->pixels[0] = yData;
     mVideoTexture->pixels[1] = uData;
     mVideoTexture->pixels[2] = vData;
-    if (mRenderNode != NULL && eglSurface != EGL_NO_SURFACE) {
+    if (mRenderNode != nullptr && eglSurface != EGL_NO_SURFACE) {
         eglHelper->makeCurrent(eglSurface);
         mRenderNode->uploadTexture(mVideoTexture);
     }
     // 设置像素实际的宽度，即linesize的值
     mVideoTexture->width = yPitch;
-    mMutex.unlock();
     return 0;
 }
 
-int GLESDevice::onUpdateARGB(uint8_t *rgba, int pitch) {
+/**
+ * 渲染一帧数据
+ * @return
+ */
+int GLVideoRender::renderFrame() {
     if (!mHaveEGlContext) {
         return -1;
     }
-    mMutex.lock();
-    mVideoTexture->pitches[0] = pitch;
-    mVideoTexture->pixels[0] = rgba;
-    if (mRenderNode != NULL && eglSurface != EGL_NO_SURFACE) {
-        eglHelper->makeCurrent(eglSurface);
-        mRenderNode->uploadTexture(mVideoTexture);
-    }
-    // 设置像素实际的宽度，即linesize的值
-    mVideoTexture->width = pitch / 4;
-    mMutex.unlock();
-    return 0;
-}
-
-int GLESDevice::onRequestRender(bool flip) {
-    if (!mHaveEGlContext) {
-        return -1;
-    }
-    mMutex.lock();
-    mVideoTexture->direction = flip ? FLIP_VERTICAL : FLIP_NONE;
-    if (mRenderNode != NULL && eglSurface != EGL_NO_SURFACE) {
+    mVideoTexture->direction = FLIP_NONE;
+    if (mRenderNode != nullptr && eglSurface != EGL_NO_SURFACE) {
         eglHelper->makeCurrent(eglSurface);
         int texture = mRenderNode->drawFrameBuffer(mVideoTexture);
         if (mSurfaceWidth != 0 && mSurfaceHeight != 0) {
@@ -209,22 +206,33 @@ int GLESDevice::onRequestRender(bool flip) {
         nodeList->drawFrame(texture, vertices, textureVertices);
         eglHelper->swapBuffers(eglSurface);
     }
-    mMutex.unlock();
     return 0;
 }
 
-
-void GLESDevice::changeFilter(RenderNodeType type, const char *filterName) {
-    mMutex.lock();
+/**
+ * 切换滤镜
+ * @param type
+ * @param filterName
+ */
+void GLVideoRender::changeFilter(RenderNodeType type, const char *filterName) {
+    if (filterInfo.type == type && strcmp(filterName, filterInfo.name)) {
+        return;
+    }
     filterInfo.type = type;
     filterInfo.name = av_strdup(filterName);
     filterInfo.id = -1;
     filterChange = true;
-    mMutex.unlock();
 }
 
-void GLESDevice::changeFilter(RenderNodeType type, const int id) {
-    mMutex.lock();
+/**
+ * 切换滤镜
+ * @param type
+ * @param id
+ */
+void GLVideoRender::changeFilter(RenderNodeType type, const int id) {
+    if (filterInfo.type == type && filterInfo.id == id) {
+        return;
+    }
     filterInfo.type = type;
     if (filterInfo.name) {
         av_freep(&filterInfo.name);
@@ -233,17 +241,16 @@ void GLESDevice::changeFilter(RenderNodeType type, const int id) {
     filterInfo.name = nullptr;
     filterInfo.id = id;
     filterChange = true;
-    mMutex.unlock();
 }
 
-void GLESDevice::resetVertices() {
+void GLVideoRender::resetVertices() {
     const float *verticesCoord = CoordinateUtils::getVertexCoordinates();
     for (int i = 0; i < 8; ++i) {
         vertices[i] = verticesCoord[i];
     }
 }
 
-void GLESDevice::resetTexVertices() {
+void GLVideoRender::resetTexVertices() {
     const float *vertices = CoordinateUtils::getTextureCoordinates(ROTATE_NONE);
     for (int i = 0; i < 8; ++i) {
         textureVertices[i] = vertices[i];

@@ -45,7 +45,7 @@ private:
 
     Mutex mMutex;
     Condition mCondition;
-    Thread *mVideoThread;   // 音频播放线程
+    Thread *mVideoThread;   // 视频播放线程
     bool mAbortRequest;     // 终止标志
     bool mPauseRequest;     // 暂停标志
     bool mForceRender;      // 是否立即刷新

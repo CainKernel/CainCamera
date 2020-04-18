@@ -280,7 +280,7 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             mAudioPlayer.release();
             mAudioPlayer = null;
         }
-        FileUtils.deleteFile(mVideoPath);
+//        FileUtils.deleteFile(mVideoPath);
         super.onDestroy();
     }
 
@@ -807,6 +807,9 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     private VideoEffectAdapter.OnEffectChangeListener mEffectChangeListener = effectType -> {
         // todo change effect
         Log.d(TAG, "onEffectChanged: ");
+        if (mMediaPlayer != null) {
+            mMediaPlayer.changeEffect(effectType.getId());
+        }
     };
 
     /**

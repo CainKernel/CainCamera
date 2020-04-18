@@ -1,25 +1,30 @@
 //
-// Created by CainHuang on 2020-02-25.
+// Created by CainHuang on 2020-04-18.
 //
 
-#ifndef VIDEOSTREAMPLAYER_H
-#define VIDEOSTREAMPLAYER_H
+#ifndef VIDEOSTREAMGLPLAYER_H
+#define VIDEOSTREAMGLPLAYER_H
 
-#include <video/VideoPlay.h>
-#include <video/AVideoPlay.h>
+#include <android/native_window.h>
+#include <android/native_window_jni.h>
+#include <node/DisplayRenderNode.h>
+#include <node/InputRenderNode.h>
+#include <node/RenderNodeList.h>
+
 #include <SafetyQueue.h>
 #include <decoder/DecodeVideoThread.h>
+#include <video/GLVideoRender.h>
 #include "StreamPlayListener.h"
 #include "Timestamp.h"
 
 /**
- * 视频流播放器
+ * 基于OpenGLES的视频流播放器
  */
-class VideoStreamPlayer {
+class VideoStreamGLPlayer : public Runnable {
 public:
-    VideoStreamPlayer(const std::shared_ptr<StreamPlayListener> &listener = nullptr);
+    VideoStreamGLPlayer(const std::shared_ptr<StreamPlayListener> &listener = nullptr);
 
-    virtual ~VideoStreamPlayer();
+    virtual ~VideoStreamGLPlayer();
 
     void setTimestamp(std::shared_ptr<Timestamp> timestamp);
 
@@ -59,11 +64,19 @@ public:
 
     bool hasVideo();
 
-    int onVideoProvide(uint8_t *buffer, int width, int height, AVPixelFormat format);
-
     void release();
 
     void surfaceCreated(ANativeWindow *window);
+
+    // 切换滤镜
+    void changeFilter(RenderNodeType type, const char *filterName);
+
+    // 切换滤镜
+    void changeFilter(RenderNodeType type, const int id);
+
+    void run() override;
+
+public:
 
     // 解码开始回调
     void onDecodeStart();
@@ -78,6 +91,12 @@ public:
     void onSeekError(int ret);
 
 private:
+    // 刷新并渲染视频帧
+    void refreshRenderFrame();
+
+    // 上载纹理
+    void renderFrame(AVFrame *frame);
+
     // 清空缓冲队列
     void flushQueue();
 
@@ -99,29 +118,34 @@ private:
     // 获取倍速
     float getSpeed();
 
-    // 渲染一帧图片
-    int renderFrame(uint8_t *buffer, int width, int height, AVPixelFormat format);
 private:
     Mutex mMutex;
     Condition mCondition;
+    // 同步线程
+    Thread *mRenderThread;
+
     std::shared_ptr<OnDecodeListener> mDecodeListener;
     std::shared_ptr<DecodeVideoThread> mVideoThread;
-    std::shared_ptr<VideoProvider> mVideoProvider;
-    std::shared_ptr<VideoPlay> mVideoPlayer;
     std::weak_ptr<StreamPlayListener> mPlayListener;
     SafetyQueue<Picture *> *mFrameQueue;
     std::weak_ptr<Timestamp> mTimestamp;
+
+    // 渲染器
+    std::shared_ptr<GLVideoRender> mVideoRender;
 
     SwsContext *pSwsContext;
 
     AVFrame *mCurrentFrame;
     AVFrame *mConvertFrame;
+    uint8_t *mBuffer;
+    float mRefreshRate;     // 刷新频率, 默认30fps
     float mSpeed;
     bool mLooping;
     bool mPrepared;
-    bool mPlaying;
+    bool mAbortRequest;     // 终止标志
+    bool mPauseRequest;     // 暂停标志
+    bool mForceRender;      // 是否立即刷新
     bool mExit;
-    bool mForceRender;
     float mSeekTime;
 
     float mCurrentPts;
@@ -129,30 +153,13 @@ private:
 };
 
 /**
- * 播放线程提供者
- */
-class VideoStreamProvider : public VideoProvider {
-public:
-    VideoStreamProvider();
-
-    virtual ~VideoStreamProvider();
-
-    void setPlayer(VideoStreamPlayer *player);
-
-    int onVideoProvide(uint8_t *buffer, int width, int height, AVPixelFormat format) override;
-
-private:
-    VideoStreamPlayer *player;
-};
-
-/**
  * 解码监听器
  */
-class VideoDecodeListener : public OnDecodeListener {
+class VideoStreamDecodeListener : public OnDecodeListener {
 public:
-    VideoDecodeListener(VideoStreamPlayer *player);
+    VideoStreamDecodeListener(VideoStreamGLPlayer *player);
 
-    virtual ~VideoDecodeListener();
+    virtual ~VideoStreamDecodeListener();
 
     void onDecodeStart(AVMediaType type) override;
 
@@ -163,7 +170,7 @@ public:
     void onSeekError(AVMediaType type, int ret) override;
 
 private:
-    VideoStreamPlayer *player;
+    VideoStreamGLPlayer *player;
 };
 
-#endif //VIDEOSTREAMPLAYER_H
+#endif //VIDEOSTREAMGLPLAYER_H

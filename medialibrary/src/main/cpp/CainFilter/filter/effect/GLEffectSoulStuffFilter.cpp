@@ -48,7 +48,7 @@ void GLEffectSoulStuffFilter::initProgram(const char *vertexShader, const char *
 
 void GLEffectSoulStuffFilter::setTimeStamp(double timeStamp) {
     GLFilter::setTimeStamp(timeStamp);
-    double interval = fmod(timeStamp, 40);
+    double interval = fmod(timeStamp, 33);
     offset += interval * 0.0025f;
     if (offset >= 1.0f) {
         offset = 0.0f;
