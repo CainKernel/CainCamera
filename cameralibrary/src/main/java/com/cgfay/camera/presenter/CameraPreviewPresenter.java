@@ -35,7 +35,7 @@ import com.cgfay.filter.glfilter.resource.bean.ResourceData;
 import com.cgfay.filter.glfilter.resource.bean.ResourceType;
 import com.cgfay.filter.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.media.recorder.AudioParams;
-import com.cgfay.media.recorder.HWMediaRecorder;
+import com.cgfay.media.recorder.CAVMediaRecorder;
 import com.cgfay.media.recorder.MediaInfo;
 import com.cgfay.media.recorder.MediaType;
 import com.cgfay.media.recorder.OnRecordStateListener;

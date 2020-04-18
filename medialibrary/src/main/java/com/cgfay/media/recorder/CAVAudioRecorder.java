@@ -6,6 +6,7 @@ import android.media.MediaRecorder;
 import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -15,16 +16,16 @@ import java.nio.ByteOrder;
  * @author CainHuang
  * @date 2019/6/30
  */
-public final class AudioRecorder implements Runnable {
+public final class CAVAudioRecorder implements Runnable {
 
-    private int mBufferSize = AudioEncoder.BUFFER_SIZE;
+    private int mBufferSize = CAVAudioEncoder.BUFFER_SIZE;
 
     // 录音器
     private AudioRecord mAudioRecord;
     // 音频转码器
     private AudioTranscoder mAudioTranscoder;
     // 音频编码器
-    private AudioEncoder mAudioEncoder;
+    private CAVAudioEncoder mAudioEncoder;
     // 音频参数
     private AudioParams mAudioParams;
     // 录制标志位
@@ -76,7 +77,7 @@ public final class AudioRecorder implements Runnable {
             if (mBufferSize < minBufferSize / speed * 2) {
                 mBufferSize = (int) (minBufferSize / speed * 2);
             } else {
-                mBufferSize = AudioEncoder.BUFFER_SIZE;
+                mBufferSize = CAVAudioEncoder.BUFFER_SIZE;
             }
             mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, params.getSampleRate(),
                     params.getChannel(), params.getAudioFormat(), minBufferSize);
@@ -88,7 +89,7 @@ public final class AudioRecorder implements Runnable {
         int channelCount = (params.getChannel() == AudioFormat.CHANNEL_IN_MONO)? 1 : 2;
 
         // 音频编码器
-        mAudioEncoder = new AudioEncoder(params.getBitRate(), params.getSampleRate(), channelCount);
+        mAudioEncoder = new CAVAudioEncoder(params.getBitRate(), params.getSampleRate(), channelCount);
         mAudioEncoder.setBufferSize(mBufferSize);
         mAudioEncoder.setOutputPath(params.getAudioPath());
         mAudioEncoder.prepare();

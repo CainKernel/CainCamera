@@ -16,6 +16,13 @@ public:
 
     }
 
+    virtual ~SafetyQueue() = default;
+
+    SafetyQueue(SafetyQueue const &other) {
+        std::lock_guard<std::mutex> lock(other.mutex);
+        queue = other.queue;
+    }
+
     void push(T element) {
         std::lock_guard<std::mutex> lock(mutex);
         queue.push(element);
@@ -34,7 +41,9 @@ public:
     T pop() {
         std::lock_guard<std::mutex> lock(mutex);
         T ret = queue.front();
-        queue.pop();
+        if (ret != nullptr) {
+            queue.pop();
+        }
         return ret;
     }
 

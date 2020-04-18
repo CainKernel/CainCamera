@@ -31,9 +31,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cgfay.filter.glfilter.resource.FilterHelper;
-import com.cgfay.filter.glfilter.resource.bean.ResourceData;
-import com.cgfay.media.MusicPlayer;
-import com.cgfay.media.VideoPlayer;
+import com.cgfay.media.CAVAudioPlayer;
+import com.cgfay.media.CAVMediaPlayer;
 import com.cgfay.uitls.fragment.BackPressedDialogFragment;
 import com.cgfay.uitls.utils.DensityUtils;
 import com.cgfay.uitls.utils.DisplayUtils;
@@ -45,7 +44,6 @@ import com.cgfay.video.adapter.VideoEffectAdapter;
 import com.cgfay.video.adapter.VideoEffectCategoryAdapter;
 import com.cgfay.video.adapter.VideoFilterAdapter;
 import com.cgfay.video.bean.EffectMimeType;
-import com.cgfay.video.bean.EffectType;
 import com.cgfay.video.widget.EffectSelectedSeekBar;
 import com.cgfay.video.widget.VideoTextureView;
 import com.cgfay.video.widget.WaveCutView;
@@ -113,8 +111,8 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
 
     // 播放器
     private volatile boolean mSeeking;
-    private MusicPlayer mAudioPlayer;
-    private VideoPlayer mMediaPlayer;
+    private CAVAudioPlayer mAudioPlayer;
+    private CAVMediaPlayer mMediaPlayer;
     private AudioManager mAudioManager;
     private int mPlayViewWidth;
     private int mPlayViewHeight;
@@ -599,7 +597,7 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             mAudioPlayer.release();
             mAudioPlayer = null;
         }
-        mAudioPlayer = new MusicPlayer();
+        mAudioPlayer = new CAVAudioPlayer();
         try {
             mAudioPlayer.setDataSource(mMusicPath);
             mAudioPlayer.setLooping(true);
@@ -656,7 +654,7 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
     private void openMediaPlayer() {
         mContentView.setKeepScreenOn(true);
         if (mMediaPlayer == null) {
-            mMediaPlayer = new VideoPlayer();
+            mMediaPlayer = new CAVMediaPlayer();
             mMediaPlayer.setLooping(true);
             mMediaPlayer.setVideoDecoder("h264_mediacodec");
         }
