@@ -417,8 +417,9 @@ void VideoStreamGLPlayer::onSeekError(int ret) {
 
 void VideoStreamGLPlayer::run() {
     mExit = false;
+    uint64_t offset = 0;
     while (true) {
-
+        uint64_t startMs = getCurrentTimeMs();
         mMutex.lock();
         if (mAbortRequest) {
             mMutex.unlock();
@@ -443,14 +444,21 @@ void VideoStreamGLPlayer::run() {
         refreshRenderFrame();
 
         // 按照mRefreshRate fps 的频率刷新
+        uint64_t currentMs = getCurrentTimeMs();
         if (mRefreshRate > 0 && !mForceRender) {
-            mCondition.waitRelativeMs(mMutex, static_cast<nsecs_t>(1000.0f / mRefreshRate));
+            nsecs_t duration = static_cast<nsecs_t>(1000.0f / mRefreshRate);
+            if (offset > duration / 2.0) {
+                offset = 0;
+            }
+            duration = duration - (currentMs - startMs - (uint64_t)fmax(offset, 0));
+            mCondition.waitRelativeMs(mMutex, duration);
         } else if (!mForceRender) { // 否则16毫秒刷新一次
             mCondition.waitRelativeMs(mMutex, 16);
         }
         mForceRender = false;
         mMutex.unlock();
         mCondition.signal();
+        offset = currentMs - getCurrentTimeMs();
     }
 
     // 终止渲染线程
