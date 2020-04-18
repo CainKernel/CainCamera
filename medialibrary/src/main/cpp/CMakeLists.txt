@@ -45,10 +45,10 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/CainFilter)
 add_subdirectory(${CMAKE_SOURCE_DIR}/MediaPlayer)
 
 # 音乐播放器
-add_subdirectory(${CMAKE_SOURCE_DIR}/MusicPlayer)
+add_subdirectory(${CMAKE_SOURCE_DIR}/CAVAudioPlayer)
 
 # 视频播放器
-add_subdirectory(${CMAKE_SOURCE_DIR}/VideoPlayer)
+add_subdirectory(${CMAKE_SOURCE_DIR}/CAVMediaPlayer)
 
-# 媒体编辑器
-add_subdirectory(${CMAKE_SOURCE_DIR}/MediaEditor)
+# 媒体导出器
+add_subdirectory(${CMAKE_SOURCE_DIR}/CAVMediaExporter)

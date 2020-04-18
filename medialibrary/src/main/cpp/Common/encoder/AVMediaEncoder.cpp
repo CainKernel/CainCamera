@@ -82,16 +82,16 @@ int AVMediaEncoder::createEncoder() {
 
 /**
  * 打开编码器
- * @param mEncodeOptions
+ * @param encodeOptions
  * @return
  */
-int AVMediaEncoder::openEncoder(std::map<std::string, std::string> mEncodeOptions) {
+int AVMediaEncoder::openEncoder(std::map<std::string, std::string> encodeOptions) {
     if (pCodecCtx == nullptr || pStream == nullptr) {
         return -1;
     }
     AVDictionary *options = nullptr;
-    auto it = mEncodeOptions.begin();
-    for (; it != mEncodeOptions.end(); it++) {
+    auto it = encodeOptions.begin();
+    for (; it != encodeOptions.end(); it++) {
         av_dict_set(&options, (*it).first.c_str(), (*it).second.c_str(), 0);
     }
 
@@ -138,6 +138,42 @@ int AVMediaEncoder::encodeFrame(AVFrame *frame, int *gotFrame) {
     av_init_packet(&packet);
 
     // 送去编码
+    ret = sendFrame(frame);
+    if (ret != 0) {
+        return ret;
+    }
+
+    // 取出编码后的数据
+    ret = receiveEncodePacket(&packet, gotFrame);
+    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+        av_packet_unref(&packet);
+        return 0;
+    } else if (ret < 0) {
+        LOGE("Failed to call avcodec_receive_packet: %s, type: %s", av_err2str(ret),
+             av_get_media_type_string(getMediaType()));
+        av_packet_unref(&packet);
+        return ret;
+    }
+
+    // 将数据包写入文件中
+    ret = writePacket(&packet);
+    av_packet_unref(&packet);
+    if (ret < 0) {
+        *gotFrame = 0;
+    } else {
+        *gotFrame = 1;
+    }
+    return ret;
+}
+
+/**
+ * 将一帧数据送去编码
+ * @param frame
+ * @return
+ */
+int AVMediaEncoder::sendFrame(AVFrame *frame) {
+    int ret;
+    // 送去编码
     ret = avcodec_send_frame(pCodecCtx, frame);
     if (ret < 0) {
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
@@ -146,45 +182,60 @@ int AVMediaEncoder::encodeFrame(AVFrame *frame, int *gotFrame) {
         LOGE("Failed to call avcodec_send_frame: %s", av_err2str(ret));
         return ret;
     }
-
-    while (ret >= 0) {
-        // 取出解码后的数据包
-        ret = avcodec_receive_packet(pCodecCtx, &packet);
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-            break;
-        } else if (ret < 0) {
-            LOGE("Failed to call avcodec_receive_packet: %s, type: %s", av_err2str(ret),
-                    av_get_media_type_string(getMediaType()));
-            av_packet_unref(&packet);
-            return ret;
-        }
-
-        // 计算输出的pts
-        av_packet_rescale_ts(&packet, pCodecCtx->time_base, pStream->time_base);
-        packet.stream_index = pStream->index;
-
-        // 写入文件
-        auto mediaMuxer = mWeakMuxer.lock();
-        if (mediaMuxer != nullptr) {
-            ret = mediaMuxer->writeFrame(&packet);
-            if (ret < 0) {
-                LOGE("Failed to call av_interleaved_write_frame: %s, type: %s", av_err2str(ret), av_get_media_type_string(getMediaType()));
-                av_packet_unref(&packet);
-                return ret;
-            }
-            LOGD("write packet: type:%s, pts: %d, s: %f", av_get_media_type_string(getMediaType()),
-                    packet.pts, (float) (packet.pts * av_q2d(pStream->time_base)));
-            *gotFrame = 1;
-        } else {
-            LOGE("Failed to find media muxer");
-            av_packet_unref(&packet);
-            *gotFrame = 0;
-            return ret;
-        }
-    }
-
-    av_packet_unref(&packet);
     return 0;
+}
+
+/**
+ * 接收编码后的数据包
+ * @param packet
+ * @param gotFrame
+ * @return
+ */
+int AVMediaEncoder::receiveEncodePacket(AVPacket *packet, int *gotFrame) {
+    int ret = 0, gotFrameLocal;
+    if (!gotFrame) {
+        gotFrame = &gotFrameLocal;
+    }
+    *gotFrame = 0;
+
+    // 取出解码后的数据包
+    ret = avcodec_receive_packet(pCodecCtx, packet);
+    if (ret < 0) {
+        return ret;
+    }
+    // 计算输出的pts
+    av_packet_rescale_ts(packet, pCodecCtx->time_base, pStream->time_base);
+    // 设置媒体流索引
+    packet->stream_index = pStream->index;
+    *gotFrame = 1;
+    return 0;
+}
+
+/**
+ * 将数据写入数据包中
+ * @param packet
+ * @return
+ */
+int AVMediaEncoder::writePacket(AVPacket *packet) {
+    int ret = -1;
+    if (packet == nullptr || packet->data == nullptr || packet->stream_index < 0) {
+        return ret;
+    }
+    // 写入文件
+    auto mediaMuxer = mWeakMuxer.lock();
+    if (mediaMuxer != nullptr) {
+        ret = mediaMuxer->writeFrame(packet);
+        if (ret < 0) {
+            LOGE("Failed to call av_interleaved_write_frame: %s, type: %s", av_err2str(ret), av_get_media_type_string(getMediaType()));
+            return ret;
+        }
+        LOGD("write packet: type:%s, pts: %ld, s: %f", av_get_media_type_string(getMediaType()),
+             packet->pts, (float) (packet->pts * av_q2d(pStream->time_base)));
+        return 0;
+    } else {
+        LOGE("Failed to find media muxer");
+        return ret;
+    }
 }
 
 /**

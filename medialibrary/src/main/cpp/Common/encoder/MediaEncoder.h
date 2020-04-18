@@ -18,10 +18,7 @@ public:
 
 class MediaEncoder {
 public:
-    virtual ~MediaEncoder(){}
-
-    // 设置编码监听器
-    virtual void setOnEncodingListener(OnEncodingListener *listener) = 0;
+    virtual ~MediaEncoder() = default;
 
     // 设置输出路径
     virtual void setOutputPath(const char *path) = 0;

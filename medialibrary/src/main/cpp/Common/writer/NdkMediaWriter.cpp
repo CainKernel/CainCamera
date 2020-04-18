@@ -221,8 +221,8 @@ int NdkMediaWriter::openEncoder(AVMediaType mediaType) {
  * @param mediaData
  * @return
  */
-int NdkMediaWriter::encodeMediaData(AVMediaData *mediaData) {
-    return encodeMediaData(mediaData, nullptr);
+int NdkMediaWriter::encodeAndWriteMediaData(AVMediaData *mediaData) {
+    return encodeAndWriteMediaData(mediaData, nullptr);
 }
 
 /**
@@ -231,7 +231,7 @@ int NdkMediaWriter::encodeMediaData(AVMediaData *mediaData) {
  * @param gotFrame
  * @return
  */
-int NdkMediaWriter::encodeMediaData(AVMediaData *mediaData, int *gotFrame) {
+int NdkMediaWriter::encodeAndWriteMediaData(AVMediaData *mediaData, int *gotFrame) {
     int gotFrameLocal;
     if (!gotFrame) {
         gotFrame = &gotFrameLocal;
@@ -257,8 +257,8 @@ int NdkMediaWriter::encodeMediaData(AVMediaData *mediaData, int *gotFrame) {
  * @param type
  * @return
  */
-int NdkMediaWriter::encodeFrame(AVFrame *frame, AVMediaType type) {
-    return encodeFrame(frame, type, nullptr);
+int NdkMediaWriter::encodeAndWriteFrame(AVFrame *frame, AVMediaType type) {
+    return encodeAndWriteFrame(frame, type, nullptr);
 }
 
 /**
@@ -268,16 +268,25 @@ int NdkMediaWriter::encodeFrame(AVFrame *frame, AVMediaType type) {
  * @param gotFrame
  * @return
  */
-int NdkMediaWriter::encodeFrame(AVFrame *frame, AVMediaType type, int *gotFrame) {
+int NdkMediaWriter::encodeAndWriteFrame(AVFrame *frame, AVMediaType type, int *gotFrame) {
+    if (frame == nullptr || frame->data == nullptr) {
+        return -1;
+    }
     auto mediaData = new AVMediaData();
     if (type == AVMEDIA_TYPE_VIDEO) {
         auto yuvData = convertToYuvData(frame);
         fillVideoData(mediaData, yuvData, yuvData->width, yuvData->height);
+        mediaData->pts = calculatePts(frame->pts, (AVRational){1, mFrameRate});
         delete yuvData;
     } else {
-        // todo 填充音频帧数据
+        // 计算出当前音频帧的缓冲区大小
+        int bufferSize = av_samples_get_buffer_size(nullptr, frame->channels, frame->nb_samples, (AVSampleFormat)frame->format, 1);
+        mediaData->sample_size = bufferSize;
+        mediaData->type = MediaAudio;
+        mediaData->pts = calculatePts(frame->pts, (AVRational){1, frame->sample_rate});
+        memcpy(mediaData->sample, frame->data, mediaData->sample_size);
     }
-    int ret = encodeMediaData(mediaData, gotFrame);
+    int ret = encodeAndWriteMediaData(mediaData, gotFrame);
     mediaData->free();
     delete mediaData;
     return ret;
@@ -290,7 +299,7 @@ int NdkMediaWriter::stop() {
     if (mHasVideo) {
         data->type = MediaVideo;
         while (true) {
-            ret = encodeMediaData(data, &gotFrame);
+            ret = encodeAndWriteMediaData(data, &gotFrame);
             if (ret < 0 || !gotFrame) {
                 break;
             }
@@ -301,7 +310,7 @@ int NdkMediaWriter::stop() {
         LOGI("MediaCodecWriter - flushing audio encoder");
         data->type = MediaAudio;
         while (true) {
-            ret = encodeMediaData(data, &gotFrame);
+            ret = encodeAndWriteMediaData(data, &gotFrame);
             if (ret < 0 || !gotFrame) {
                 break;
             }
@@ -374,4 +383,14 @@ void NdkMediaWriter::reset() {
 
 int NdkMediaWriter::getBufferSize() {
     return 1024 * mChannels * (mSampleFormat == AV_SAMPLE_FMT_S16 ? 2 : 1);
+}
+
+/**
+ * 计算当前的pts
+ * @param pts
+ * @param time_base
+ * @return
+ */
+int64_t NdkMediaWriter::calculatePts(int64_t pts, AVRational time_base) {
+    return (int64_t)(av_q2d(time_base) * 1000 * pts);
 }

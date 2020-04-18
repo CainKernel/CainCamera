@@ -21,7 +21,6 @@ public final class FFMediaRecorder {
 
     static {
         System.loadLibrary("ffmpeg");
-        System.loadLibrary("soundtouch");
         System.loadLibrary("yuv");
         System.loadLibrary("ffrecorder");
     }

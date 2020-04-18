@@ -27,10 +27,19 @@ public:
     int createEncoder();
 
     // 打开编码器
-    int openEncoder(std::map<std::string, std::string> mEncodeOptions);
+    int openEncoder(std::map<std::string, std::string> encodeOptions);
 
     // 编码一帧数据
     int encodeFrame(AVFrame *frame, int *gotFrame);
+
+    // 将一帧数据送去编码
+    int sendFrame(AVFrame *frame);
+
+    // 接收编码后的数据包
+    int receiveEncodePacket(AVPacket *packet, int *gotFrame);
+
+    //  将数据包写入文件中
+    int writePacket(AVPacket *packet);
 
     // 关闭编码器
     virtual void closeEncoder();

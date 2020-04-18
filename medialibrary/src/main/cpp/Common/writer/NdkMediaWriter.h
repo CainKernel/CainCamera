@@ -55,22 +55,25 @@ public:
     int prepare() override;
 
     // 编码媒体数据
-    int encodeMediaData(AVMediaData *mediaData) override;
+    int encodeAndWriteMediaData(AVMediaData *mediaData) override;
 
     // 编码媒体数据
-    int encodeMediaData(AVMediaData *mediaData, int *gotFrame) override;
+    int encodeAndWriteMediaData(AVMediaData *mediaData, int *gotFrame) override;
 
     // 编码一帧数据
-    int encodeFrame(AVFrame *frame, AVMediaType type) override;
+    int encodeAndWriteFrame(AVFrame *frame, AVMediaType type) override;
 
     // 编码一帧数据
-    int encodeFrame(AVFrame *frame, AVMediaType type, int *gotFrame) override;
+    int encodeAndWriteFrame(AVFrame *frame, AVMediaType type, int *gotFrame) override;
 
     // 停止写入
     int stop() override;
 
     // 释放资源
     void release() override;
+
+    // 计算pts
+    int64_t calculatePts(int64_t pts, AVRational time_base);
 
 private:
     // 打开输出文件
@@ -103,10 +106,10 @@ private:
     bool mHasAudio;                 // 是否存在音频流数据
 
     // 编码上下文
-    std::shared_ptr<AVMediaMuxer> mMediaMuxer; // media muxer
-    std::shared_ptr<NdkVideoEncoder> mVideoEncoder;  // video encoder
-    std::shared_ptr<NdkAudioEncoder> mAudioEncoder;  // audio encoder
-    std::shared_ptr<Resampler> mResampler;           // audio resampler
+    std::shared_ptr<AVMediaMuxer> mMediaMuxer;      // media muxer
+    std::shared_ptr<NdkVideoEncoder> mVideoEncoder; // video encoder
+    std::shared_ptr<NdkAudioEncoder> mAudioEncoder; // audio encoder
+    std::shared_ptr<Resampler> mResampler;          // audio resampler
 
     AVFrame *mImageFrame;           // 视频缓冲帧
     uint8_t *mImageBuffer;          // 视频缓冲区

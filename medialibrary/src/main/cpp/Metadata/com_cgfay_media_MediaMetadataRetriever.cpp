@@ -21,7 +21,7 @@ struct retriever_fields_t {
 
 static retriever_fields_t fields;
 static Mutex sLock;
-static const char * const RETRIEVER_CLASS_NAME = "com/cgfay/media/CainMediaMetadataRetriever";
+static const char * const RETRIEVER_CLASS_NAME = "com/cgfay/media/CAVMediaMetadataRetriever";
 
 
 // -------------------------------------------------------------------------------------------------
@@ -114,7 +114,7 @@ static void setRetriever(JNIEnv *env, jobject thiz, long retriever) {
 // -------------------------------------------------------------------------------------------------
 
 static void
-CainMediaMetadataRetriever_setDataSourceAndHeaders(
+CAVMediaMetadataRetriever_setDataSourceAndHeaders(
         JNIEnv *env, jobject thiz, jstring path_,
         jobjectArray keys, jobjectArray values) {
     ALOGV("setDataSource");
@@ -186,12 +186,12 @@ CainMediaMetadataRetriever_setDataSourceAndHeaders(
 
 
 static void
-CainMediaMetadataRetriever_setDataSource(JNIEnv *env, jobject thiz, jstring path_) {
-    CainMediaMetadataRetriever_setDataSourceAndHeaders(env, thiz, path_, NULL, NULL);
+CAVMediaMetadataRetriever_setDataSource(JNIEnv *env, jobject thiz, jstring path_) {
+    CAVMediaMetadataRetriever_setDataSourceAndHeaders(env, thiz, path_, NULL, NULL);
 }
 
 static void
-CainMediaMetadataRetriever_setDataSourceFD(JNIEnv *env, jobject thiz,
+CAVMediaMetadataRetriever_setDataSourceFD(JNIEnv *env, jobject thiz,
         jobject fileDescriptor, jlong offset, jlong length) {
     MediaMetadataRetriever *retriever = getRetriever(env, thiz);
     if (retriever == NULL) {
@@ -229,7 +229,7 @@ CainMediaMetadataRetriever_setDataSourceFD(JNIEnv *env, jobject thiz,
 }
 
 static jbyteArray
-CainMediaMetadataRetriever_getFrameAtTime(JNIEnv *env, jobject thiz, jlong timeUs, jint option) {
+CAVMediaMetadataRetriever_getFrameAtTime(JNIEnv *env, jobject thiz, jlong timeUs, jint option) {
 
     MediaMetadataRetriever *retriever = getRetriever(env, thiz);
     if (retriever == NULL) {
@@ -258,7 +258,7 @@ CainMediaMetadataRetriever_getFrameAtTime(JNIEnv *env, jobject thiz, jlong timeU
 }
 
 static jbyteArray
-CainMediaMetadataRetriever_getScaleFrameAtTime(JNIEnv *env, jobject thiz, jlong timeUs, jint option,
+CAVMediaMetadataRetriever_getScaleFrameAtTime(JNIEnv *env, jobject thiz, jlong timeUs, jint option,
         jint width, jint height) {
 
     MediaMetadataRetriever *retriever = getRetriever(env, thiz);
@@ -287,7 +287,7 @@ CainMediaMetadataRetriever_getScaleFrameAtTime(JNIEnv *env, jobject thiz, jlong 
 }
 
 static jbyteArray
-CainMediaMetadataRetriever_getEmbeddedPicture(JNIEnv *env, jobject thiz, jint pictureType) {
+CAVMediaMetadataRetriever_getEmbeddedPicture(JNIEnv *env, jobject thiz, jint pictureType) {
 
     MediaMetadataRetriever *retriever = getRetriever(env, thiz);
     if (retriever == NULL) {
@@ -314,7 +314,7 @@ CainMediaMetadataRetriever_getEmbeddedPicture(JNIEnv *env, jobject thiz, jint pi
 }
 
 static jstring
-CainMediaMetadataRetriever_extractMetadata(JNIEnv *env, jobject thiz, jstring key_) {
+CAVMediaMetadataRetriever_extractMetadata(JNIEnv *env, jobject thiz, jstring key_) {
 
     MediaMetadataRetriever *retriever = getRetriever(env, thiz);
     if (retriever == NULL) {
@@ -342,7 +342,7 @@ CainMediaMetadataRetriever_extractMetadata(JNIEnv *env, jobject thiz, jstring ke
 }
 
 static jstring
-CainMediaMetadataRetriever_extractMetadataFromChapter(JNIEnv *env, jobject thiz, jstring key_,
+CAVMediaMetadataRetriever_extractMetadataFromChapter(JNIEnv *env, jobject thiz, jstring key_,
         jint chapter) {
     MediaMetadataRetriever *retriever = getRetriever(env, thiz);
     if (retriever == NULL) {
@@ -370,7 +370,7 @@ CainMediaMetadataRetriever_extractMetadataFromChapter(JNIEnv *env, jobject thiz,
 }
 
 static jobject
-CainMediaMetadataRetriever_getAllMetadata(JNIEnv *env, jobject thiz) {
+CAVMediaMetadataRetriever_getAllMetadata(JNIEnv *env, jobject thiz) {
 
     MediaMetadataRetriever *retriever = getRetriever(env, thiz);
     if (retriever == NULL) {
@@ -403,7 +403,7 @@ CainMediaMetadataRetriever_getAllMetadata(JNIEnv *env, jobject thiz) {
 }
 
 static void
-CainMediaMetadataRetriever_setup(JNIEnv *env, jobject thiz) {
+CAVMediaMetadataRetriever_setup(JNIEnv *env, jobject thiz) {
     MediaMetadataRetriever* retriever = new MediaMetadataRetriever();
     if (retriever == NULL) {
         throwException(env, "java/lang/RuntimeException", "Out of memory");
@@ -413,7 +413,7 @@ CainMediaMetadataRetriever_setup(JNIEnv *env, jobject thiz) {
 }
 
 static void
-CainMediaMetadataRetriever_release(JNIEnv *env, jobject thiz) {
+CAVMediaMetadataRetriever_release(JNIEnv *env, jobject thiz) {
     Mutex::Autolock lock(sLock);
     MediaMetadataRetriever *retriever = getRetriever(env, thiz);
     delete retriever;
@@ -421,13 +421,13 @@ CainMediaMetadataRetriever_release(JNIEnv *env, jobject thiz) {
 }
 
 static void
-CainMediaMetadataRetriever_native_finalize(JNIEnv *env, jobject thiz) {
+CAVMediaMetadataRetriever_native_finalize(JNIEnv *env, jobject thiz) {
     ALOGV("native_finalize");
-    CainMediaMetadataRetriever_release(env, thiz);
+    CAVMediaMetadataRetriever_release(env, thiz);
 }
 
 static void
-CainMediaMetadataRetriever_native_init(JNIEnv *env) {
+CAVMediaMetadataRetriever_native_init(JNIEnv *env) {
     jclass clazz = env->FindClass(RETRIEVER_CLASS_NAME);
     if (clazz == NULL) {
         return;
@@ -441,32 +441,32 @@ CainMediaMetadataRetriever_native_init(JNIEnv *env) {
 // -------------------------------------------------------------------------------------------------
 
 static JNINativeMethod nativeMethods[] = {
-        {"setDataSource", "(Ljava/lang/String;)V", (void *)CainMediaMetadataRetriever_setDataSource},
+        {"setDataSource", "(Ljava/lang/String;)V", (void *)CAVMediaMetadataRetriever_setDataSource},
         {
             "_setDataSource",
             "(Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/String;)V",
-            (void *)CainMediaMetadataRetriever_setDataSourceAndHeaders
+            (void *)CAVMediaMetadataRetriever_setDataSourceAndHeaders
         },
-        {"setDataSource",   "(Ljava/io/FileDescriptor;JJ)V", (void *)CainMediaMetadataRetriever_setDataSourceFD},
+        {"setDataSource",   "(Ljava/io/FileDescriptor;JJ)V", (void *)CAVMediaMetadataRetriever_setDataSourceFD},
 
-        {"_getFrameAtTime", "(JI)[B", (void *)CainMediaMetadataRetriever_getFrameAtTime},
-        {"_getScaledFrameAtTime", "(JIII)[B", (void *)CainMediaMetadataRetriever_getScaleFrameAtTime},
-        {"getEmbeddedPicture", "(I)[B", (void *)CainMediaMetadataRetriever_getEmbeddedPicture},
+        {"_getFrameAtTime", "(JI)[B", (void *)CAVMediaMetadataRetriever_getFrameAtTime},
+        {"_getScaledFrameAtTime", "(JIII)[B", (void *)CAVMediaMetadataRetriever_getScaleFrameAtTime},
+        {"getEmbeddedPicture", "(I)[B", (void *)CAVMediaMetadataRetriever_getEmbeddedPicture},
 
-        {"extractMetadata", "(Ljava/lang/String;)Ljava/lang/String;", (void *)CainMediaMetadataRetriever_extractMetadata},
-        {"extractMetadataFromChapter", "(Ljava/lang/String;I)Ljava/lang/String;", (void *)CainMediaMetadataRetriever_extractMetadataFromChapter},
+        {"extractMetadata", "(Ljava/lang/String;)Ljava/lang/String;", (void *)CAVMediaMetadataRetriever_extractMetadata},
+        {"extractMetadataFromChapter", "(Ljava/lang/String;I)Ljava/lang/String;", (void *)CAVMediaMetadataRetriever_extractMetadataFromChapter},
 
-        {"_getAllMetadata", "()Ljava/util/HashMap;", (void *)CainMediaMetadataRetriever_getAllMetadata},
+        {"_getAllMetadata", "()Ljava/util/HashMap;", (void *)CAVMediaMetadataRetriever_getAllMetadata},
 
-        {"release", "()V", (void *)CainMediaMetadataRetriever_release},
-        {"native_setup", "()V", (void *)CainMediaMetadataRetriever_setup},
-        {"native_init", "()V", (void *)CainMediaMetadataRetriever_native_init},
-        {"native_finalize", "()V", (void *)CainMediaMetadataRetriever_native_finalize},
+        {"release", "()V", (void *)CAVMediaMetadataRetriever_release},
+        {"native_setup", "()V", (void *)CAVMediaMetadataRetriever_setup},
+        {"native_init", "()V", (void *)CAVMediaMetadataRetriever_native_init},
+        {"native_finalize", "()V", (void *)CAVMediaMetadataRetriever_native_finalize},
 
 };
 
-// 注册CainMediaMetadataRetriever的Native方法
-static int register_com_cgfay_media_CainMediaMetadataRetriever(JNIEnv *env) {
+// 注册CAVMediaMetadataRetriever的Native方法
+static int register_com_cgfay_media_CAVMediaMetadataRetriever(JNIEnv *env) {
     int numMethods = (sizeof(nativeMethods) / sizeof( (nativeMethods)[0]));
     jclass clazz = env->FindClass(RETRIEVER_CLASS_NAME);
     if (clazz == NULL) {
@@ -489,7 +489,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     if (vm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK) {
         return -1;
     }
-    if (register_com_cgfay_media_CainMediaMetadataRetriever(env) != JNI_OK) {
+    if (register_com_cgfay_media_CAVMediaMetadataRetriever(env) != JNI_OK) {
         return -1;
     }
     return JNI_VERSION_1_4;

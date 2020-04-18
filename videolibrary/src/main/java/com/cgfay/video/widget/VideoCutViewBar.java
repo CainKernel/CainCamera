@@ -12,8 +12,8 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 
-import com.cgfay.media.CainMediaMetadataRetriever;
-import com.cgfay.media.CainMetadata;
+import com.cgfay.media.CAVMediaMetadataRetriever;
+import com.cgfay.media.CAVMetadata;
 import com.cgfay.video.R;
 import com.cgfay.video.bean.VideoFrameNode;
 import com.cgfay.video.bean.VideoSpeed;
@@ -72,7 +72,7 @@ public class VideoCutViewBar extends View {
 //    private SlideHandler mSlideHandler = new SlideHandler();
 
     // 帧提取器
-    private CainMediaMetadataRetriever mMetadataRetriever;
+    private CAVMediaMetadataRetriever mMetadataRetriever;
 
     public VideoCutViewBar(Context context) {
         this(context,null);
@@ -84,7 +84,7 @@ public class VideoCutViewBar extends View {
 
     public VideoCutViewBar(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        mMetadataRetriever = new CainMediaMetadataRetriever();
+        mMetadataRetriever = new CAVMediaMetadataRetriever();
         mLoadingFrames = new ArrayList<>();
         new LoadThread().start();
     }
@@ -146,12 +146,12 @@ public class VideoCutViewBar extends View {
         reset();
         try {
             mMetadataRetriever.setDataSource(mVideoPath);
-            CainMetadata metadata = mMetadataRetriever.getMetadata();
+            CAVMetadata metadata = mMetadataRetriever.getMetadata();
 
-            mVideoWidth = metadata.getInt(CainMediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
-            mVideoHeight = metadata.getInt(CainMediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
-            mVideoRotation = metadata.getInt(CainMediaMetadataRetriever.METADATA_KEY_ROTAE);
-            mVideoDuration = metadata.getInt(CainMediaMetadataRetriever.METADATA_KEY_DURATION);
+            mVideoWidth = metadata.getInt(CAVMediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+            mVideoHeight = metadata.getInt(CAVMediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+            mVideoRotation = metadata.getInt(CAVMediaMetadataRetriever.METADATA_KEY_ROTAE);
+            mVideoDuration = metadata.getInt(CAVMediaMetadataRetriever.METADATA_KEY_DURATION);
 
             if (mVideoRotation % 180 != 0) {
                 int temp = mVideoWidth;

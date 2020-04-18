@@ -145,6 +145,39 @@ int NdkAudioEncoder::encodeMediaData(AVMediaData *mediaData, int *gotFrame) {
     }
     *gotFrame = 0;
 
+    // 将媒体数据送去编码
+    ret = sendFrame(mediaData);
+    if (ret != 0) {
+        return ret;
+    }
+    // 初始化一个数据包
+    AVPacket packet;
+    av_init_packet(&packet);
+    // 接收编码后的数据包
+    ret = receiveEncodePacket(&packet, gotFrame);
+    if (ret >= 0 && *gotFrame == 1) {
+        writePacket(&packet);
+    }
+    av_packet_unref(&packet);
+    return 0;
+}
+
+/**
+ * 编码一帧媒体数据
+ * @param frame
+ * @param gotFrame
+ * @return
+ */
+int NdkAudioEncoder::encodeFrame(AVFrame *frame, int *gotFrame) {
+    return 0;
+}
+
+/**
+ * 将媒体数据送去编码
+ * @param mediaData
+ * @return
+ */
+int NdkAudioEncoder::sendFrame(AVMediaData *mediaData) {
     ssize_t inputIndex = AMediaCodec_dequeueInputBuffer(mMediaCodec, -1);
     if (inputIndex >= 0) {
         size_t bufSize;
@@ -160,7 +193,21 @@ int NdkAudioEncoder::encodeMediaData(AVMediaData *mediaData, int *gotFrame) {
             LOGD("NdkAudioEncoder - encode pcm data: presentationTimeUs: %f, s: %f", mPresentationTimeUs, (mPresentationTimeUs / 1000000.0));
         }
     }
+    return 0;
+}
 
+/**
+ * 接收编码后的数据包
+ * @param packet
+ * @param gotFrame
+ * @return
+ */
+int NdkAudioEncoder::receiveEncodePacket(AVPacket *packet, int *gotFrame) {
+    int gotFrameLocal;
+    if (!gotFrame) {
+        gotFrame = &gotFrameLocal;
+    }
+    *gotFrame = 0;
     ssize_t encodeStatus = 0;
     while (encodeStatus != AMEDIACODEC_INFO_TRY_AGAIN_LATER) {
         AMediaCodecBufferInfo bufferInfo;
@@ -181,26 +228,16 @@ int NdkAudioEncoder::encodeMediaData(AVMediaData *mediaData, int *gotFrame) {
                     }
                 } else {
                     // 将编码数据写入复用器中
-                    auto mediaMuxer = mWeakMuxer.lock();
-                    if (mediaMuxer != nullptr && mStreamIndex >= 0) {
-                        AVPacket packet;
-                        av_init_packet(&packet);
-
-                        packet.stream_index = mStreamIndex;
-                        packet.data = encodeData;
-                        packet.size = bufferInfo.size;
-                        packet.pts = rescalePts(bufferInfo.presentationTimeUs,
+                    if (packet != nullptr && mStreamIndex >= 0) {
+                        packet->stream_index = mStreamIndex;
+                        packet->data = encodeData;
+                        packet->size = bufferInfo.size;
+                        packet->pts = rescalePts(bufferInfo.presentationTimeUs,
                                                 (AVRational) {1, mSampleRate});
-                        packet.dts = packet.pts;
-                        packet.pos = -1;
-
+                        packet->dts = packet->pts;
+                        packet->pos = -1;
                         // 计算编码后的pts
-                        av_packet_rescale_ts(&packet, (AVRational){1, mSampleRate}, pStream->time_base);
-
-                        // 写入媒体文件中
-                        mediaMuxer->writeFrame(&packet);
-                        // 释放内存
-                        av_packet_unref(&packet);
+                        av_packet_rescale_ts(packet, (AVRational){1, mSampleRate}, pStream->time_base);
                     }
                     *gotFrame = 1;
                 }
@@ -215,6 +252,6 @@ int NdkAudioEncoder::encodeMediaData(AVMediaData *mediaData, int *gotFrame) {
     return 0;
 }
 
-int NdkAudioEncoder::encodeFrame(AVFrame *frame, int *gotFrame) {
-    return 0;
+AVMediaType NdkAudioEncoder::getMediaType() {
+    return AVMEDIA_TYPE_AUDIO;
 }

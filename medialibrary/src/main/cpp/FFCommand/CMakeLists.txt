@@ -1,7 +1,7 @@
 # 添加头文件路径
 include_directories( source )
 # 添加源文件
-add_library( ffcommand
+add_library( cav_command
 
         SHARED
 
@@ -10,10 +10,10 @@ add_library( ffcommand
         ffmpeg.c
         ffmpeg_filter.c
         ffmpeg_opt.c
-        com_cgfay_media_FFmpegUtils.cpp )
+        com_cgfay_media_CAVCommand.cpp)
 
 # 链接静态库
-target_link_libraries( ffcommand
+target_link_libraries( cav_command
 
                        ffmpeg
 

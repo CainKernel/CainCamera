@@ -34,6 +34,7 @@ import com.cgfay.filter.glfilter.resource.ResourceJsonCodec;
 import com.cgfay.filter.glfilter.resource.bean.ResourceData;
 import com.cgfay.filter.glfilter.resource.bean.ResourceType;
 import com.cgfay.filter.glfilter.stickers.bean.DynamicSticker;
+import com.cgfay.media.CAVCommandEditor;
 import com.cgfay.media.recorder.AudioParams;
 import com.cgfay.media.recorder.CAVMediaRecorder;
 import com.cgfay.media.recorder.MediaInfo;
@@ -43,7 +44,6 @@ import com.cgfay.media.recorder.RecordInfo;
 import com.cgfay.media.recorder.SpeedMode;
 import com.cgfay.media.recorder.VideoParams;
 import com.cgfay.landmark.LandmarkEngine;
-import com.cgfay.media.CainCommandEditor;
 import com.cgfay.uitls.utils.BitmapUtils;
 import com.cgfay.uitls.utils.BrightnessUtils;
 import com.cgfay.uitls.utils.FileUtils;
@@ -90,7 +90,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
     private long mRemainDuration;
 
     // 视频录制器
-    private HWMediaRecorder mHWMediaRecorder;
+    private CAVMediaRecorder mHWMediaRecorder;
 
     // 视频列表
     private List<MediaInfo> mVideoList = new ArrayList<>();
@@ -101,7 +101,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
     private RecordInfo mVideoInfo;
 
     // 命令行编辑器
-    private CainCommandEditor mCommandEditor;
+    private CAVCommandEditor mCommandEditor;
 
     // 相机接口
     private ICameraController mCameraController;
@@ -120,7 +120,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
         mAudioParams = new AudioParams();
 
         // 命令行编辑器
-        mCommandEditor = new CainCommandEditor();
+        mCommandEditor = new CAVCommandEditor();
     }
 
     public void onAttach(Activity activity) {
@@ -386,7 +386,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
             return;
         }
         if (mHWMediaRecorder == null) {
-            mHWMediaRecorder = new HWMediaRecorder(this);
+            mHWMediaRecorder = new CAVMediaRecorder(this);
         }
         mHWMediaRecorder.startRecord(mVideoParams, mAudioParams);
         mOperateStarted = true;
@@ -422,7 +422,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
 
     @Override
     public void setRecordSeconds(int seconds) {
-        mMaxDuration = mRemainDuration = seconds * HWMediaRecorder.SECOND_IN_US;
+        mMaxDuration = mRemainDuration = seconds * CAVMediaRecorder.SECOND_IN_US;
         mVideoParams.setMaxDuration(mMaxDuration);
         mAudioParams.setMaxDuration(mMaxDuration);
     }
@@ -549,7 +549,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
         if (mHWMediaRecorder.enableAudio()) {
             final String currentFile = generateOutputPath();
             FileUtils.createFile(currentFile);
-            mCommandEditor.execCommand(CainCommandEditor.mergeAudioVideo(mVideoInfo.getFileName(),
+            mCommandEditor.execCommand(CAVCommandEditor.mergeAudioVideo(mVideoInfo.getFileName(),
                     mAudioInfo.getFileName(), currentFile),
                     (result) -> {
                         if (result == 0) {
@@ -613,7 +613,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
                 }
             }
             String finalPath = generateOutputPath();
-            mCommandEditor.execCommand(CainCommandEditor.concatVideo(mActivity, videos, finalPath),
+            mCommandEditor.execCommand(CAVCommandEditor.concatVideo(mActivity, videos, finalPath),
                     (result) -> {
                         getTarget().hideConcatProgressDialog();
                         if (result == 0) {

@@ -18,8 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.media.IMediaPlayer;
-import com.cgfay.media.VideoPlayer;
+import com.cgfay.media.CAVMediaPlayer;
 import com.cgfay.uitls.utils.DisplayUtils;
 import com.cgfay.uitls.utils.StringUtils;
 
@@ -41,7 +40,7 @@ public class VideoPlayerFragment  extends Fragment {
     private TextView mCurrentPosition;
 
     private volatile boolean mSeeking;
-    private VideoPlayer mVideoPlayer;
+    private CAVMediaPlayer mVideoPlayer;
     private Handler mHandler;
 
     public static VideoPlayerFragment newInstance(@NonNull String path) {
@@ -200,7 +199,7 @@ public class VideoPlayerFragment  extends Fragment {
     }
 
     private void initPlayer(@NonNull String path) {
-        mVideoPlayer = new VideoPlayer();
+        mVideoPlayer = new CAVMediaPlayer();
         mVideoPlayer.setSpeed(1.0f);
         mVideoPlayer.setLooping(true);
         mVideoPlayer.setOnPreparedListener(mp -> {

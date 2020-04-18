@@ -9,7 +9,7 @@ FFMediaRecorder::FFMediaRecorder() : mRecordListener(nullptr), mAbortRequest(tru
                                      mStartRequest(false), mExit(true), mRecordThread(nullptr),
                                      mYuvConvertor(nullptr), mFrameFilter(nullptr),
                                      mFrameQueue(nullptr), mMediaWriter(nullptr),
-                                     mUseHardCodec(false) {
+                                     mUseHardCodec(true) {
     av_register_all();
     avfilter_register_all();
     mRecordParams = new RecordParams();
@@ -314,7 +314,7 @@ void FFMediaRecorder::run() {
                 }
 
                 // 编码
-                ret = mMediaWriter->encodeMediaData(data);
+                ret = mMediaWriter->encodeAndWriteMediaData(data);
                 if (ret < 0) {
                     LOGE("Failed to encoder media data： %s", data->getName());
                 } else {
@@ -361,7 +361,7 @@ void FFMediaRecorder::run() {
             }
 
             // 编码
-            ret = mMediaWriter->encodeMediaData(data);
+            ret = mMediaWriter->encodeAndWriteMediaData(data);
             if (ret < 0) {
                 LOGE("Failed to encoder media data： %s", data->getName());
             } else {

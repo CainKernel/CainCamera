@@ -44,6 +44,18 @@ public:
     // 编码一帧数据
     virtual int encodeFrame(AVFrame *frame, int *gotFrame) = 0;
 
+    // 将媒体数据送去编码
+    virtual int sendFrame(AVMediaData *mediaData) = 0;
+
+    // 接收编码后的数据包
+    virtual int receiveEncodePacket(AVPacket *packet, int *gotFrame) = 0;
+
+    //  将数据包写入文件中
+    int writePacket(AVPacket *packet);
+
+    // 获取媒体类型
+    virtual AVMediaType getMediaType() = 0;
+
     // 计算当前数据包的pts
     int64_t rescalePts(int64_t presentationTimeUs, AVRational time_base);
 protected:

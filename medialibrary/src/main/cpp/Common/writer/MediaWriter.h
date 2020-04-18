@@ -43,16 +43,16 @@ public:
     virtual int prepare() = 0;
 
     // 编码媒体数据
-    virtual int encodeMediaData(AVMediaData *mediaData) = 0;
+    virtual int encodeAndWriteMediaData(AVMediaData *mediaData) = 0;
 
     // 编码媒体数据
-    virtual int encodeMediaData(AVMediaData *mediaData, int *gotFrame) = 0;
+    virtual int encodeAndWriteMediaData(AVMediaData *mediaData, int *gotFrame) = 0;
 
     // 编码一帧数据
-    virtual int encodeFrame(AVFrame *frame, AVMediaType type) = 0;
+    virtual int encodeAndWriteFrame(AVFrame *frame, AVMediaType type) = 0;
 
     // 编码一帧数据
-    virtual int encodeFrame(AVFrame *frame, AVMediaType type, int *gotFrame) = 0;
+    virtual int encodeAndWriteFrame(AVFrame *frame, AVMediaType type, int *gotFrame) = 0;
 
     // 停止写入
     virtual int stop() = 0;

@@ -285,8 +285,8 @@ int AVMediaWriter::openEncoder(AVMediaType mediaType) {
  * @param mediaData
  * @return
  */
-int AVMediaWriter::encodeMediaData(AVMediaData *mediaData) {
-    return encodeMediaData(mediaData, nullptr);
+int AVMediaWriter::encodeAndWriteMediaData(AVMediaData *mediaData) {
+    return encodeAndWriteMediaData(mediaData, nullptr);
 }
 
 /**
@@ -295,7 +295,7 @@ int AVMediaWriter::encodeMediaData(AVMediaData *mediaData) {
  * @param gotFrame
  * @return
  */
-int AVMediaWriter::encodeMediaData(AVMediaData *mediaData, int *gotFrame) {
+int AVMediaWriter::encodeAndWriteMediaData(AVMediaData *mediaData, int *gotFrame) {
     int ret = 0, gotFrameLocal;
     if (!gotFrame) {
         gotFrame = &gotFrameLocal;
@@ -334,8 +334,8 @@ int AVMediaWriter::encodeMediaData(AVMediaData *mediaData, int *gotFrame) {
  * @param type
  * @return
  */
-int AVMediaWriter::encodeFrame(AVFrame *frame, AVMediaType type) {
-    return encodeFrame(frame, type, nullptr);
+int AVMediaWriter::encodeAndWriteFrame(AVFrame *frame, AVMediaType type) {
+    return encodeAndWriteFrame(frame, type, nullptr);
 }
 
 /**
@@ -345,7 +345,7 @@ int AVMediaWriter::encodeFrame(AVFrame *frame, AVMediaType type) {
  * @param gotFrame
  * @return
  */
-int AVMediaWriter::encodeFrame(AVFrame *frame, AVMediaType type, int *gotFrame) {
+int AVMediaWriter::encodeAndWriteFrame(AVFrame *frame, AVMediaType type, int *gotFrame) {
     // 仅支持音频流和视频流
     if (type != AVMEDIA_TYPE_AUDIO && type != AVMEDIA_TYPE_VIDEO) {
         return -1;
@@ -431,7 +431,7 @@ int AVMediaWriter::stop() {
     if (mHasVideo) {
         data->type = MediaVideo;
         while (true) {
-            ret = encodeMediaData(data, &gotFrame);
+            ret = encodeAndWriteMediaData(data, &gotFrame);
             if (ret < 0 || !gotFrame) {
                 break;
             }
@@ -442,7 +442,7 @@ int AVMediaWriter::stop() {
         LOGI("Flushing audio encoder");
         data->type = MediaAudio;
         while (true) {
-            ret = encodeMediaData(data, &gotFrame);
+            ret = encodeAndWriteMediaData(data, &gotFrame);
             if (ret < 0 || !gotFrame) {
                 break;
             }

@@ -42,6 +42,12 @@ public:
     // 编码一帧数据
     int encodeFrame(AVFrame *frame, int *gotFrame) override;
 
+    int sendFrame(AVMediaData *mediaData) override;
+
+    int receiveEncodePacket(AVPacket *packet, int *gotFrame) override;
+
+    AVMediaType getMediaType() override;
+
 private:
     int mBitrate;
     int mSampleRate;

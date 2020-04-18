@@ -24,7 +24,7 @@ import com.cgfay.camera.camera.PreviewCallback;
 import com.cgfay.camera.utils.PathConstraints;
 
 import com.cgfay.media.recorder.AVFormatter;
-import com.cgfay.media.CainCommandEditor;
+import com.cgfay.media.CAVCommandEditor;
 import com.cgfay.media.recorder.FFMediaRecorder;
 import com.cgfay.media.recorder.FFAudioRecorder;
 import com.cgfay.uitls.utils.FileUtils;
@@ -46,7 +46,7 @@ public class FFMediaRecordPresenter implements PreviewCallback, FFAudioRecorder.
     private FFMediaRecordFragment mFragment;
 
     // 命令行编辑器
-    private CainCommandEditor mCommandEditor;
+    private CAVCommandEditor mCommandEditor;
 
     // 最大时长(毫秒)
     private int mMaxDuration = 15 * 1000;
@@ -70,7 +70,7 @@ public class FFMediaRecordPresenter implements PreviewCallback, FFAudioRecorder.
         mIsRecording = false;
         mPreviewRotate = 0;
         // 命令行编辑器
-        mCommandEditor = new CainCommandEditor();
+        mCommandEditor = new CAVCommandEditor();
         mFFAudioRecorder = new FFAudioRecorder();
         mFFAudioRecorder.setOnRecordCallback(this);
         mFFAudioRecorder.setSampleFormat(AudioFormat.ENCODING_PCM_16BIT);
@@ -377,7 +377,7 @@ public class FFMediaRecordPresenter implements PreviewCallback, FFAudioRecorder.
                 }
             }
             String finalPath = generateOutputPath();
-            mCommandEditor.execCommand(CainCommandEditor.concatVideo(mActivity, videos, finalPath),
+            mCommandEditor.execCommand(CAVCommandEditor.concatVideo(mActivity, videos, finalPath),
                     (result) -> {
                         mFragment.hideProgressDialog();
                         if (result == 0) {

@@ -19,8 +19,7 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.media.CainCommandEditor;
-import com.cgfay.media.CainMediaEditor;
+import com.cgfay.media.CAVCommandEditor;
 import com.cgfay.media.VideoEditorUtil;
 import com.cgfay.uitls.utils.FileUtils;
 import com.cgfay.video.activity.VideoEditActivity;
@@ -55,8 +54,7 @@ public class MusicMergeFragment extends Fragment implements View.OnClickListener
     private TextView mTvCropProgress;
 
     private AudioManager mAudioManager;
-    private CainCommandEditor mCommandEditor;
-    private CainMediaEditor mMediaEditor;
+    private CAVCommandEditor mCommandEditor;
 
     public static MusicMergeFragment newInstance() {
         return new MusicMergeFragment();
@@ -151,10 +149,6 @@ public class MusicMergeFragment extends Fragment implements View.OnClickListener
             mCommandEditor.release();
             mCommandEditor = null;
         }
-        if (mMediaEditor != null) {
-            mMediaEditor.release();
-            mMediaEditor = null;
-        }
         super.onDestroy();
     }
 
@@ -193,16 +187,16 @@ public class MusicMergeFragment extends Fragment implements View.OnClickListener
             mVideoPlayerView.pause();
         }
         if (mCommandEditor == null) {
-            mCommandEditor = new CainCommandEditor();
+            mCommandEditor = new CAVCommandEditor();
         }
 
         // 1、将音频文件转码为aac文件
-        int duration = (int) CainCommandEditor.getDuration(mVideoPath)/1000;
+        int duration = (int) CAVCommandEditor.getDuration(mVideoPath)/1000;
         if (mMusicDuration < duration) {
             duration = (int) mMusicDuration;
         }
         String tmpAACPath = VideoEditorUtil.createPathInBox(mActivity, "aac");
-        mCommandEditor.execCommand(CainCommandEditor.audioCut(mMusicPath, tmpAACPath, 10 * 1000, duration), result -> {
+        mCommandEditor.execCommand(CAVCommandEditor.audioCut(mMusicPath, tmpAACPath, 10 * 1000, duration), result -> {
             if (result < 0) {
                 FileUtils.deleteFile(tmpAACPath);
                 mActivity.runOnUiThread(new Runnable() {
@@ -219,54 +213,15 @@ public class MusicMergeFragment extends Fragment implements View.OnClickListener
     }
 
     /**
-     * 音视频混合，似乎有部分视频混合失败？音频剪辑部分是正常才对
-     */
-    private void musicMerge() {
-        startTime = System.currentTimeMillis();
-        mLayoutProgress.setVisibility(View.VISIBLE);
-        mCvCropProgress.setProgress(0);
-        mTvCropProgress.setText("0%");
-        if (mMediaEditor == null) {
-            mMediaEditor = new CainMediaEditor();
-        }
-        int duration = (int) CainCommandEditor.getDuration(mVideoPath)/1000;
-        final String tmpAACPath = VideoEditorUtil.createPathInBox(mActivity, "aac");
-        mMediaEditor.audioCut(mMusicPath, tmpAACPath, 10 * 1000, duration,
-                new CainMediaEditor.OnEditProcessListener() {
-                    @Override
-                    public void onProcessing(int percent) {
-                        mActivity.runOnUiThread(() -> {
-                            mCvCropProgress.setProgress(percent);
-                            mTvCropProgress.setText(percent + "%");
-                        });
-                    }
-
-                    @Override
-                    public void onSuccess() {
-                        audioVideoMix(tmpAACPath);
-                    }
-
-                    @Override
-                    public void onError(String msg) {
-                        FileUtils.deleteFile(tmpAACPath);
-                        mActivity.runOnUiThread(() -> {
-                            Toast.makeText(mActivity, "aac剪辑失败：" + msg, Toast.LENGTH_SHORT).show();
-                            mLayoutProgress.setVisibility(View.GONE);
-                        });
-                    }
-                });
-    }
-
-    /**
      * 音视频混合
      * @param audioPath
      */
     private void audioVideoMix(String audioPath) {
         if (mCommandEditor == null) {
-            mCommandEditor = new CainCommandEditor();
+            mCommandEditor = new CAVCommandEditor();
         }
         final String videoPath = VideoEditorUtil.createFileInBox(mActivity, "mp4");
-        mCommandEditor.execCommand(CainCommandEditor.audioVideoMix(mVideoPath, audioPath, videoPath, mVideoVolume, mMusicVolume), result -> {
+        mCommandEditor.execCommand(CAVCommandEditor.audioVideoMix(mVideoPath, audioPath, videoPath, mVideoVolume, mMusicVolume), result -> {
             FileUtils.deleteFile(audioPath);
             // 成功则释放播放器并跳转至编辑页面
             if (result == 0 && FileUtils.fileExists(videoPath)) {

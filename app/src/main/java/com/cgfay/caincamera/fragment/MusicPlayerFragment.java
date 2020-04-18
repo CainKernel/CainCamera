@@ -16,7 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.cgfay.caincamera.R;
-import com.cgfay.media.MusicPlayer;
+import com.cgfay.media.CAVAudioPlayer;
 
 import java.io.IOException;
 
@@ -31,7 +31,7 @@ public class MusicPlayerFragment extends Fragment {
     private SeekBar mSpeedBar;
     private SeekBar mProgressBar;
     private TextView mTextPath;
-    private MusicPlayer mMusicPlayer;
+    private CAVAudioPlayer mMusicPlayer;
 
     private Handler mHandler;
 
@@ -166,7 +166,7 @@ public class MusicPlayerFragment extends Fragment {
     }
 
     private void initPlayer(@NonNull String path) {
-        mMusicPlayer = new MusicPlayer();
+        mMusicPlayer = new CAVAudioPlayer();
         mMusicPlayer.setSpeed(1.0f);
         mMusicPlayer.setLooping(true);
         mMusicPlayer.setOnCurrentPositionListener((mp, current, duration) -> {

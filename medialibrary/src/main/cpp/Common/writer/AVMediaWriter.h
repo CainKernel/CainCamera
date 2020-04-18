@@ -53,16 +53,16 @@ public:
     int prepare() override;
 
     // 编码媒体数据
-    int encodeMediaData(AVMediaData *mediaData) override;
+    int encodeAndWriteMediaData(AVMediaData *mediaData) override;
 
     // 编码媒体数据
-    int encodeMediaData(AVMediaData *mediaData, int *gotFrame) override;
+    int encodeAndWriteMediaData(AVMediaData *mediaData, int *gotFrame) override;
 
     // 编码一帧数据
-    int encodeFrame(AVFrame *frame, AVMediaType type) override;
+    int encodeAndWriteFrame(AVFrame *frame, AVMediaType type) override;
 
     // 编码一帧数据
-    int encodeFrame(AVFrame *frame, AVMediaType type, int *gotFrame) override;
+    int encodeAndWriteFrame(AVFrame *frame, AVMediaType type, int *gotFrame) override;
 
     // 停止写入
     int stop() override;

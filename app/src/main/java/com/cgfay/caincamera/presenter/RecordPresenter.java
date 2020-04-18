@@ -20,14 +20,14 @@ import com.cgfay.camera.camera.OnFrameAvailableListener;
 import com.cgfay.camera.camera.OnSurfaceTextureListener;
 import com.cgfay.media.recorder.MediaInfo;
 import com.cgfay.media.recorder.AudioParams;
-import com.cgfay.media.recorder.HWMediaRecorder;
+import com.cgfay.media.recorder.CAVMediaRecorder;
 import com.cgfay.camera.utils.PathConstraints;
 import com.cgfay.media.recorder.MediaType;
 import com.cgfay.media.recorder.OnRecordStateListener;
 import com.cgfay.media.recorder.RecordInfo;
 import com.cgfay.media.recorder.SpeedMode;
 import com.cgfay.media.recorder.VideoParams;
-import com.cgfay.media.CainCommandEditor;
+import com.cgfay.media.CAVCommandEditor;
 import com.cgfay.uitls.utils.FileUtils;
 import com.cgfay.video.activity.VideoEditActivity;
 
@@ -58,7 +58,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
     private long mRemainDuration;
 
     // 视频录制器
-    private HWMediaRecorder mHWMediaRecorder;
+    private CAVMediaRecorder mHWMediaRecorder;
 
     // 视频列表
     private List<MediaInfo> mVideoList = new ArrayList<>();
@@ -69,7 +69,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
     private RecordInfo mVideoInfo;
 
     // 命令行编辑器
-    private CainCommandEditor mCommandEditor;
+    private CAVCommandEditor mCommandEditor;
 
     // 相机控制器
     private final ICameraController mCameraController;
@@ -78,7 +78,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
         mActivity = activity;
 
         // 视频录制器
-        mHWMediaRecorder = new HWMediaRecorder(this);
+        mHWMediaRecorder = new CAVMediaRecorder(this);
 
         // 视频参数
         mVideoParams = new VideoParams();
@@ -89,7 +89,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
         mAudioParams.setAudioPath(getAudioTempPath(mActivity));
 
         // 命令行编辑器
-        mCommandEditor = new CainCommandEditor();
+        mCommandEditor = new CAVCommandEditor();
 
         // 创建相机控制器
         if (CameraApi.hasCamera2(mActivity)) {
@@ -150,7 +150,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
      * @param seconds
      */
     public void setRecordSeconds(int seconds) {
-        mMaxDuration = mRemainDuration = seconds * HWMediaRecorder.SECOND_IN_US;
+        mMaxDuration = mRemainDuration = seconds * CAVMediaRecorder.SECOND_IN_US;
         mVideoParams.setMaxDuration(mMaxDuration);
         mAudioParams.setMaxDuration(mMaxDuration);
     }
@@ -216,7 +216,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
         if (mHWMediaRecorder.enableAudio()) {
             final String currentFile = generateOutputPath();
             FileUtils.createFile(currentFile);
-            mCommandEditor.execCommand(CainCommandEditor.mergeAudioVideo(mVideoInfo.getFileName(),
+            mCommandEditor.execCommand(CAVCommandEditor.mergeAudioVideo(mVideoInfo.getFileName(),
                     mAudioInfo.getFileName(), currentFile),
                     (result) -> {
                         if (result == 0) {
@@ -355,7 +355,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
                 }
             }
             String finalPath = generateOutputPath();
-            mCommandEditor.execCommand(CainCommandEditor.concatVideo(mActivity, videos, finalPath),
+            mCommandEditor.execCommand(CAVCommandEditor.concatVideo(mActivity, videos, finalPath),
                     (result) -> {
                         mActivity.hideProgressDialog();
                         if (result == 0) {

@@ -44,6 +44,12 @@ public:
     // 编码媒体数据
     int encodeFrame(AVFrame *frame, int *gotFame) override;
 
+    int sendFrame(AVMediaData *mediaData) override;
+
+    int receiveEncodePacket(AVPacket *packet, int *gotFrame) override;
+
+    AVMediaType getMediaType() override;
+
 protected:
     // 计算时间戳
     uint64_t calculatePresentationTime();

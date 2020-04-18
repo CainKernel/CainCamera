@@ -6,7 +6,6 @@ import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
@@ -21,22 +20,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
-import com.cgfay.media.CainMediaEditor;
-import com.cgfay.media.VideoEditorUtil;
-import com.cgfay.media.VideoPlayer;
+import com.cgfay.media.CAVMediaPlayer;
+
 import com.cgfay.uitls.utils.DensityUtils;
 import com.cgfay.uitls.utils.DisplayUtils;
-import com.cgfay.uitls.utils.FileUtils;
 import com.cgfay.uitls.widget.RoundOutlineProvider;
 import com.cgfay.video.R;
-import com.cgfay.video.activity.VideoEditActivity;
 import com.cgfay.video.bean.VideoSpeed;
 import com.cgfay.video.widget.CircleProgressView;
 import com.cgfay.video.widget.VideoCutViewBar;
@@ -75,9 +70,8 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
     private long mCutRange = 15000;
     private long mVideoDuration;
     private boolean mSeeking = false;
-    private VideoPlayer mMediaPlayer;
+    private CAVMediaPlayer mMediaPlayer;
     private AudioManager mAudioManager;
-    private CainMediaEditor mMediaEditor;
 
     public static VideoCutFragment newInstance() {
         return new VideoCutFragment();
@@ -337,7 +331,7 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
     private void openMediaPlayer() {
         mContentView.setKeepScreenOn(true);
         if (mMediaPlayer == null) {
-            mMediaPlayer = new VideoPlayer();
+            mMediaPlayer = new CAVMediaPlayer();
             mMediaPlayer.setLooping(true);
             mMediaPlayer.setVideoDecoder("h264_mediacodec");
             try {
@@ -432,56 +426,56 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
      * 剪辑视频
      */
     private void cutVideo() {
-        mLayoutProgress.setVisibility(View.VISIBLE);
-        if (mMediaPlayer != null) {
-            mMediaPlayer.pause();
-        }
-        if (mMediaEditor == null) {
-            mMediaEditor = new CainMediaEditor();
-        }
-
-        float start = mVideoSpeed.getSpeed() * mCutStart;
-        float duration = mVideoSpeed.getSpeed() * mCutRange;
-        if (duration > mVideoDuration) {
-            duration = mVideoDuration;
-        }
-        String videoPath = VideoEditorUtil.createPathInBox(mActivity, "mp4");
-        mMediaEditor.videoSpeedCut(mVideoPath, videoPath, start, duration, mVideoSpeed.getSpeed(),
-                new CainMediaEditor.OnEditProcessListener() {
-                    @Override
-                    public void onProcessing(int percent) {
-                        mActivity.runOnUiThread(() -> {
-                            mCvCropProgress.setProgress(percent);
-                            mTvCropProgress.setText(percent + "%");
-                        });
-                    }
-
-                    @Override
-                    public void onSuccess() {
-                        mActivity.runOnUiThread(() -> {
-                            mLayoutProgress.setVisibility(View.GONE);
-                            // 成功则释放播放器并跳转至编辑页面
-                            if (FileUtils.fileExists(videoPath)) {
-                                if (mMediaEditor != null) {
-                                    mMediaEditor.release();
-                                    mMediaEditor = null;
-                                }
-                                Intent intent = new Intent(mActivity, VideoEditActivity.class);
-                                intent.putExtra(VideoEditActivity.VIDEO_PATH, videoPath);
-                                startActivity(intent);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onError(String msg) {
-                        mActivity.runOnUiThread(() -> {
-                            Toast.makeText(mActivity, "processing error：" + msg, Toast.LENGTH_SHORT).show();
-                            if (mMediaPlayer != null) {
-                                mMediaPlayer.start();
-                            }
-                        });
-                    }
-                });
+//        mLayoutProgress.setVisibility(View.VISIBLE);
+//        if (mMediaPlayer != null) {
+//            mMediaPlayer.pause();
+//        }
+//        if (mMediaEditor == null) {
+//            mMediaEditor = new CainMediaEditor();
+//        }
+//
+//        float start = mVideoSpeed.getSpeed() * mCutStart;
+//        float duration = mVideoSpeed.getSpeed() * mCutRange;
+//        if (duration > mVideoDuration) {
+//            duration = mVideoDuration;
+//        }
+//        String videoPath = VideoEditorUtil.createPathInBox(mActivity, "mp4");
+//        mMediaEditor.videoSpeedCut(mVideoPath, videoPath, start, duration, mVideoSpeed.getSpeed(),
+//                new CainMediaEditor.OnEditProcessListener() {
+//                    @Override
+//                    public void onProcessing(int percent) {
+//                        mActivity.runOnUiThread(() -> {
+//                            mCvCropProgress.setProgress(percent);
+//                            mTvCropProgress.setText(percent + "%");
+//                        });
+//                    }
+//
+//                    @Override
+//                    public void onSuccess() {
+//                        mActivity.runOnUiThread(() -> {
+//                            mLayoutProgress.setVisibility(View.GONE);
+//                            // 成功则释放播放器并跳转至编辑页面
+//                            if (FileUtils.fileExists(videoPath)) {
+//                                if (mMediaEditor != null) {
+//                                    mMediaEditor.release();
+//                                    mMediaEditor = null;
+//                                }
+//                                Intent intent = new Intent(mActivity, VideoEditActivity.class);
+//                                intent.putExtra(VideoEditActivity.VIDEO_PATH, videoPath);
+//                                startActivity(intent);
+//                            }
+//                        });
+//                    }
+//
+//                    @Override
+//                    public void onError(String msg) {
+//                        mActivity.runOnUiThread(() -> {
+//                            Toast.makeText(mActivity, "processing error：" + msg, Toast.LENGTH_SHORT).show();
+//                            if (mMediaPlayer != null) {
+//                                mMediaPlayer.start();
+//                            }
+//                        });
+//                    }
+//                });
     }
 }
