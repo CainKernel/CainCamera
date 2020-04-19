@@ -16,6 +16,9 @@ PixelBuffer::~PixelBuffer() {
  * 初始化
  */
 void PixelBuffer::init(int width, int height) {
+    if (mWidth == width && mHeight == height) {
+        return;
+    }
     mWidth = width;
     mHeight = height;
     int dataSize = getDataSize();

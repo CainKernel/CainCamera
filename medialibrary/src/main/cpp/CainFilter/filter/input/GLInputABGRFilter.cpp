@@ -37,7 +37,8 @@ void GLInputABGRFilter::initProgram(const char *vertexShader, const char *fragme
     GLFilter::initProgram(vertexShader, fragmentShader);
 
     if (isInitialized()) {
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        // 4字节对齐
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
         glUseProgram(programHandle);
 
         if (textures[0] == 0) {
@@ -57,7 +58,7 @@ void GLInputABGRFilter::initProgram(const char *vertexShader, const char *fragme
 
 GLboolean GLInputABGRFilter::uploadTexture(Texture *texture) {
     // 需要设置4字节对齐
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     glUseProgram(programHandle);
     // 更新纹理数据
     glActiveTexture(GL_TEXTURE0);
@@ -94,6 +95,5 @@ GLboolean GLInputABGRFilter::renderTexture(Texture *texture, float *vertices, fl
     unbindTextures();
     // 解绑program
     glUseProgram(0);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 0);
     return GL_TRUE;
 }

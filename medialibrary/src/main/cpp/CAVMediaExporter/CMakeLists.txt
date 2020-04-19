@@ -1,9 +1,10 @@
 # 添加目录
+set(filter_dir ../CainFilter)
 set(common_dir ../Common)
 set(native_help ../nativehelp)
 
 # 添加头文件路径
-include_directories(${common_dir} ${native_help})
+include_directories(${filter_dir} ${common_dir} ${native_help})
 
 # 添加源文件
 add_library( media_exporter
@@ -37,6 +38,10 @@ add_library( media_exporter
              ${common_dir}/encoder/EncodeAudioThread.cpp
              ${common_dir}/encoder/EncodeVideoThread.cpp
 
+             # filter
+             ${common_dir}/filter/AmixFilter.cpp
+             ${common_dir}/filter/VolumeFilter.cpp
+
              # common
              ${common_dir}/AVFormatter.cpp
              ${common_dir}/AVFrameFilter.cpp
@@ -49,7 +54,9 @@ add_library( media_exporter
              ${common_dir}/YuvData.cpp
 
              # 媒体导出器
+             ${common_dir}/exporter/AudioExporter.cpp
              ${common_dir}/exporter/CAVMediaExporter.cpp
+             ${common_dir}/exporter/VideoExporter.cpp
 
              # 媒体编辑器
              ${native_help}/JNIHelp.cpp
@@ -60,6 +67,7 @@ target_link_libraries( media_exporter
 
                        ffmpeg
                        yuv
+                       cainfilter
 
                        android
                        jnigraphics

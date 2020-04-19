@@ -154,8 +154,8 @@ void OpenGLUtils::checkActiveUniform(GLuint program) {
 
 GLuint OpenGLUtils::createTexture(GLenum type) {
     GLuint textureId;
-    // 设置解包对齐
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    // 设置解包4字节对齐
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     // 创建纹理
     glGenTextures(1, &textureId);
     // 绑定纹理

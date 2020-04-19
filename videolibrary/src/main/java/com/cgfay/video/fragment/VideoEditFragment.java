@@ -673,8 +673,12 @@ public class VideoEditFragment extends Fragment implements View.OnClickListener 
             }
         });
         mMediaPlayer.setOnVideoSizeChangedListener((mediaPlayer, width, height) -> {
-            mVideoPlayerView.setVideoSize(width, height);
-            mVideoPlayerView.setRotation(mediaPlayer.getRotate());
+            if (mediaPlayer.getRotate() == 90 || mediaPlayer.getRotate() == 270) {
+                mVideoPlayerView.setVideoSize(height, width);
+            } else {
+                mVideoPlayerView.setVideoSize(width, height);
+            }
+//            mVideoPlayerView.setRotation(mediaPlayer.getRotate());
         });
         mMediaPlayer.setOnCompletionListener(mp -> Log.d(TAG, "onCompletion: "));
 

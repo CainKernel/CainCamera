@@ -63,6 +63,44 @@ public class CAVMediaExporter {
     }
 
     /**
+     * 设置输入文件路径
+     */
+    public void setDataSource(String path) {
+
+    }
+
+    /**
+     * 设置输出文件路径的
+     */
+    public void setOutputPath(String path) {
+
+    }
+
+    /**
+     * 设置输出的音频数据
+     */
+    public void setAudioParams(int sampleRate, int channels, int sampleFormat) {
+
+    }
+
+    /**
+     * 设置视频输出参数
+     * @param width
+     * @param height
+     * @param frameRate
+     */
+    public void setVideoParams(int width, int height, int frameRate) {
+
+    }
+
+    /**
+     * 设置处理区间
+     */
+    public void setRange(float start, float end) {
+
+    }
+
+    /**
      * 开始导出
      */
     public void export() throws IllegalStateException {

@@ -51,7 +51,8 @@ void GLInputYUV420PFilter::initProgram(const char *vertexShader, const char *fra
         inputTextureHandle[1] = glGetUniformLocation(programHandle, "inputTextureU");
         inputTextureHandle[2] = glGetUniformLocation(programHandle, "inputTextureV");
 
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        // 4字节对齐
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
         glUseProgram(programHandle);
 
         if (textures[0] == 0) {
@@ -79,7 +80,7 @@ void GLInputYUV420PFilter::initProgram(const char *vertexShader, const char *fra
 
 GLboolean GLInputYUV420PFilter::uploadTexture(Texture *texture) {
     // 需要设置4字节对齐
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     glUseProgram(programHandle);
 
     // 更新绑定纹理的数据
@@ -98,7 +99,6 @@ GLboolean GLInputYUV420PFilter::uploadTexture(Texture *texture) {
                      texture->pixels[i]);
         glUniform1i(inputTextureHandle[i], i);
     }
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 0);
     return GL_TRUE;
 }
 
