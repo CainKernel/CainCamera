@@ -7,6 +7,8 @@ import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 
+import com.cgfay.avfoundation.AVMediaType;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -35,8 +37,8 @@ public final class CAVAudioRecorder implements Runnable {
     // 录制状态监听器
     private OnRecordListener mRecordListener;
 
-    public MediaType getMediaType() {
-        return MediaType.AUDIO;
+    public AVMediaType getMediaType() {
+        return AVMediaType.AVMediaTypeAudio;
     }
 
     public void setOnRecordListener(OnRecordListener listener) {
@@ -134,7 +136,7 @@ public final class CAVAudioRecorder implements Runnable {
                         mAudioRecord.startRecording();
                         // 录制开始回调
                         if (mRecordListener != null) {
-                            mRecordListener.onRecordStart(MediaType.AUDIO);
+                            mRecordListener.onRecordStart(AVMediaType.AVMediaTypeAudio);
                         }
                         needToStart = false;
                     }

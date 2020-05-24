@@ -104,7 +104,7 @@ static void process_media_player_call(JNIEnv *env, jobject thiz, status_t opStat
  * @param env
  */
 static void
-com_cgfay_media_CAVMediaExporter_init(JNIEnv *env) {
+CAVMediaExporter_init(JNIEnv *env) {
     jclass clazz = env->FindClass(MEDIA_EXPORTER);
     if (clazz == nullptr) {
         return;
@@ -125,7 +125,7 @@ com_cgfay_media_CAVMediaExporter_init(JNIEnv *env) {
  * 初始化对象
  */
 static void
-com_cgfay_media_CAVMediaExporter_native_setup(JNIEnv *env, jobject thiz, jobject composer_this) {
+CAVMediaExporter_native_setup(JNIEnv *env, jobject thiz, jobject composer_this) {
     auto mp = new CAVMediaExporter();
     if (mp == nullptr) {
         jniThrowException(env, "java/lang/RuntimeException", "Out of memory");
@@ -139,10 +139,26 @@ com_cgfay_media_CAVMediaExporter_native_setup(JNIEnv *env, jobject thiz, jobject
 }
 
 /**
+ * 设置输入源
+ */
+static void
+CAVMediaExporter_setMediaComposition(JNIEnv *env, jobject thiz, jobject videoComposition) {
+
+}
+
+/**
+ * 设置输出路径
+ */
+static void
+CAVMediaExporter_setOutputPath(JNIEnv *env, jobject thiz, jstring path_) {
+
+}
+
+/**
  * 释放资源
  */
 static void
-com_cgfay_media_CAVMediaExporter_release(JNIEnv *env, jobject thiz) {
+CAVMediaExporter_release(JNIEnv *env, jobject thiz) {
     auto mp = getCAVMediaExporter(env, thiz);
     if (mp != nullptr) {
         delete mp;
@@ -154,19 +170,19 @@ com_cgfay_media_CAVMediaExporter_release(JNIEnv *env, jobject thiz) {
  * finalize
  */
 static void
-com_cgfay_media_CAVMediaExporter_native_finalize(JNIEnv *env, jobject thiz) {
+CAVMediaExporter_native_finalize(JNIEnv *env, jobject thiz) {
     auto mp = getCAVMediaExporter(env, thiz);
     if (mp == nullptr) {
         LOGW("CAVMediaExporter finalized without being released");
     }
-    com_cgfay_media_CAVMediaExporter_release(env, thiz);
+    CAVMediaExporter_release(env, thiz);
 }
 
 /**
  * 导出媒体
  */
 static void
-com_cgfay_media_CAVMediaExporter_export(JNIEnv *env, jobject thiz) {
+CAVMediaExporter_export(JNIEnv *env, jobject thiz) {
 
 }
 
@@ -174,7 +190,7 @@ com_cgfay_media_CAVMediaExporter_export(JNIEnv *env, jobject thiz) {
  * 取消导出
  */
 static void
-com_cgfay_media_CAVMediaExporter_cancel(JNIEnv *env, jobject thiz) {
+CAVMediaExporter_cancel(JNIEnv *env, jobject thiz) {
 
 }
 
@@ -182,22 +198,23 @@ com_cgfay_media_CAVMediaExporter_cancel(JNIEnv *env, jobject thiz) {
  * 是否正在导出
  */
 static jboolean
-com_cgfay_media_CAVMediaExporter_isExporting(JNIEnv *env, jobject thiz) {
+CAVMediaExporter_isExporting(JNIEnv *env, jobject thiz) {
 
     return JNI_FALSE;
 }
 
 static const JNINativeMethod gMethods[] = {
-        {"native_init", "()V", (void *)com_cgfay_media_CAVMediaExporter_init},
-        {"native_setup", "(Ljava/lang/Object;)V", (void *)com_cgfay_media_CAVMediaExporter_native_setup},
-        {"native_finalize", "()V", (void *)com_cgfay_media_CAVMediaExporter_native_finalize},
-        {"_release", "()V", (void *)com_cgfay_media_CAVMediaExporter_release},
-        {"_export", "()V", (void *)com_cgfay_media_CAVMediaExporter_export},
-        {"_cancel", "()V", (void *)com_cgfay_media_CAVMediaExporter_cancel},
-        {"_isExporting", "()Z", (void *)com_cgfay_media_CAVMediaExporter_isExporting},
+        {"native_init",     "()V",                      (void *)CAVMediaExporter_init},
+        {"native_setup",    "(Ljava/lang/Object;)V",    (void *)CAVMediaExporter_native_setup},
+        {"native_finalize", "()V",                      (void *)CAVMediaExporter_native_finalize},
+        {"_setOutputPath",  "(Ljava/lang/String;)V",    (void *)CAVMediaExporter_setOutputPath},
+        {"_release",        "()V",                      (void *)CAVMediaExporter_release},
+        {"_export",         "()V",                      (void *)CAVMediaExporter_export},
+        {"_cancel",         "()V",                      (void *)CAVMediaExporter_cancel},
+        {"_isExporting",    "()Z",                      (void *)CAVMediaExporter_isExporting},
 };
 
-static int register_com_cgfay_media_CAVMediaExporter(JNIEnv *env) {
+static int register_CAVMediaExporter(JNIEnv *env) {
     int numMethods = (sizeof(gMethods) / sizeof( (gMethods)[0]));
     jclass clazz = env->FindClass(MEDIA_EXPORTER);
     if (clazz == nullptr) {
@@ -219,7 +236,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     if (vm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK) {
         return -1;
     }
-    if (register_com_cgfay_media_CAVMediaExporter(env) != JNI_OK) {
+    if (register_CAVMediaExporter(env) != JNI_OK) {
         return -1;
     }
     return JNI_VERSION_1_4;

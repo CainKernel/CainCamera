@@ -6,7 +6,10 @@ import android.os.Message;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
+import com.cgfay.avfoundation.AVComposition;
+import com.cgfay.avfoundation.AVTime;
 import com.cgfay.media.annotations.AccessedByNative;
 
 import java.lang.ref.WeakReference;
@@ -29,6 +32,8 @@ public class CAVMediaExporter {
 
     private native void native_setup(Object editor_this);
     private native void native_finalize();
+    private native void _setMediaComposition(AVComposition composition);
+    private native void _setOutputPath(String path);
     private native void _release();
     private native void _export();
     private native void _cancel();
@@ -37,6 +42,15 @@ public class CAVMediaExporter {
     @AccessedByNative
     private long mNativeContext;
     private EventHandler mEventHandler;
+
+    // 源媒体数据组合对象
+    private AVComposition mMediaComposition;
+
+    // 时长
+    private AVTime mDuration;
+
+    // 输出路径
+    private String mOutputPath;
 
     public CAVMediaExporter() {
         Looper looper;
@@ -52,52 +66,31 @@ public class CAVMediaExporter {
          * It's easier to create it here than in C++.
          */
         native_setup(new WeakReference<CAVMediaExporter>(this));
+        mMediaComposition = null;
     }
 
+    /**
+     * 释放资源
+     */
     public void release() {
-        mOnStartedListener = null;
-        mOnCompletionListener = null;
-        mOnErrorListener = null;
-        mOnCurrentPositionListener = null;
+        mListener = null;
         _release();
     }
 
     /**
-     * 设置输入文件路径
+     * 设置视频组合对象的
+     * @param composition 视频组合兑现
      */
-    public void setDataSource(String path) {
-
+    public void setMediaComposition(@NonNull AVComposition composition) {
+        mMediaComposition = composition;
+        _setMediaComposition(composition);
     }
 
     /**
      * 设置输出文件路径的
      */
     public void setOutputPath(String path) {
-
-    }
-
-    /**
-     * 设置输出的音频数据
-     */
-    public void setAudioParams(int sampleRate, int channels, int sampleFormat) {
-
-    }
-
-    /**
-     * 设置视频输出参数
-     * @param width
-     * @param height
-     * @param frameRate
-     */
-    public void setVideoParams(int width, int height, int frameRate) {
-
-    }
-
-    /**
-     * 设置处理区间
-     */
-    public void setRange(float start, float end) {
-
+        _setOutputPath(path);
     }
 
     /**
@@ -130,11 +123,11 @@ public class CAVMediaExporter {
     /* Do not change these values without updating their counterparts
      * in CAVMediaExporter.h!
      */
-    private static final int EXPORT_STARTED = 1;    // 导出开始回调
+    private static final int EXPORT_PREPARED = 1;   // 导出准备回调
     private static final int EXPORT_COMPLETE = 2;   // 导出完成回调
     private static final int EXPORT_CANCEL = 3;     // 导出取消回调
+    private static final int EXPORT_CURRENT = 4;    // 导致进度回调
     private static final int EXPORT_ERROR = 100;    // 导出出错回调
-    private static final int EXPORT_CURRENT = 200;  // 导致进度回调
 
     /**
      * 事件handler
@@ -157,16 +150,15 @@ public class CAVMediaExporter {
             }
 
             switch (msg.what) {
-                case EXPORT_STARTED: {
-                    if (mOnStartedListener != null) {
-                        mOnStartedListener.onStarted(mCAVMediaExporter);
-                    }
+                case EXPORT_PREPARED: {
+                    Log.d(TAG, "onExportStart ");
+                    mDuration = new AVTime(msg.arg1, msg.arg2);
                     break;
                 }
 
                 case EXPORT_COMPLETE: {
-                    if (mOnCompletionListener != null) {
-                        mOnCompletionListener.onCompletion(mCAVMediaExporter);
+                    if (mListener != null) {
+                        mListener.onExportSuccess();
                     }
                     break;
                 }
@@ -178,28 +170,35 @@ public class CAVMediaExporter {
 
                 case EXPORT_ERROR: {
                     Log.e(TAG, "Error (" + msg.arg1 + "," + msg.arg2 + ")");
-                    boolean error_was_handled = false;
-                    if (mOnErrorListener != null) {
-                        error_was_handled = mOnErrorListener.onError(mCAVMediaExporter, msg.arg1, msg.arg2);
-                    }
-                    if (mOnCompletionListener != null && !error_was_handled) {
-                        mOnCompletionListener.onCompletion(mCAVMediaExporter);
+                    if (mListener != null) {
+                        mListener.onExportError(getErrorMessage(msg.arg1, msg.arg2));
                     }
                     break;
                 }
 
                 case EXPORT_CURRENT: {
-                    if (mOnCurrentPositionListener != null) {
-                        mOnCurrentPositionListener.onCurrentPosition(mCAVMediaExporter, msg.arg1, msg.arg2);
+                    if (mListener != null) {
+                        mListener.onExporting(new AVTime(msg.arg1, msg.arg2), mDuration);
                     }
                     break;
                 }
 
-                default:{
+                default: {
                     Log.e(TAG, "Unknown message type " + msg.what);
                     break;
                 }
             }
+        }
+
+        /**
+         * 获取出错信息回调
+         * @param errorCode     出错码
+         * @param errorSubCode  出错子码
+         * @return 出错信息
+         */
+        @Nullable
+        private String getErrorMessage(int errorCode, int errorSubCode) {
+            return null;
         }
     }
 
@@ -224,123 +223,36 @@ public class CAVMediaExporter {
     }
 
     /**
-     * Interface definition for a callback to be invoked when the media
-     * source is already started for edit.
+     * 导出回调
      */
-    public interface OnStartedListener {
+    public interface OnExportListener {
 
         /**
-         * Called when the media file is already started for edit.
-         *
-         * @param editor the CAVMediaExporter that is already started for edit
+         * 导出过程回调
+         * @param current 当前的导出时间
+         * @param duration 导出时长
          */
-        void onStarted(CAVMediaExporter editor);
-    }
-
-    /**
-     * Register a callback to be invoked when the media source is already started
-     * for edit.
-     *
-     * @param listener the callback that will be run
-     */
-    public void setOnStartedListener(OnStartedListener listener) {
-        mOnStartedListener = listener;
-    }
-
-    private OnStartedListener mOnStartedListener;
-
-    /**
-     * Interface definition for a callback to be invoked when edit of
-     * a media source has completed.
-     */
-    public interface OnCompletionListener {
+        void onExporting(AVTime current, AVTime duration);
 
         /**
-         * Called when the end of a media source is reached during edit.
-         *
-         * @param editor the CAVMediaExporter that reached the end of the file
+         * 导出成功回调
          */
-        void onCompletion(CAVMediaExporter editor);
-    }
-
-    /**
-     * Register a callback to be invoked when the end of a media source
-     * has been reached during edit.
-     *
-     * @param listener the callback that will be run
-     */
-    public void setOnCompletionListener(OnCompletionListener listener) {
-        mOnCompletionListener = listener;
-    }
-
-    private OnCompletionListener mOnCompletionListener;
-
-    /* Do not change these values without updating their counterparts
-     * in CAVMediaExporter.h!
-     */
-    /**
-     * Unspecified media player error.
-     */
-    public static final int EDITOR_ERROR_UNKNOWN = 1;
-
-    /** Media server died. In this case, the application must release the
-     * MediaPlayer object and instantiate a new one.
-     */
-    public static final int EDITOR_ERROR_SERVER_DIED = 100;
-
-    /**
-     * Interface definition of a callback to be invoked when there
-     * has been an error during an asynchronous operation (other errors
-     * will throw exceptions at method call time).
-     */
-    public interface OnErrorListener {
+        void onExportSuccess();
 
         /**
-         * Called to indicate an error.
-         *
-         * @param editor  the CAVMediaExporter the error pertains to
-         * @param what    the type of error that has occurred:
-         * <ul>
-         * <li>{@link #EDITOR_ERROR_UNKNOWN}
-         * <li>{@link #EDITOR_ERROR_SERVER_DIED}
-         * </ul>
-         * @param extra an extra code, specific to the error. Typically
-         * implementation dependant.
-         * @return True if the method handled the error, false if it didn't.
-         * Returning false, or not having an OnErrorListener at all, will
-         * cause the OnCompletionListener to be called.
+         * 出错回调
+         * @param error 出错信息
          */
-        boolean onError(CAVMediaExporter editor, int what, int extra);
+        void onExportError(@Nullable String error);
     }
 
     /**
-     * Register a callback to be invoked when an error has happened
-     * during an asynchronous operation.
-     *
-     * @param listener the callback that will be run
+     * 设置导出监听器
+     * @param listener 监听器
      */
-    public void setOnErrorListener(OnErrorListener listener) {
-        mOnErrorListener = listener;
+    public void setOnExportListener(@Nullable OnExportListener listener) {
+        mListener = listener;
     }
 
-    private OnErrorListener mOnErrorListener;
-
-    /**
-     * Interface definition of a callback to be invoked to editing position.
-     */
-    public interface OnCurrentPositionListener {
-
-        void onCurrentPosition(CAVMediaExporter editor, float current, int duration);
-    }
-
-    /**
-     * Register a callback to be invoked on editing position.
-     * @param listener
-     */
-    public void setOnCurrentPositionlistener(OnCurrentPositionListener listener) {
-        mOnCurrentPositionListener = listener;
-    }
-
-    private OnCurrentPositionListener mOnCurrentPositionListener;
-
+    private OnExportListener mListener;
 }

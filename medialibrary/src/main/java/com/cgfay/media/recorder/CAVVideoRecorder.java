@@ -11,6 +11,7 @@ import com.cgfay.filter.gles.WindowSurface;
 import com.cgfay.filter.glfilter.base.GLImageFilter;
 import com.cgfay.filter.glfilter.utils.OpenGLUtils;
 import com.cgfay.filter.glfilter.utils.TextureRotationUtils;
+import com.cgfay.avfoundation.AVMediaType;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -152,7 +153,7 @@ public final class CAVVideoRecorder implements Runnable, CAVVideoEncoder.OnEncod
     @Override
     public void onEncoding(long duration) {
         if (mRecordListener != null) {
-            mRecordListener.onRecording(MediaType.VIDEO, duration);
+            mRecordListener.onRecording(AVMediaType.AVMediaTypeVideo, duration);
         }
     }
 
@@ -250,7 +251,7 @@ public final class CAVVideoRecorder implements Runnable, CAVVideoEncoder.OnEncod
         mImageFilter.onDisplaySizeChanged(params.getVideoWidth(), params.getVideoHeight());
         // 录制开始回调
         if (mRecordListener != null) {
-            mRecordListener.onRecordStart(MediaType.VIDEO);
+            mRecordListener.onRecordStart(AVMediaType.AVMediaTypeVideo);
         }
     }
 
@@ -282,7 +283,7 @@ public final class CAVVideoRecorder implements Runnable, CAVVideoEncoder.OnEncod
         // 录制完成回调
         if (mRecordListener != null) {
             mRecordListener.onRecordFinish(new RecordInfo(mVideoEncoder.getVideoParams().getVideoPath(),
-                    mVideoEncoder.getDuration(), MediaType.VIDEO));
+                    mVideoEncoder.getDuration(), AVMediaType.AVMediaTypeVideo));
         }
         mVideoEncoder = null;
     }

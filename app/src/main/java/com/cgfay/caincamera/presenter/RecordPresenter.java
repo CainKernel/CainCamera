@@ -22,7 +22,7 @@ import com.cgfay.media.recorder.MediaInfo;
 import com.cgfay.media.recorder.AudioParams;
 import com.cgfay.media.recorder.CAVMediaRecorder;
 import com.cgfay.camera.utils.PathConstraints;
-import com.cgfay.media.recorder.MediaType;
+import com.cgfay.avfoundation.AVMediaType;
 import com.cgfay.media.recorder.OnRecordStateListener;
 import com.cgfay.media.recorder.RecordInfo;
 import com.cgfay.media.recorder.SpeedMode;
@@ -203,9 +203,9 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
 
     @Override
     public void onRecordFinish(RecordInfo info) {
-        if (info.getType() == MediaType.AUDIO) {
+        if (info.getType() == AVMediaType.AVMediaTypeAudio) {
             mAudioInfo = info;
-        } else if (info.getType() == MediaType.VIDEO) {
+        } else if (info.getType() == AVMediaType.AVMediaTypeVideo) {
             mVideoInfo = info;
             mCurrentProgress = info.getDuration() * 1.0f / mVideoParams.getMaxDuration();
         }

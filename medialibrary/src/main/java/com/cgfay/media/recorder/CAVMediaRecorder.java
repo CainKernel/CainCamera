@@ -2,6 +2,8 @@ package com.cgfay.media.recorder;
 
 import android.util.Log;
 
+import com.cgfay.avfoundation.AVMediaType;
+
 /**
  * 媒体录制器，支持倍速录制
  * @author CainHuang
@@ -132,7 +134,7 @@ public class CAVMediaRecorder implements OnRecordListener {
      * @param type
      */
     @Override
-    public void onRecordStart(MediaType type) {
+    public void onRecordStart(AVMediaType type) {
         mRecorderCount++;
         // 允许音频录制，则判断录制器打开的个数大于等于两个，则表示全部都打开了
         if (!mAudioEnable || (mRecorderCount >= 2)) {
@@ -149,8 +151,8 @@ public class CAVMediaRecorder implements OnRecordListener {
      * @param duration
      */
     @Override
-    public void onRecording(MediaType type, long duration) {
-        if (type == MediaType.VIDEO) {
+    public void onRecording(AVMediaType type, long duration) {
+        if (type == AVMediaType.AVMediaTypeVideo) {
             if (mRecordStateListener != null) {
                 mRecordStateListener.onRecording(duration);
             }

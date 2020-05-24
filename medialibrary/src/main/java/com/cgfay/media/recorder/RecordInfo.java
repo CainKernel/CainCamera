@@ -1,5 +1,7 @@
 package com.cgfay.media.recorder;
 
+import com.cgfay.avfoundation.AVMediaType;
+
 /**
  * 录制一段视频/音频的信息
  * @author CainHuang
@@ -11,15 +13,15 @@ public class RecordInfo {
 
     private long duration; // 暂时录音的时长信息为-1，以视频信息为准
 
-    private MediaType type;
+    private AVMediaType type;
 
-    public RecordInfo(String fileName, long duration, MediaType type) {
+    public RecordInfo(String fileName, long duration, AVMediaType type) {
         this.fileName = fileName;
         this.duration = duration;
         this.type = type;
     }
 
-    public RecordInfo(String fileName, MediaType type) {
+    public RecordInfo(String fileName, AVMediaType type) {
         this.fileName = fileName;
         this.duration = -1;
         this.type = type;
@@ -33,7 +35,7 @@ public class RecordInfo {
         return duration;
     }
 
-    public MediaType getType() {
+    public AVMediaType getType() {
         return type;
     }
 }

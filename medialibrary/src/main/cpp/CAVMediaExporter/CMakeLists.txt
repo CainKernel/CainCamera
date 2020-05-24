@@ -38,9 +38,15 @@ add_library( media_exporter
              ${common_dir}/encoder/EncodeAudioThread.cpp
              ${common_dir}/encoder/EncodeVideoThread.cpp
 
-             # filter
-             ${common_dir}/filter/AmixFilter.cpp
-             ${common_dir}/filter/VolumeFilter.cpp
+             # 音频处理
+             ${common_dir}/audio/filter/AmixFilter.cpp
+             ${common_dir}/audio/filter/VolumeFilter.cpp
+             ${common_dir}/audio/CAVAudioMixer.cpp
+
+             # foundation
+             ${common_dir}/foundation/AVTime.cpp
+             ${common_dir}/foundation/AVTimeRange.cpp
+             ${common_dir}/graphics/Geometry.cpp
 
              # common
              ${common_dir}/AVFormatter.cpp

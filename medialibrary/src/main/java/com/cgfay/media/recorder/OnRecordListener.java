@@ -1,5 +1,7 @@
 package com.cgfay.media.recorder;
 
+import com.cgfay.avfoundation.AVMediaType;
+
 /**
  * 录制监听器, MediaRecorder内部使用
  * @author CainHuang
@@ -8,10 +10,10 @@ package com.cgfay.media.recorder;
 interface OnRecordListener {
 
     // 录制开始
-    void onRecordStart(MediaType type);
+    void onRecordStart(AVMediaType type);
 
     // 录制进度
-    void onRecording(MediaType type, long duration);
+    void onRecording(AVMediaType type, long duration);
 
     // 录制完成
     void onRecordFinish(RecordInfo info);
