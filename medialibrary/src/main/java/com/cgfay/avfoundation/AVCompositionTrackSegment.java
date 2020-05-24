@@ -4,10 +4,15 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
+import com.cgfay.coremedia.AVTimeMapping;
+import com.cgfay.coremedia.AVTimeRange;
+import com.cgfay.coremedia.AVTimeRangeUtils;
+import com.cgfay.coremedia.AVTimeUtils;
+
 /**
  * 可变媒体轨道片段数据对象
  */
-public class AVCompositionTrackSegment extends AVAssetTrackSegment {
+public class AVCompositionTrackSegment extends AVAssetTrackSegment implements Comparable<AVCompositionTrackSegment> {
 
     /**
      * 源媒体Uri
@@ -19,6 +24,10 @@ public class AVCompositionTrackSegment extends AVAssetTrackSegment {
      */
     private int mSourceTrackID;
 
+    /**
+     * 创建一个空的轨道片段
+     * @param timeRange 轨道时间区间
+     */
     public AVCompositionTrackSegment(@NonNull AVTimeRange timeRange) {
         super(timeRange);
         mSourceUri = null;
@@ -39,6 +48,11 @@ public class AVCompositionTrackSegment extends AVAssetTrackSegment {
         mEmpty = true;
         mSourceUri = uri;
         mSourceTrackID = sourceTrackID;
+    }
+
+    @Override
+    public int compareTo(AVCompositionTrackSegment other) {
+        return AVTimeUtils.timeCompare(mTimeMapping.getTarget().getStart(), other.mTimeMapping.getTarget().getStart());
     }
 
     /**

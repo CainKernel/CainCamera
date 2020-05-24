@@ -1,4 +1,4 @@
-package com.cgfay.avfoundation;
+package com.cgfay.coremedia;
 
 import androidx.annotation.NonNull;
 
@@ -9,6 +9,23 @@ public class AVTimeUtils {
 
     private AVTimeUtils() {
 
+    }
+
+    /**
+     * 创建时间对象
+     * @param seconds 秒
+     */
+    public static AVTime timeMakeWithSeconds(double seconds) {
+        return new AVTime(Math.round(seconds * AVTime.DEFAULT_TIME_SCALE), AVTime.DEFAULT_TIME_SCALE);
+    }
+
+    /**
+     * 创建时间对象
+     * @param seconds   秒
+     * @param timescale 刻度值
+     */
+    public static AVTime timeMakeWithSeconds(double seconds, int timescale) {
+        return new AVTime(Math.round(seconds * timescale), timescale);
     }
 
     /**

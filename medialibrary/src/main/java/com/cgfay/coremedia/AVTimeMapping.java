@@ -1,4 +1,4 @@
-package com.cgfay.avfoundation;
+package com.cgfay.coremedia;
 
 import androidx.annotation.NonNull;
 
@@ -24,6 +24,14 @@ public class AVTimeMapping {
 
     public AVTimeRange getTarget() {
         return target;
+    }
+
+    public void setSource(AVTimeRange source) {
+        this.source = source;
+    }
+
+    public void setTarget(AVTimeRange target) {
+        this.target = target;
     }
 
     @NonNull

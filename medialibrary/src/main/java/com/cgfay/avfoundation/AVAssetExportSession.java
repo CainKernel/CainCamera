@@ -5,6 +5,9 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.cgfay.coremedia.AVTime;
+import com.cgfay.coremedia.AVTimeRange;
+
 import static com.cgfay.avfoundation.AVAssetExportPreset.AVExportPresetQualityMedium;
 
 /**
@@ -76,6 +79,13 @@ public class AVAssetExportSession {
      * 取消导出
      */
     public void cancelExport() {
+
+    }
+
+    /**
+     * 释放资源
+     */
+    public void release() {
 
     }
 

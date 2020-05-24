@@ -1,8 +1,10 @@
 package com.cgfay.avfoundation;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.cgfay.coregraphics.CGSize;
+import com.cgfay.coremedia.AVTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,15 +35,27 @@ public class AVVideoComposition {
     private float mRenderScale;
 
     /**
-     * 视频
+     * 视频对象格式定义的指令列表，组合对象时间轴内的时间范围信息，其实就是表明这个视频组合的开始时间和持续时间
      */
-    private List<AVVideoInstruction> mInstructions;
+    private List<AVVideoCompositionInstruction> mInstructions;
 
     public AVVideoComposition() {
         mFrameDuration = new AVTime(DEFAULT_FRAME_TIME, AVTime.DEFAULT_TIME_SCALE);
         mRenderSize = CGSize.kSizeZero;
         mRenderScale = 1.0f;
         mInstructions = new ArrayList<>();
+    }
+
+    /**
+     * 通过AVAsset创建AVVideoComposition
+     * @param asset 媒体资产
+     * @return      AVVideoComposition
+     */
+    public static AVVideoComposition videoCompositionWithPropertiesOfAsset(AVAsset asset) {
+        AVVideoComposition composition = new AVVideoComposition();
+        composition.mFrameDuration = asset.getDuration();
+        composition.mRenderSize = asset.getNaturalSize();
+        return composition;
     }
 
     /**
@@ -94,7 +108,7 @@ public class AVVideoComposition {
      * 添加视频渲染指令
      * @param instruction 视频渲染指令
      */
-    public void addInstruction(AVVideoInstruction instruction) {
+    public void addInstruction(AVVideoCompositionInstruction instruction) {
         mInstructions.add(instruction);
     }
 
@@ -102,14 +116,14 @@ public class AVVideoComposition {
      * 设置视频渲染指令
      * @param instructions 视频渲染指令
      */
-    public void setInstructions(List<AVVideoInstruction> instructions) {
+    public void setInstructions(List<AVVideoCompositionInstruction> instructions) {
         mInstructions.addAll(instructions);
     }
 
     /**
      * 获取视频渲染指令列表
      */
-    public List<AVVideoInstruction> getInstructions() {
+    public List<AVVideoCompositionInstruction> getInstructions() {
         return mInstructions;
     }
 }

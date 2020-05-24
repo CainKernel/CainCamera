@@ -5,36 +5,38 @@ import android.graphics.Color;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 
+import com.cgfay.coremedia.AVTimeRange;
+
 import java.util.List;
 
 /**
  * 视频行为描述指令，包含时间区间、背景颜色、渲染描述指令
  */
-public class AVVideoInstruction {
+public class AVVideoCompositionInstruction {
 
     /**
      * 行为区间
      */
-    protected AVTimeRange mTimeRange;
+    private AVTimeRange mTimeRange;
 
     /**
      * 背景颜色
      */
-    protected @ColorInt int mBackgroundColor;
+    private  @ColorInt int mBackgroundColor;
 
     /**
-     * 渲染描述指令列表
+     * 渲染描述指令列表，用于定义给定视频轨道应用的模糊、变形和裁剪效果
      */
-    protected List<AVVideoRenderInstruction> mRenderInstructions;
+    private List<AVVideoCompositionLayerInstruction> mLayerInstructions;
 
     /**
      * 来自视频源的的轨道ID列表
      * List of video track IDs required to compose frames for this instruction.
      * If the value of this property is nil, all source tracks will be considered required for composition
      */
-    protected List<Integer> mRequiredSourceTrackIDs;
+    private List<Integer> mRequiredSourceTrackIDs;
 
-    public AVVideoInstruction() {
+    public AVVideoCompositionInstruction() {
         mTimeRange = AVTimeRange.kAVTimeRangeInvalid;
         mBackgroundColor = Color.BLACK;
     }
@@ -72,14 +74,14 @@ public class AVVideoInstruction {
      * 设置渲染指令描述列表
      * @param instructions
      */
-    public void setRenderInstructions(@NonNull List<AVVideoRenderInstruction> instructions) {
-        mRenderInstructions.addAll(instructions);
+    public void setLayerInstructions(@NonNull List<AVVideoCompositionLayerInstruction> instructions) {
+        mLayerInstructions.addAll(instructions);
     }
 
     /**
      * 获取视频渲染指令描述列表
      */
-    public List<AVVideoRenderInstruction> getRenderInstructions() {
-        return mRenderInstructions;
+    public List<AVVideoCompositionLayerInstruction> getLayerInstructions() {
+        return mLayerInstructions;
     }
 }

@@ -44,5 +44,4 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/CAVAudioPlayer)
 # 视频播放器
 add_subdirectory(${CMAKE_SOURCE_DIR}/CAVMediaPlayer)
 
-# 媒体导出器
-add_subdirectory(${CMAKE_SOURCE_DIR}/CAVMediaExporter)
+

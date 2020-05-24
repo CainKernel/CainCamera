@@ -1,4 +1,4 @@
-package com.cgfay.avfoundation;
+package com.cgfay.coremedia;
 
 import androidx.annotation.NonNull;
 

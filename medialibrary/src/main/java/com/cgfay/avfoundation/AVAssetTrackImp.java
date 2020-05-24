@@ -7,6 +7,9 @@ import androidx.annotation.Nullable;
 
 import com.cgfay.coregraphics.AffineTransform;
 import com.cgfay.coregraphics.CGSize;
+import com.cgfay.coremedia.AVTime;
+import com.cgfay.coremedia.AVTimeRange;
+import com.cgfay.coremedia.AVTimeRangeUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -17,7 +20,7 @@ import java.util.List;
  * 一个轨道对象表示持有的音频、视频、字幕轨道数据
  * 片段列表表示当前轨道需要展示的片段区间。
  */
-public class AVAssetTrackImp implements AVAssetTrack {
+public class AVAssetTrackImp implements AVAssetTrack<AVAssetTrackSegment> {
 
     /**
      * 轨道所依附的源媒体对象

@@ -2,6 +2,9 @@ package com.cgfay.avfoundation;
 
 import androidx.annotation.NonNull;
 
+import com.cgfay.coremedia.AVTimeMapping;
+import com.cgfay.coremedia.AVTimeRange;
+
 /**
  * 轨道片段信息，用于表示轨道需要展示的片段
  * 轨道片段信息包含时间区间映射关系。或者是来自一个数据源的轨道

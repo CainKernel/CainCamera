@@ -5,13 +5,15 @@ import androidx.annotation.Nullable;
 
 import com.cgfay.coregraphics.AffineTransform;
 import com.cgfay.coregraphics.CGSize;
+import com.cgfay.coremedia.AVTime;
+import com.cgfay.coremedia.AVTimeRange;
 
 import java.util.List;
 
 /**
  * 媒体轨道接口
  */
-public interface AVAssetTrack {
+public interface AVAssetTrack<T extends AVAssetTrackSegment> {
 
     /**
      * 非法轨道ID
@@ -22,7 +24,7 @@ public interface AVAssetTrack {
      * 获取包含某个时间的轨道片段
      */
     @Nullable
-    AVAssetTrackSegment segmentForTrackTime(@NonNull AVTime time);
+    T segmentForTrackTime(@NonNull AVTime time);
 
     /**
      * 获取源媒体对象
@@ -69,6 +71,6 @@ public interface AVAssetTrack {
      * 获取轨道片段
      * @return 轨道片段列表
      */
-    List<? extends AVAssetTrackSegment> getTrackSegments();
+    List<T> getTrackSegments();
 
 }

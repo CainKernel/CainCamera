@@ -1,4 +1,4 @@
-package com.cgfay.avfoundation;
+package com.cgfay.coremedia;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,6 +18,14 @@ public class AVTimeRange {
     public AVTimeRange(@NonNull AVTime start, @NonNull AVTime duration) {
         this.start = start;
         this.duration = duration;
+    }
+
+    /**
+     * 设置开始时间
+     * @param start
+     */
+    public void setStart(AVTime start) {
+        this.start = start;
     }
 
     /**

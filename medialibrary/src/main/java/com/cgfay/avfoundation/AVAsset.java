@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 
 import com.cgfay.coregraphics.AffineTransform;
 import com.cgfay.coregraphics.CGSize;
+import com.cgfay.coremedia.AVTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 /**
  * 媒体资产对象
  */
-public class AVAsset {
+public class AVAsset<T extends AVAssetTrack> {
 
     /**
      * 源文件Uri路径，处于编辑状态时，可以为空
@@ -51,7 +52,7 @@ public class AVAsset {
     /**
      * 媒体轨道列表
      */
-    protected List<AVAssetTrack> mTracks;
+    protected List<T> mTracks;
 
     /**
      * 根据Uri获取媒体资产
@@ -59,9 +60,7 @@ public class AVAsset {
      * @return      AVAsset对象
      */
     public static AVAsset assetWithUri(@NonNull Uri uri) {
-        AVAsset asset = new AVAsset();
-        asset.mUri = uri;
-        return asset;
+        return new AVUriAsset(uri);
     }
 
     protected AVAsset() {
@@ -78,10 +77,10 @@ public class AVAsset {
      * @return 轨道对象，如果找不到则返回null
      */
     @Nullable
-    public AVAssetTrack getTrackWithTrackID(int trackID) {
+    public T getTrackWithTrackID(int trackID) {
         if (mTracks != null) {
-            AVAssetTrack result = null;
-            for (AVAssetTrack track : mTracks) {
+            T result = null;
+            for (T track : mTracks) {
                 if (track.getTrackID() == trackID) {
                     result = track;
                     break;
@@ -97,10 +96,10 @@ public class AVAsset {
      * @param type  媒体类型
      * @return      轨道列表
      */
-    public List<AVAssetTrack> getTrackWithMediaType(AVMediaType type) {
-        List<AVAssetTrack> trackList = new ArrayList<>();
+    public List<T> getTrackWithMediaType(AVMediaType type) {
+        List<T> trackList = new ArrayList<>();
         if (mTracks != null) {
-            for (AVAssetTrack track : mTracks) {
+            for (T track : mTracks) {
                 if (track.getMediaType() == type) {
                     trackList.add(track);
                 }
@@ -164,7 +163,7 @@ public class AVAsset {
      * 获取媒体轨道列表
      * @return
      */
-    public List<AVAssetTrack> getTracks() {
+    public List<T> getTracks() {
         return mTracks;
     }
 }
