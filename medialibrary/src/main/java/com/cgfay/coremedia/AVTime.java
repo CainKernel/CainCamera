@@ -13,7 +13,6 @@ public class AVTime {
      */
     public static final int DEFAULT_TIME_SCALE = 600;
 
-
     public static final AVTime kAVTimeZero = new AVTime();
 
     public static final AVTime kAVTimeInvalid = new AVTime(Long.MIN_VALUE, 0);
@@ -77,6 +76,14 @@ public class AVTime {
             return Float.NEGATIVE_INFINITY;
         }
         return Float.NaN;
+    }
+
+    /**
+     * 获取时间(us)
+     */
+    public long getTimeUs() {
+        float second = getSeconds();
+        return (long)(second * 1000000);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.cgfay.media.recorder;
 
-import com.cgfay.avfoundation.AVMediaType;
+import com.cgfay.cavfoundation.AVMediaType;
 
 /**
  * 录制一段视频/音频的信息

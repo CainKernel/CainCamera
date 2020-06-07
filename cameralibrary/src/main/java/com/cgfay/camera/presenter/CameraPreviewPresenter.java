@@ -36,9 +36,9 @@ import com.cgfay.filter.glfilter.resource.bean.ResourceType;
 import com.cgfay.filter.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.media.CAVCommandEditor;
 import com.cgfay.media.recorder.AudioParams;
-import com.cgfay.media.recorder.CAVMediaRecorder;
+import com.cgfay.media.recorder.JAVMediaRecorder;
 import com.cgfay.media.recorder.MediaInfo;
-import com.cgfay.avfoundation.AVMediaType;
+import com.cgfay.cavfoundation.AVMediaType;
 import com.cgfay.media.recorder.OnRecordStateListener;
 import com.cgfay.media.recorder.RecordInfo;
 import com.cgfay.media.recorder.SpeedMode;
@@ -89,7 +89,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
     private long mRemainDuration;
 
     // 视频录制器
-    private CAVMediaRecorder mHWMediaRecorder;
+    private JAVMediaRecorder mHWMediaRecorder;
 
     // 视频列表
     private List<MediaInfo> mVideoList = new ArrayList<>();
@@ -385,7 +385,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
             return;
         }
         if (mHWMediaRecorder == null) {
-            mHWMediaRecorder = new CAVMediaRecorder(this);
+            mHWMediaRecorder = new JAVMediaRecorder(this);
         }
         mHWMediaRecorder.startRecord(mVideoParams, mAudioParams);
         mOperateStarted = true;
@@ -421,7 +421,7 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
 
     @Override
     public void setRecordSeconds(int seconds) {
-        mMaxDuration = mRemainDuration = seconds * CAVMediaRecorder.SECOND_IN_US;
+        mMaxDuration = mRemainDuration = seconds * JAVMediaRecorder.SECOND_IN_US;
         mVideoParams.setMaxDuration(mMaxDuration);
         mAudioParams.setMaxDuration(mMaxDuration);
     }

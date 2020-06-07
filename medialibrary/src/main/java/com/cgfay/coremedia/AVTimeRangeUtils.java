@@ -115,6 +115,25 @@ public class AVTimeRangeUtils {
     }
 
     /**
+     * 获取时间区间的结尾
+     * This function returns a CMTime structure that indicates the end of the time range specified by the <i>range</i> parameter.
+     * AVTimeRangeContainsTime(range, AVTimeRangeGetEnd(range)) is always false.
+     */
+    public static AVTime timeRangeGetEnd(@NonNull AVTimeRange range, int timescale) {
+        if (timeRangeEqual(range, AVTimeRange.kAVTimeRangeInvalid)) {
+            return AVTime.kAVTimeInvalid;
+        }
+        if (timeRangeEqual(range, AVTimeRange.kAVTimeRangeZero)) {
+            return new AVTime(1, timescale);
+        }
+        // 时间往后挪一个刻度值，保证AVTimeRangeContainsTime(range, AVTimeRangeGetEnd(range)) 一直为false
+        AVTime time = range.getEnd();
+        time = AVTimeUtils.timeConvertScale(time, timescale);
+        time.setValue(time.getValue() + 1);
+        return time;
+    }
+
+    /**
      * The start and end time of fromRange will be mapped to the start and end time of toRange respectively.
      * Other times will be mapped linearly, using the formula:
      *     result = (time-fromRange.start)*(toRange.duration/fromRange.duration)+toRange.start

@@ -20,9 +20,9 @@ import com.cgfay.camera.camera.OnFrameAvailableListener;
 import com.cgfay.camera.camera.OnSurfaceTextureListener;
 import com.cgfay.media.recorder.MediaInfo;
 import com.cgfay.media.recorder.AudioParams;
-import com.cgfay.media.recorder.CAVMediaRecorder;
+import com.cgfay.media.recorder.JAVMediaRecorder;
 import com.cgfay.camera.utils.PathConstraints;
-import com.cgfay.avfoundation.AVMediaType;
+import com.cgfay.cavfoundation.AVMediaType;
 import com.cgfay.media.recorder.OnRecordStateListener;
 import com.cgfay.media.recorder.RecordInfo;
 import com.cgfay.media.recorder.SpeedMode;
@@ -58,7 +58,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
     private long mRemainDuration;
 
     // 视频录制器
-    private CAVMediaRecorder mHWMediaRecorder;
+    private JAVMediaRecorder mHWMediaRecorder;
 
     // 视频列表
     private List<MediaInfo> mVideoList = new ArrayList<>();
@@ -78,7 +78,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
         mActivity = activity;
 
         // 视频录制器
-        mHWMediaRecorder = new CAVMediaRecorder(this);
+        mHWMediaRecorder = new JAVMediaRecorder(this);
 
         // 视频参数
         mVideoParams = new VideoParams();
@@ -150,7 +150,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
      * @param seconds
      */
     public void setRecordSeconds(int seconds) {
-        mMaxDuration = mRemainDuration = seconds * CAVMediaRecorder.SECOND_IN_US;
+        mMaxDuration = mRemainDuration = seconds * JAVMediaRecorder.SECOND_IN_US;
         mVideoParams.setMaxDuration(mMaxDuration);
         mAudioParams.setMaxDuration(mMaxDuration);
     }

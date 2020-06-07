@@ -1,6 +1,6 @@
 package com.cgfay.media.recorder;
 
-import com.cgfay.avfoundation.AVMediaType;
+import com.cgfay.cavfoundation.AVMediaType;
 
 /**
  * 录制监听器, MediaRecorder内部使用

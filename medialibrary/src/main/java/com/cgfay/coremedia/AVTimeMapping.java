@@ -13,6 +13,11 @@ public class AVTimeMapping {
     // 目的时间区间
     private AVTimeRange target;
 
+    public AVTimeMapping(@NonNull AVTimeMapping other) {
+        source = new AVTimeRange(other.source.getStart(), other.source.getDuration());
+        target = new AVTimeRange(other.target.getStart(), other.target.getDuration());
+    }
+
     public AVTimeMapping(@NonNull AVTimeRange source, @NonNull AVTimeRange target) {
         this.source = source;
         this.target = target;
