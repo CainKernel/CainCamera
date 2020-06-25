@@ -36,6 +36,13 @@ public class AVTimeRange {
     }
 
     /**
+     * 设置时长
+     */
+    public void setDuration(AVTime duration) {
+        this.duration = duration;
+    }
+
+    /**
      * 获取时长
      */
     public AVTime getDuration() {

@@ -1,6 +1,7 @@
 package com.cgfay.cavfoundation;
 
 import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +23,8 @@ import java.util.List;
  * 媒体组合轨道，轨道下面的片段暂不支持重叠处理
  */
 public class AVCompositionTrack implements AVAssetTrack {
+
+    private static final String TAG = "AVCompositionTrack";
 
     /**
      * 默认音频时间刻度
@@ -166,19 +169,27 @@ public class AVCompositionTrack implements AVAssetTrack {
      * @param startTime         插入的起始时间
      * @return                  返回插入结果
      */
-    public boolean insertTimeRange(@NonNull AVTimeRange timeRange,
+    private boolean insertTimeRange(@NonNull AVTimeRange timeRange,
                                     @NonNull AVCompositionTrack compositionTrack,
                                     @NonNull AVTime startTime) {
-        AVTime insertStart = startTime;
-        if (AVTime.kAVTimeInvalid.equals(startTime)) {
-            insertStart = AVTimeRangeUtils.timeRangeGetEnd(mTimeRange);
+        // 起始时间为kAVTimeInvalid，直接退出
+        if (startTime.equals(AVTime.kAVTimeInvalid)) {
+            Log.e(TAG, "insertTimeRange: startTime is invalid!");
+            return false;
         }
-        List<AVCompositionTrackSegment> compositionSegments = compositionTrack.getTrackSegments();
 
-        // 如果组合轨道的片段是空的，则插入一段空的片段
-        if (compositionSegments.isEmpty()) {
-            insertEmptyTimeRange(new AVTimeRange(insertStart, timeRange.getDuration()));
-            return true;
+        // 空轨道不做处理
+        if (compositionTrack.getTrackSegments().isEmpty()) {
+            Log.e(TAG, "insertTimeRange: AVCompositionTrack is has no track segments, insert failed!");
+            return false;
+        }
+
+        // 如果没有片段，并且起始时间startTime不为kAVTimeZero，则先插入一段空的片段
+        if (mTrackSegments.isEmpty() && !startTime.equals(AVTime.kAVTimeZero)) {
+            AVTime duration = new AVTime(timeRange.getStart().getValue(), timeRange.getStart().getTimescale());
+            duration.setValue(duration.getValue() - 1);
+            AVTimeRange emptyRange = new AVTimeRange(AVTime.kAVTimeZero, duration);
+            insertEmptyTimeRange(emptyRange);
         }
 
         // 用于记录要插入的片段列表
@@ -191,7 +202,7 @@ public class AVCompositionTrack implements AVAssetTrack {
                 // 如果是空片段，则直接插入timeRange交集区间的空片段
                 // 如果不是空片段，则非空部分需要计算出交集区间源媒体区间的timeRange，创建一个交集区间映射对象的片段
                 if (segment.isEmpty()) {
-                    insertEmptyTimeRange(new AVTimeRange(insertStart, intersectTimeRange.getDuration()));
+                    insertEmptyTimeRange(new AVTimeRange(startTime, intersectTimeRange.getDuration()));
                 } else {
                     // 计算出源轨道时长
                     AVTime duration = AVTimeRangeUtils.timeMapDurationFromRangeToRange(intersectTimeRange.getDuration(),
@@ -202,7 +213,7 @@ public class AVCompositionTrack implements AVAssetTrack {
 
                     // 计算出要插入的轨道时间映射关系
                     AVTimeMapping mapping = new AVTimeMapping(new AVTimeRange(start, duration),
-                            new AVTimeRange(insertStart, intersectTimeRange.getDuration()));
+                            new AVTimeRange(startTime, intersectTimeRange.getDuration()));
 
                     // 创建并记录要插入的轨道片段
                     try {
@@ -228,56 +239,38 @@ public class AVCompositionTrack implements AVAssetTrack {
     }
 
     /**
-     * 插入一个源媒体轨道
-     * @param timeRange 插入的时间区间
+     * 将一个源媒体轨道的timeRange时间区间的内容插入到组合轨道的startTime开始的位置，时长为timeRange的duration
+     *
+     * @param timeRange 插入源媒体的轨道时间区间
      * @param track     源媒体轨道
      * @param startTime 插入的起始时间
      * @return          插入结果
      */
-    public boolean insertTimeRange(@NonNull AVTimeRange timeRange, @NonNull CAVAssetTrack track,
+    private boolean insertTimeRange(@NonNull AVTimeRange timeRange, @NonNull CAVAssetTrack track,
                                     @NonNull AVTime startTime) {
-        AVTime insertStart = startTime;
-        if (AVTime.kAVTimeInvalid.equals(startTime)) {
-            insertStart = AVTimeRangeUtils.timeRangeGetEnd(mTimeRange);
-        }
-        // 处理是AVAssetTrack轨道的情况
+
+        // 处理是CAVAssetTrack轨道的情况
         List<AVAssetTrackSegment> segments = track.getTrackSegments();
-        // 如果组合轨道的片段是空的，则插入一段空的片段
+        // 如果组合轨道的片段是空的，则插入一段空的片段，说明这个CAVAssetTrack是有异常的
         if (segments.isEmpty()) {
-            insertEmptyTimeRange(new AVTimeRange(insertStart, timeRange.getDuration()));
-            return true;
+            Log.e(TAG, "insertTimeRange: CAVAssetTrack is has no track segments, insert failed!");
+            return false;
         }
 
-        // 用于记录要插入的片段列表
-        List<AVCompositionTrackSegment> insertSegments = new ArrayList<>();
-        for (AVAssetTrackSegment segment : segments) {
-            // 如果交集时间区间不为空，则直接将交集部分所对应的轨道片段对象复制出来并重新设置时间区间，最后插入到轨道片段中
-            AVTimeRange intersectTimeRange = AVTimeRangeUtils.timeRangeGetIntersection(segment.mTimeMapping.getTarget(), timeRange);
-            if (!AVTimeRangeUtils.timeRangeEqual(AVTimeRange.kAVTimeRangeZero, intersectTimeRange)) {
-                // 根据交集计算出源轨道时长
-                AVTime duration = AVTimeRangeUtils.timeMapDurationFromRangeToRange(intersectTimeRange.getDuration(),
-                        segment.mTimeMapping.getTarget(), segment.mTimeMapping.getSource());
-
-                // 根据交集计算出源轨道起始时间
-                AVTime start = AVTimeRangeUtils.timeMapTimeFromRangeToRange(intersectTimeRange.getStart(),
-                        segment.mTimeMapping.getTarget(), segment.mTimeMapping.getSource());
-
-                // 计算出源时间区间和片段目的时间区间
-                AVTimeRange sourceTimeRange = new AVTimeRange(start, duration);
-                AVTimeRange targetTimeRange = new AVTimeRange(insertStart, intersectTimeRange.getDuration());
-
-                // 创建并记录要插入的新轨道片段
-                AVCompositionTrackSegment insertSegment = new AVCompositionTrackSegment(track.getUri(),
-                        track.getTrackID(), sourceTimeRange, targetTimeRange);
-                insertSegments.add(insertSegment);
-            }
+        // 如果没有片段，并且起始时间startTime不为kAVTimeZero，则先插入一段空的片段
+        if (mTrackSegments.isEmpty() && !startTime.equals(AVTime.kAVTimeZero)) {
+            AVTime duration = new AVTime(timeRange.getStart().getValue(), timeRange.getStart().getTimescale());
+            duration.setValue(duration.getValue() - 1);
+            AVTimeRange emptyRange = new AVTimeRange(AVTime.kAVTimeZero, duration);
+            insertEmptyTimeRange(emptyRange);
         }
 
-        // 插入到轨道片段中并重新排序
-        if (!insertSegments.isEmpty()) {
-            mTrackSegments.addAll(insertSegments);
-            Collections.sort(mTrackSegments);
-        }
+        // 直接插入轨道片段，这是因为CAVAssetTrack只有一个片段，因此不需要处理多片段交集的情况
+        AVTimeRange trackRange = new AVTimeRange(startTime, timeRange.getDuration());
+        AVCompositionTrackSegment trackSegment = new AVCompositionTrackSegment(track.getUri(),
+                track.getTrackID(), timeRange, trackRange);
+        mTrackSegments.add(trackSegment);
+
         // 插入片段之后，更新轨道的总时长，使用并集的方式更新
         mTimeRange = AVTimeRangeUtils.timeRangeGetUnion(mTimeRange, timeRange);
         return true;
@@ -289,9 +282,16 @@ public class AVCompositionTrack implements AVAssetTrack {
      */
     public void insertEmptyTimeRange(@NonNull AVTimeRange timeRange) {
         if (mTrackSegments.size() == 0) {
-            // 第一段必须是kAVTimeZero开始
-            timeRange.setStart(AVTime.kAVTimeZero);
+            // 第一段必须是kAVTimeZero开始，因此这个时间区间要重新计算
+            if (!timeRange.getStart().equals(AVTime.kAVTimeZero)) {
+                AVTime duration = AVTimeUtils.timeSubtract(timeRange.getStart(), AVTime.kAVTimeZero);
+                duration = AVTimeUtils.timeAdd(duration, timeRange.getDuration());
+                timeRange.setStart(AVTime.kAVTimeZero);
+                timeRange.setDuration(duration);
+            }
+            // 加入一个新的片段
             mTrackSegments.add(new AVCompositionTrackSegment(timeRange));
+            // 计算出轨道的时间区间
             mTimeRange = new AVTimeRange(timeRange.getStart(), timeRange.getDuration());
         } else {
             // 获取最后一个片段的时间区间的结束位置作为时间区间的起始位置
