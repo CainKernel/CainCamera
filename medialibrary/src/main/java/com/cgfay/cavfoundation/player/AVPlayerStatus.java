@@ -1,4 +1,4 @@
-package com.cgfay.cavfoundation;
+package com.cgfay.cavfoundation.player;
 
 public enum AVPlayerStatus {
     AVPlayerStatusUnknown(0),

@@ -51,19 +51,6 @@ public class AVCompositionTrackSegment extends AVAssetTrackSegment implements Co
         mSourceTrackID = sourceTrackID;
     }
 
-    /**
-     * 利用固定轨道片段创建一个可编辑媒体轨道片段
-     * @param uri
-     * @param sourceTrackID
-     * @param segment
-     */
-    public AVCompositionTrackSegment(@NonNull Uri uri, int sourceTrackID, @NonNull AVAssetTrackSegment segment) {
-        super(new AVTimeMapping(segment.getTimeMapping()));
-        mSourceUri = uri;
-        mSourceTrackID = sourceTrackID;
-        mEmpty = segment.mEmpty;
-    }
-
     @NonNull
     @Override
     protected Object clone() throws CloneNotSupportedException {

@@ -229,7 +229,7 @@ CAVUriAsset_setDataSourceAndHeaders(JNIEnv *env, jobject thiz,
     process_media_asset_call(env, opStatus, "java/io/IOException", "setDataSource failed.");
     env->ReleaseStringUTFChars(path_, path);
 
-//    initAssetData(env, thiz, asset);
+    initAssetData(env, thiz, asset);
 }
 
 static void
@@ -273,7 +273,7 @@ CAVUriAsset_setDataSourceFD(JNIEnv *env, jobject thiz,
     status_t opStatus = asset->setDataSource(path, offset, nullptr);
     process_media_asset_call(env, opStatus, "java/io/IOException", "setDataSourceFD failed.");
 
-//    initAssetData(env, thiz, asset);
+    initAssetData(env, thiz, asset);
 }
 
 static int

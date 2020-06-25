@@ -5,8 +5,11 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.cgfay.cavfaudio.AVAudioMix;
 import com.cgfay.coremedia.AVTime;
 import com.cgfay.coremedia.AVTimeRange;
+
+import java.util.List;
 
 import static com.cgfay.cavfoundation.AVAssetExportPreset.AVExportPresetQualityMedium;
 
@@ -18,7 +21,7 @@ public class AVAssetExportSession {
     // 媒体资源
     private AVAsset mAsset;
 
-    // 导出参数
+    // 导出参数(presetName)
     private AVAssetExportPreset mPreset;
 
     // 输出Uri
@@ -40,6 +43,10 @@ public class AVAssetExportSession {
     The export will not stop when it reaches this maximum duration;
     set the timeRange property to export only a certain time range.  */
     private AVTime mMaxDuration;
+
+    /* Indicates whether non-default audio mixing is enabled for export and supplies the parameters for audio mixing.  Ignored when export preset is AVAssetExportPresetPassthrough. */
+    @Nullable
+    private AVAudioMix mAudioMix;
 
     /* Indicates whether video composition is enabled for export and supplies the instructions for video composition.*/
     @Nullable

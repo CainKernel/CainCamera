@@ -93,7 +93,6 @@ public:
 private:
     void release();
 
-    bool compareStartTime(AVCompositionTrackSegment *lhs, AVCompositionTrackSegment *rhs);
 private:
     bool enabled;
     int naturalTimeScale;

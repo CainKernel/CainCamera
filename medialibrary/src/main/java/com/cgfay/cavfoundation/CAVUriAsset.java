@@ -9,21 +9,65 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.cgfay.coregraphics.AffineTransform;
 import com.cgfay.coregraphics.CGSize;
 import com.cgfay.coremedia.AVTime;
 import com.cgfay.coremedia.AVTimeRange;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * 使用Uri
  */
-public class CAVUriAsset extends AVAsset<AVAssetTrack> {
+public class CAVUriAsset implements AVAsset {
+
+    /**
+     * 源文件Uri路径，处于编辑状态时，可以为空
+     */
+    @Nullable
+    private Uri mUri;
+
+    /**
+     * 媒体时长
+     */
+    @NonNull
+    private AVTime mDuration;
+
+    /**
+     * 默认播放速度，通常是1.0
+     */
+    private float mPreferredRate;
+
+    /**
+     * 默认音量
+     */
+    private float mPreferredVolume;
+
+    /**
+     * 默认转换对象
+     */
+    @NonNull
+    private AffineTransform mPreferredTransform;
+
+    /**
+     * 默认大小
+     */
+    @NonNull
+    private CGSize mNaturalSize;
+
+    /**
+     * 媒体轨道列表
+     */
+    @NonNull
+    private final List<CAVAssetTrack> mTracks = new ArrayList<>();
 
     /**
      * 轨道ID集合，key为轨道索引，value为trackID
@@ -43,6 +87,14 @@ public class CAVUriAsset extends AVAsset<AVAssetTrack> {
     public CAVUriAsset() {
         super();
         mTrackIDGroups = new HashMap<>();
+        mUri = null;
+        mDuration = AVTime.kAVTimeZero;
+        mPreferredRate = 1.0f;
+        mPreferredVolume = 1.0f;
+        mPreferredTransform = new AffineTransform().idt();
+        mNaturalSize = CGSize.kSizeZero;
+        mRotation = 0;
+        mTrackCount = 0;
         native_setup();
     }
 
@@ -220,23 +272,142 @@ public class CAVUriAsset extends AVAsset<AVAssetTrack> {
     /**
      * 创建轨道信息
      */
-    void createAssetTrack(@NonNull Uri uri) {
+    private void createAssetTrack(@NonNull Uri uri) {
         for (int i = 0; i < mTrackCount; i++) {
             AVMediaType type = getTrackType(i);
-            int trackID = mTrackIDGroups.get(i);
+            Integer id = mTrackIDGroups.get(i);
+            int trackID = id != null ? id : -1;
             if (type == AVMediaType.AVMediaTypeAudio || type == AVMediaType.AVMediaTypeVideo) {
                 AVTimeRange timeRange = new AVTimeRange(AVTime.kAVTimeZero, getDuration());
                 if (type == AVMediaType.AVMediaTypeVideo) {
-                    AVAssetTrack track = new AVAssetTrack(this, uri, trackID, type, timeRange, mNaturalSize);
+                    CAVAssetTrack track = new CAVAssetTrack(this, uri, trackID, type, timeRange, mNaturalSize);
                     track.mNaturalTimeScale = AVTime.DEFAULT_TIME_SCALE;
                     mTracks.add(track);
                 } else {
-                    AVAssetTrack track = new AVAssetTrack(this, uri, trackID, type, timeRange);
+                    CAVAssetTrack track = new CAVAssetTrack(this, uri, trackID, type, timeRange);
                     track.mNaturalTimeScale = 44100;
                     mTracks.add(track);
                 }
             }
         }
+    }
+
+    /**
+     * 根据轨道ID获取轨道对象
+     * @param trackID 轨道ID
+     * @return 轨道对象，如果找不到则返回null
+     */
+    @Nullable
+    @Override
+    public CAVAssetTrack getTrackWithTrackID(int trackID) {
+        CAVAssetTrack result = null;
+        for (CAVAssetTrack track : mTracks) {
+            if (track.getTrackID() == trackID) {
+                result = track;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 根据媒体类型获取轨道列表
+     * @param type  媒体类型
+     * @return      轨道列表
+     */
+    @Override
+    public List<CAVAssetTrack> getTrackWithMediaType(AVMediaType type) {
+        List<CAVAssetTrack> trackList = new ArrayList<>();
+        for (CAVAssetTrack track : mTracks) {
+            if (track.getMediaType() == type) {
+                trackList.add(track);
+            }
+        }
+        return trackList;
+    }
+
+    /**
+     * 取消加载所有数值
+     */
+    @Override
+    public void cancelLoading() {
+
+    }
+
+    /**
+     * 获取源数据路径
+     *
+     * @return 源路径Uri
+     */
+    @Nullable
+    @Override
+    public Uri getUri() {
+        return mUri;
+    }
+
+    /**
+     * 获取时长
+     */
+    @NonNull
+    @Override
+    public AVTime getDuration() {
+        return mDuration;
+    }
+
+    /**
+     * 获取速度
+     */
+    @Override
+    public float getPreferredRate() {
+        return mPreferredRate;
+    }
+
+    /**
+     * 获取音量
+     */
+    @Override
+    public float getPreferredVolume() {
+        return mPreferredVolume;
+    }
+
+    /**
+     * 获取转换大小对象
+     */
+    @NonNull
+    @Override
+    public AffineTransform getPreferredTransform() {
+        return mPreferredTransform;
+    }
+
+    /**
+     * 获取视频帧大小
+     */
+    @Override
+    public CGSize getNaturalSize() {
+        return mNaturalSize;
+    }
+
+    /**
+     * 获取轨道信息
+     */
+    @NonNull
+    @Override
+    public List<CAVAssetTrack> getTracks() {
+        return mTracks;
+    }
+
+    /**
+     * 获取旋转角度
+     */
+    public int getRotation() {
+        return mRotation;
+    }
+
+    /**
+     * 获取轨道数量
+     */
+    public int getTrackCount() {
+        return mTrackCount;
     }
 
     @Override
@@ -256,4 +427,40 @@ public class CAVUriAsset extends AVAsset<AVAssetTrack> {
     private static native final void native_init();
     private native final void native_setup();
     private native final void native_finalize();
+
+    public /**
+     * 根据路径创建媒体资源对象，耗时约50~100ms
+     * @param path
+     * @return
+     */
+    static AVAsset assetWithPath(@NonNull String path) {
+        CAVUriAsset asset = new CAVUriAsset();
+        Uri uri = Uri.fromFile(new File(path));
+        try {
+            asset.mUri = uri;
+            asset.setDataSource(path);
+            asset.createAssetTrack(uri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return asset;
+    }
+
+    /**
+     * 根据Uri获取媒体资源对象，耗时约50~100ms
+     * @param uri   uri路径
+     * @return      AVAsset对象
+     */
+    static AVAsset assetWithUri(@NonNull Context context, @NonNull Uri uri) {
+        CAVUriAsset asset = new CAVUriAsset();
+        try {
+            asset.mUri = uri;
+            asset.setDataSource(context, uri, null);
+            asset.createAssetTrack(uri);
+            return asset;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return asset;
+    }
 }

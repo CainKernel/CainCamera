@@ -13,6 +13,7 @@ import com.cgfay.coremedia.AVTimeRange;
 import com.cgfay.coremedia.AVTimeRangeUtils;
 import com.cgfay.coremedia.AVTimeUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -20,7 +21,77 @@ import java.util.List;
 /**
  * 媒体组合轨道，轨道下面的片段暂不支持重叠处理
  */
-public class AVCompositionTrack extends AVAssetTrack<AVCompositionTrackSegment> {
+public class AVCompositionTrack implements AVAssetTrack {
+
+    /**
+     * 默认音频时间刻度
+     */
+    private static final int DEFAULT_SAMPLE_RATE = 44100;
+
+    /**
+     * 源媒体数据
+     */
+    @Nullable
+    private AVAsset mAsset;
+
+    /**
+     * 源数据Uri路径
+     */
+    @Nullable
+    private Uri mUri;
+
+    /**
+     * 轨道ID
+     */
+    private int mTrackID;
+
+    /**
+     * 媒体类型
+     */
+    private AVMediaType mMediaType;
+
+    /**
+     * 轨道的时间区间
+     */
+    @NonNull
+    private AVTimeRange mTimeRange;
+
+    /**
+     * 视频帧大小
+     */
+    @NonNull
+    private CGSize mNaturalSize;
+
+    /**
+     * 时间刻度，如果是视频，则采用默认的600，如果是音频，则采用默认的44100Hz
+     */
+    private int mNaturalTimeScale;
+
+    /**
+     * 转换对象，比如90度、270度等转换
+     */
+    @NonNull
+    private AffineTransform mPreferredTransform;
+
+    /**
+     * 默认播放速度，通常是1.0
+     */
+    private float mPreferredRate;
+
+    /**
+     * 默认音量
+     */
+    private float mPreferredVolume;
+
+    /**
+     * 是否需要timestamps重排序
+     */
+    private boolean mFrameReordering;
+
+    /**
+     * 轨道片段列表
+     */
+    private List<AVCompositionTrackSegment> mTrackSegments = new ArrayList<>();
 
     private AVCompositionTrack(@NonNull AVAsset asset, @NonNull Uri uri, int trackID,
                                @NonNull AVMediaType type, @NonNull AVTimeRange timeRange) {
@@ -30,16 +101,43 @@ public class AVCompositionTrack extends AVAssetTrack<AVCompositionTrackSegment> 
     private AVCompositionTrack(@NonNull AVAsset asset, @NonNull Uri uri, int trackID,
                                @NonNull AVMediaType type, @NonNull AVTimeRange timeRange,
                                @NonNull CGSize size) {
-        super(asset, uri, trackID, type, timeRange, size);
+        mAsset = asset;
+        mUri = uri;
+        mTrackID = trackID;
+        mMediaType = type;
+        mTimeRange = timeRange;
+        mNaturalSize = size;
+        mPreferredTransform = new AffineTransform().idt();
+        mPreferredRate = 1.0f;
+        mPreferredVolume = 1.0f;
+        mFrameReordering = false;
+        AVCompositionTrackSegment segment = new AVCompositionTrackSegment(uri, trackID, timeRange, timeRange);
+        // 判断是否轨道id是否合法，合法则不为空
+        segment.setEmpty(trackID == kTrackIDInvalid);
+        mTrackSegments.add(segment);
+        // 设置默认轨道的时间timescale，视频流使用600，音频流使用44100
+        if (type == AVMediaType.AVMediaTypeVideo) {
+            mNaturalTimeScale = AVTime.DEFAULT_TIME_SCALE;
+        } else if (type == AVMediaType.AVMediaTypeAudio) {
+            mNaturalTimeScale = DEFAULT_SAMPLE_RATE;
+        }
     }
 
     public AVCompositionTrack(AVMediaType type) {
-        super();
         mAsset = null;
+        mUri = null;
         mMediaType = type;
+        mTrackID = kTrackIDInvalid;
+        mNaturalSize = CGSize.kSizeZero;
         mPreferredTransform = new AffineTransform().idt();
         mPreferredVolume = 1.0f;
-        mFrameReordering = true;
+        mFrameReordering = false;
+        // 设置默认轨道的时间timescale，视频流使用600，音频流使用44100
+        if (type == AVMediaType.AVMediaTypeVideo) {
+            mNaturalTimeScale = AVTime.DEFAULT_TIME_SCALE;
+        } else if (type == AVMediaType.AVMediaTypeAudio) {
+            mNaturalTimeScale = DEFAULT_SAMPLE_RATE;
+        }
     }
 
     /**
@@ -51,62 +149,138 @@ public class AVCompositionTrack extends AVAssetTrack<AVCompositionTrackSegment> 
      */
     public boolean insertTimeRange(@NonNull AVTimeRange timeRange, @NonNull AVAssetTrack track,
                                    @NonNull AVTime startTime) {
-        AVAsset asset = track.getAsset();
-        // 如果源文件不存在或轨道ID不存在，则直接插入一个空的轨道
-        if (asset == null || asset.getUri() == null || track.getTrackID() == kTrackIDInvalid) {
-            insertEmptyTimeRange(new AVTimeRange(startTime, timeRange.getDuration()));
+        // 目前只支持组合轨道和源媒体轨道
+        if (track instanceof AVCompositionTrack) {
+            return insertTimeRange(timeRange, (AVCompositionTrack)track, startTime);
+        } else if (track instanceof CAVAssetTrack) {
+            return insertTimeRange(timeRange, (CAVAssetTrack) track, startTime);
         } else {
-            // 求出轨道时间区间交集，如果时间区间不在源媒体轨道区间中，则没法插入
-            AVTimeRange sourceTimeRange = AVTimeRangeUtils.timeRangeGetIntersection(timeRange, track.getTimeRange());
-            if (AVTimeRangeUtils.timeRangeEqual(sourceTimeRange, AVTimeRange.kAVTimeRangeZero)) {
-                return false;
+            return false;
+        }
+    }
+
+    /**
+     * 插入一个时间段的媒体数据
+     * @param timeRange         插入的时间区间
+     * @param compositionTrack  组合轨道
+     * @param startTime         插入的起始时间
+     * @return                  返回插入结果
+     */
+    public boolean insertTimeRange(@NonNull AVTimeRange timeRange,
+                                    @NonNull AVCompositionTrack compositionTrack,
+                                    @NonNull AVTime startTime) {
+        AVTime insertStart = startTime;
+        if (AVTime.kAVTimeInvalid.equals(startTime)) {
+            insertStart = AVTimeRangeUtils.timeRangeGetEnd(mTimeRange);
+        }
+        List<AVCompositionTrackSegment> compositionSegments = compositionTrack.getTrackSegments();
+
+        // 如果组合轨道的片段是空的，则插入一段空的片段
+        if (compositionSegments.isEmpty()) {
+            insertEmptyTimeRange(new AVTimeRange(insertStart, timeRange.getDuration()));
+            return true;
+        }
+
+        // 用于记录要插入的片段列表
+        List<AVCompositionTrackSegment> insertSegments = new ArrayList<>();
+        List<AVCompositionTrackSegment> segments = compositionTrack.getTrackSegments();
+        for (AVCompositionTrackSegment segment : segments) {
+            // 如果交集时间区间不为空，则直接将交集部分所对应的轨道片段对象复制出来并重新设置时间区间，最后插入到轨道片段中
+            AVTimeRange intersectTimeRange = AVTimeRangeUtils.timeRangeGetIntersection(segment.mTimeMapping.getTarget(), timeRange);
+            if (!AVTimeRangeUtils.timeRangeEqual(AVTimeRange.kAVTimeRangeZero, intersectTimeRange)) {
+                // 如果是空片段，则直接插入timeRange交集区间的空片段
+                // 如果不是空片段，则非空部分需要计算出交集区间源媒体区间的timeRange，创建一个交集区间映射对象的片段
+                if (segment.isEmpty()) {
+                    insertEmptyTimeRange(new AVTimeRange(insertStart, intersectTimeRange.getDuration()));
+                } else {
+                    // 计算出源轨道时长
+                    AVTime duration = AVTimeRangeUtils.timeMapDurationFromRangeToRange(intersectTimeRange.getDuration(),
+                            segment.mTimeMapping.getTarget(), segment.mTimeMapping.getSource());
+                    // 计算出源轨道起始时间
+                    AVTime start = AVTimeRangeUtils.timeMapTimeFromRangeToRange(intersectTimeRange.getStart(),
+                            segment.mTimeMapping.getTarget(), segment.mTimeMapping.getSource());
+
+                    // 计算出要插入的轨道时间映射关系
+                    AVTimeMapping mapping = new AVTimeMapping(new AVTimeRange(start, duration),
+                            new AVTimeRange(insertStart, intersectTimeRange.getDuration()));
+
+                    // 创建并记录要插入的轨道片段
+                    try {
+                        AVCompositionTrackSegment insertSegment = (AVCompositionTrackSegment) segment.clone();
+                        insertSegment.mTimeMapping = mapping;
+                        insertSegments.add(insertSegment);
+                    } catch (CloneNotSupportedException e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                }
             }
+        }
 
-            // 找到源媒体片段
-            AVAssetTrackSegment sourceSegment = track.segmentForTrackTime(timeRange.getStart());
-            if (sourceSegment == null) {
-                return false;
-            }
-
-            // 找到源媒体的实际时长
-            AVTime sourceDuration = AVTimeRangeUtils.timeMapDurationFromRangeToRange(sourceTimeRange.getDuration(),
-                    sourceSegment.getTimeMapping().getTarget(), sourceSegment.getTimeMapping().getSource());
-
-            // 找到源媒体的实际开始时间
-            AVTime sourceStart = AVTimeRangeUtils.timeMapTimeFromRangeToRange(sourceTimeRange.getStart(),
-                    sourceSegment.getTimeMapping().getTarget(), sourceSegment.getTimeMapping().getSource());
-
-            // 如果找不到源媒体开始时间和时长，则插入失败
-            if (sourceStart.equals(AVTime.kAVTimeInvalid) || sourceDuration.equals(AVTime.kAVTimeInvalid) || sourceDuration.equals(AVTime.kAVTimeZero)) {
-                return false;
-            }
-
-            // 创建并插入新的轨道片段
-            AVCompositionTrackSegment segment = new AVCompositionTrackSegment(asset.getUri(),
-                    track.getTrackID(), new AVTimeRange(sourceStart, sourceDuration),
-                    new AVTimeRange(startTime, sourceTimeRange.getDuration()));
-            mTrackSegments.add(segment);
-            // 轨道片段按照起始时间进行排序
+        // 插入到轨道片段中并重新排序
+        if (!insertSegments.isEmpty()) {
+            mTrackSegments.addAll(insertSegments);
             Collections.sort(mTrackSegments);
         }
+        // 插入片段之后，更新轨道的总时长，使用并集的方式更新
+        mTimeRange = AVTimeRangeUtils.timeRangeGetUnion(mTimeRange, timeRange);
         return true;
     }
 
     /**
-     * 插入一段空的时间长度为duration的时间范围
-     * @param duration 时长
+     * 插入一个源媒体轨道
+     * @param timeRange 插入的时间区间
+     * @param track     源媒体轨道
+     * @param startTime 插入的起始时间
+     * @return          插入结果
      */
-    public void insertEmptyTimeRange(@NonNull AVTime duration) {
-        if (mTrackSegments.size() == 0) {
-            mTrackSegments.add(new AVCompositionTrackSegment(new AVTimeRange(AVTime.kAVTimeZero, duration)));
-        } else {
-            // 获取最后一个片段的时间区间的结束位置作为时间区间的起始位置
-            AVCompositionTrackSegment segment = mTrackSegments.get(mTrackSegments.size() - 1);
-            AVTimeRange timeRange = new AVTimeRange(AVTimeRangeUtils.timeRangeGetEnd(segment.getTimeMapping().getTarget()), duration);
-            mTrackSegments.add(new AVCompositionTrackSegment(timeRange));
-            // 轨道片段按照起始时间进行排序
+    public boolean insertTimeRange(@NonNull AVTimeRange timeRange, @NonNull CAVAssetTrack track,
+                                    @NonNull AVTime startTime) {
+        AVTime insertStart = startTime;
+        if (AVTime.kAVTimeInvalid.equals(startTime)) {
+            insertStart = AVTimeRangeUtils.timeRangeGetEnd(mTimeRange);
+        }
+        // 处理是AVAssetTrack轨道的情况
+        List<AVAssetTrackSegment> segments = track.getTrackSegments();
+        // 如果组合轨道的片段是空的，则插入一段空的片段
+        if (segments.isEmpty()) {
+            insertEmptyTimeRange(new AVTimeRange(insertStart, timeRange.getDuration()));
+            return true;
+        }
+
+        // 用于记录要插入的片段列表
+        List<AVCompositionTrackSegment> insertSegments = new ArrayList<>();
+        for (AVAssetTrackSegment segment : segments) {
+            // 如果交集时间区间不为空，则直接将交集部分所对应的轨道片段对象复制出来并重新设置时间区间，最后插入到轨道片段中
+            AVTimeRange intersectTimeRange = AVTimeRangeUtils.timeRangeGetIntersection(segment.mTimeMapping.getTarget(), timeRange);
+            if (!AVTimeRangeUtils.timeRangeEqual(AVTimeRange.kAVTimeRangeZero, intersectTimeRange)) {
+                // 根据交集计算出源轨道时长
+                AVTime duration = AVTimeRangeUtils.timeMapDurationFromRangeToRange(intersectTimeRange.getDuration(),
+                        segment.mTimeMapping.getTarget(), segment.mTimeMapping.getSource());
+
+                // 根据交集计算出源轨道起始时间
+                AVTime start = AVTimeRangeUtils.timeMapTimeFromRangeToRange(intersectTimeRange.getStart(),
+                        segment.mTimeMapping.getTarget(), segment.mTimeMapping.getSource());
+
+                // 计算出源时间区间和片段目的时间区间
+                AVTimeRange sourceTimeRange = new AVTimeRange(start, duration);
+                AVTimeRange targetTimeRange = new AVTimeRange(insertStart, intersectTimeRange.getDuration());
+
+                // 创建并记录要插入的新轨道片段
+                AVCompositionTrackSegment insertSegment = new AVCompositionTrackSegment(track.getUri(),
+                        track.getTrackID(), sourceTimeRange, targetTimeRange);
+                insertSegments.add(insertSegment);
+            }
+        }
+
+        // 插入到轨道片段中并重新排序
+        if (!insertSegments.isEmpty()) {
+            mTrackSegments.addAll(insertSegments);
             Collections.sort(mTrackSegments);
         }
+        // 插入片段之后，更新轨道的总时长，使用并集的方式更新
+        mTimeRange = AVTimeRangeUtils.timeRangeGetUnion(mTimeRange, timeRange);
+        return true;
     }
 
     /**
@@ -118,13 +292,14 @@ public class AVCompositionTrack extends AVAssetTrack<AVCompositionTrackSegment> 
             // 第一段必须是kAVTimeZero开始
             timeRange.setStart(AVTime.kAVTimeZero);
             mTrackSegments.add(new AVCompositionTrackSegment(timeRange));
+            mTimeRange = new AVTimeRange(timeRange.getStart(), timeRange.getDuration());
         } else {
             // 获取最后一个片段的时间区间的结束位置作为时间区间的起始位置
-            AVCompositionTrackSegment segment = mTrackSegments.get(mTrackSegments.size() - 1);
-            timeRange.setStart(AVTimeRangeUtils.timeRangeGetEnd(segment.mTimeMapping.getTarget()));
             mTrackSegments.add(new AVCompositionTrackSegment(timeRange));
             // 轨道片段按照起始时间进行排序
             Collections.sort(mTrackSegments);
+            // 计算轨道时间区间
+            mTimeRange = AVTimeRangeUtils.timeRangeGetUnion(mTimeRange, timeRange);
         }
     }
 
@@ -271,7 +446,7 @@ public class AVCompositionTrack extends AVAssetTrack<AVCompositionTrackSegment> 
         }
 
         // 新的轨道时长 = 总轨道时长 - 轨道交集时长
-        this.mTimeRange = new AVTimeRange(AVTime.kAVTimeZero,
+        mTimeRange = new AVTimeRange(AVTime.kAVTimeZero,
                 AVTimeUtils.timeSubtract(mTimeRange.getDuration(),
                         trackIntersection.getDuration()));
     }
@@ -314,6 +489,171 @@ public class AVCompositionTrack extends AVAssetTrack<AVCompositionTrackSegment> 
     }
 
     /**
+     * 设置媒体资源对象
+     */
+    public void setAsset(@Nullable AVAsset asset) {
+        mAsset = asset;
+    }
+
+    /**
+     * 获取源媒体对象
+     */
+    @Nullable
+    @Override
+    public AVAsset getAsset() {
+        return mAsset;
+    }
+
+    /**
+     * 设置媒体Uri
+     */
+    public void setUri(@Nullable Uri uri) {
+        mUri = uri;
+    }
+
+    /**
+     * 获取Uri
+     */
+    @Nullable
+    @Override
+    public Uri getUri() {
+        return mUri;
+    }
+
+    /**
+     * 设置轨道ID
+     * @param trackID 轨道ID
+     */
+    public void setTrackID(int trackID) {
+        mTrackID = trackID;
+    }
+
+    /**
+     * 获取当前轨道的ID
+     */
+    @Override
+    public int getTrackID() {
+        return mTrackID;
+    }
+
+    /**
+     * 获取当前轨道的媒体类型
+     */
+    @Override
+    public AVMediaType getMediaType() {
+        return mMediaType;
+    }
+
+    /**
+     * 设置轨道的时间区间
+     */
+    public void setTimeRange(@NonNull AVTimeRange timeRange) {
+        mTimeRange = timeRange;
+    }
+
+    /**
+     * 获取当前轨道的时间区间
+     */
+    @NonNull
+    @Override
+    public AVTimeRange getTimeRange() {
+        return mTimeRange;
+    }
+
+    /**
+     * 设置轨道分辨率
+     */
+    public void setNaturalSize(@NonNull CGSize naturalSize) {
+        mNaturalSize = naturalSize;
+    }
+
+    /**
+     * 获取帧大小
+     */
+    @NonNull
+    @Override
+    public CGSize getNaturalSize() {
+        return mNaturalSize;
+    }
+
+    /**
+     * 设置轨道时间刻度
+     */
+    public void setNaturalTimeScale(int naturalTimeScale) {
+        mNaturalTimeScale = naturalTimeScale;
+    }
+
+    /**
+     * 获取轨道刻度
+     */
+    @Override
+    public int getNaturalTimeScale() {
+        return mNaturalTimeScale;
+    }
+
+    /**
+     * 设置转换对象
+     */
+    public void setPreferredTransform(@NonNull AffineTransform preferredTransform) {
+        mPreferredTransform = preferredTransform;
+    }
+
+    /**
+     * 获取转换对象
+     */
+    @NonNull
+    @Override
+    public AffineTransform getPreferredTransform() {
+        return mPreferredTransform;
+    }
+
+    /**
+     * 设置默认速度
+     */
+    public void setPreferredRate(float rate) {
+        mPreferredRate = rate;
+    }
+
+    /**
+     * 获取默认速度
+     */
+    @Override
+    public float getPreferredRate() {
+        return mPreferredRate;
+    }
+
+    /**
+     * 设置音量大小
+     * @param preferredVolume 0.0 ~ 1.0
+     */
+    public void setPreferredVolume(float preferredVolume) {
+        mPreferredVolume = preferredVolume;
+    }
+
+    /**
+     * 获取默认音量
+     */
+    @Override
+    public float getPreferredVolume() {
+        return mPreferredVolume;
+    }
+
+    /**
+     * 设置帧重排标志
+     */
+    public void setFrameReordering(boolean reordering) {
+        mFrameReordering = reordering;
+    }
+
+    /**
+     * 判断是否需要重拍时间戳
+     */
+    @Override
+    public boolean isFrameReordering() {
+        return mFrameReordering;
+    }
+
+    /**
      * 获取轨道片段
      *
      * @return 轨道片段列表
@@ -324,10 +664,4 @@ public class AVCompositionTrack extends AVAssetTrack<AVCompositionTrackSegment> 
         return mTrackSegments;
     }
 
-    /**
-     * 设置默认时间刻度
-     */
-    public void setNaturalTimeScale(int naturalTimeScale) {
-        mNaturalTimeScale = naturalTimeScale;
-    }
 }

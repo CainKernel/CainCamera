@@ -1,4 +1,4 @@
-package com.cgfay.cavfoundation;
+package com.cgfay.cavfoundation.player;
 
 import android.content.Context;
 import android.net.Uri;
@@ -16,34 +16,34 @@ public class AVPlayer {
     /**
      * 播放状态
      */
-    private AVPlayerStatus mStatus;
+    protected AVPlayerStatus mStatus;
 
     /**
-     * 播放速度
+     * 播放速度，当rate 等于0.0时，暂停播放
      */
-    private float mRate;
+    protected float mRate;
 
     /**
      * 当前播放item
      */
-    private AVPlayerItem mCurrentItem;
+    protected AVPlayerItem mCurrentItem;
 
     /**
      * 播放完一个item的时候需要做啥处理
      */
-    private AVPlayerActionAtItemEnd mActionAtItemEnd;
+    protected AVPlayerActionAtItemEnd mActionAtItemEnd;
 
     /**
      * 播放音量
      */
-    private float mVolume;
+    protected float mVolume;
 
     /**
      * 静音
      */
-    private boolean mMute;
+    protected boolean mMute;
 
-    private AVPlayer() {
+    protected AVPlayer() {
         mStatus = AVPlayerStatus.AVPlayerStatusUnknown;
         mRate = 1.0f;
         mCurrentItem = null;
@@ -88,16 +88,6 @@ public class AVPlayer {
     }
 
     /**
-     * 获取当前时间
-     */
-    public AVTime getCurrentTime() {
-        if (mCurrentItem != null) {
-            return mCurrentItem.getCurrentTime();
-        }
-        return AVTime.kAVTimeZero;
-    }
-
-    /**
      *
      * @param time
      */
@@ -111,7 +101,41 @@ public class AVPlayer {
      * @param itemTime
      */
     public void setRate(float rate, @NonNull AVTime itemTime, @NonNull AVTime hostClockTime) {
+        mRate = rate;
 
     }
 
+    public AVPlayerStatus getStatus() {
+        return mStatus;
+    }
+
+    public float getRate() {
+        return mRate;
+    }
+
+    /**
+     * 获取当前时间
+     */
+    public AVTime getCurrentTime() {
+        if (mCurrentItem != null) {
+            return mCurrentItem.getCurrentTime();
+        }
+        return AVTime.kAVTimeZero;
+    }
+
+    public void setVolume(float volume) {
+        mVolume = volume;
+    }
+
+    public float getVolume() {
+        return mVolume;
+    }
+
+    public void setMute(boolean mute) {
+        mMute = mute;
+    }
+
+    public boolean isMute() {
+        return mMute;
+    }
 }

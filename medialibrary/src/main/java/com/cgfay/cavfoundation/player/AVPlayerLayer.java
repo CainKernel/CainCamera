@@ -1,4 +1,4 @@
-package com.cgfay.cavfoundation;
+package com.cgfay.cavfoundation.player;
 
 /**
  * 播放器图层

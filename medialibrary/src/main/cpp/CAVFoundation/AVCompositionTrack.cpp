@@ -70,6 +70,12 @@ bool AVCompositionTrack::isEnabled() const {
 void AVCompositionTrack::setEnabled(bool enabled) {
     this->enabled = enabled;
 }
+/**
+ * 比较开始时间
+ */
+bool static compareStartTime(AVCompositionTrackSegment *lhs, AVCompositionTrackSegment *rhs) {
+    return (AVTimeCompare(lhs->getTimeMapping().target.start, rhs->getTimeMapping().target.start) <= 0);
+}
 
 /**
  * 在轨道startTime的位置上插入时间区间为timeRange的源轨道数据，
@@ -84,13 +90,19 @@ bool AVCompositionTrack::insertTimeRange(const AVTimeRange &timeRange, AVAssetTr
     if (track == nullptr) {
         return false;
     }
+    // 如果起始时间非法，则插入到轨道后面
+    auto insertStart = startTime;
+    if (AVTimeEqual(startTime, kAVTimeInvalid)) {
+        insertStart = AVTimeRangeGetEnd(this->timeRange);
+    }
     AVCompositionTrack *compositionTrack = dynamic_cast<AVCompositionTrack*>(track);
     // 如果track是组合媒体轨道，则直接从轨道中的片段取出来进行处理
     if (compositionTrack != nullptr) {
+        auto insertSegments = std::list<AVCompositionTrackSegment *>();
         auto compositionSegments = compositionTrack->trackSegments;
         // 如果组合轨道的片段是空的，则插入一段空的片段
         if (compositionSegments.empty()) {
-            insertEmptyTimeRange(AVTimeRangeMake(startTime, timeRange.duration));
+            insertEmptyTimeRange(AVTimeRangeMake(insertStart, timeRange.duration));
         } else {
             auto segments = compositionTrack->getTrackSegments();
             auto iterator = segments.begin();
@@ -102,7 +114,7 @@ bool AVCompositionTrack::insertTimeRange(const AVTimeRange &timeRange, AVAssetTr
                     // 如果是空片段，则直接插入timeRange交集区间的空片段
                     // 如果不是空片段，则非空部分需要计算出交集区间源媒体区间的timeRange，创建一个交集区间映射对象的片段
                     if (segment->isEmpty()) {
-                        insertEmptyTimeRange(AVTimeRangeMake(startTime, intersectTimeRange.duration));
+                        insertEmptyTimeRange(AVTimeRangeMake(insertStart, intersectTimeRange.duration));
                     } else {
                         // 计算出源轨道时长
                         auto duration = AVTimeMapDurationFromDurationToRange(intersectTimeRange.duration,
@@ -114,14 +126,24 @@ bool AVCompositionTrack::insertTimeRange(const AVTimeRange &timeRange, AVAssetTr
                                                                    segment->getTimeMapping().source);
                         // 计算出要插入的轨道时间的映射关系
                         auto mapping = AVTimeMappingMake(AVTimeRangeMake(start, duration),
-                                                         AVTimeRangeMake(startTime,
+                                                         AVTimeRangeMake(insertStart,
                                                                  intersectTimeRange.duration));
                         auto insertSegment = segment->clone();
                         insertSegment->setTimeMapping(mapping);
-                        trackSegments.push_back(insertSegment);
+                        insertSegments.push_back(insertSegment);
                     }
                 }
                 iterator++;
+            }
+
+            // 将片段插入到列表中并重新排序
+            if (!insertSegments.empty()) {
+                auto it = insertSegments.begin();
+                while (it != insertSegments.end()) {
+                    auto segment = (*it);
+                    trackSegments.push_back(segment);
+                }
+                trackSegments.sort(compareStartTime);
             }
 
             // 当片段插入之后，更新轨道的总时长，使用并集的方式更新
@@ -135,8 +157,9 @@ bool AVCompositionTrack::insertTimeRange(const AVTimeRange &timeRange, AVAssetTr
     auto segments = track->getTrackSegments();
     // 如果轨道为空的，则直接插入一个起始时间为startTime，时长为timeRange.duration的空片段
     if (segments.empty()) {
-        insertEmptyTimeRange(AVTimeRangeMake(startTime, timeRange.duration));
+        insertEmptyTimeRange(AVTimeRangeMake(insertStart, timeRange.duration));
     } else {
+        auto insertSegments = std::list<AVCompositionTrackSegment *>();
         // 遍历查找与timeRange区间存在交集的片段，构建并插入组合媒体轨道片段
         auto iterator = segments.begin();
         while (iterator != segments.end()) {
@@ -147,7 +170,7 @@ bool AVCompositionTrack::insertTimeRange(const AVTimeRange &timeRange, AVAssetTr
                 // 如果不存在源数据Uri，则说明该轨道是空的，直接插入一个则直接插入timeRange交集区间的空片段
                 // 如果源数据存在，则利用源轨道构建一个组合轨道片段
                 if (track->getUri() == nullptr) {
-                    insertEmptyTimeRange(AVTimeRangeMake(startTime, intersectTimeRange.duration));
+                    insertEmptyTimeRange(AVTimeRangeMake(insertStart, intersectTimeRange.duration));
                 } else {
                     // 根据交集计算出源轨道时长
                     auto duration = AVTimeMapDurationFromDurationToRange(intersectTimeRange.duration,
@@ -159,14 +182,24 @@ bool AVCompositionTrack::insertTimeRange(const AVTimeRange &timeRange, AVAssetTr
                                                                segment->getTimeMapping().source);
                     // 计算出源时间区间和片段目的时间区间
                     auto sourceTimeRange = AVTimeRangeMake(start, duration);
-                    auto targetTimeRange = AVTimeRangeMake(startTime, intersectTimeRange.duration);
+                    auto targetTimeRange = AVTimeRangeMake(insertStart, intersectTimeRange.duration);
                     // 创建一个新轨道片段
                     auto insertSegment = new AVCompositionTrackSegment(track->getUri(),
                             track->getTrackID(), sourceTimeRange, targetTimeRange);
-                    trackSegments.push_back(insertSegment);
+                    insertSegments.push_back(insertSegment);
                 }
             }
             iterator++;
+        }
+
+        // 将片段插入到列表中并重新排序
+        if (!insertSegments.empty()) {
+            auto it = insertSegments.begin();
+            while (it != insertSegments.end()) {
+                auto segment = (*it);
+                trackSegments.push_back(segment);
+            }
+            trackSegments.sort(compareStartTime);
         }
 
         // 当片段插入之后，更新轨道的总时长，使用并集的方式更新
@@ -191,16 +224,10 @@ void AVCompositionTrack::insertEmptyTimeRange(const AVTimeRange &timeRange) {
     } else {
         auto segment = new AVCompositionTrackSegment(timeRange);
         trackSegments.push_back(segment);
+        trackSegments.sort(compareStartTime);
         // 将时间区间交集作为轨道的总时长区间
         this->timeRange = AVTimeRangeGetUnion(this->timeRange, timeRange);
     }
-}
-
-/**
- * 比较开始时间
- */
-bool AVCompositionTrack::compareStartTime(AVCompositionTrackSegment *lhs, AVCompositionTrackSegment *rhs) {
-    return (AVTimeCompare(lhs->getTimeMapping().target.start, rhs->getTimeMapping().target.start) <= 0);
 }
 
 /**

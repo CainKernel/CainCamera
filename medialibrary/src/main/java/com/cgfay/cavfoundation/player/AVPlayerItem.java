@@ -1,4 +1,4 @@
-package com.cgfay.cavfoundation;
+package com.cgfay.cavfoundation.player;
 
 import android.content.Context;
 import android.net.Uri;
@@ -7,6 +7,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.cgfay.cavfaudio.AVAudioMix;
+import com.cgfay.cavfoundation.AVAsset;
+import com.cgfay.cavfoundation.AVAssetTrack;
+import com.cgfay.cavfoundation.AVComposition;
+import com.cgfay.cavfoundation.AVCompositionTrack;
+import com.cgfay.cavfoundation.AVVideoComposition;
+import com.cgfay.cavfoundation.CAVAssetTrack;
+import com.cgfay.cavfoundation.CAVUriAsset;
 import com.cgfay.coregraphics.CGSize;
 import com.cgfay.coremedia.AVTime;
 
@@ -134,16 +141,70 @@ public class AVPlayerItem {
     }
 
     /**
-     * 初始化一个播放轨道
+     * 创建一个播放item
+     * @param context
+     * @param uri
+     * @return
      */
-    private void initPlayerTrack(@Nullable AVAsset asset) {
+    public AVPlayerItem playerItemWithUri(@NonNull Context context, @NonNull Uri uri) {
+        AVAsset asset = AVAsset.assetWithUri(context, uri);
+        AVPlayerItem item = new AVPlayerItem();
+        item.initPlayerTrack(asset);
+        return item;
+    }
+
+    /**
+     * 使用uri初始化一个播放item
+     * @param context
+     * @param uri
+     */
+    public void initWidthUri(@NonNull Context context, @NonNull Uri uri) {
+
+    }
+
+    /**
+     * 使用一个媒体数据对象初始化播放item
+     * @param asset
+     */
+    public void initWidthAsset(@NonNull AVAsset asset) {
+
+    }
+
+    /**
+     * 初始化播放Item
+     */
+    public void initPlayerTrack(@Nullable AVAsset asset) {
         if (asset != null) {
-            List<AVAssetTrack> tracks = asset.getTracks();
-            for (int i = 0; i < tracks.size(); i++) {
-                AVAssetTrack track = tracks.get(i);
-                AVPlayerItemTrack playerTrack = new AVPlayerItemTrack(track, DEFAULT_FRAME_RATE);
-                mTracks.add(playerTrack);
+            mDuration = asset.getDuration();
+            if (asset instanceof CAVUriAsset) {
+                initPlayerTrack((CAVUriAsset) asset);
+            } else if (asset instanceof AVComposition) {
+                initPlayerTrack((AVComposition) asset);
             }
+        }
+    }
+
+    /**
+     * 使用固定的媒体资源初始化播放器轨道
+     */
+    private void initPlayerTrack(@NonNull CAVUriAsset asset) {
+        List<CAVAssetTrack> tracks = asset.getTracks();
+        for (int i = 0; i < tracks.size(); i++) {
+            CAVAssetTrack track = tracks.get(i);
+            AVPlayerItemTrack playerTrack = new AVPlayerItemTrack(track, DEFAULT_FRAME_RATE);
+            mTracks.add(playerTrack);
+        }
+    }
+
+    /**
+     * 使用组合媒体资源初始化播放器轨道
+     */
+    private void initPlayerTrack(@NonNull AVComposition composition) {
+        List<AVCompositionTrack> tracks = composition.getTracks();
+        for (int i = 0; i < tracks.size(); i++) {
+            AVCompositionTrack track = tracks.get(i);
+            AVPlayerItemTrack playerTrack = new AVPlayerItemTrack(track, DEFAULT_FRAME_RATE);
+            mTracks.add(playerTrack);
         }
     }
 
