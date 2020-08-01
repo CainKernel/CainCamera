@@ -378,14 +378,22 @@ public class FFMediaRecordPresenter implements PreviewCallback, FFAudioRecorder.
             }
             String finalPath = generateOutputPath();
             mCommandEditor.execCommand(CAVCommandEditor.concatVideo(mActivity, videos, finalPath),
-                    (result) -> {
-                        mFragment.hideProgressDialog();
-                        if (result == 0) {
-                            Intent intent = new Intent(mActivity, VideoEditActivity.class);
-                            intent.putExtra(VideoEditActivity.VIDEO_PATH, finalPath);
-                            mActivity.startActivity(intent);
-                        } else {
-                            mFragment.showToast("合成失败");
+                    new CAVCommandEditor.CommandProcessCallback() {
+                        @Override
+                        public void onProcessing(int current) {
+                            Log.d(TAG, "onProcessing: " + current);
+                        }
+
+                        @Override
+                        public void onProcessResult(int result) {
+                            mFragment.hideProgressDialog();
+                            if (result == 0) {
+                                Intent intent = new Intent(mActivity, VideoEditActivity.class);
+                                intent.putExtra(VideoEditActivity.VIDEO_PATH, finalPath);
+                                mActivity.startActivity(intent);
+                            } else {
+                                mFragment.showToast("合成失败");
+                            }
                         }
                     });
         }

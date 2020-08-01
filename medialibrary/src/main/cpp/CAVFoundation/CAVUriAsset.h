@@ -48,6 +48,9 @@ public:
     int getChannelCount() const;
 
 private:
+    bool isRealTime();
+
+private:
     AVFormatContext *pFormatCtx;
     const char *uri;
     int64_t offset;

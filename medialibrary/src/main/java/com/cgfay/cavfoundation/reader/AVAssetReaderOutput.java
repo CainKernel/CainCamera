@@ -2,31 +2,38 @@ package com.cgfay.cavfoundation.reader;
 
 import com.cgfay.cavfoundation.AVMediaType;
 
-public class AVAssetReaderOutput {
+/**
+ * 输出接口
+ */
+public interface AVAssetReaderOutput {
 
-    private AVMediaType mMediaType;
+    /**
+     * 媒体类型
+     */
+    AVMediaType getMediaType();
 
-    private boolean alwaysCopiesSampleData;
+    /**
+     * 是否复制数据
+     */
+    boolean isAlwaysCopiesSampleData();
 
-    private boolean supportsRandomAccess;
+    /**
+     * 设置是否复制解码数据
+     */
+    void setAlwaysCopiesSampleData(boolean alwaysCopiesSampleData);
 
-    public AVMediaType getMediaType() {
-        return mMediaType;
-    }
+    /**
+     * 设置是否支持随机访问
+     */
+    void setSupportsRandomAccess(boolean supportsRandomAccess);
 
-    public boolean isAlwaysCopiesSampleData() {
-        return alwaysCopiesSampleData;
-    }
+    /**
+     * 判断是否支持随机访问
+     */
+    boolean isSupportsRandomAccess();
 
-    public void setAlwaysCopiesSampleData(boolean alwaysCopiesSampleData) {
-        this.alwaysCopiesSampleData = alwaysCopiesSampleData;
-    }
-
-    public boolean isSupportsRandomAccess() {
-        return supportsRandomAccess;
-    }
-
-    public void setSupportsRandomAccess(boolean supportsRandomAccess) {
-        this.supportsRandomAccess = supportsRandomAccess;
-    }
+//    /**
+//     * 复制下一帧数据
+//     */
+//    public ByteBuffer copyNextSampleBuffer();
 }

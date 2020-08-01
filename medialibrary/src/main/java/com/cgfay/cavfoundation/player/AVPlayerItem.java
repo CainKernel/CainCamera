@@ -6,9 +6,8 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.cgfay.cavfaudio.AVAudioMix;
+import com.cgfay.cavfoundation.AVAudioMix;
 import com.cgfay.cavfoundation.AVAsset;
-import com.cgfay.cavfoundation.AVAssetTrack;
 import com.cgfay.cavfoundation.AVComposition;
 import com.cgfay.cavfoundation.AVCompositionTrack;
 import com.cgfay.cavfoundation.AVVideoComposition;

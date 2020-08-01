@@ -285,6 +285,15 @@ CAVUriAsset_getTrackType(JNIEnv *env, jobject thiz, int index) {
     return -1;
 }
 
+static int
+CAVUriAsset_getSampleRate(JNIEnv *env, jobject thiz) {
+    auto asset = getAsset(env, thiz);
+    if (asset != nullptr) {
+        return asset->getSampleRate();
+    }
+    return 0;
+}
+
 static void
 CAVUriAsset_native_setup(JNIEnv *env, jobject thiz) {
     auto asset = new CAVUriAsset();
@@ -331,6 +340,7 @@ static JNINativeMethod nativeMethods[] = {
         },
         {"_setDataSource",   "(Ljava/io/FileDescriptor;JJ)V", (void *)CAVUriAsset_setDataSourceFD},
         {"_getTrackType", "(I)I", (void *)CAVUriAsset_getTrackType},
+        {"_getSampleRate", "()I", (void *)CAVUriAsset_getSampleRate},
         {"native_setup", "()V", (void *)CAVUriAsset_native_setup},
         {"native_init", "()V", (void *)CAVUriAsset_native_init},
         {"native_finalize", "()V", (void *)CAVUriAsset_native_finalize},

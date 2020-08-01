@@ -550,23 +550,31 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
             FileUtils.createFile(currentFile);
             mCommandEditor.execCommand(CAVCommandEditor.mergeAudioVideo(mVideoInfo.getFileName(),
                     mAudioInfo.getFileName(), currentFile),
-                    (result) -> {
-                        if (result == 0) {
-                            mVideoList.add(new MediaInfo(currentFile, mVideoInfo.getDuration()));
-                            mRemainDuration -= mVideoInfo.getDuration();
-                            getTarget().addProgressSegment(mCurrentProgress);
-                            getTarget().resetAllLayout();
-                            mCurrentProgress = 0;
+                    new CAVCommandEditor.CommandProcessCallback() {
+                        @Override
+                        public void onProcessing(int current) {
+                            Log.d(TAG, "onProcessing: " + current);
                         }
-                        // 删除旧的文件
-                        FileUtils.deleteFile(mAudioInfo.getFileName());
-                        FileUtils.deleteFile(mVideoInfo.getFileName());
-                        mAudioInfo = null;
-                        mVideoInfo = null;
 
-                        // 如果剩余时间为0
-                        if (mRemainDuration <= 0) {
-                            mergeAndEdit();
+                        @Override
+                        public void onProcessResult(int result) {
+                            if (result == 0) {
+                                mVideoList.add(new MediaInfo(currentFile, mVideoInfo.getDuration()));
+                                mRemainDuration -= mVideoInfo.getDuration();
+                                getTarget().addProgressSegment(mCurrentProgress);
+                                getTarget().resetAllLayout();
+                                mCurrentProgress = 0;
+                            }
+                            // 删除旧的文件
+                            FileUtils.deleteFile(mAudioInfo.getFileName());
+                            FileUtils.deleteFile(mVideoInfo.getFileName());
+                            mAudioInfo = null;
+                            mVideoInfo = null;
+
+                            // 如果剩余时间为0
+                            if (mRemainDuration <= 0) {
+                                mergeAndEdit();
+                            }
                         }
                     });
         } else {
@@ -613,12 +621,20 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
             }
             String finalPath = generateOutputPath();
             mCommandEditor.execCommand(CAVCommandEditor.concatVideo(mActivity, videos, finalPath),
-                    (result) -> {
-                        getTarget().hideConcatProgressDialog();
-                        if (result == 0) {
-                            onOpenVideoEditPage(finalPath);
-                        } else {
-                            getTarget().showToast("合成失败");
+                    new CAVCommandEditor.CommandProcessCallback() {
+                        @Override
+                        public void onProcessing(int current) {
+                            Log.d(TAG, "onProcessing: " + current);
+                        }
+
+                        @Override
+                        public void onProcessResult(int result) {
+                            getTarget().hideConcatProgressDialog();
+                            if (result == 0) {
+                                onOpenVideoEditPage(finalPath);
+                            } else {
+                                getTarget().showToast("合成失败");
+                            }
                         }
                     });
         }

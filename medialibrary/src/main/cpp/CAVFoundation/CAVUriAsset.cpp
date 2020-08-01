@@ -47,12 +47,14 @@ status_t CAVUriAsset::setDataSource(const char *path, int64_t offset, const char
         return -1;
     }
 
-    // 查找媒体流信息
-    ret = avformat_find_stream_info(pFormatCtx, nullptr);
-    if (ret < 0) {
-        LOGE("Failed to call avformat_find_stream_info: %s", av_err2str(ret));
-        avformat_close_input(&pFormatCtx);
-        return -1;
+    // 查找媒体流信息，这里比较耗时，大约50-100ms左右，对于本地的媒体文件来说，可以跳过不做处理
+    if (isRealTime()) {
+        ret = avformat_find_stream_info(pFormatCtx, nullptr);
+        if (ret < 0) {
+            LOGE("Failed to call avformat_find_stream_info: %s", av_err2str(ret));
+            avformat_close_input(&pFormatCtx);
+            return -1;
+        }
     }
 
     for (int i = 0; i < pFormatCtx->nb_streams; ++i) {
@@ -146,6 +148,25 @@ int CAVUriAsset::getSampleRate() const {
 
 int CAVUriAsset::getChannelCount() const {
     return channelCount;
+}
+
+/**
+ * 判断是否网络媒体数据
+ */
+bool CAVUriAsset::isRealTime() {
+    if (!pFormatCtx) {
+        return false;
+    }
+    if (!strcmp(pFormatCtx->iformat->name, "rtp")
+        || !strcmp(pFormatCtx->iformat->name, "rtsp")
+        || !strcmp(pFormatCtx->iformat->name, "sdp")) {
+        return 1;
+    }
+    if (pFormatCtx->pb && (!strncmp(pFormatCtx->filename, "rtp:", 4)
+                           || !strncmp(pFormatCtx->filename, "udp:", 4))) {
+        return 1;
+    }
+    return 0;
 }
 
 

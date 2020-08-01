@@ -660,8 +660,7 @@ int vaapi_device_init(const char *device);
 int cuvid_init(AVCodecContext *s);
 
 // [Cain change start]
-// 注册处理回调
-void register_process_callback(void *opaque, void (*cb)(void *opaque, int type, int ret));
+
 // 运行命令行
 int runCommand(int argc, char **argv);
 // [Cain change end]

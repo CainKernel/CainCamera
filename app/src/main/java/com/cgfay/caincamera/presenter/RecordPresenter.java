@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.cgfay.caincamera.activity.SpeedRecordActivity;
 import com.cgfay.camera.camera.CameraApi;
@@ -41,6 +42,8 @@ import java.util.List;
  * @date 2019/7/7
  */
 public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailableListener, OnRecordStateListener {
+
+    private static final String TAG = "RecordPresenter";
 
     private SpeedRecordActivity mActivity;
 
@@ -218,23 +221,31 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
             FileUtils.createFile(currentFile);
             mCommandEditor.execCommand(CAVCommandEditor.mergeAudioVideo(mVideoInfo.getFileName(),
                     mAudioInfo.getFileName(), currentFile),
-                    (result) -> {
-                        if (result == 0) {
-                            mVideoList.add(new MediaInfo(currentFile, mVideoInfo.getDuration()));
-                            mRemainDuration -= mVideoInfo.getDuration();
-                            mActivity.addProgressSegment(mCurrentProgress);
-                            mActivity.showViews();
-                            mCurrentProgress = 0;
+                    new CAVCommandEditor.CommandProcessCallback() {
+                        @Override
+                        public void onProcessing(int current) {
+                            Log.d(TAG, "onProcessing: " + current);
                         }
-                        // 删除旧的文件
-                        FileUtils.deleteFile(mAudioInfo.getFileName());
-                        FileUtils.deleteFile(mVideoInfo.getFileName());
-                        mAudioInfo = null;
-                        mVideoInfo = null;
 
-                        // 如果剩余时间为0
-                        if (mRemainDuration <= 0) {
-                            mergeAndEdit();
+                        @Override
+                        public void onProcessResult(int result) {
+                            if (result == 0) {
+                                mVideoList.add(new MediaInfo(currentFile, mVideoInfo.getDuration()));
+                                mRemainDuration -= mVideoInfo.getDuration();
+                                mActivity.addProgressSegment(mCurrentProgress);
+                                mActivity.showViews();
+                                mCurrentProgress = 0;
+                            }
+                            // 删除旧的文件
+                            FileUtils.deleteFile(mAudioInfo.getFileName());
+                            FileUtils.deleteFile(mVideoInfo.getFileName());
+                            mAudioInfo = null;
+                            mVideoInfo = null;
+
+                            // 如果剩余时间为0
+                            if (mRemainDuration <= 0) {
+                                mergeAndEdit();
+                            }
                         }
                     });
         } else {
@@ -356,14 +367,22 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
             }
             String finalPath = generateOutputPath();
             mCommandEditor.execCommand(CAVCommandEditor.concatVideo(mActivity, videos, finalPath),
-                    (result) -> {
-                        mActivity.hideProgressDialog();
-                        if (result == 0) {
-                            Intent intent = new Intent(mActivity, VideoEditActivity.class);
-                            intent.putExtra(VideoEditActivity.VIDEO_PATH, finalPath);
-                            mActivity.startActivity(intent);
-                        } else {
-                            mActivity.showToast("合成失败");
+                    new CAVCommandEditor.CommandProcessCallback() {
+                        @Override
+                        public void onProcessing(int current) {
+                            Log.d(TAG, "onProcessing: " + current);
+                        }
+
+                        @Override
+                        public void onProcessResult(int result) {
+                            mActivity.hideProgressDialog();
+                            if (result == 0) {
+                                Intent intent = new Intent(mActivity, VideoEditActivity.class);
+                                intent.putExtra(VideoEditActivity.VIDEO_PATH, finalPath);
+                                mActivity.startActivity(intent);
+                            } else {
+                                mActivity.showToast("合成失败");
+                            }
                         }
                     });
         }

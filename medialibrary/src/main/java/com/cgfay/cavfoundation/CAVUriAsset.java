@@ -13,6 +13,7 @@ import com.cgfay.coregraphics.AffineTransform;
 import com.cgfay.coregraphics.CGSize;
 import com.cgfay.coremedia.AVTime;
 import com.cgfay.coremedia.AVTimeRange;
+import com.cgfay.coremedia.AVTimeUtils;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -84,10 +85,9 @@ public class CAVUriAsset implements AVAsset {
      */
     private int mTrackCount;
 
-    public CAVUriAsset() {
-        super();
+    private CAVUriAsset(@NonNull Uri uri) {
         mTrackIDGroups = new HashMap<>();
-        mUri = null;
+        mUri = uri;
         mDuration = AVTime.kAVTimeZero;
         mPreferredRate = 1.0f;
         mPreferredVolume = 1.0f;
@@ -270,6 +270,12 @@ public class CAVUriAsset implements AVAsset {
     private @MediaType native int _getTrackType(int index);
 
     /**
+     * 获取采样率
+     * @return 返回文件的采样率
+     */
+    private native int _getSampleRate();
+
+    /**
      * 创建轨道信息
      */
     private void createAssetTrack(@NonNull Uri uri) {
@@ -278,14 +284,20 @@ public class CAVUriAsset implements AVAsset {
             Integer id = mTrackIDGroups.get(i);
             int trackID = id != null ? id : -1;
             if (type == AVMediaType.AVMediaTypeAudio || type == AVMediaType.AVMediaTypeVideo) {
-                AVTimeRange timeRange = new AVTimeRange(AVTime.kAVTimeZero, getDuration());
                 if (type == AVMediaType.AVMediaTypeVideo) {
+
+                    AVTime duration = AVTimeUtils.timeConvertScale(mDuration, AVTime.DEFAULT_TIME_SCALE);
+                    AVTimeRange timeRange = new AVTimeRange(AVTime.kAVTimeZero, duration);
                     CAVAssetTrack track = new CAVAssetTrack(this, uri, trackID, type, timeRange, mNaturalSize);
                     track.mNaturalTimeScale = AVTime.DEFAULT_TIME_SCALE;
                     mTracks.add(track);
                 } else {
+                    // 音频轨道使用原来的采样率作为时钟刻度
+                    int sampleRate = _getSampleRate();
+                    AVTime duration = AVTimeUtils.timeConvertScale(mDuration, sampleRate);
+                    AVTimeRange timeRange = new AVTimeRange(AVTime.kAVTimeZero, duration);
                     CAVAssetTrack track = new CAVAssetTrack(this, uri, trackID, type, timeRange);
-                    track.mNaturalTimeScale = 44100;
+                    track.mNaturalTimeScale = sampleRate;
                     mTracks.add(track);
                 }
             }
@@ -428,16 +440,15 @@ public class CAVUriAsset implements AVAsset {
     private native final void native_setup();
     private native final void native_finalize();
 
-    public /**
+     /**
      * 根据路径创建媒体资源对象，耗时约50~100ms
      * @param path
      * @return
      */
     static AVAsset assetWithPath(@NonNull String path) {
-        CAVUriAsset asset = new CAVUriAsset();
         Uri uri = Uri.fromFile(new File(path));
+        CAVUriAsset asset = new CAVUriAsset(uri);
         try {
-            asset.mUri = uri;
             asset.setDataSource(path);
             asset.createAssetTrack(uri);
         } catch (IOException e) {
@@ -452,12 +463,10 @@ public class CAVUriAsset implements AVAsset {
      * @return      AVAsset对象
      */
     static AVAsset assetWithUri(@NonNull Context context, @NonNull Uri uri) {
-        CAVUriAsset asset = new CAVUriAsset();
+        CAVUriAsset asset = new CAVUriAsset(uri);
         try {
-            asset.mUri = uri;
             asset.setDataSource(context, uri, null);
             asset.createAssetTrack(uri);
-            return asset;
         } catch (IOException e) {
             e.printStackTrace();
         }

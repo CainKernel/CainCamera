@@ -7,6 +7,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import android.util.Log;
 
 import com.cgfay.uitls.utils.FileUtils;
@@ -54,13 +56,32 @@ public class CAVCommandEditor {
      * @param cmd
      * @param callback
      */
-    public void execCommand(String[] cmd, CommandProcessCallback callback) {
+    public void execCommand(String[] cmd, @Nullable CommandProcessCallback callback) {
         if (cmd == null || cmd.length <= 0) {
-            callback.onProcessResult(-1);
+            if (callback != null) {
+                callback.onProcessResult(-1);
+            }
             return;
         }
         mHandler.post(() -> {
-            int ret = CAVCommand.execute(cmd);
+            int ret = CAVCommand.execute(cmd, new CAVCommand.OnExecutorListener() {
+                @Override
+                public void onSuccess() {
+
+                }
+
+                @Override
+                public void onFailure() {
+
+                }
+
+                @Override
+                public void onProgress(int process) {
+                    if (callback != null) {
+                        callback.onProcessing(process);
+                    }
+                }
+            });
             if (callback != null) {
                 callback.onProcessResult(ret);
             }
@@ -71,6 +92,8 @@ public class CAVCommandEditor {
      * 命令行执行回调
      */
     public interface CommandProcessCallback {
+
+        void onProcessing(int current);
 
         void onProcessResult(int result);
     }

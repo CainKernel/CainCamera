@@ -147,7 +147,6 @@ public class AVComposition implements AVAsset {
                 track.setNaturalTimeScale(sourceTrack.getNaturalTimeScale());
                 // 插入一段位置
                 track.insertTimeRange(timeRange, sourceTrack, startTime);
-                mTracks.add(track);
             } else {
                 // 直接在轨道中插入一个片段
                 AVCompositionTrack track = mTracks.get(index);
@@ -174,7 +173,6 @@ public class AVComposition implements AVAsset {
             track.setNaturalTimeScale(sourceTrack.getNaturalTimeScale());
             // 插入一个轨道片段
             track.insertTimeRange(timeRange, sourceTrack, startTime);
-            mTracks.add(track);
         }
         // 计算出插入之后的组合媒体时长
         mDuration = new AVTime(asset.getDuration().getValue(), asset.getDuration().getTimescale());
@@ -223,7 +221,6 @@ public class AVComposition implements AVAsset {
             track.setNaturalTimeScale(sourceTrack.getNaturalTimeScale());
             // 插入一个轨道片段
             track.insertTimeRange(timeRange, sourceTrack, startTime);
-            mTracks.add(track);
         }
 
         // 计算出插入之后的组合媒体时长

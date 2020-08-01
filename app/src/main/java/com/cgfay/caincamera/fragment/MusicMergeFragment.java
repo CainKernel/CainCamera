@@ -156,7 +156,6 @@ public class MusicMergeFragment extends Fragment implements View.OnClickListener
     public void onClick(View v) {
         if (v.getId() == R.id.btn_test_music_merge) {
             musicMergeCommand();
-//            musicMerge();
         }
     }
 
@@ -196,18 +195,27 @@ public class MusicMergeFragment extends Fragment implements View.OnClickListener
             duration = (int) mMusicDuration;
         }
         String tmpAACPath = VideoEditorUtil.createPathInBox(mActivity, "aac");
-        mCommandEditor.execCommand(CAVCommandEditor.audioCut(mMusicPath, tmpAACPath, 10 * 1000, duration), result -> {
-            if (result < 0) {
-                FileUtils.deleteFile(tmpAACPath);
-                mActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(mActivity, "aac转码失败", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } else {
-                Log.d(TAG, "musicMergeCommand: audioVideoMix");
-                audioVideoMix(tmpAACPath);
+        int finalDuration = duration;
+        mCommandEditor.execCommand(CAVCommandEditor.audioCut(mMusicPath, tmpAACPath, 10 * 1000, duration), new CAVCommandEditor.CommandProcessCallback() {
+            @Override
+            public void onProcessing(int current) {
+                Log.d(TAG, "onProcessing: " + current + ", duration " + finalDuration);
+            }
+
+            @Override
+            public void onProcessResult(int result) {
+                if (result < 0) {
+                    FileUtils.deleteFile(tmpAACPath);
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(mActivity, "aac转码失败", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
+                    Log.d(TAG, "musicMergeCommand: audioVideoMix");
+                    audioVideoMix(tmpAACPath, finalDuration / 1000);
+                }
             }
         });
     }
@@ -215,47 +223,60 @@ public class MusicMergeFragment extends Fragment implements View.OnClickListener
     /**
      * 音视频混合
      * @param audioPath
+     * @param musicDuration 音乐时长(秒)
      */
-    private void audioVideoMix(String audioPath) {
+    private void audioVideoMix(String audioPath, int musicDuration) {
         if (mCommandEditor == null) {
             mCommandEditor = new CAVCommandEditor();
         }
         final String videoPath = VideoEditorUtil.createFileInBox(mActivity, "mp4");
-        mCommandEditor.execCommand(CAVCommandEditor.audioVideoMix(mVideoPath, audioPath, videoPath, mVideoVolume, mMusicVolume), result -> {
-            FileUtils.deleteFile(audioPath);
-            // 成功则释放播放器并跳转至编辑页面
-            if (result == 0 && FileUtils.fileExists(videoPath)) {
-                // 需要释放销毁播放器，后面要用到播放器，防止内存占用过大
-                if (mVideoPlayerView != null) {
-                    mVideoPlayerView.pause();
-                }
-                if (mCommandEditor != null) {
-                    mCommandEditor.release();
-                    mCommandEditor = null;
-                }
-                mActivity.runOnUiThread(() -> {
-                    long processTime = System.currentTimeMillis() - startTime;
-                    Toast.makeText(mActivity,
-                            "音频混合处理耗时: " + (processTime / 1000f) + "秒",
-                            Toast.LENGTH_SHORT)
-                            .show();
-                    Intent intent = new Intent(mActivity, VideoEditActivity.class);
-                    intent.putExtra(VideoEditActivity.VIDEO_PATH, videoPath);
-                    startActivity(intent);
-                    mActivity.finish();
-                });
-            } else {
-                mActivity.runOnUiThread(() -> {
-                    Log.e(TAG, "video cut's error!");
-                    if (mVideoPlayerView != null) {
-                        mVideoPlayerView.start();
+        mCommandEditor.execCommand(CAVCommandEditor.audioVideoMix(mVideoPath, audioPath, videoPath, mVideoVolume, mMusicVolume),
+                new CAVCommandEditor.CommandProcessCallback() {
+
+                    @Override
+                    public void onProcessing(int current) {
+                        Log.d(TAG, "onProcessing: " + current + ", duration = " + musicDuration);
+                        mActivity.runOnUiThread(() -> mCvCropProgress.setProgress(100f * current / musicDuration));
+                    }
+
+                    @Override
+                    public void onProcessResult(int result) {
+                        FileUtils.deleteFile(audioPath);
+                        // 成功则释放播放器并跳转至编辑页面
+                        if (result == 0 && FileUtils.fileExists(videoPath)) {
+                            // 需要释放销毁播放器，后面要用到播放器，防止内存占用过大
+                            if (mVideoPlayerView != null) {
+                                mVideoPlayerView.pause();
+                            }
+                            if (mCommandEditor != null) {
+                                mCommandEditor.release();
+                                mCommandEditor = null;
+                            }
+                            mActivity.runOnUiThread(() -> {
+                                mCvCropProgress.setProgress(100f);
+                                long processTime = System.currentTimeMillis() - startTime;
+                                Toast.makeText(mActivity,
+                                        "音频混合处理耗时: " + (processTime / 1000f) + "秒",
+                                        Toast.LENGTH_SHORT)
+                                        .show();
+                                Intent intent = new Intent(mActivity, VideoEditActivity.class);
+                                intent.putExtra(VideoEditActivity.VIDEO_PATH, videoPath);
+                                startActivity(intent);
+                                mActivity.finish();
+                            });
+                        } else {
+                            mActivity.runOnUiThread(() -> {
+                                Log.e(TAG, "video cut's error!");
+                                if (mVideoPlayerView != null) {
+                                    mVideoPlayerView.start();
+                                }
+                            });
+                        }
+                        mActivity.runOnUiThread(() -> {
+                            mLayoutProgress.setVisibility(View.GONE);
+                        });
                     }
                 });
-            }
-            mActivity.runOnUiThread(() -> {
-                mLayoutProgress.setVisibility(View.GONE);
-            });
-        });
     }
 
     private SeekBar.OnSeekBarChangeListener mSeekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {

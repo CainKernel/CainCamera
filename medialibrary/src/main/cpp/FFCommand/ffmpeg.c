@@ -112,6 +112,7 @@
 #include "cmdutils.h"
 
 #include "libavutil/avassert.h"
+#include "ffmpeg_cmd.h"
 
 const char program_name[] = "ffmpeg";
 const int program_birth_year = 2000;
@@ -4730,7 +4731,7 @@ static int64_t getmaxrss(void)
 #if defined(__ANDROID__)
 #include <android/log.h>
 
-#define JNI_TAG "FFCommand"
+#define JNI_TAG "FFmpegExecutor"
 #define LOGE(format, ...) __android_log_print(ANDROID_LOG_ERROR, JNI_TAG, format, ##__VA_ARGS__)
 #define LOGI(format, ...) __android_log_print(ANDROID_LOG_INFO,  JNI_TAG, format, ##__VA_ARGS__)
 #define LOGD(format, ...) __android_log_print(ANDROID_LOG_DEBUG, JNI_TAG, format, ##__VA_ARGS__)
@@ -4746,14 +4747,6 @@ static int64_t getmaxrss(void)
 #define LOGV(format, ...) {}
 
 #endif
-
-// 处理log回调
-static void (*process_callback)(void *opaque, int type, int time);
-static void *process_opaque;
-void register_process_callback(void *opaque, void (*cb)(void *opaque, int type, int ret)) {
-    process_callback = cb;
-    process_opaque = opaque;
-}
 
 /**
  * 处理LOG信息
@@ -4783,10 +4776,9 @@ static void log_callback_null(void *ptr, int level, const char *fmt, va_list vl)
             int m =(str[8]-'0')*10+(str[9]-'0');
             int s =(str[11]-'0')*10+(str[12]-'0');
             int time = s + m * 60 + h * 60 * 60;
-            // 处理时间传递出去
-            if (process_callback && process_opaque) {
-                process_callback(process_opaque, 3, time);
-            }
+            // [Cain change start]
+            ffmpeg_executor_progress(time);
+            // [Cain change end]
         }
         LOGV("info %s", line);
     } else if (level == AV_LOG_VERBOSE) {

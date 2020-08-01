@@ -96,43 +96,15 @@ public class AVCompositionTrack implements AVAssetTrack {
      */
     private List<AVCompositionTrackSegment> mTrackSegments = new ArrayList<>();
 
-    private AVCompositionTrack(@NonNull AVAsset asset, @NonNull Uri uri, int trackID,
-                               @NonNull AVMediaType type, @NonNull AVTimeRange timeRange) {
-        this(asset, uri, trackID, type, timeRange, CGSize.kSizeZero);
-    }
-
-    private AVCompositionTrack(@NonNull AVAsset asset, @NonNull Uri uri, int trackID,
-                               @NonNull AVMediaType type, @NonNull AVTimeRange timeRange,
-                               @NonNull CGSize size) {
-        mAsset = asset;
-        mUri = uri;
-        mTrackID = trackID;
-        mMediaType = type;
-        mTimeRange = timeRange;
-        mNaturalSize = size;
-        mPreferredTransform = new AffineTransform().idt();
-        mPreferredRate = 1.0f;
-        mPreferredVolume = 1.0f;
-        mFrameReordering = false;
-        AVCompositionTrackSegment segment = new AVCompositionTrackSegment(uri, trackID, timeRange, timeRange);
-        // 判断是否轨道id是否合法，合法则不为空
-        segment.setEmpty(trackID == kTrackIDInvalid);
-        mTrackSegments.add(segment);
-        // 设置默认轨道的时间timescale，视频流使用600，音频流使用44100
-        if (type == AVMediaType.AVMediaTypeVideo) {
-            mNaturalTimeScale = AVTime.DEFAULT_TIME_SCALE;
-        } else if (type == AVMediaType.AVMediaTypeAudio) {
-            mNaturalTimeScale = DEFAULT_SAMPLE_RATE;
-        }
-    }
-
-    public AVCompositionTrack(AVMediaType type) {
+    protected AVCompositionTrack(AVMediaType type) {
         mAsset = null;
         mUri = null;
         mMediaType = type;
         mTrackID = kTrackIDInvalid;
+        mTimeRange = AVTimeRange.kAVTimeRangeZero;
         mNaturalSize = CGSize.kSizeZero;
         mPreferredTransform = new AffineTransform().idt();
+        mPreferredRate = 1.0f;
         mPreferredVolume = 1.0f;
         mFrameReordering = false;
         // 设置默认轨道的时间timescale，视频流使用600，音频流使用44100
