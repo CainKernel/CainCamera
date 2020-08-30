@@ -500,7 +500,6 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
             getChildFragmentManager()
                     .beginTransaction()
                     .add(R.id.fragment_bottom_container, mSettingFragment, FRAGMENT_TAG)
-                    .addToBackStack(FRAGMENT_TAG)
                     .commitAllowingStateLoss();
         } else {
             getChildFragmentManager()

@@ -4,10 +4,13 @@ import android.Manifest;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.graphics.SurfaceTexture;
+import android.opengl.EGL14;
 import android.opengl.GLSurfaceView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -76,7 +79,10 @@ public class SpeedRecordActivity extends AppCompatActivity implements View.OnCli
         mRecordButton.addRecordStateListener(new RecordButton.RecordStateListener() {
             @Override
             public void onRecordStart() {
-                mPresenter.startRecord();
+                mGLRecordView.post(() -> {
+                    mPresenter.onBindSharedContext(mRenderer.getCurrentContext());
+                    mPresenter.startRecord();
+                });
             }
 
             @Override
@@ -142,10 +148,12 @@ public class SpeedRecordActivity extends AppCompatActivity implements View.OnCli
                 WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         // 是否全面屏
         if (NotchUtils.hasNotchScreen(this)) {
-            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-            WindowManager.LayoutParams lp = getWindow().getAttributes();
-            lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-            getWindow().setAttributes(lp);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+                WindowManager.LayoutParams lp = getWindow().getAttributes();
+                lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+                getWindow().setAttributes(lp);
+            }
         }
     }
 

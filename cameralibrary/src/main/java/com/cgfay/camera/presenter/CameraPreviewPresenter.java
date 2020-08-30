@@ -24,6 +24,12 @@ import com.cgfay.camera.fragment.CameraPreviewFragment;
 import com.cgfay.camera.listener.OnPreviewCaptureListener;
 import com.cgfay.camera.render.CameraRenderer;
 import com.cgfay.camera.utils.PathConstraints;
+import com.cgfay.cavfoundation.capture.CAVCaptureAudioMuteInput;
+import com.cgfay.cavfoundation.capture.CAVCaptureAudioRecordInput;
+import com.cgfay.cavfoundation.capture.CAVCaptureRecorder;
+import com.cgfay.cavfoundation.capture.OnCaptureRecordListener;
+import com.cgfay.cavfoundation.codec.AudioInfo;
+import com.cgfay.cavfoundation.codec.VideoInfo;
 import com.cgfay.facedetect.engine.FaceTracker;
 import com.cgfay.facedetect.listener.FaceTrackerCallback;
 import com.cgfay.filter.glfilter.color.bean.DynamicColor;
@@ -35,14 +41,8 @@ import com.cgfay.filter.glfilter.resource.bean.ResourceData;
 import com.cgfay.filter.glfilter.resource.bean.ResourceType;
 import com.cgfay.filter.glfilter.stickers.bean.DynamicSticker;
 import com.cgfay.media.CAVCommandEditor;
-import com.cgfay.media.recorder.AudioParams;
-import com.cgfay.media.recorder.JAVMediaRecorder;
 import com.cgfay.media.recorder.MediaInfo;
-import com.cgfay.cavfoundation.AVMediaType;
-import com.cgfay.media.recorder.OnRecordStateListener;
-import com.cgfay.media.recorder.RecordInfo;
 import com.cgfay.media.recorder.SpeedMode;
-import com.cgfay.media.recorder.VideoParams;
 import com.cgfay.landmark.LandmarkEngine;
 import com.cgfay.uitls.utils.BitmapUtils;
 import com.cgfay.uitls.utils.BrightnessUtils;
@@ -50,6 +50,8 @@ import com.cgfay.uitls.utils.FileUtils;
 import com.cgfay.video.activity.VideoEditActivity;
 
 import java.io.File;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,9 +62,12 @@ import java.util.List;
  */
 public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragment>
         implements PreviewCallback, FaceTrackerCallback, OnCaptureListener, OnFpsListener,
-        OnSurfaceTextureListener, OnFrameAvailableListener, OnRecordStateListener {
+        OnSurfaceTextureListener, OnFrameAvailableListener, OnCaptureRecordListener {
 
     private static final String TAG = "CameraPreviewPresenter";
+    private static final boolean VERBOSE = false;
+
+    public static final int SECOND_IN_US = 1000000;
 
     // 当前索引
     private int mFilterIndex = 0;
@@ -75,29 +80,26 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
     // 背景音乐
     private String mMusicPath;
 
-    // 音视频参数
-    private final VideoParams mVideoParams;
-    private final AudioParams mAudioParams;
     // 录制操作开始
     private boolean mOperateStarted = false;
 
-    // 当前录制进度
-    private float mCurrentProgress;
     // 最大时长
     private long mMaxDuration;
     // 剩余时长
     private long mRemainDuration;
 
+    // 速度模式
+    private SpeedMode mSpeedMode;
+    // 是否允许录音
+    private boolean mEnableAudio;
+    // 视频参数
+    private VideoInfo mVideoInfo;
+    // 音频参数
+    private AudioInfo mAudioInfo;
     // 视频录制器
-    private JAVMediaRecorder mHWMediaRecorder;
-
+    private CAVCaptureRecorder mMediaRecorder;
     // 视频列表
     private List<MediaInfo> mVideoList = new ArrayList<>();
-
-    // 录制音频信息
-    private RecordInfo mAudioInfo;
-    // 录制视频信息
-    private RecordInfo mVideoInfo;
 
     // 命令行编辑器
     private CAVCommandEditor mCommandEditor;
@@ -108,25 +110,24 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
     // 渲染器
     private final CameraRenderer mCameraRenderer;
 
+    // EGL上下文
+    private WeakReference<EGLContext> mWeakGLContext;
+
     public CameraPreviewPresenter(CameraPreviewFragment target) {
         super(target);
         mCameraParam = CameraParam.getInstance();
 
         mCameraRenderer = new CameraRenderer(this);
-
-        // 视频录制器
-        mVideoParams = new VideoParams();
-        mAudioParams = new AudioParams();
-
         // 命令行编辑器
         mCommandEditor = new CAVCommandEditor();
+        mAudioInfo = new AudioInfo();
+        mVideoInfo = new VideoInfo();
+        mSpeedMode = SpeedMode.MODE_NORMAL;
+        mEnableAudio = true;
     }
 
     public void onAttach(Activity activity) {
         mActivity = activity;
-        mVideoParams.setVideoPath(PathConstraints.getVideoTempPath(mActivity));
-        mAudioParams.setAudioPath(PathConstraints.getAudioTempPath(mActivity));
-
         mCameraRenderer.initRenderer();
 
 //        // 备注：目前支持CameraX的渲染流程，但CameraX回调预览帧数据有些问题，人脸关键点SDK检测返回的数据错乱，暂不建议在商用项目中使用CameraX
@@ -187,9 +188,9 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
         FaceTracker.getInstance().destroyTracker();
         // 清理关键点
         LandmarkEngine.getInstance().clearAll();
-        if (mHWMediaRecorder != null) {
-            mHWMediaRecorder.release();
-            mHWMediaRecorder = null;
+        if (mMediaRecorder != null) {
+            mMediaRecorder.release();
+            mMediaRecorder = null;
         }
         if (mCommandEditor != null) {
             mCommandEditor.release();
@@ -210,14 +211,13 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
 
     @Override
     public void onBindSharedContext(EGLContext context) {
-        mVideoParams.setEglContext(context);
-        Log.d(TAG, "onBindSharedContext: ");
+        mWeakGLContext = new WeakReference<>(context);
     }
 
     @Override
     public void onRecordFrameAvailable(int texture, long timestamp) {
-        if (mOperateStarted && mHWMediaRecorder != null && mHWMediaRecorder.isRecording()) {
-            mHWMediaRecorder.frameAvailable(texture, timestamp);
+        if (mOperateStarted && mMediaRecorder != null && mMediaRecorder.isRecording()) {
+            mMediaRecorder.renderFrame(texture, timestamp);
         }
     }
 
@@ -358,7 +358,8 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
             width = mCameraController.getPreviewWidth();
             height = mCameraController.getPreviewHeight();
         }
-        mVideoParams.setVideoSize(width, height);
+        mVideoInfo.setWidth(width);
+        mVideoInfo.setHeight(height);
         mCameraRenderer.setTextureSize(width, height);
     }
 
@@ -384,10 +385,29 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
         if (mOperateStarted) {
             return;
         }
-        if (mHWMediaRecorder == null) {
-            mHWMediaRecorder = new JAVMediaRecorder(this);
+        if (mMediaRecorder != null) {
+            mMediaRecorder.release();
         }
-        mHWMediaRecorder.startRecord(mVideoParams, mAudioParams);
+        try {
+            mMediaRecorder = new CAVCaptureRecorder();
+            mMediaRecorder.setOutputPath(generateOutputPath());
+            mMediaRecorder.setOnCaptureRecordListener(this);
+            mMediaRecorder.setSpeed(mSpeedMode.getSpeed());
+            mMediaRecorder.setVideoInfo(mVideoInfo);
+            mMediaRecorder.setAudioInfo(mAudioInfo);
+            if (mEnableAudio) {
+                mMediaRecorder.setAudioReader(new CAVCaptureAudioRecordInput(mAudioInfo));
+            } else {
+                mMediaRecorder.setAudioReader(new CAVCaptureAudioMuteInput(mAudioInfo));
+            }
+            mMediaRecorder.prepare();
+            mMediaRecorder.startRecord();
+            if (mWeakGLContext != null && mWeakGLContext.get() != null) {
+                mMediaRecorder.initVideoRenderer(mWeakGLContext.get());
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "startRecord: ", e);
+        }
         mOperateStarted = true;
     }
 
@@ -397,8 +417,8 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
             return;
         }
         mOperateStarted = false;
-        if (mHWMediaRecorder != null) {
-            mHWMediaRecorder.stopRecord();
+        if (mMediaRecorder != null) {
+            mMediaRecorder.stopRecord();
         }
     }
 
@@ -409,27 +429,22 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
 
     @Override
     public boolean isRecording() {
-        return (mOperateStarted && mHWMediaRecorder != null && mHWMediaRecorder.isRecording());
+        return (mOperateStarted && mMediaRecorder != null && mMediaRecorder.isRecording());
     }
 
     @Override
     public void setRecordAudioEnable(boolean enable) {
-        if (mHWMediaRecorder != null) {
-            mHWMediaRecorder.setEnableAudio(enable);
-        }
+        mEnableAudio = enable;
     }
 
     @Override
     public void setRecordSeconds(int seconds) {
-        mMaxDuration = mRemainDuration = seconds * JAVMediaRecorder.SECOND_IN_US;
-        mVideoParams.setMaxDuration(mMaxDuration);
-        mAudioParams.setMaxDuration(mMaxDuration);
+        mMaxDuration = mRemainDuration = seconds * SECOND_IN_US;
     }
 
     @Override
     public void setSpeedMode(SpeedMode mode) {
-        mVideoParams.setSpeedMode(mode);
-        mAudioParams.setSpeedMode(mode);
+        mSpeedMode = mode;
     }
 
     @Override
@@ -496,8 +511,10 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
     // ---------------------------------- 相机预览数据回调 ------------------------------------------
     @Override
     public void onPreviewFrame(byte[] data) {
-        Log.d(TAG, "onPreviewFrame: width - " + mCameraController.getPreviewWidth()
-                + ", height - " + mCameraController.getPreviewHeight());
+        if (VERBOSE) {
+            Log.d(TAG, "onPreviewFrame: width - " + mCameraController.getPreviewWidth()
+                    + ", height - " + mCameraController.getPreviewHeight());
+        }
         FaceTracker.getInstance()
                 .trackFace(data, mCameraController.getPreviewWidth(),
                         mCameraController.getPreviewHeight());
@@ -506,7 +523,9 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
     // ---------------------------------- 人脸检测完成回调 ------------------------------------------
     @Override
     public void onTrackingFinish() {
-        Log.d(TAG, "onTrackingFinish: ");
+        if (VERBOSE) {
+            Log.d(TAG, "onTrackingFinish: ");
+        }
         mCameraRenderer.requestRender();
     }
 
@@ -517,83 +536,42 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
     }
 
     // ---------------------------------- 录制与合成 start ------------------------------------------
+    /**
+     * 开始录制
+     */
     @Override
-    public void onRecordStart() {
+    public void onCaptureStart() {
         getTarget().hideOnRecording();
     }
 
+    /**
+     * 正在录制
+     *
+     * @param duration 录制的时长
+     */
     @Override
-    public void onRecording(long duration) {
-        float progress = duration * 1.0f / mVideoParams.getMaxDuration();
+    public void onCapturing(long duration) {
+        float progress = duration * 1.0f / mMaxDuration;
+        Log.d(TAG, "onCapturing: " + duration + ", remainDuration: " + mRemainDuration + ", progress: " + progress);
         getTarget().updateRecordProgress(progress);
-        if (duration > mRemainDuration) {
+        if (duration >= mRemainDuration) {
             stopRecord();
         }
     }
 
+    /**
+     * 录制回调
+     *
+     * @param path 视频路径
+     */
     @Override
-    public void onRecordFinish(RecordInfo info) {
-        if (info.getType() == AVMediaType.AVMediaTypeAudio) {
-            mAudioInfo = info;
-        } else if (info.getType() == AVMediaType.AVMediaTypeVideo) {
-            mVideoInfo = info;
-            mCurrentProgress = info.getDuration() * 1.0f / mVideoParams.getMaxDuration();
-        }
-        if (mHWMediaRecorder == null) {
-            return;
-        }
-        if (mHWMediaRecorder.enableAudio() && (mAudioInfo == null || mVideoInfo == null)) {
-            return;
-        }
-        if (mHWMediaRecorder.enableAudio()) {
-            final String currentFile = generateOutputPath();
-            FileUtils.createFile(currentFile);
-            mCommandEditor.execCommand(CAVCommandEditor.mergeAudioVideo(mVideoInfo.getFileName(),
-                    mAudioInfo.getFileName(), currentFile),
-                    new CAVCommandEditor.CommandProcessCallback() {
-                        @Override
-                        public void onProcessing(int current) {
-                            Log.d(TAG, "onProcessing: " + current);
-                        }
-
-                        @Override
-                        public void onProcessResult(int result) {
-                            if (result == 0) {
-                                mVideoList.add(new MediaInfo(currentFile, mVideoInfo.getDuration()));
-                                mRemainDuration -= mVideoInfo.getDuration();
-                                getTarget().addProgressSegment(mCurrentProgress);
-                                getTarget().resetAllLayout();
-                                mCurrentProgress = 0;
-                            }
-                            // 删除旧的文件
-                            FileUtils.deleteFile(mAudioInfo.getFileName());
-                            FileUtils.deleteFile(mVideoInfo.getFileName());
-                            mAudioInfo = null;
-                            mVideoInfo = null;
-
-                            // 如果剩余时间为0
-                            if (mRemainDuration <= 0) {
-                                mergeAndEdit();
-                            }
-                        }
-                    });
-        } else {
-            if (mVideoInfo != null) {
-                final String currentFile = generateOutputPath();
-                FileUtils.moveFile(mVideoInfo.getFileName(), currentFile);
-                mVideoList.add(new MediaInfo(currentFile, mVideoInfo.getDuration()));
-                mRemainDuration -= mVideoInfo.getDuration();
-                mAudioInfo = null;
-                mVideoInfo = null;
-                getTarget().addProgressSegment(mCurrentProgress);
-                getTarget().resetAllLayout();
-                mCurrentProgress = 0;
-            }
-        }
-        if (mHWMediaRecorder != null) {
-            mHWMediaRecorder.release();
-            mHWMediaRecorder = null;
-        }
+    public void onCaptureFinish(String path, long duration) {
+        mVideoList.add(new MediaInfo(path, duration));
+        mRemainDuration -= duration;
+        float progress = duration * 1.0f / mMaxDuration;
+        Log.d(TAG, "onCaptureFinish: " + progress);
+        getTarget().addProgressSegment(progress);
+        getTarget().resetAllLayout();
     }
 
     /**

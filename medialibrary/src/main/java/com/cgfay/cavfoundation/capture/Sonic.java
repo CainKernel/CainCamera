@@ -1,4 +1,4 @@
-package com.cgfay.media.recorder;
+package com.cgfay.cavfoundation.capture;
 
 import java.nio.ShortBuffer;
 import java.util.Arrays;

@@ -1,11 +1,10 @@
 package com.cgfay.caincamera.presenter;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.opengl.EGLContext;
-import android.os.Environment;
+
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
@@ -19,20 +18,21 @@ import com.cgfay.camera.camera.CameraXController;
 import com.cgfay.camera.camera.ICameraController;
 import com.cgfay.camera.camera.OnFrameAvailableListener;
 import com.cgfay.camera.camera.OnSurfaceTextureListener;
+import com.cgfay.cavfoundation.capture.CAVCaptureAudioMuteInput;
+import com.cgfay.cavfoundation.capture.CAVCaptureAudioRecordInput;
+import com.cgfay.cavfoundation.capture.CAVCaptureRecorder;
+import com.cgfay.cavfoundation.capture.OnCaptureRecordListener;
+import com.cgfay.cavfoundation.codec.AudioInfo;
+import com.cgfay.cavfoundation.codec.VideoInfo;
 import com.cgfay.media.recorder.MediaInfo;
-import com.cgfay.media.recorder.AudioParams;
-import com.cgfay.media.recorder.JAVMediaRecorder;
 import com.cgfay.camera.utils.PathConstraints;
-import com.cgfay.cavfoundation.AVMediaType;
-import com.cgfay.media.recorder.OnRecordStateListener;
-import com.cgfay.media.recorder.RecordInfo;
 import com.cgfay.media.recorder.SpeedMode;
-import com.cgfay.media.recorder.VideoParams;
 import com.cgfay.media.CAVCommandEditor;
 import com.cgfay.uitls.utils.FileUtils;
 import com.cgfay.video.activity.VideoEditActivity;
 
-import java.io.File;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,35 +41,35 @@ import java.util.List;
  * @author CainHuang
  * @date 2019/7/7
  */
-public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailableListener, OnRecordStateListener {
+public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailableListener, OnCaptureRecordListener {
 
     private static final String TAG = "RecordPresenter";
 
+    public static final int SECOND_IN_US = 1000000;
+
     private SpeedRecordActivity mActivity;
 
-    // 音视频参数
-    private final VideoParams mVideoParams;
-    private final AudioParams mAudioParams;
     // 录制操作开始
     private boolean mOperateStarted = false;
 
-    // 当前录制进度
-    private float mCurrentProgress;
     // 最大时长
     private long mMaxDuration;
     // 剩余时长
     private long mRemainDuration;
 
+    // 速度模式
+    private SpeedMode mSpeedMode;
+    // 是否允许录音
+    private boolean mEnableAudio;
+    // 视频参数
+    private VideoInfo mVideoInfo;
+    // 音频参数
+    private AudioInfo mAudioInfo;
     // 视频录制器
-    private JAVMediaRecorder mHWMediaRecorder;
+    private CAVCaptureRecorder mMediaRecorder;
 
     // 视频列表
     private List<MediaInfo> mVideoList = new ArrayList<>();
-
-    // 录制音频信息
-    private RecordInfo mAudioInfo;
-    // 录制视频信息
-    private RecordInfo mVideoInfo;
 
     // 命令行编辑器
     private CAVCommandEditor mCommandEditor;
@@ -77,19 +77,11 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
     // 相机控制器
     private final ICameraController mCameraController;
 
+    // EGL上下文
+    private WeakReference<EGLContext> mWeakGLContext;
+
     public RecordPresenter(SpeedRecordActivity activity) {
         mActivity = activity;
-
-        // 视频录制器
-        mHWMediaRecorder = new JAVMediaRecorder(this);
-
-        // 视频参数
-        mVideoParams = new VideoParams();
-        mVideoParams.setVideoPath(getVideoTempPath(mActivity));
-
-        // 音频参数
-        mAudioParams = new AudioParams();
-        mAudioParams.setAudioPath(getAudioTempPath(mActivity));
 
         // 命令行编辑器
         mCommandEditor = new CAVCommandEditor();
@@ -102,6 +94,11 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
         }
         mCameraController.setOnFrameAvailableListener(this);
         mCameraController.setOnSurfaceTextureListener(this);
+
+        mAudioInfo = new AudioInfo();
+        mVideoInfo = new VideoInfo();
+        mSpeedMode = SpeedMode.MODE_NORMAL;
+        mEnableAudio = true;
     }
 
     /**
@@ -130,8 +127,9 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
      */
     public void release() {
         mActivity = null;
-        if (mHWMediaRecorder != null) {
-            mHWMediaRecorder.release();
+        if (mMediaRecorder != null) {
+            mMediaRecorder.release();
+            mMediaRecorder = null;
         }
         if (mCommandEditor != null) {
             mCommandEditor.release();
@@ -144,8 +142,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
      * @param mode
      */
     public void setSpeedMode(SpeedMode mode) {
-        mVideoParams.setSpeedMode(mode);
-        mAudioParams.setSpeedMode(mode);
+        mSpeedMode = mode;
     }
 
     /**
@@ -153,9 +150,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
      * @param seconds
      */
     public void setRecordSeconds(int seconds) {
-        mMaxDuration = mRemainDuration = seconds * JAVMediaRecorder.SECOND_IN_US;
-        mVideoParams.setMaxDuration(mMaxDuration);
-        mAudioParams.setMaxDuration(mMaxDuration);
+        mMaxDuration = mRemainDuration = seconds * SECOND_IN_US;
     }
 
     /**
@@ -163,9 +158,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
      * @param enable
      */
     public void setAudioEnable(boolean enable) {
-        if (mHWMediaRecorder != null) {
-            mHWMediaRecorder.setEnableAudio(enable);
-        }
+        mEnableAudio = enable;
     }
 
     /**
@@ -175,7 +168,32 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
         if (mOperateStarted) {
             return;
         }
-        mHWMediaRecorder.startRecord(mVideoParams, mAudioParams);
+        if (mMediaRecorder != null) {
+            mMediaRecorder.release();
+        }
+        try {
+            mMediaRecorder = new CAVCaptureRecorder();
+            mMediaRecorder.setOutputPath(generateOutputPath());
+            mMediaRecorder.setOnCaptureRecordListener(this);
+            mMediaRecorder.setSpeed(mSpeedMode.getSpeed());
+            mMediaRecorder.setVideoInfo(mVideoInfo);
+            mMediaRecorder.setAudioInfo(mAudioInfo);
+            if (mEnableAudio) {
+                mMediaRecorder.setAudioReader(new CAVCaptureAudioRecordInput(mAudioInfo));
+            } else {
+                mMediaRecorder.setAudioReader(new CAVCaptureAudioMuteInput(mAudioInfo));
+            }
+            mMediaRecorder.prepare();
+            mMediaRecorder.startRecord();
+            Log.d(TAG, "startRecord: aaa");
+            if (mWeakGLContext != null && mWeakGLContext.get() != null) {
+                mMediaRecorder.initVideoRenderer(mWeakGLContext.get());
+            } else {
+                Log.d(TAG, "startRecord: failed to init renderer" );
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "startRecord: ", e);
+        }
         mOperateStarted = true;
     }
 
@@ -187,80 +205,48 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
             return;
         }
         mOperateStarted = false;
-        mHWMediaRecorder.stopRecord();
+        if (mMediaRecorder != null) {
+            mMediaRecorder.stopRecord();
+        }
     }
 
+    /**
+     * 开始录制
+     */
     @Override
-    public void onRecordStart() {
+    public void onCaptureStart() {
         mActivity.hidViews();
     }
 
+    /**
+     * 正在录制
+     *
+     * @param duration 录制的时长
+     */
     @Override
-    public void onRecording(long duration) {
-        float progress = duration * 1.0f / mVideoParams.getMaxDuration();
+    public void onCapturing(long duration) {
+        float progress = duration * 1.0f / mMaxDuration;
+        Log.d(TAG, "onCapturing: " + duration + ", remainDuration: " + mRemainDuration + ", progress: " + progress);
         mActivity.setProgress(progress);
-        if (duration > mRemainDuration) {
+        if (duration >= mRemainDuration) {
             stopRecord();
         }
     }
 
+    /**
+     * 录制回调
+     *
+     * @param path     视频路径
+     * @param duration
+     */
     @Override
-    public void onRecordFinish(RecordInfo info) {
-        if (info.getType() == AVMediaType.AVMediaTypeAudio) {
-            mAudioInfo = info;
-        } else if (info.getType() == AVMediaType.AVMediaTypeVideo) {
-            mVideoInfo = info;
-            mCurrentProgress = info.getDuration() * 1.0f / mVideoParams.getMaxDuration();
-        }
+    public void onCaptureFinish(String path, long duration) {
+        mVideoList.add(new MediaInfo(path, duration));
+        mRemainDuration -= duration;
+        float progress = duration * 1.0f / mMaxDuration;
+        Log.d(TAG, "onCaptureFinish: " + progress);
+        mActivity.addProgressSegment(progress);
         mActivity.showViews();
-        if (mHWMediaRecorder.enableAudio() && (mAudioInfo == null || mVideoInfo == null)) {
-            return;
-        }
-        if (mHWMediaRecorder.enableAudio()) {
-            final String currentFile = generateOutputPath();
-            FileUtils.createFile(currentFile);
-            mCommandEditor.execCommand(CAVCommandEditor.mergeAudioVideo(mVideoInfo.getFileName(),
-                    mAudioInfo.getFileName(), currentFile),
-                    new CAVCommandEditor.CommandProcessCallback() {
-                        @Override
-                        public void onProcessing(int current) {
-                            Log.d(TAG, "onProcessing: " + current);
-                        }
-
-                        @Override
-                        public void onProcessResult(int result) {
-                            if (result == 0) {
-                                mVideoList.add(new MediaInfo(currentFile, mVideoInfo.getDuration()));
-                                mRemainDuration -= mVideoInfo.getDuration();
-                                mActivity.addProgressSegment(mCurrentProgress);
-                                mActivity.showViews();
-                                mCurrentProgress = 0;
-                            }
-                            // 删除旧的文件
-                            FileUtils.deleteFile(mAudioInfo.getFileName());
-                            FileUtils.deleteFile(mVideoInfo.getFileName());
-                            mAudioInfo = null;
-                            mVideoInfo = null;
-
-                            // 如果剩余时间为0
-                            if (mRemainDuration <= 0) {
-                                mergeAndEdit();
-                            }
-                        }
-                    });
-        } else {
-            if (mVideoInfo != null) {
-                final String currentFile = generateOutputPath();
-                FileUtils.moveFile(mVideoInfo.getFileName(), currentFile);
-                mVideoList.add(new MediaInfo(currentFile, mVideoInfo.getDuration()));
-                mRemainDuration -= mVideoInfo.getDuration();
-                mAudioInfo = null;
-                mVideoInfo = null;
-                mActivity.addProgressSegment(mCurrentProgress);
-                mActivity.showViews();
-                mCurrentProgress = 0;
-            }
-        }
         mOperateStarted = false;
     }
 
@@ -269,7 +255,8 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
      * @param context
      */
     public void onBindSharedContext(EGLContext context) {
-        mVideoParams.setEglContext(context);
+        mWeakGLContext = new WeakReference<>(context);
+        Log.d(TAG, "onBindSharedContext: " );
     }
 
     /**
@@ -278,8 +265,8 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
      * @param timestamp
      */
     public void onRecordFrameAvailable(int texture, long timestamp) {
-        if (mOperateStarted && mHWMediaRecorder != null && mHWMediaRecorder.isRecording()) {
-            mHWMediaRecorder.frameAvailable(texture, timestamp);
+        if (mOperateStarted && mMediaRecorder != null && mMediaRecorder.isRecording()) {
+            mMediaRecorder.renderFrame(texture, timestamp);
         }
     }
 
@@ -331,7 +318,8 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
             width = mCameraController.getPreviewWidth();
             height = mCameraController.getPreviewHeight();
         }
-        mVideoParams.setVideoSize(width, height);
+        mVideoInfo.setWidth(width);
+        mVideoInfo.setHeight(height);
         mActivity.updateTextureSize(width, height);
     }
 
@@ -411,48 +399,6 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
      */
     public String generateOutputPath() {
         return PathConstraints.getVideoCachePath(mActivity);
-    }
-
-    /**
-     * 获取音频缓存绝对路径
-     * @param context
-     * @return
-     */
-    private static String getAudioTempPath(@NonNull Context context) {
-        String directoryPath;
-        // 判断外部存储是否可用，如果不可用则使用内部存储路径
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-            directoryPath = context.getExternalCacheDir().getAbsolutePath();
-        } else { // 使用内部存储缓存目录
-            directoryPath = context.getCacheDir().getAbsolutePath();
-        }
-        String path = directoryPath + File.separator + "temp.aac";
-        File file = new File(path);
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
-        }
-        return path;
-    }
-
-    /**
-     * 获取视频缓存绝对路径
-     * @param context
-     * @return
-     */
-    private static String getVideoTempPath(@NonNull Context context) {
-        String directoryPath;
-        // 判断外部存储是否可用，如果不可用则使用内部存储路径
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) && context.getExternalCacheDir() != null) {
-            directoryPath = context.getExternalCacheDir().getAbsolutePath();
-        } else { // 使用内部存储缓存目录
-            directoryPath = context.getCacheDir().getAbsolutePath();
-        }
-        String path = directoryPath + File.separator + "temp.mp4";
-        File file = new File(path);
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
-        }
-        return path;
     }
 
 }

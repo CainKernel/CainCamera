@@ -3,6 +3,7 @@ package com.cgfay.caincamera.renderer;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.EGL14;
+import android.opengl.EGLContext;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import androidx.annotation.NonNull;
@@ -54,6 +55,8 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
     // presenter
     private final WeakReference<RecordPresenter> mWeakPresenter;
 
+    private EGLContext mCurrentContext;
+
     public RecordRenderer(RecordPresenter presenter) {
         mWeakPresenter = new WeakReference<>(presenter);
     }
@@ -70,6 +73,7 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
         GLES30.glEnable(GL10.GL_CULL_FACE);
         GLES30.glEnable(GL10.GL_DEPTH_TEST);
         initFilters();
+        mCurrentContext = EGL14.eglGetCurrentContext();
         if (mWeakPresenter.get() != null) {
             mWeakPresenter.get().onBindSharedContext(EGL14.eglGetCurrentContext());
         }
@@ -244,5 +248,9 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
         if (mWeakSurfaceTexture != null) {
             mWeakSurfaceTexture.clear();
         }
+    }
+
+    public EGLContext getCurrentContext() {
+        return mCurrentContext;
     }
 }

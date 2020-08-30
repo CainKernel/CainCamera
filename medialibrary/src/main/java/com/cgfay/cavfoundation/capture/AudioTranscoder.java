@@ -1,4 +1,4 @@
-package com.cgfay.media.recorder;
+package com.cgfay.cavfoundation.capture;
 
 import android.media.AudioFormat;
 
