@@ -4,6 +4,7 @@ import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaFormat;
+import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
 
@@ -64,8 +65,16 @@ class CAVCaptureVideoEncoder extends CAVCaptureEncoder {
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
         format.setInteger(MediaFormat.KEY_BIT_RATE, mVideoInfo.getBitRate());
         format.setInteger(MediaFormat.KEY_FRAME_RATE, mVideoInfo.getFrameRate());
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
-        
+        int iFrameInterval = mVideoInfo.getFrameRate() / mVideoInfo.getGopSize();
+        if (iFrameInterval <= 0) {
+            iFrameInterval = 1;
+        }
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, iFrameInterval);
+        // 录制时禁用B帧
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            format.setInteger(MediaFormat.KEY_MAX_B_FRAMES, 0);
+        }
+
         if (VERBOSE) {
             Log.d(TAG, "prepare: " + format);
         }

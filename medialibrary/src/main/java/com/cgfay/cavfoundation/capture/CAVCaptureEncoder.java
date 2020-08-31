@@ -219,7 +219,12 @@ abstract class CAVCaptureEncoder implements Runnable {
             }
         }
 
-        // 停止封装器
+        // 释放完成回调
+        if (mListener != null) {
+            mListener.onStopped(this);
+        }
+
+        // 停止封装器(停止会比较耗时，放在回调之后做处理)
         if (mMuxerStarted) {
             final CAVCaptureMuxer muxer = mWeakMuxer != null ? mWeakMuxer.get() : null;
             if (muxer != null) {
@@ -229,11 +234,6 @@ abstract class CAVCaptureEncoder implements Runnable {
                     Log.e(TAG, "failed stopping muxer", e);
                 }
             }
-        }
-
-        // 释放完成回调
-        if (mListener != null) {
-            mListener.onStopped(this);
         }
     }
 
@@ -331,6 +331,10 @@ LOOP:   while (mIsCapturing) {
         if (mStartTimeUs <= 0) {
             mStartTimeUs = mBufferInfo.presentationTimeUs;
         }
-        return mBufferInfo.presentationTimeUs - mStartTimeUs;
+        long timeUs = mBufferInfo.presentationTimeUs - mStartTimeUs;
+        if (timeUs < 0) {
+            timeUs = 0;
+        }
+        return timeUs;
     }
 }
