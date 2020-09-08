@@ -2,7 +2,7 @@ package com.cgfay.cavfoundation.capture;
 
 import androidx.annotation.NonNull;
 
-import com.cgfay.cavfoundation.codec.AudioInfo;
+import com.cgfay.cavfoundation.codec.CAVAudioInfo;
 
 /**
  * 音频读取接口
@@ -46,7 +46,7 @@ public interface CAVCaptureAudioInput {
      * 输入音频参数
      */
     @NonNull
-    AudioInfo getAudioInfo();
+    CAVAudioInfo getAudioInfo();
 
     /**
      * 是否同步到视频流时钟

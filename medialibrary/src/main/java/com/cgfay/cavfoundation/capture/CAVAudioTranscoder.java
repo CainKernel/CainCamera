@@ -9,7 +9,7 @@ import java.nio.ShortBuffer;
 /**
  * 音频倍速转码器, reference from ExoPlayer's SonicAudioProcessor
  */
-public final class AudioTranscoder {
+public final class CAVAudioTranscoder {
 
     /**
      * A value for various fields to indicate that the field's value is unknown or not applicable.
@@ -72,7 +72,7 @@ public final class AudioTranscoder {
     /**
      * Creates a new audio processor.
      */
-    public AudioTranscoder() {
+    public CAVAudioTranscoder() {
         speed = 1f;
         pitch = 1f;
         channelCount = NO_VALUE;

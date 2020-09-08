@@ -8,8 +8,10 @@ import android.view.Surface;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.cgfay.cavfoundation.codec.AudioInfo;
-import com.cgfay.cavfoundation.codec.VideoInfo;
+import com.cgfay.cavfoundation.codec.CAVAudioInfo;
+import com.cgfay.cavfoundation.codec.CAVVideoInfo;
+import com.cgfay.media.CAVCommandEditor;
+import com.cgfay.uitls.utils.FileUtils;
 
 import java.io.IOException;
 
@@ -34,14 +36,17 @@ public class CAVCaptureRecorder implements CAVCaptureEncoder.OnCaptureEncoderLis
     // 视频编码器
     private CAVCaptureVideoEncoder mVideoEncoder;
     // 封装器
-    private CAVCaptureMuxer mMediaMuxer;
+    private CAVCaptureMuxer mAudioMuxer;
+    private CAVCaptureMuxer mVideoMuxer;
 
     // 音频参数
-    private AudioInfo mAudioInfo;
+    private CAVAudioInfo mAudioInfo;
     // 视频参数
-    private VideoInfo mVideoInfo;
+    private CAVVideoInfo mVideoInfo;
     // 设置输出路径
     private String mOutputPath;
+    private String mVideoOutputPath;
+    private String mAudioOutputPath;
     // 录制速度
     private float mSpeed;
 
@@ -54,17 +59,23 @@ public class CAVCaptureRecorder implements CAVCaptureEncoder.OnCaptureEncoderLis
     private long mDuration;
 
     // 录制监听器
-    private OnCaptureRecordListener mCaptureListener;
+    private CAVCaptureRecordListener mCaptureListener;
+
+    private CAVCommandEditor mCommandEditor;
 
     public CAVCaptureRecorder() {
+        mCommandEditor = new CAVCommandEditor();
         mAudioEncoder = null;
         mVideoEncoder = null;
-        mMediaMuxer = null;
+        mAudioMuxer = null;
+        mVideoMuxer = null;
         mAudioReader = null;
         mAudioProcessor = null;
         mAudioInfo = null;
         mVideoInfo = null;
         mOutputPath = null;
+        mVideoOutputPath = null;
+        mAudioOutputPath = null;
         mSpeed = 1.0f;
         mEncoderCount = 0;
         mPreparedCount = 0;
@@ -80,13 +91,15 @@ public class CAVCaptureRecorder implements CAVCaptureEncoder.OnCaptureEncoderLis
             throw new IOException("Failed to prepare before set output path!");
         }
 
-        // 创建封装器
-        mMediaMuxer = new CAVCaptureMuxer();
-        mMediaMuxer.setOutputPath(mOutputPath);
+//        // 创建封装器
+//        mMediaMuxer = new CAVCaptureMuxer();
+//        mMediaMuxer.setOutputPath(mOutputPath);
 
         // 创建音频编码器
         if (mAudioInfo != null) {
-            mAudioEncoder = new CAVCaptureAudioEncoder(mMediaMuxer, this);
+            mAudioMuxer = new CAVCaptureMuxer();
+            mAudioMuxer.setOutputPath(mAudioOutputPath);
+            mAudioEncoder = new CAVCaptureAudioEncoder(mAudioMuxer, this);
             mAudioEncoder.setAudioInfo(mAudioInfo);
             mAudioEncoder.prepare();
             if (mAudioReader == null) {
@@ -96,20 +109,24 @@ public class CAVCaptureRecorder implements CAVCaptureEncoder.OnCaptureEncoderLis
             mAudioProcessor = new CAVCaptureAudioProcessor(this);
             mAudioProcessor.setOnAudioProcessorListener(this);
             mEncoderCount++;
+            mAudioMuxer.prepare();
         }
 
         // 创建视频编码器
         if (mVideoInfo != null) {
-            mVideoEncoder = new CAVCaptureVideoEncoder(mMediaMuxer, this);
+            mVideoMuxer = new CAVCaptureMuxer();
+            mVideoMuxer.setOutputPath(mVideoOutputPath);
+            mVideoEncoder = new CAVCaptureVideoEncoder(mVideoMuxer, this);
             mVideoEncoder.setVideoInfo(mVideoInfo);
             mVideoEncoder.prepare();
             mEncoderCount++;
             mVideoProcessor = new CAVCaptureVideoPreviewLayer(this);
             mVideoProcessor.setVideoInfo(mVideoInfo);
+            mVideoMuxer.prepare();
         }
 
-        // 准备封装器
-        mMediaMuxer.prepare();
+//        // 准备封装器
+//        mMediaMuxer.prepare();
     }
 
     /**
@@ -120,8 +137,14 @@ public class CAVCaptureRecorder implements CAVCaptureEncoder.OnCaptureEncoderLis
         if (mAudioProcessor != null) {
             mAudioProcessor.start();
         }
-        if (mMediaMuxer != null) {
-            mMediaMuxer.startRecording();
+//        if (mMediaMuxer != null) {
+//            mMediaMuxer.startRecording();
+//        }
+        if (mAudioMuxer != null) {
+            mAudioMuxer.startRecording();
+        }
+        if (mVideoMuxer != null) {
+            mVideoMuxer.startRecording();
         }
     }
 
@@ -130,8 +153,14 @@ public class CAVCaptureRecorder implements CAVCaptureEncoder.OnCaptureEncoderLis
      */
     public void stopRecord() {
         Log.d(TAG, "stopRecord: ");
-        if (mMediaMuxer != null) {
-            mMediaMuxer.stopRecording();
+//        if (mMediaMuxer != null) {
+//            mMediaMuxer.stopRecording();
+//        }
+        if (mAudioMuxer != null) {
+            mAudioMuxer.stopRecording();
+        }
+        if (mVideoMuxer != null) {
+            mVideoMuxer.stopRecording();
         }
         if (mAudioProcessor != null) {
             mAudioProcessor.stop();
@@ -150,6 +179,10 @@ public class CAVCaptureRecorder implements CAVCaptureEncoder.OnCaptureEncoderLis
         if (mAudioProcessor != null) {
             mAudioProcessor.stop();
             mAudioProcessor = null;
+        }
+        if (mVideoProcessor != null) {
+            mVideoProcessor.stop();
+            mVideoProcessor = null;
         }
     }
 
@@ -205,18 +238,39 @@ public class CAVCaptureRecorder implements CAVCaptureEncoder.OnCaptureEncoderLis
         if (encoder instanceof CAVCaptureAudioEncoder) {
             Log.d(TAG, "CAVCaptureAudioEncoder onStopped: ");
             mAudioEncoder = null;
+            mAudioMuxer = null;
             mEncoderCount--;
         } else if (encoder instanceof CAVCaptureVideoEncoder) {
             Log.d(TAG, "CAVCaptureVideoEncoder onStopped: ");
             mVideoEncoder = null;
+            mVideoMuxer = null;
             mEncoderCount--;
         }
 
         // 录制完成回调
         if (mEncoderCount <= 0) {
             release();
-            if (mCaptureListener != null) {
-                mCaptureListener.onCaptureFinish(mOutputPath, mDuration);
+            if (mVideoOutputPath != null && mAudioOutputPath != null) {
+                Log.d(TAG, "on ffmpeg execute start: ");
+                mCommandEditor.execCommand(CAVCommandEditor.mergeAudioVideo(mVideoOutputPath, mAudioOutputPath, mOutputPath),
+                        new CAVCommandEditor.CommandProcessCallback() {
+                    @Override
+                    public void onProcessing(int current) {
+
+                    }
+
+                    @Override
+                    public void onProcessResult(int result) {
+                        if (result == 0) {
+                            FileUtils.deleteFile(mVideoOutputPath);
+                            FileUtils.deleteFile(mAudioOutputPath);
+                            Log.d(TAG, "on ffmpeg execute start end: ");
+                            if (mCaptureListener != null) {
+                                mCaptureListener.onCaptureFinish(mOutputPath, mDuration);
+                            }
+                        }
+                    }
+                });
             }
         }
     }
@@ -274,7 +328,7 @@ public class CAVCaptureRecorder implements CAVCaptureEncoder.OnCaptureEncoderLis
      * 设置录制监听器
      * @param listener 监听器
      */
-    public void setOnCaptureRecordListener(@Nullable OnCaptureRecordListener listener) {
+    public void setOnCaptureRecordListener(@Nullable CAVCaptureRecordListener listener) {
         mCaptureListener = listener;
     }
 
@@ -301,11 +355,19 @@ public class CAVCaptureRecorder implements CAVCaptureEncoder.OnCaptureEncoderLis
         mOutputPath = path;
     }
 
+    public void setVideoOutputPath(@NonNull String path) {
+        mVideoOutputPath = path;
+    }
+
+    public void setAudioOutputPath(@NonNull String path) {
+        mAudioOutputPath = path;
+    }
+
     /**
      * 设置音频参数
      * @param info
      */
-    public void setAudioInfo(@Nullable AudioInfo info) {
+    public void setAudioInfo(@Nullable CAVAudioInfo info) {
         mAudioInfo = info;
     }
 
@@ -313,21 +375,21 @@ public class CAVCaptureRecorder implements CAVCaptureEncoder.OnCaptureEncoderLis
      * 设置视频参数
      * @param info
      */
-    public void setVideoInfo(@Nullable VideoInfo info) {
+    public void setVideoInfo(@Nullable CAVVideoInfo info) {
         mVideoInfo = info;
     }
 
     /**
      * 获取音频参数
      */
-    public AudioInfo getAudioInfo() {
+    public CAVAudioInfo getAudioInfo() {
         return mAudioInfo;
     }
 
     /**
      * 获取视频参数
      */
-    public VideoInfo getVideoInfo() {
+    public CAVVideoInfo getVideoInfo() {
         return mVideoInfo;
     }
 

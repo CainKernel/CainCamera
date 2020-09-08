@@ -5,18 +5,18 @@ import android.media.AudioRecord;
 
 import androidx.annotation.NonNull;
 
-import com.cgfay.cavfoundation.codec.AudioInfo;
+import com.cgfay.cavfoundation.codec.CAVAudioInfo;
 
 /**
  * 静音输入
  */
 public class CAVCaptureAudioMuteInput implements CAVCaptureAudioInput {
 
-    private AudioInfo mAudioInfo;
+    private CAVAudioInfo mAudioInfo;
 
     private int mBufferSize;
 
-    public CAVCaptureAudioMuteInput(@NonNull AudioInfo audioInfo) {
+    public CAVCaptureAudioMuteInput(@NonNull CAVAudioInfo audioInfo) {
         mAudioInfo = audioInfo;
     }
 
@@ -84,7 +84,7 @@ public class CAVCaptureAudioMuteInput implements CAVCaptureAudioInput {
      */
     @NonNull
     @Override
-    public AudioInfo getAudioInfo() {
+    public CAVAudioInfo getAudioInfo() {
         return mAudioInfo;
     }
 

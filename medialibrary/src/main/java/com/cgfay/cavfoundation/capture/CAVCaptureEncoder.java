@@ -219,11 +219,6 @@ abstract class CAVCaptureEncoder implements Runnable {
             }
         }
 
-        // 释放完成回调
-        if (mListener != null) {
-            mListener.onStopped(this);
-        }
-
         // 停止封装器(停止会比较耗时，放在回调之后做处理)
         if (mMuxerStarted) {
             final CAVCaptureMuxer muxer = mWeakMuxer != null ? mWeakMuxer.get() : null;
@@ -234,6 +229,11 @@ abstract class CAVCaptureEncoder implements Runnable {
                     Log.e(TAG, "failed stopping muxer", e);
                 }
             }
+        }
+
+        // 释放完成回调
+        if (mListener != null) {
+            mListener.onStopped(this);
         }
     }
 

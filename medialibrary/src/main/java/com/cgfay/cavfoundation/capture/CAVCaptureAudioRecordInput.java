@@ -7,7 +7,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.cgfay.cavfoundation.codec.AudioInfo;
+import com.cgfay.cavfoundation.codec.CAVAudioInfo;
 
 /**
  * 录音输入
@@ -16,11 +16,11 @@ public class CAVCaptureAudioRecordInput implements CAVCaptureAudioInput {
 
     private static final String TAG = "CAVAudioRecordReader";
 
-    private AudioInfo mAudioInfo;
+    private CAVAudioInfo mAudioInfo;
     private AudioRecord mAudioRecord;
     private int mBufferSize;
 
-    public CAVCaptureAudioRecordInput(@NonNull AudioInfo info) {
+    public CAVCaptureAudioRecordInput(@NonNull CAVAudioInfo info) {
         mAudioInfo = info;
         mBufferSize = 0;
     }
@@ -112,7 +112,7 @@ public class CAVCaptureAudioRecordInput implements CAVCaptureAudioInput {
      */
     @NonNull
     @Override
-    public AudioInfo getAudioInfo() {
+    public CAVAudioInfo getAudioInfo() {
         return mAudioInfo;
     }
 

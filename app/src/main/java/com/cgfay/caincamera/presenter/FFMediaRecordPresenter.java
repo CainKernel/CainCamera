@@ -21,7 +21,7 @@ import com.cgfay.camera.camera.ICameraController;
 import com.cgfay.camera.camera.OnFrameAvailableListener;
 import com.cgfay.camera.camera.OnSurfaceTextureListener;
 import com.cgfay.camera.camera.PreviewCallback;
-import com.cgfay.camera.utils.PathConstraints;
+import com.cgfay.uitls.utils.PathUtils;
 
 import com.cgfay.media.recorder.AVFormatter;
 import com.cgfay.media.CAVCommandEditor;
@@ -420,7 +420,7 @@ public class FFMediaRecordPresenter implements PreviewCallback, FFAudioRecorder.
      * @return
      */
     public String generateOutputPath() {
-        return PathConstraints.getVideoCachePath(mActivity);
+        return PathUtils.getVideoCachePath(mActivity);
     }
 
     /**

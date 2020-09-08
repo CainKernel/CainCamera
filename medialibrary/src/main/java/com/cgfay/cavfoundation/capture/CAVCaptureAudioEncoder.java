@@ -9,7 +9,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.cgfay.cavfoundation.codec.AudioInfo;
+import com.cgfay.cavfoundation.codec.CAVAudioInfo;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -29,7 +29,7 @@ class CAVCaptureAudioEncoder extends CAVCaptureEncoder {
     /**
      * 音频参数
      */
-    private AudioInfo mAudioInfo;
+    private CAVAudioInfo mAudioInfo;
 
     public CAVCaptureAudioEncoder(@NonNull CAVCaptureMuxer muxer, @NonNull OnCaptureEncoderListener listener) {
         super(muxer, listener);
@@ -38,7 +38,7 @@ class CAVCaptureAudioEncoder extends CAVCaptureEncoder {
     /**
      * 设置音频参数
      */
-    public void setAudioInfo(@NonNull AudioInfo info) {
+    public void setAudioInfo(@NonNull CAVAudioInfo info) {
         mAudioInfo = info;
     }
 

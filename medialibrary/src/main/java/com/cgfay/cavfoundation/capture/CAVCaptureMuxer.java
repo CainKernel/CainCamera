@@ -159,10 +159,12 @@ public class CAVCaptureMuxer {
         }
         mStartedCount--;
         if ((mEncoderCount > 0) && (mStartedCount <= 0)) {
+            Log.d(TAG, "muxer stop start");
             mMediaMuxer.stop();
             mMediaMuxer.release();
             mMediaMuxer = null;
             mStarted = false;
+            Log.d(TAG, "muxer stop end");
         }
     }
 

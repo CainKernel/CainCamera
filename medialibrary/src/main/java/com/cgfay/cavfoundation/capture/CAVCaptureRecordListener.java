@@ -3,7 +3,7 @@ package com.cgfay.cavfoundation.capture;
 /**
  * 录制监听器
  */
-public interface OnCaptureRecordListener {
+public interface CAVCaptureRecordListener {
 
     /**
      * 开始录制

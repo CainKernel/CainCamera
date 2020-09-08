@@ -5,7 +5,7 @@ import android.media.MediaCodecInfo;
 /**
  * 视频参数
  */
-public class VideoInfo {
+public class CAVVideoInfo {
 
     // 非法轨道索引
     public static final int INVALID_TRACK = -1;
@@ -45,7 +45,7 @@ public class VideoInfo {
     // 媒体类型
     private String mMimeType;
 
-    public VideoInfo() {
+    public CAVVideoInfo() {
         mTrackIndex = INVALID_TRACK;
         mMimeType = MIME_AVC;
         mWidth = DEFAULT_WIDTH;

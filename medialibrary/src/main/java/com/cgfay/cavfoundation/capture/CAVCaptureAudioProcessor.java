@@ -4,7 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.cgfay.cavfoundation.codec.AudioInfo;
+import com.cgfay.cavfoundation.codec.CAVAudioInfo;
 
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
@@ -23,7 +23,7 @@ class CAVCaptureAudioProcessor implements Runnable {
     private int mBufferSize;
 
     // 音频倍速转码器
-    private AudioTranscoder mAudioTranscoder;
+    private CAVAudioTranscoder mAudioTranscoder;
 
     // 录制器
     private final WeakReference<CAVCaptureRecorder> mWeakRecorder;
@@ -119,7 +119,7 @@ class CAVCaptureAudioProcessor implements Runnable {
             return;
         }
         float speed = recorder.getSpeed();
-        AudioInfo audioInfo = recorder.getAudioInfo();
+        CAVAudioInfo audioInfo = recorder.getAudioInfo();
         if (speed != 1.0f && audioInfo != null) {
             // 当速度小于1.0f时，重新计算出缓冲区大小
             if (speed < 1.0f) {
@@ -185,6 +185,9 @@ class CAVCaptureAudioProcessor implements Runnable {
                         outBuffer.get(outData);
                         mListener.onAudioDataProvide(outData, outData.length);
                     }
+                    if (audioReader instanceof CAVCaptureAudioMuteInput) {
+                        mAudioTranscoder.flush();
+                    }
                 } else {
                     mListener.onAudioDataProvide(pcmData, size);
                 }
@@ -222,7 +225,7 @@ class CAVCaptureAudioProcessor implements Runnable {
     /**
      * 计算出音频读取的总时间
      */
-    private void calculateAudioReadTimeUs(int audioSize, @NonNull AudioInfo info) {
+    private void calculateAudioReadTimeUs(int audioSize, @NonNull CAVAudioInfo info) {
         // 记录音频读取的总长度和总时间戳
         mTotalBytesRead += audioSize;
         mPresentationTimeUs = 1000000L * (mTotalBytesRead / info.getChannelCount() / 2) / info.getSampleRate();
@@ -232,10 +235,10 @@ class CAVCaptureAudioProcessor implements Runnable {
     /**
      * 初始化音频倍速处理器
      */
-    private void initAudioTranscoder(@NonNull AudioInfo audioInfo, float speed) {
+    private void initAudioTranscoder(@NonNull CAVAudioInfo audioInfo, float speed) {
         if (mAudioTranscoder == null) {
             try {
-                mAudioTranscoder = new AudioTranscoder();
+                mAudioTranscoder = new CAVAudioTranscoder();
                 mAudioTranscoder.setSpeed(speed);
                 mAudioTranscoder.configure(audioInfo.getSampleRate(), audioInfo.getChannelCount(), audioInfo.getAudioFormat());
                 mAudioTranscoder.setOutputSampleRateHz(audioInfo.getSampleRate());

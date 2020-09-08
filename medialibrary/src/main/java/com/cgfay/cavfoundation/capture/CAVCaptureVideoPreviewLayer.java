@@ -9,7 +9,7 @@ import android.view.Surface;
 
 import androidx.annotation.NonNull;
 
-import com.cgfay.cavfoundation.codec.VideoInfo;
+import com.cgfay.cavfoundation.codec.CAVVideoInfo;
 import com.cgfay.filter.gles.EglCore;
 import com.cgfay.filter.gles.WindowSurface;
 import com.cgfay.filter.glfilter.base.GLImageFilter;
@@ -52,13 +52,13 @@ public class CAVCaptureVideoPreviewLayer implements Runnable {
 
     private final WeakReference<CAVCaptureRecorder> mWeakRecorder;
 
-    private VideoInfo mVideoInfo;
+    private CAVVideoInfo mVideoInfo;
 
     public CAVCaptureVideoPreviewLayer(CAVCaptureRecorder recorder) {
         mWeakRecorder = new WeakReference<>(recorder);
     }
 
-    public void setVideoInfo(@NonNull VideoInfo videoInfo) {
+    public void setVideoInfo(@NonNull CAVVideoInfo videoInfo) {
         mVideoInfo = videoInfo;
     }
 

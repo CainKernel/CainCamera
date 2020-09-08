@@ -6,7 +6,7 @@ import android.media.MediaCodecInfo;
 /**
  * 音频参数
  */
-public class AudioInfo {
+public class CAVAudioInfo {
 
     // 非法轨道索引
     public static final int INVALID_TRACK = -1;
@@ -34,7 +34,7 @@ public class AudioInfo {
     // 音频mime类型
     private String mMimeType;
 
-    public AudioInfo() {
+    public CAVAudioInfo() {
         mTrackIndex = INVALID_TRACK;
         mSampleRate = DEFAULT_SAMPLE_RATE;
         mChannelCount = DEFAULT_CHANNEL_COUNT;

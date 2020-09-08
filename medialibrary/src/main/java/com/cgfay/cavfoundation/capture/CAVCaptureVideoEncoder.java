@@ -10,7 +10,7 @@ import android.view.Surface;
 
 import androidx.annotation.NonNull;
 
-import com.cgfay.cavfoundation.codec.VideoInfo;
+import com.cgfay.cavfoundation.codec.CAVVideoInfo;
 
 import java.io.IOException;
 
@@ -20,7 +20,7 @@ import java.io.IOException;
 class CAVCaptureVideoEncoder extends CAVCaptureEncoder {
     private static final String TAG = "CAVCaptureVideoEncoder";
 
-    private VideoInfo mVideoInfo;
+    private CAVVideoInfo mVideoInfo;
 
     private Surface mSurface;
 
@@ -32,7 +32,7 @@ class CAVCaptureVideoEncoder extends CAVCaptureEncoder {
      *
      * @param info
      */
-    public void setVideoInfo(@NonNull VideoInfo info) {
+    public void setVideoInfo(@NonNull CAVVideoInfo info) {
         mVideoInfo = info;
     }
 

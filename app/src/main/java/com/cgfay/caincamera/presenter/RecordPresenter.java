@@ -21,11 +21,11 @@ import com.cgfay.camera.camera.OnSurfaceTextureListener;
 import com.cgfay.cavfoundation.capture.CAVCaptureAudioMuteInput;
 import com.cgfay.cavfoundation.capture.CAVCaptureAudioRecordInput;
 import com.cgfay.cavfoundation.capture.CAVCaptureRecorder;
-import com.cgfay.cavfoundation.capture.OnCaptureRecordListener;
-import com.cgfay.cavfoundation.codec.AudioInfo;
-import com.cgfay.cavfoundation.codec.VideoInfo;
+import com.cgfay.cavfoundation.capture.CAVCaptureRecordListener;
+import com.cgfay.cavfoundation.codec.CAVAudioInfo;
+import com.cgfay.cavfoundation.codec.CAVVideoInfo;
 import com.cgfay.media.recorder.MediaInfo;
-import com.cgfay.camera.utils.PathConstraints;
+import com.cgfay.uitls.utils.PathUtils;
 import com.cgfay.media.recorder.SpeedMode;
 import com.cgfay.media.CAVCommandEditor;
 import com.cgfay.uitls.utils.FileUtils;
@@ -41,7 +41,7 @@ import java.util.List;
  * @author CainHuang
  * @date 2019/7/7
  */
-public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailableListener, OnCaptureRecordListener {
+public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailableListener, CAVCaptureRecordListener {
 
     private static final String TAG = "RecordPresenter";
 
@@ -62,9 +62,9 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
     // 是否允许录音
     private boolean mEnableAudio;
     // 视频参数
-    private VideoInfo mVideoInfo;
+    private CAVVideoInfo mVideoInfo;
     // 音频参数
-    private AudioInfo mAudioInfo;
+    private CAVAudioInfo mAudioInfo;
     // 视频录制器
     private CAVCaptureRecorder mMediaRecorder;
 
@@ -95,8 +95,8 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
         mCameraController.setOnFrameAvailableListener(this);
         mCameraController.setOnSurfaceTextureListener(this);
 
-        mAudioInfo = new AudioInfo();
-        mVideoInfo = new VideoInfo();
+        mAudioInfo = new CAVAudioInfo();
+        mVideoInfo = new CAVVideoInfo();
         mSpeedMode = SpeedMode.MODE_NORMAL;
         mEnableAudio = true;
     }
@@ -174,6 +174,8 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
         try {
             mMediaRecorder = new CAVCaptureRecorder();
             mMediaRecorder.setOutputPath(generateOutputPath());
+            mMediaRecorder.setVideoOutputPath(PathUtils.getVideoTempPath(mActivity));
+            mMediaRecorder.setAudioOutputPath(PathUtils.getAudioTempPath(mActivity));
             mMediaRecorder.setOnCaptureRecordListener(this);
             mMediaRecorder.setSpeed(mSpeedMode.getSpeed());
             mMediaRecorder.setVideoInfo(mVideoInfo);
@@ -398,7 +400,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
      * @return
      */
     public String generateOutputPath() {
-        return PathConstraints.getVideoCachePath(mActivity);
+        return PathUtils.getVideoCachePath(mActivity);
     }
 
 }

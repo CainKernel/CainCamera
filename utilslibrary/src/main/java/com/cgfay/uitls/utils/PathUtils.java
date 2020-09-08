@@ -1,4 +1,4 @@
-package com.cgfay.camera.utils;
+package com.cgfay.uitls.utils;
 
 import android.content.Context;
 import android.os.Environment;
@@ -6,14 +6,17 @@ import android.os.Environment;
 import androidx.annotation.NonNull;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 
 /**
- * 路径常量
+ * 路径工具
  * Created by cain.huang on 2017/8/8.
  */
-public class PathConstraints {
+public final class PathUtils {
 
-    private PathConstraints() {}
+    private PathUtils() {}
 
     /**
      * 获取图片缓存绝对路径
@@ -49,7 +52,7 @@ public class PathConstraints {
         } else { // 使用内部存储缓存目录
             directoryPath = context.getCacheDir().getAbsolutePath();
         }
-        String path = directoryPath + File.separator + "CainCamera_" + System.currentTimeMillis() + ".mp4";
+        String path = directoryPath + File.separator + "CainCamera_" + getDateTimeString() + ".mp4";
         File file = new File(path);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
@@ -70,7 +73,7 @@ public class PathConstraints {
         } else { // 使用内部存储缓存目录
             directoryPath = context.getCacheDir().getAbsolutePath();
         }
-        String path = directoryPath + File.separator + "temp.aac";
+        String path = directoryPath + File.separator + "audio_" + getDateTimeString()+ ".aac";
         File file = new File(path);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
@@ -86,16 +89,26 @@ public class PathConstraints {
     public static String getVideoTempPath(@NonNull Context context) {
         String directoryPath;
         // 判断外部存储是否可用，如果不可用则使用内部存储路径
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) && context.getExternalCacheDir() != null) {
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
+                && context.getExternalCacheDir() != null) {
             directoryPath = context.getExternalCacheDir().getAbsolutePath();
         } else { // 使用内部存储缓存目录
             directoryPath = context.getCacheDir().getAbsolutePath();
         }
-        String path = directoryPath + File.separator + "temp.mp4";
+        String path = directoryPath + File.separator + "video_" + getDateTimeString() + "temp.mp4";
         File file = new File(path);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }
         return path;
+    }
+
+    /**
+     * get current date and time as String
+     * @return
+     */
+    private static final String getDateTimeString() {
+        final GregorianCalendar now = new GregorianCalendar();
+        return new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US).format(now.getTime());
     }
 }
