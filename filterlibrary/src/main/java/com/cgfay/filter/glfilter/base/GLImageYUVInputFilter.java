@@ -201,7 +201,7 @@ public class GLImageYUVInputFilter extends GLImageFilter {
     }
 
     @Override
-    protected void onDrawTexture(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
+    public void onDrawTexture(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
 
         GLES30.glPixelStorei(GLES30.GL_UNPACK_ALIGNMENT, 1);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);

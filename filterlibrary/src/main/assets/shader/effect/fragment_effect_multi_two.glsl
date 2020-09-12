@@ -7,11 +7,8 @@ void main() {
     // 纹理坐标
     vec2 uv = textureCoordinate.xy;
     float y;
-    if (uv.y >= 0.0 && uv.y <= 0.5) {
-        y = uv.y + 0.25;
-    } else {
-        y = uv.y - 0.25;
-    }
-
-    gl_FragColor = texture2D(inputTexture, vec2(uv.x, y));
+    float middle = step(uv.y, 0.5);
+    y = uv.y + (middle - 0.5) * 0.5;
+    vec4 textureColor = texture2D(inputTexture, vec2(uv.x, y));
+    gl_FragColor = middle * textureColor + (1.0 - middle) * textureColor;
 }

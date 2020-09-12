@@ -195,13 +195,17 @@ public class MediaPickerFragment extends AppCompatDialogFragment implements Medi
                                 .commitNowAllowingStateLoss();
                         return true;
                     }
-                    setDialogAnimation();
-                    mMainHandler.postDelayed(this::closeFragment, MIN_DURATION);
+                    animateCloseFragment();
                     return true;
                 }
                 return false;
             });
         }
+    }
+
+    private void animateCloseFragment() {
+        setDialogAnimation();
+        mMainHandler.postDelayed(this::closeFragment, MIN_DURATION);
     }
 
     /**
@@ -273,8 +277,7 @@ public class MediaPickerFragment extends AppCompatDialogFragment implements Medi
     private void initAlbumSelectView(@NonNull View rootView) {
 
         rootView.findViewById(R.id.iv_album_back).setOnClickListener(v -> {
-            setDialogAnimation();
-            mMainHandler.postDelayed(this::closeFragment, MIN_DURATION);
+            animateCloseFragment();
         });
 
         mBtnSelect = rootView.findViewById(R.id.btn_select);
@@ -431,6 +434,7 @@ public class MediaPickerFragment extends AppCompatDialogFragment implements Medi
                     List<MediaData> mediaDataList = new ArrayList<>();
                     mediaDataList.add(mediaData);
                     mMediaSelector.onMediaSelect(mActivity, mediaDataList);
+                    animateCloseFragment();
                 }
             }
         } else {

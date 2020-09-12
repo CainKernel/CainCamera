@@ -30,6 +30,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/NoActionBarTheme">
+        <activity android:name=".activity.DuetRecordActivity" />
         <activity android:name=".activity.VideoPlayerActivity"/>
         <activity android:name=".activity.MusicPlayerActivity" />
         <activity android:name=".activity.MainActivity">

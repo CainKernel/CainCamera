@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_ff_media_record).setOnClickListener(this);
         findViewById(R.id.btn_music_player).setOnClickListener(this);
         findViewById(R.id.btn_video_player).setOnClickListener(this);
+        findViewById(R.id.btn_duet_record).setOnClickListener(this);
     }
 
     @Override
@@ -132,6 +133,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_video_player: {
                 videoPlayerTest();
+                break;
+            }
+
+            case R.id.btn_duet_record: {
+                duetRecord();
                 break;
             }
         }
@@ -241,5 +247,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 context.startActivity(intent);
             }
         }
+    }
+
+    /**
+     * duet record
+     */
+    private void duetRecord() {
+        MediaPicker.from(this)
+                .showImage(false)
+                .showVideo(true)
+                .setMediaSelector((context, mediaDataList) -> {
+                    if (mediaDataList.size() > 0) {
+                        onDuetRecord(mediaDataList.get(0));
+                    }
+                })
+                .show();
+    }
+
+    /**
+     * 模拟同框录制
+     * @param mediaData 媒体数据
+     */
+    private void onDuetRecord(@NonNull MediaData mediaData) {
+        Intent intent = new Intent(MainActivity.this, DuetRecordActivity.class);
+        intent.putExtra(DuetRecordActivity.DUET_MEDIA, mediaData);
+        startActivity(intent);
     }
 }

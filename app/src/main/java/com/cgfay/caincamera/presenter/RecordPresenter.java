@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat;
 
 import android.text.TextUtils;
 
+import com.cgfay.caincamera.activity.BaseRecordActivity;
 import com.cgfay.caincamera.activity.SpeedRecordActivity;
 import com.cgfay.camera.camera.CameraApi;
 import com.cgfay.camera.camera.CameraController;
@@ -42,7 +43,7 @@ import java.util.List;
  */
 public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailableListener, OnRecordStateListener {
 
-    private SpeedRecordActivity mActivity;
+    private BaseRecordActivity mActivity;
 
     // 音视频参数
     private final VideoParams mVideoParams;
@@ -74,7 +75,7 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
     // 相机控制器
     private final ICameraController mCameraController;
 
-    public RecordPresenter(SpeedRecordActivity activity) {
+    public RecordPresenter(BaseRecordActivity activity) {
         mActivity = activity;
 
         // 视频录制器
@@ -189,13 +190,13 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
 
     @Override
     public void onRecordStart() {
-        mActivity.hidViews();
+        mActivity.hideViews();
     }
 
     @Override
     public void onRecording(long duration) {
         float progress = duration * 1.0f / mVideoParams.getMaxDuration();
-        mActivity.setProgress(progress);
+        mActivity.setRecordProgress(progress);
         if (duration > mRemainDuration) {
             stopRecord();
         }
@@ -297,12 +298,14 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
             }
         }
         mActivity.deleteProgressSegment();
+        mActivity.showViews();
     }
 
     /**
      * 打开相机
      */
     private void openCamera() {
+        mCameraController.setFront(false);
         mCameraController.openCamera();
         calculateImageSize();
     }

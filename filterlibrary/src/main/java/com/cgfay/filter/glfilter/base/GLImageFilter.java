@@ -177,16 +177,27 @@ public class GLImageFilter {
         }
 
         // 绑定FBO
+        bindFrameBuffer();
+
+        // 绘制纹理
+        onDrawTexture(textureId, vertexBuffer, textureBuffer);
+
+        // 解绑FBO
+        return unBindFrameBuffer();
+    }
+
+    public void bindFrameBuffer() {
+        // 绑定FBO
         GLES30.glViewport(0, 0, mFrameWidth, mFrameHeight);
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mFrameBuffers[0]);
         // 使用当前的program
         GLES30.glUseProgram(mProgramHandle);
         // 运行延时任务，这个要放在glUseProgram之后，要不然某些设置项会不生效
         runPendingOnDrawTasks();
+    }
 
-        // 绘制纹理
-        onDrawTexture(textureId, vertexBuffer, textureBuffer);
-
+    public int unBindFrameBuffer() {
+        GLES30.glUseProgram(0);
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
         return mFrameBufferTextures[0];
     }
@@ -211,8 +222,8 @@ public class GLImageFilter {
         // 绘制纹理
         onDrawTexture(textureId, vertexBuffer, textureBuffer);
 
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0);
-        return mFrameBufferTextures[0];
+        // 解绑FBO
+        return unBindFrameBuffer();
     }
 
     /**
@@ -221,7 +232,7 @@ public class GLImageFilter {
      * @param vertexBuffer
      * @param textureBuffer
      */
-    protected void onDrawTexture(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
+    public void onDrawTexture(int textureId, FloatBuffer vertexBuffer, FloatBuffer textureBuffer) {
         // 绑定顶点坐标缓冲
         vertexBuffer.position(0);
         GLES30.glVertexAttribPointer(mPositionHandle, mCoordsPerVertex,
@@ -244,7 +255,6 @@ public class GLImageFilter {
         GLES30.glDisableVertexAttribArray(mTextureCoordinateHandle);
         GLES30.glBindTexture(getTextureType(), 0);
 
-        GLES30.glUseProgram(0);
     }
 
     /**

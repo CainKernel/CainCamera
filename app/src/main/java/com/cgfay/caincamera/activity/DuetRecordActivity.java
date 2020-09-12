@@ -5,73 +5,67 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLSurfaceView;
-
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import android.view.WindowManager.LayoutParams;
-import androidx.annotation.NonNull;
-import android.os.Bundle;
 import android.view.View;
-import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
+import androidx.annotation.NonNull;
+import android.os.Bundle;
 import com.cgfay.caincamera.R;
 import com.cgfay.caincamera.presenter.RecordPresenter;
-import com.cgfay.caincamera.renderer.RecordRenderer;
+import com.cgfay.caincamera.renderer.DuetRecordRenderer;
+import com.cgfay.caincamera.renderer.DuetType;
 import com.cgfay.caincamera.widget.GLRecordView;
 import com.cgfay.camera.widget.RecordButton;
 import com.cgfay.camera.widget.RecordProgressView;
-import com.cgfay.camera.widget.RecordSpeedLevelBar;
-import com.cgfay.filter.glfilter.color.bean.DynamicColor;
-import com.cgfay.filter.glfilter.resource.FilterHelper;
-import com.cgfay.filter.glfilter.resource.ResourceJsonCodec;
-import com.cgfay.media.recorder.SpeedMode;
+import com.cgfay.picker.model.MediaData;
 import com.cgfay.uitls.utils.NotchUtils;
 import com.cgfay.uitls.utils.PermissionUtils;
 import com.cgfay.uitls.utils.StatusBarUtils;
 
-import java.io.File;
-
 /**
- * 倍速录制测试
+ * 同框录制
  */
-public class SpeedRecordActivity extends BaseRecordActivity implements View.OnClickListener {
+public class DuetRecordActivity extends BaseRecordActivity implements View.OnClickListener {
+
+    public static final String DUET_MEDIA = "DUET_MEDIA";
 
     private GLRecordView mGLRecordView;
     private RecordProgressView mProgressView;
-    private RecordSpeedLevelBar mRecordSpeedBar;
     private RecordButton mRecordButton;
 
-    private RecordRenderer mRenderer;
+    private DuetRecordRenderer mRenderer;
     private RecordPresenter mPresenter;
 
     private View mBtnSwitch;
     private Button mBtnNext;
     private Button mBtnDelete;
 
+    private Button mBtnDuet;
+    private Button mBtnDuetFlip;
+    private LinearLayout mLayoutDuetType;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_speed_record);
+        setContentView(R.layout.activity_duet_record);
         mPresenter = new RecordPresenter(this);
         mPresenter.setRecordSeconds(15);
-        mRenderer = new RecordRenderer(mPresenter);
+        mRenderer = new DuetRecordRenderer(mPresenter);
+        MediaData duetMedia = getIntent().getParcelableExtra(DUET_MEDIA);
+        if (duetMedia != null) {
+            mRenderer.setDuetVideo(duetMedia);
+        }
         // 录制预览
         mGLRecordView = (GLRecordView) findViewById(R.id.gl_record_view);
         mGLRecordView.setEGLContextClientVersion(3);
         mGLRecordView.setRenderer(mRenderer);
         mGLRecordView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-        mGLRecordView.addOnTouchScroller(mTouchScroller);
         // 进度条
         mProgressView = (RecordProgressView) findViewById(R.id.record_progress_view);
-
-        // 速度条
-        mRecordSpeedBar = (RecordSpeedLevelBar) findViewById(R.id.record_speed_bar);
-        mRecordSpeedBar.setOnSpeedChangedListener((speed) -> {
-            mPresenter.setSpeedMode(SpeedMode.valueOf(speed.getSpeed()));
-        });
 
         // 录制按钮
         mRecordButton = (RecordButton) findViewById(R.id.btn_record);
@@ -79,11 +73,13 @@ public class SpeedRecordActivity extends BaseRecordActivity implements View.OnCl
             @Override
             public void onRecordStart() {
                 mPresenter.startRecord();
+                mRenderer.playVideo();
             }
 
             @Override
             public void onRecordStop() {
                 mPresenter.stopRecord();
+                mRenderer.stopVideo();
             }
 
             @Override
@@ -103,6 +99,19 @@ public class SpeedRecordActivity extends BaseRecordActivity implements View.OnCl
         // 删除按钮
         mBtnDelete = findViewById(R.id.btn_delete);
         mBtnDelete.setOnClickListener(this);
+
+        // 选择同框类型
+        mBtnDuet = findViewById(R.id.btn_next_duet);
+        mBtnDuet.setOnClickListener(this);
+        // 翻转同框
+        mBtnDuetFlip = findViewById(R.id.btn_duet_flip);
+        mBtnDuetFlip.setOnClickListener(this);
+
+        // 同框类型
+        mLayoutDuetType = findViewById(R.id.layout_duet_type);
+        mLayoutDuetType.findViewById(R.id.btn_duet_left_right).setOnClickListener(this);
+        mLayoutDuetType.findViewById(R.id.btn_duet_up_down).setOnClickListener(this);
+        mLayoutDuetType.findViewById(R.id.btn_duet_big_small).setOnClickListener(this);
 
         // 判断是否存在刘海屏
         if (NotchUtils.hasNotchScreen(this)) {
@@ -162,17 +171,42 @@ public class SpeedRecordActivity extends BaseRecordActivity implements View.OnCl
             mPresenter.deleteLastVideo();
         } else if (id == R.id.btn_next) {
             mPresenter.mergeAndEdit();
+        } else if (id == R.id.btn_next_duet) {
+            mLayoutDuetType.setVisibility(View.VISIBLE);
+            mBtnDuet.setVisibility(View.GONE);
+            mBtnDuetFlip.setVisibility(View.GONE);
+        } else if (id == R.id.btn_duet_flip) {
+            mRenderer.flip();
+        } else if (id == R.id.btn_duet_left_right) {
+            mRenderer.setDuetType(DuetType.DUET_TYPE_LEFT_RIGHT);
+            hidDuetTypeViews();
+        } else if (id == R.id.btn_duet_up_down) {
+            mRenderer.setDuetType(DuetType.DUET_TYPE_UP_DOWN);
+            hidDuetTypeViews();
+        } else if (id == R.id.btn_duet_big_small) {
+            mRenderer.setDuetType(DuetType.DUET_TYPE_BIG_SMALL);
+            hidDuetTypeViews();
+        }
+    }
+
+    private void hidDuetTypeViews() {
+        if (mLayoutDuetType != null) {
+            mLayoutDuetType.setVisibility(View.GONE);
+        }
+        if (mBtnDuet != null) {
+            mBtnDuet.setVisibility(View.VISIBLE);
+        }
+        if (mBtnDuetFlip != null) {
+            mBtnDuetFlip.setVisibility(View.VISIBLE);
         }
     }
 
     /**
      * 隐藏控件
      */
+    @Override
     public void hideViews() {
         runOnUiThread(() -> {
-            if (mRecordSpeedBar != null) {
-                mRecordSpeedBar.setVisibility(View.GONE);
-            }
             if (mBtnDelete != null) {
                 mBtnDelete.setVisibility(View.GONE);
             }
@@ -188,11 +222,9 @@ public class SpeedRecordActivity extends BaseRecordActivity implements View.OnCl
     /**
      * 显示控件
      */
+    @Override
     public void showViews() {
         runOnUiThread(() -> {
-            if (mRecordSpeedBar != null) {
-                mRecordSpeedBar.setVisibility(View.VISIBLE);
-            }
             boolean showEditEnable = mPresenter.getRecordVideoSize() > 0;
             if (mBtnDelete != null) {
                 mBtnDelete.setVisibility(showEditEnable ? View.VISIBLE : View.GONE);
@@ -213,6 +245,7 @@ public class SpeedRecordActivity extends BaseRecordActivity implements View.OnCl
      * 设置进度
      * @param progress
      */
+    @Override
     public void setRecordProgress(float progress) {
         runOnUiThread(() -> {
             mProgressView.setProgress(progress);
@@ -223,6 +256,7 @@ public class SpeedRecordActivity extends BaseRecordActivity implements View.OnCl
      * 添加一段进度
      * @param progress
      */
+    @Override
     public void addProgressSegment(float progress) {
         runOnUiThread(() -> {
             mProgressView.addProgressSegment(progress);
@@ -232,6 +266,7 @@ public class SpeedRecordActivity extends BaseRecordActivity implements View.OnCl
     /**
      * 删除一段进度
      */
+    @Override
     public void deleteProgressSegment() {
         runOnUiThread(() -> {
             mProgressView.deleteProgressSegment();
@@ -242,6 +277,7 @@ public class SpeedRecordActivity extends BaseRecordActivity implements View.OnCl
      * 绑定相机输出的SurfaceTexture
      * @param surfaceTexture
      */
+    @Override
     public void bindSurfaceTexture(@NonNull SurfaceTexture surfaceTexture) {
         mGLRecordView.queueEvent(() -> mRenderer.bindSurfaceTexture(surfaceTexture));
     }
@@ -251,6 +287,7 @@ public class SpeedRecordActivity extends BaseRecordActivity implements View.OnCl
      * @param width
      * @param height
      */
+    @Override
     public void updateTextureSize(int width, int height) {
         if (mRenderer != null) {
             mRenderer.setTextureSize(width, height);
@@ -260,6 +297,7 @@ public class SpeedRecordActivity extends BaseRecordActivity implements View.OnCl
     /**
      * 刷新画面
      */
+    @Override
     public void onFrameAvailable() {
         if (mGLRecordView != null) {
             mGLRecordView.requestRender();
@@ -271,6 +309,7 @@ public class SpeedRecordActivity extends BaseRecordActivity implements View.OnCl
     /**
      * 显示合成进度
      */
+    @Override
     public void showProgressDialog() {
         runOnUiThread(() -> {
             mProgressDialog = ProgressDialog.show(this, "正在合成", "正在合成");
@@ -280,6 +319,7 @@ public class SpeedRecordActivity extends BaseRecordActivity implements View.OnCl
     /**
      * 隐藏合成进度
      */
+    @Override
     public void hideProgressDialog() {
         runOnUiThread(() -> {
             if (mProgressDialog != null) {
@@ -294,68 +334,15 @@ public class SpeedRecordActivity extends BaseRecordActivity implements View.OnCl
      * 显示Toast提示
      * @param msg
      */
+    @Override
     public void showToast(String msg) {
         runOnUiThread(() -> {
             if (mToast != null) {
                 mToast.cancel();
             }
-            mToast = Toast.makeText(SpeedRecordActivity.this, msg, Toast.LENGTH_SHORT);
+            mToast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
             mToast.show();
         });
     }
 
-    // ----------------------------------------- 切换滤镜 -------------------------------------------
-    private int mFilterIndex;
-    private GLRecordView.OnTouchScroller mTouchScroller = new GLRecordView.OnTouchScroller() {
-        @Override
-        public void swipeBack() {
-            mFilterIndex++;
-            if (mFilterIndex >= FilterHelper.getFilterList().size()) {
-                mFilterIndex = 0;
-            }
-            changeDynamicFilter(mFilterIndex);
-        }
-
-        @Override
-        public void swipeFrontal() {
-            mFilterIndex--;
-            if (mFilterIndex < 0) {
-                int count = FilterHelper.getFilterList().size();
-                mFilterIndex = count > 0 ? count - 1 : 0;
-            }
-            changeDynamicFilter(mFilterIndex);
-        }
-
-        @Override
-        public void swipeUpper(boolean startInLeft, float distance) {
-
-        }
-
-        @Override
-        public void swipeDown(boolean startInLeft, float distance) {
-
-        }
-    };
-
-    /**
-     * 切换动态滤镜
-     * @param filterIndex
-     */
-    public void changeDynamicFilter(int filterIndex) {
-        if (mGLRecordView != null) {
-            mGLRecordView.queueEvent(() -> {
-                String folderPath = FilterHelper.getFilterDirectory(this) + File.separator +
-                        FilterHelper.getFilterList().get(filterIndex).unzipFolder;
-                DynamicColor color = null;
-                if (!FilterHelper.getFilterList().get(filterIndex).unzipFolder.equalsIgnoreCase("none")) {
-                    try {
-                        color = ResourceJsonCodec.decodeFilterData(folderPath);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                mRenderer.changeDynamicFilter(SpeedRecordActivity.this, color);
-            });
-        }
-    }
 }

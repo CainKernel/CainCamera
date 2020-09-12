@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:orientation="vertical"
+    tools:context=".activity.DuetRecordActivity">
+
+    <!-- 安全区域 -->
+    <View
+        android:id="@+id/view_safety_area"
+        android:layout_width="match_parent"
+        android:layout_height="0dp" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- 录制预览 -->
+        <com.cgfay.caincamera.widget.GLRecordView
+            android:id="@+id/gl_record_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="9:16"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <!-- 录制进度条 -->
+        <com.cgfay.camera.widget.RecordProgressView
+            android:id="@+id/record_progress_view"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp6"
+            android:layout_marginStart="@dimen/dp6"
+            android:layout_marginTop="@dimen/dp6"
+            android:layout_marginEnd="@dimen/dp6"
+            app:divider_width="@dimen/dp1"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:radius="@dimen/dp4" />
+
+        <!-- 切换相机 -->
+        <LinearLayout
+            android:id="@+id/btn_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/top_button_margin"
+            android:layout_marginEnd="@dimen/top_button_margin"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/gl_record_view">
+
+            <ImageView
+                android:id="@+id/iv_switch"
+                android:layout_width="@dimen/top_button_width_height"
+                android:layout_height="@dimen/top_button_width_height"
+                android:background="@drawable/ic_camera_switch_camera_light" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="翻转"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <!-- 倍速选择条 -->
+        <com.cgfay.camera.widget.RecordSpeedLevelBar
+            android:id="@+id/record_speed_bar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp35"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginStart="@dimen/dp50"
+            android:layout_marginEnd="@dimen/dp50"
+            android:layout_marginBottom="@dimen/dp20"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/btn_record"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+
+        <!-- 录制按钮 -->
+        <com.cgfay.camera.widget.RecordButton
+            android:id="@+id/btn_record"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="bottom|center_horizontal"
+            app:circleColor="@color/record_red"
+            app:circleStrokeWidthMax="@dimen/dp12"
+            app:circleStrokeWidthMin="@dimen/dp6"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:rectCorner="@dimen/dp5"
+            app:rectWidthMax="@dimen/dp55"
+            app:rectWidthMin="@dimen/dp30"
+            app:strokeColor="@color/record_stroke_red" />
+
+        <!-- 删除 -->
+        <Button
+            android:id="@+id/btn_delete"
+            android:layout_width="@dimen/dp50"
+            android:layout_height="@dimen/dp50"
+            android:layout_marginEnd="@dimen/dp20"
+            android:background="@drawable/ic_camera_record_delete"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_record"
+            app:layout_constraintRight_toLeftOf="@+id/btn_record"
+            app:layout_constraintTop_toTopOf="@+id/btn_record" />
+
+        <!-- 下一步 -->
+        <Button
+            android:id="@+id/btn_next"
+            android:layout_width="@dimen/dp70"
+            android:layout_height="@dimen/dp35"
+            android:background="@drawable/bg_record_next_button"
+            android:text="@string/btn_next"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_record"
+            app:layout_constraintLeft_toRightOf="@+id/btn_record"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/btn_record" />
+
+        <!--  选择同框  -->
+        <Button
+            android:id="@+id/btn_next_duet"
+            android:layout_width="@dimen/dp100"
+            android:layout_height="@dimen/dp35"
+            android:layout_marginStart="@dimen/dp20"
+            android:layout_marginBottom="@dimen/dp200"
+            android:background="@drawable/bg_record_next_button"
+            android:text="@string/btn_next_duet"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!--  翻转  -->
+        <Button
+            android:id="@+id/btn_duet_flip"
+            android:layout_width="@dimen/dp100"
+            android:layout_height="@dimen/dp35"
+            android:layout_marginEnd="@dimen/dp20"
+            android:layout_marginBottom="@dimen/dp200"
+            android:background="@drawable/bg_record_next_button"
+            android:text="@string/btn_duet_flip"
+            android:textColor="@color/white"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!--  同框类型  -->
+        <LinearLayout
+            android:id="@+id/layout_duet_type"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:background="#2A2A2A"
+            android:gravity="center_vertical"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <Button
+                android:id="@+id/btn_duet_left_right"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dp20"
+                android:layout_marginEnd="@dimen/dp10"
+                android:layout_weight="1"
+                android:background="@color/blueviolet"
+                android:text="左右"
+                android:textColor="@color/white" />
+
+            <Button
+                android:id="@+id/btn_duet_up_down"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dp10"
+                android:layout_marginEnd="@dimen/dp10"
+                android:layout_weight="1"
+                android:background="@color/blueviolet"
+                android:text="上下"
+                android:textColor="@color/white" />
+
+            <Button
+                android:id="@+id/btn_duet_big_small"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dp10"
+                android:layout_marginEnd="@dimen/dp20"
+                android:layout_weight="1"
+                android:background="@color/blueviolet"
+                android:text="画中画"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>
