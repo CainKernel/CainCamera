@@ -323,7 +323,7 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
                 offset = -maxOffsetY;
             }
             Matrix.scaleM(mMVPMatrix, 0, (float) (width / mTextureWidth), (float) (height / mTextureHeight), 0f);
-            Matrix.translateM(mMVPMatrix, 0, 0f, (drawUp ? 1f : -1f) * (float)(height * 1.0f / mTextureHeight), 0f);
+            Matrix.translateM(mMVPMatrix, 0, 0f, drawUp ? 1f : -1f, 0f);
             mDuetFilter.setDuetType(1f);
             mDuetFilter.setOffsetX(0);
             mDuetFilter.setOffsetY(drawUp ? 0 + offset : -maxOffsetY + offset);
