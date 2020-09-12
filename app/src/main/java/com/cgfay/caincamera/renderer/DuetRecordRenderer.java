@@ -273,7 +273,23 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
      */
     private void drawVideoLeftRight(int videoTexture, boolean drawRight) {
         Matrix.setIdentityM(mMVPMatrix, 0);
-        Matrix.scaleM(mMVPMatrix, 0, 0.5f, 0.5f, 0f);
+        final double videoRatio = mVideoWidth * 1.0f / mVideoHeight;
+        if (videoRatio <= 9f/16f) {
+            // todo 长屏视频需要裁剪处理
+            final float scale_x = mTextureWidth * 0.5f / mVideoWidth;
+            final float scale_y = mTextureHeight * 0.5f / mVideoHeight;
+            final float scale = Math.max(scale_x, scale_y);
+            Log.d(TAG, "drawVideoLeftRight: scale x: " + scale_x + ", scale y: " + scale_y);
+            Matrix.scaleM(mMVPMatrix, 0, scale, scale, 0f);
+        } else {
+            // 宽屏视频自适应
+            final double scale_x = mTextureWidth * 0.5f / mVideoWidth;
+            final double scale_y = mTextureHeight * 0.5f / mVideoHeight;
+            final double scale = Math.min(scale_x, scale_y);
+            final double width = scale * mVideoWidth;
+            final double height = scale * mVideoHeight;
+            Matrix.scaleM(mMVPMatrix, 0, (float) (width / mTextureWidth), (float) (height / mTextureHeight), 0f);
+        }
         Matrix.translateM(mMVPMatrix, 0, drawRight ? 1f : -1f, 0f, 0f);
         mDuetFilter.setDuetType(0);
         mDuetFilter.setOffsetX(0);
