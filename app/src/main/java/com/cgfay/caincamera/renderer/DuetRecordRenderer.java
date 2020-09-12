@@ -1,11 +1,13 @@
 package com.cgfay.caincamera.renderer;
 
 import android.graphics.SurfaceTexture;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.opengl.EGL14;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.util.Log;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
@@ -97,9 +99,15 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
      */
     public void setDuetVideo(@NonNull MediaData mediaData) {
         mDuetVideo = mediaData;
-        mVideoWidth = mediaData.getWidth();
-        mVideoHeight = mediaData.getHeight();
         mDuetType = DuetType.DUET_TYPE_LEFT_RIGHT;
+        if (mediaData.getOrientation() == 90 || mediaData.getOrientation() == 270) {
+            mVideoWidth = mediaData.getHeight();
+            mVideoHeight = mediaData.getWidth();
+        } else {
+            mVideoWidth = mediaData.getWidth();
+            mVideoHeight = mediaData.getHeight();
+        }
+        Log.d(TAG, "setDuetVideo - video width: " + mVideoWidth + ", video height: " + mVideoHeight);
     }
 
     @Override
@@ -295,10 +303,57 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
      */
     private void drawVideoUpDown(int videoTexture, boolean drawUp) {
         Matrix.setIdentityM(mMVPMatrix, 0);
-        Matrix.translateM(mMVPMatrix, 0, 0f, drawUp ? 1f : -1f, 0f);
-        mDuetFilter.setDuetType(1f);
-        mDuetFilter.setOffsetX(0);
-        mDuetFilter.setOffsetY(drawUp ? 0.25f : -0.25f);
+
+        // 保持视频比例绘制视频
+        final double videoRatio = mVideoWidth * 1.0f / mVideoHeight;
+        if (videoRatio <= 9f/16f) {
+            final double scale_x = mTextureWidth * 1.0 / mVideoWidth;
+            final double scale_y = mTextureHeight * 1.0 / mVideoHeight;
+            final double scale = Math.max(scale_x, scale_y);
+            final double width = scale * mVideoWidth;
+            final double height = scale * mVideoHeight;
+            final float maxOffsetY = (float)Math.abs(height - mTextureHeight * 0.5) / mTextureHeight;
+            Log.d(TAG, "drawVideoUpDown: height: " + height + ", texture height: " + mTextureHeight
+                    + ", width: " + width + ", texture width: " + mTextureWidth
+                    + ", max offset y: " + maxOffsetY);
+            float offset = 0.25f;
+            if (offset >= maxOffsetY) {
+                offset = maxOffsetY;
+            } else if (offset <= -maxOffsetY) {
+                offset = -maxOffsetY;
+            }
+            Matrix.scaleM(mMVPMatrix, 0, (float) (width / mTextureWidth), (float) (height / mTextureHeight), 0f);
+            Matrix.translateM(mMVPMatrix, 0, 0f, (drawUp ? 1f : -1f) * (float)(height * 1.0f / mTextureHeight), 0f);
+            mDuetFilter.setDuetType(1f);
+            mDuetFilter.setOffsetX(0);
+            mDuetFilter.setOffsetY(drawUp ? 0 + offset : -maxOffsetY + offset);
+        } else {
+
+            // 由于上下只需要半屏，因此计算缩放时，需要乘0.5倍
+            final double scale_x = mTextureWidth * 0.5f / mVideoWidth;
+            final double scale_y = mTextureHeight * 0.5f / mVideoHeight;
+            final double scale = Math.max(scale_x, scale_y);
+            final double width = scale * mVideoWidth;
+            final double height = scale * mVideoHeight;
+
+            // 计算x轴偏移量，可以左右移动
+            final float maxOffsetX = (float) Math.abs(width - mTextureWidth) / mTextureWidth;
+            float offset = 0f;
+            if (offset > maxOffsetX) {
+                offset = maxOffsetX;
+            } else if (offset <= -maxOffsetX) {
+                offset = -maxOffsetX;
+            }
+
+            // 先处理x轴偏移，缩放之后，再做y轴平移，否则最大偏移量可能不一致
+            Matrix.translateM(mMVPMatrix, 0, offset, 0, 0f);
+            Matrix.scaleM(mMVPMatrix, 0, (float) (width / mTextureWidth), (float) (height / mTextureHeight), 0f);
+            Matrix.translateM(mMVPMatrix, 0, 0, drawUp ? 1f : -1f, 0f);
+
+            mDuetFilter.setDuetType(1f);
+            mDuetFilter.setOffsetX(0);
+            mDuetFilter.setOffsetY(0);
+        }
         mDuetFilter.setMVPMatrix(mMVPMatrix);
         mDuetFilter.onDrawTexture(videoTexture, mDuetVertexBuffer, mDuetTextureBuffer);
     }
@@ -416,9 +471,9 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
             mInputFilter.onDisplaySizeChanged(mViewWidth, mViewHeight);
         }
         if (mVideoInputFilter != null) {
-            mVideoInputFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);
-            mVideoInputFilter.initFrameBuffer(mTextureWidth, mTextureHeight);
-            mVideoInputFilter.onDisplaySizeChanged(mViewWidth, mVideoHeight);
+            mVideoInputFilter.onInputSizeChanged(mVideoWidth, mVideoHeight);
+            mVideoInputFilter.initFrameBuffer(mVideoWidth, mVideoHeight);
+            mVideoInputFilter.onDisplaySizeChanged(mTextureWidth, mTextureHeight);
         }
         if (mDuetFilter != null) {
             mDuetFilter.onInputSizeChanged(mTextureWidth, mTextureHeight);

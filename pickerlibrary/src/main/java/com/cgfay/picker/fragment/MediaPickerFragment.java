@@ -3,6 +3,7 @@ package com.cgfay.picker.fragment;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -428,10 +429,12 @@ public class MediaPickerFragment extends AppCompatDialogFragment implements Medi
     public void onMediaDataPreview(MediaData mediaData) {
         if (mediaData.isVideo()) {
             if (mVideoDataFragment.isMultiSelect()) {
+                parseVideoOrientation(mediaData);
                 onPreviewMedia(mediaData);
             } else {
                 if (mMediaSelector != null) {
                     List<MediaData> mediaDataList = new ArrayList<>();
+                    parseVideoOrientation(mediaData);
                     mediaDataList.add(mediaData);
                     mMediaSelector.onMediaSelect(mActivity, mediaDataList);
                     animateCloseFragment();
@@ -439,6 +442,24 @@ public class MediaPickerFragment extends AppCompatDialogFragment implements Medi
             }
         } else {
             onPreviewMedia(mediaData);
+        }
+    }
+
+    /**
+     * 解析视频旋转角度
+     */
+    private void parseVideoOrientation(@NonNull MediaData mediaData) {
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        mmr.setDataSource(mediaData.getPath());
+        String orientation = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
+        if ("90".equals(orientation)) {
+            mediaData.setOrientation(90);
+        } else if ("180".equals(orientation)) {
+            mediaData.setOrientation(180);
+        } else if ("270".equals(orientation)) {
+            mediaData.setOrientation(270);
+        } else {
+            mediaData.setOrientation(0);
         }
     }
 

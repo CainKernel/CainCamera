@@ -106,6 +106,7 @@ public class DuetRecordActivity extends BaseRecordActivity implements View.OnCli
         // 翻转同框
         mBtnDuetFlip = findViewById(R.id.btn_duet_flip);
         mBtnDuetFlip.setOnClickListener(this);
+        mBtnDuetFlip.setVisibility(duetMedia != null ? View.VISIBLE : View.GONE);
 
         // 同框类型
         mLayoutDuetType = findViewById(R.id.layout_duet_type);

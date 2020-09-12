@@ -41,6 +41,7 @@ public class MediaData implements Parcelable {
     private long mDuration;
     private int mWidth;
     private int mHeight;
+    private int mOrientation;
 
     public MediaData(@NonNull Context context, @NonNull Cursor cursor) throws Exception {
         int id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID));
@@ -88,6 +89,7 @@ public class MediaData implements Parcelable {
         mDuration = source.readLong();
         mWidth = source.readInt();
         mHeight = source.readInt();
+        mOrientation = source.readInt();
     }
 
     public static MediaData valueOf(@NonNull Context context, @NonNull Cursor cursor) {
@@ -114,6 +116,7 @@ public class MediaData implements Parcelable {
         dest.writeLong(mDuration);
         dest.writeInt(mWidth);
         dest.writeInt(mHeight);
+        dest.writeInt(mOrientation);
     }
 
     @NonNull
@@ -148,6 +151,14 @@ public class MediaData implements Parcelable {
 
     public int getHeight() {
         return mHeight;
+    }
+
+    public void setOrientation(int orientation) {
+        mOrientation = orientation;
+    }
+
+    public int getOrientation() {
+        return mOrientation;
     }
 
     /**
