@@ -36,7 +36,7 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = "DuetRecordRenderer";
 
     private GLImageOESInputFilter mInputFilter; // OES输入滤镜
-    private GLImageDuetFilter mDuetFilter;  // 颜色滤镜
+    private GLImageDuetFilter mDuetFilter;  // 同框滤镜
     private GLImageFilter mImageFilter; // 输出滤镜
     // 顶点坐标缓冲
     private FloatBuffer mVertexBuffer;
@@ -75,7 +75,7 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
     // 视频输入纹理
     private int mVideoInputTexture;
     // 视频输入纹理
-    private GLImageOESInputFilter mVideoInputFilter;
+    private GLImageOESInputFilter mVideoInputFilter;    // 视频输入纹理
     // 视频顶点坐标缓冲
     private FloatBuffer mDuetVertexBuffer;
     // 视频纹理坐标缓冲
@@ -193,6 +193,12 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
         int videoTexture = mVideoInputTexture;
         if (mVideoInputFilter != null) {
             mVideoInputFilter.setTextureTransformMatrix(mMatrix);
+            final double videoRatio = mVideoWidth * 1.0f / mVideoHeight;
+            resetInputCoordinateSize();
+            // 左右同框时，因为视频要缩放成一半，所以要对视频进行裁剪绘制到FBO中，解决左右同框视频被压缩的情况
+            if (videoRatio < 9f/16f && mDuetType == DuetType.DUET_TYPE_LEFT_RIGHT) {
+                adjustVideoCoordinate();
+            }
             videoTexture = mVideoInputFilter.drawFrameBuffer(mVideoInputTexture, mDuetVertexBuffer, mDuetTextureBuffer);
         }
         return videoTexture;
@@ -204,8 +210,8 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
      * @return
      */
     private int drawDuetTexture(int currentTexture) {
-        resetInputCoordinateSize();
         int videoTexture = drawVideoToFrameBuffer();
+        resetInputCoordinateSize();
         if (mDuetFilter != null) {
             mDuetFilter.bindFrameBuffer();
             GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -274,12 +280,10 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
     private void drawVideoLeftRight(int videoTexture, boolean drawRight) {
         Matrix.setIdentityM(mMVPMatrix, 0);
         final double videoRatio = mVideoWidth * 1.0f / mVideoHeight;
-        if (videoRatio <= 9f/16f) {
-            // todo 长屏视频需要裁剪处理
+        if (videoRatio < 9f/16f) {
             final float scale_x = mTextureWidth * 0.5f / mVideoWidth;
             final float scale_y = mTextureHeight * 0.5f / mVideoHeight;
             final float scale = Math.max(scale_x, scale_y);
-            Log.d(TAG, "drawVideoLeftRight: scale x: " + scale_x + ", scale y: " + scale_y);
             Matrix.scaleM(mMVPMatrix, 0, scale, scale, 0f);
         } else {
             // 宽屏视频自适应
@@ -385,11 +389,11 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
         if (drawSmall) {
             float scaleX = 1f / 3f;
             float scaleY = 1f / 3f;
-            float left = 0;
-            float top = mVideoHeight * 2f/3f;
+            float left = 30;
+            float top = mTextureHeight - scaleX * mTextureHeight - 30;
             float ratioX = (left - 0.5f * (1 - scaleX) * mTextureWidth) / (mTextureWidth * scaleX);
             float ratioY = (top - 0.5f * (1 - scaleY) * mTextureHeight) / (mTextureHeight * scaleY);
-            Matrix.scaleM(mMVPMatrix, 0, 0.3f, 0.3f, 0f);
+            Matrix.scaleM(mMVPMatrix, 0, scaleX, scaleY, 0f);
             Matrix.translateM(mMVPMatrix, 0, ratioX * 2f, ratioY * 2f, 0f);
         }
         mDuetFilter.setDuetType(0);
@@ -406,6 +410,7 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
      */
     private void drawVideoBigSmall(int videoTexture, boolean drawSmall) {
         Matrix.setIdentityM(mMVPMatrix, 0);
+        final double videoRatio = mVideoWidth * 1.0f / mVideoHeight;
         if (drawSmall) {
             float scaleX = 1f / 3f;
             float scaleY = 1f / 3f;
@@ -415,6 +420,25 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
             float ratioY = (top - 0.5f * (1 - scaleY) * mTextureHeight) / (mTextureHeight * scaleY);
             Matrix.scaleM(mMVPMatrix, 0, 0.3f, 0.3f, 0f);
             Matrix.translateM(mMVPMatrix, 0, ratioX * 2f, ratioY * 2f, 0f);
+        } else {
+            // 绘制到背景时处理长视频和宽视频
+            if (videoRatio < 9f/16f) {
+                final double scale_x = mTextureWidth * 1.0 / mVideoWidth;
+                final double scale_y = mTextureHeight * 1.0 / mVideoHeight;
+                final double scale = Math.max(scale_x, scale_y);
+                Matrix.scaleM(mMVPMatrix, 0, (float) scale, (float) scale, 0f);
+                // 裁切视频纹理以适应纹理区域，解决纹理变形问题
+                adjustVideoCoordinate();
+            } else {
+                // 宽屏视频需要等比例缩放绘制
+                final double scale_x = mTextureWidth * 1.0 / mVideoWidth;
+                final double scale_y = mTextureHeight * 1.0 / mVideoHeight;
+                final double scale = Math.min(scale_x, scale_y);
+                final double width = scale * mVideoWidth;
+                final double height = scale * mVideoHeight;
+                Matrix.scaleM(mMVPMatrix, 0, (float) (width / mTextureWidth),
+                        (float) (height / mTextureHeight), 0f);
+            }
         }
         mDuetFilter.setDuetType(0);
         mDuetFilter.setOffsetX(0);
@@ -423,6 +447,36 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
         mDuetFilter.onDrawTexture(videoTexture, mDuetVertexBuffer, mDuetTextureBuffer);
     }
 
+    /**
+     * 裁剪视频纹理，让视频纹理绘制到9/16区间内
+     * 在画中画模式中，如果视频宽高比例小于9/16，比如9/18之类的视频，则需要在绘制到720/1280时做裁切处理
+     */
+    private void adjustVideoCoordinate() {
+        float[] textureCoord;
+        float[] vertexCoord = TextureRotationUtils.CubeVertices;
+        float[] textureVertices = TextureRotationUtils.TextureVertices;
+        float ratioMax = Math.max((float) mTextureWidth / mVideoWidth,
+                (float) mTextureHeight / mVideoHeight);
+        // 新的宽高
+        float imageWidth = mVideoWidth * ratioMax;
+        float imageHeight = mVideoHeight * ratioMax;
+        // 获取视图跟texture的宽高比
+        float ratioWidth = imageWidth / (float) mTextureWidth;
+        float ratioHeight = imageHeight / (float) mTextureHeight;
+        float distHorizontal = (1 - 1 / ratioWidth) / 2;
+        float distVertical = (1 - 1 / ratioHeight) / 2;
+        textureCoord = new float[] {
+                addDistance(textureVertices[0], distHorizontal), addDistance(textureVertices[1], distVertical),
+                addDistance(textureVertices[2], distHorizontal), addDistance(textureVertices[3], distVertical),
+                addDistance(textureVertices[4], distHorizontal), addDistance(textureVertices[5], distVertical),
+                addDistance(textureVertices[6], distHorizontal), addDistance(textureVertices[7], distVertical),
+        };
+        // 更新VertexBuffer 和 TextureBuffer
+        mDuetVertexBuffer.clear();
+        mDuetVertexBuffer.put(vertexCoord).position(0);
+        mDuetTextureBuffer.clear();
+        mDuetTextureBuffer.put(textureCoord).position(0);
+    }
 
     /**
      * 更新输入纹理
