@@ -57,6 +57,7 @@ class CAVCaptureAudioEncoder extends CAVCaptureEncoder {
         mTrackIndex = -1;
         mMuxerStarted = mIsEOS = false;
         mStartTimeUs = 0;
+        mLastTimeUs = 0;
         final MediaCodecInfo audioCodecInfo = selectAudioCodec(mAudioInfo.getMimeType());
         if (audioCodecInfo == null) {
             Log.e(TAG, "Unable to find an appropriate codec for " + mAudioInfo.getMimeType());

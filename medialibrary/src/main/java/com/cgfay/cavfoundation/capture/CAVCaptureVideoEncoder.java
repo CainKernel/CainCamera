@@ -50,7 +50,8 @@ class CAVCaptureVideoEncoder extends CAVCaptureEncoder {
         }
         mTrackIndex = -1;
         mMuxerStarted = mIsEOS = false;
-
+        mStartTimeUs = 0;
+        mLastTimeUs = 0;
         final MediaCodecInfo videoCodecInfo = selectVideoCodec(mVideoInfo.getMimeType());
         if (videoCodecInfo == null) {
             Log.e(TAG, "Unable to find an appropriate codec for " + mVideoInfo.getMimeType());

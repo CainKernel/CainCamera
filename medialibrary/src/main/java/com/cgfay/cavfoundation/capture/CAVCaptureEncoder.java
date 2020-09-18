@@ -87,11 +87,17 @@ abstract class CAVCaptureEncoder implements Runnable {
      */
     protected long mStartTimeUs;
 
+    /**
+     * last encode time.
+     */
+    protected long mLastTimeUs;
+
     public CAVCaptureEncoder(@NonNull CAVCaptureMuxer muxer, @NonNull OnCaptureEncoderListener listener) {
         mWeakMuxer = new WeakReference<>(muxer);
         mListener = listener;
         muxer.addCaptureEncoder(this);
         mStartTimeUs = 0;
+        mLastTimeUs = 0;
         synchronized (mSync) {
             mBufferInfo = new MediaCodec.BufferInfo();
             new Thread(this, getClass().getSimpleName()).start();
@@ -335,6 +341,11 @@ LOOP:   while (mIsCapturing) {
         if (timeUs < 0) {
             timeUs = 0;
         }
+        // 判断是否小于上一次的pts，如果出现小于上一次的pts，需要将上一次的pts作为当前pts
+        if (timeUs < mLastTimeUs) {
+            timeUs = mLastTimeUs;
+        }
+        mLastTimeUs = timeUs;
         return timeUs;
     }
 }
