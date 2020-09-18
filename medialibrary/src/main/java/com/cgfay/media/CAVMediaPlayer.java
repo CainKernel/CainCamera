@@ -55,6 +55,8 @@ public class CAVMediaPlayer implements IMediaPlayer {
     // 设置播放文件
     private native void _setDataSource(FileDescriptor fd, long offset, long length)
             throws IOException, IllegalArgumentException, IllegalStateException;
+    // 设置宽高自适应
+    private native void _setAutoAspectFit(boolean autoAspectFit);
     // 设置音频解码器名称
     private native void _setAudioDecoder(String decoder);
     // 设置视频解码器名称
@@ -825,6 +827,13 @@ public class CAVMediaPlayer implements IMediaPlayer {
     @Override
     public void setMute(boolean mute) {
         _setMute(mute);
+    }
+
+    /**
+     * Set aspect ratio auto fit.
+     */
+    public void setAutoAspectFit(boolean autoFit) {
+        _setAutoAspectFit(autoFit);
     }
 
     /**

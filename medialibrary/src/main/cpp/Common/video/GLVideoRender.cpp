@@ -27,12 +27,17 @@ GLVideoRender::GLVideoRender() {
     filterInfo.id = -1;
     filterChange = false;
 
+    autoAspectFit = false;
     resetVertices();
     resetTexVertices();
 }
 
 GLVideoRender::~GLVideoRender() {
     terminate(true);
+}
+
+void GLVideoRender::setAutoAspectFit(bool autoFit) {
+    autoAspectFit = autoFit;
 }
 
 void GLVideoRender::surfaceCreated(ANativeWindow *window) {
@@ -125,15 +130,7 @@ void GLVideoRender::initTexture(int width, int height, int rotate) {
         mSurfaceWidth = ANativeWindow_getWidth(mWindow);
         mSurfaceHeight = ANativeWindow_getHeight(mWindow);
     }
-    if (mWindow != nullptr && mSurfaceWidth != 0 && mSurfaceHeight != 0) {
-        // 宽高比例不一致时，需要调整缓冲区的大小，这里是以宽度为基准
-        if ((mSurfaceWidth / mSurfaceHeight) != (width / height)) {
-            mSurfaceHeight = mSurfaceWidth * height / width;
-            int windowFormat = ANativeWindow_getFormat(mWindow);
-            ANativeWindow_setBuffersGeometry(mWindow, mSurfaceWidth, mSurfaceHeight, windowFormat);
-        }
-    }
-    mVideoTexture->rotate = rotate;
+    adjustCoordinate(rotate);
     mVideoTexture->frameWidth = width;
     mVideoTexture->frameHeight = height;
     mVideoTexture->height = height;
@@ -254,5 +251,57 @@ void GLVideoRender::resetTexVertices() {
     const float *vertices = CoordinateUtils::getTextureCoordinates(ROTATE_NONE);
     for (int i = 0; i < 8; ++i) {
         textureVertices[i] = vertices[i];
+    }
+}
+
+void GLVideoRender::adjustCoordinate(int rotate) {
+    RotationMode mode;
+    switch(rotate) {
+        case 90: {
+            mode = ROTATE_90;
+            break;
+        }
+        case 180: {
+            mode = ROTATE_180;
+            break;
+        }
+        case 270: {
+            mode = ROTATE_270;
+            break;
+        }
+        default: {
+            mode = ROTATE_NONE;
+            break;
+        }
+    }
+    const float *textureCoordinate = CoordinateUtils::getTextureCoordinates(mode);
+    for (int i = 0; i < 8; ++i) {
+        textureVertices[i] = textureCoordinate[i];
+    }
+    // 宽高自适应处理
+    if (autoAspectFit) {
+        resetVertices();
+        int videoWidth = mVideoTexture->frameWidth;
+        int videoHeight = mVideoTexture->frameHeight;
+        if (mode == ROTATE_270 || mode == ROTATE_90) {
+            videoWidth = mVideoTexture->frameHeight;
+            videoHeight = mVideoTexture->frameWidth;
+        }
+        float ratioMax = fmax((float) mSurfaceWidth / videoWidth,
+                              (float) mSurfaceHeight / videoHeight);
+        // 新的宽高
+        float imageWidth = round(videoWidth * ratioMax);
+        float imageHeight = round(videoHeight * ratioMax);
+        // 获取视图跟texture的宽高比
+        float ratioWidth = imageWidth / (float) mSurfaceWidth;
+        float ratioHeight = imageHeight / (float) mSurfaceHeight;
+        vertices[0] = vertices[0] / ratioHeight;
+        vertices[1] = vertices[1] / ratioWidth;
+        vertices[2] = vertices[2] / ratioHeight;
+        vertices[3] = vertices[3] / ratioWidth;
+        vertices[4] = vertices[4] / ratioHeight;
+        vertices[5] = vertices[5] / ratioWidth;
+        vertices[6] = vertices[6] / ratioHeight;
+        vertices[7] = vertices[7] / ratioWidth;
     }
 }

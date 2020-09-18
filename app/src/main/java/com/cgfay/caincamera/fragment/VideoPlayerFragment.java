@@ -200,6 +200,7 @@ public class VideoPlayerFragment  extends Fragment {
 
     private void initPlayer(@NonNull String path) {
         mVideoPlayer = new CAVMediaPlayer();
+        mVideoPlayer.setAutoAspectFit(true);
         mVideoPlayer.setSpeed(1.0f);
         mVideoPlayer.setLooping(true);
         mVideoPlayer.setOnPreparedListener(mp -> {

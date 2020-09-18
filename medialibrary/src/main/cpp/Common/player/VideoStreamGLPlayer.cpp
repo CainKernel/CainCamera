@@ -77,6 +77,12 @@ void VideoStreamGLPlayer::release() {
     }
 }
 
+void VideoStreamGLPlayer::setAutoAspectFit(bool autoFit) {
+    if (mVideoRender != nullptr) {
+        mVideoRender->setAutoAspectFit(autoFit);
+    }
+}
+
 void VideoStreamGLPlayer::setTimestamp(std::shared_ptr<Timestamp> timestamp) {
     mTimestamp = timestamp;
     mCondition.signal();

@@ -66,6 +66,8 @@ public:
 
     void release();
 
+    void setAutoAspectFit(bool autoFit);
+
     void surfaceCreated(ANativeWindow *window);
 
     void surfaceChange(int width, int height);

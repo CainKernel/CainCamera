@@ -345,6 +345,21 @@ com_cgfay_media_CAVMediaPlayer_setDataSourceFD(JNIEnv *env, jobject thiz, jobjec
 }
 
 /**
+ * 设置自适应
+ */
+static void
+com_cgfay_media_CAVMediaPlayer_setAutoAspectFit(JNIEnv *env, jobject thiz, jboolean autoFit) {
+    auto mp = getMediaPlayer(env, thiz);
+    if (mp == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException");
+        return;
+    }
+    status_t opStatus = mp->setAutoAspectFit(autoFit);
+    process_media_player_call( env, thiz, opStatus, "java/lang/IllegalStateException",
+                               "setAutoAspectFit Failed.");
+}
+
+/**
  * 设置音频解码器
  */
 static void
@@ -691,6 +706,7 @@ static const JNINativeMethod gMethods[] = {
                                                     (void *)com_cgfay_media_CAVMediaPlayer_setDataSourceAndHeaders
         },
         {"_setDataSource", "(Ljava/io/FileDescriptor;JJ)V", (void *)com_cgfay_media_CAVMediaPlayer_setDataSourceFD},
+        {"_setAutoAspectFit", "(Z)V", (void *)com_cgfay_media_CAVMediaPlayer_setAutoAspectFit},
         {"_setAudioDecoder", "(Ljava/lang/String;)V", (void *)com_cgfay_media_CAVMediaPlayer_setAudioDecoder},
         {"_setVideoDecoder", "(Ljava/lang/String;)V", (void *)com_cgfay_media_CAVMediaPlayer_setVideoDecoder},
         {"_setVideoSurface", "(Landroid/view/Surface;)V", (void *) com_cgfay_media_CAVMediaPlayer_setVideoSurface},

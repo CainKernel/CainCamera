@@ -19,6 +19,8 @@ public:
 
     virtual ~GLVideoRender();
 
+    void setAutoAspectFit(bool autoFit);
+
     // 更新Surface
     void surfaceCreated(ANativeWindow *window);
 
@@ -52,6 +54,7 @@ private:
 
     void resetTexVertices();
 
+    void adjustCoordinate(int rotate);
 private:
     ANativeWindow *mWindow;             // Surface窗口
     int mSurfaceWidth;                  // 窗口宽度
@@ -70,6 +73,7 @@ private:
     bool filterChange;                  // 切换滤镜
     GLfloat vertices[8];                // 顶点坐标
     GLfloat textureVertices[8];         // 纹理坐标
+    bool autoAspectFit;                 // 自适应宽高
 };
 
 

@@ -119,6 +119,8 @@ public:
     status_t changeSurface(int width, int height);
 #endif
 
+    status_t setAutoAspectFit(bool autoFit);
+
     status_t setSpeed(float speed);
 
     status_t setLooping(bool looping);

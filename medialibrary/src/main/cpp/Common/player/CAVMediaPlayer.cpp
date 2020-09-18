@@ -126,6 +126,14 @@ status_t CAVMediaPlayer::changeSurface(int width, int height) {
 
 #endif
 
+status_t CAVMediaPlayer::setAutoAspectFit(bool autoFit) {
+    if (mVideoPlayer != nullptr) {
+        mVideoPlayer->setAutoAspectFit(autoFit);
+    } else {
+    }
+    return OK;
+}
+
 status_t CAVMediaPlayer::setSpeed(float speed) {
     LOGD("CAVMediaPlayer::setSpeed(): %.2f", speed);
     if (mAudioPlayer != nullptr) {

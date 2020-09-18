@@ -47,7 +47,7 @@ add_library(cav_player
 
              # 播放器
              ${native_help}/JNIHelp.cpp
-             com_cgfay_media_CAVMediaPlayer.cpp)
+        CAVMediaPlayer_jni.cpp)
 
 
 target_link_libraries( cav_player
