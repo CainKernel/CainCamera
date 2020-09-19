@@ -1,178 +1,102 @@
 package com.cgfay.cavfoundation.codec;
 
 import android.media.MediaCodec;
-import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
  * 音频编码器
  */
-public class CAVAudioEncoder {
+public class CAVAudioEncoder extends CAVMediaEncoder {
 
-    private static final String TAG = "CAVAudioEncoder";
-
-    private static final String MIME_TYPE = "audio/mp4a-latm";
-
-    private static final int BUFFER_SIZE = 8192;
-
-    private static final int TIME_OUT = -1;
-
-    private int mBitrate;
-    private int mSampleRate;
-    private int mChannelCount;
-
-    // 音频硬编码器
-    private MediaFormat mMediaFormat;
-    private MediaCodec mMediaCodec;
-    private MediaCodec.BufferInfo mBufferInfo = new MediaCodec.BufferInfo();
-
+    private int mMaxBufferSize = 8192;
     private int mTotalBytesRead;
     private long mPresentationTimeUs;   // 编码的时长
 
-    private int mBufferSize = BUFFER_SIZE;
-    private String mMimeType = MIME_TYPE;
+    // 音频参数
+    private CAVAudioInfo mAudioInfo;
 
-    private boolean mInited;
-
-    public CAVAudioEncoder() {
-        mBitrate = 128000;
-        mSampleRate = 44100;
-        mChannelCount = 2;
-        mTotalBytesRead = 0;
-        mPresentationTimeUs = 0;
-        mInited = false;
-    }
-
-    /**
-     * 设置编码参数
-     * @param bitrate
-     * @param sampleRate
-     * @param channelCount
-     */
-    public void setEncodeOptions(int bitrate, int sampleRate, int channelCount) {
-        mBitrate = bitrate;
-        mSampleRate = sampleRate;
-        mChannelCount = channelCount;
-    }
-
-    /**
-     * 设置缓冲区大小
-     * @param size
-     */
-    public void setBufferSize(int size) {
-        mBufferSize = size;
-    }
-
-    /**
-     * 设置mime类型
-     * @param mimeType 媒体类型
-     */
-    public void setMimeType(@NonNull String mimeType) {
-        mMimeType = mimeType;
+    public CAVAudioEncoder(@NonNull CAVAudioInfo info) {
+        mAudioInfo = info;
     }
 
     /**
      * 准备编码器
-     * @throws Exception 异常
+     *
+     * @throws Exception
      */
-    public void prepareHardwareEncoder() throws Exception {
-        // 编码格式
-        mMediaFormat = MediaFormat.createAudioFormat(mMimeType, mSampleRate, mChannelCount);
-        mMediaFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
-        mMediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, mBitrate);
-        mMediaFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, mBufferSize);
+    @Override
+    public void prepare() throws IOException {
+        MediaFormat format = MediaFormat.createAudioFormat(mAudioInfo.getMimeType(),
+                mAudioInfo.getSampleRate(), mAudioInfo.getChannelCount());
+        format.setInteger(MediaFormat.KEY_AAC_PROFILE, mAudioInfo.getProfile());
+        format.setInteger(MediaFormat.KEY_BIT_RATE, mAudioInfo.getBitRate());
+        format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, mMaxBufferSize);
 
-        // 创建编码器
-        mMediaCodec = MediaCodec.createEncoderByType(mMimeType);
-        mMediaCodec.configure(mMediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-        mMediaCodec.start();
+        mMediaCodec = MediaCodec.createEncoderByType(mAudioInfo.getMimeType());
+        mMediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+        mTotalBytesRead = 0;
+        mPresentationTimeUs = 0;
+        mIsEOS = false;
     }
 
     /**
-     * 停止编码器
+     * PCM编码
+     * @param data  pcm数据
+     * @param size  大小
      */
-    public void stopEncoder() {
-        if (mMediaCodec != null && mInited) {
-            mMediaCodec.stop();
+    public void encodePCMData(byte[] data, int size) {
+        if (VERBOSE) {
+            Log.d(TAG, "encodePCMData: " + size);
         }
-        mInited = false;
-    }
-
-    /**
-     * 释放编码器
-     */
-    public void release() {
-        if (mInited) {
-            stopEncoder();
+        if (mMediaCodec == null) {
+            return;
         }
-        if (mMediaCodec != null) {
-            mMediaCodec.release();
-            mMediaCodec = null;
-        }
-        mInited = false;
-    }
-
-    /**
-     * 将音频PCM数据送去编码
-     * @param pcmData               PCM数据
-     * @param len                   PCM长度
-     * @param presentationTimeUs    编码音频PCM的pts
-     * @return                      处理结果
-     */
-    public boolean sendFrame(byte[] pcmData, int len, long presentationTimeUs) {
-        if (mMediaCodec != null && mInited) {
+        // 将pcm数据送去编码
+        while (true) {
             int inputBufferIndex = mMediaCodec.dequeueInputBuffer(TIME_OUT);
             if (inputBufferIndex >= 0) {
-                ByteBuffer buffer = null;
-                while (buffer == null) {
-                    buffer = mMediaCodec.getInputBuffer(inputBufferIndex);
+                ByteBuffer buffer = mMediaCodec.getInputBuffer(inputBufferIndex);
+                if (buffer == null) {
+                    continue;
                 }
                 buffer.clear();
-                if (len <= 0) {
+                if (size <= 0) {
+                    mIsEOS = true;
                     mMediaCodec.queueInputBuffer(inputBufferIndex, 0, 0,
-                            presentationTimeUs, 0);
+                            mPresentationTimeUs, 0);
                 } else {
-                    buffer.put(pcmData, 0, len);
-                    mMediaCodec.queueInputBuffer(inputBufferIndex, 0, len,
-                            presentationTimeUs, 0);
+                    mTotalBytesRead += size;
+                    buffer.put(data, 0, size);
+                    mMediaCodec.queueInputBuffer(inputBufferIndex, 0, size,
+                            mPresentationTimeUs, 0);
+                    mPresentationTimeUs = 1000000L * (mTotalBytesRead / mAudioInfo.getChannelCount() / 2)
+                            / mAudioInfo.getSampleRate();
                 }
-                Log.d(TAG, "sendFrame: presentationTimeUs: " + presentationTimeUs);
-                return true;
+                break;
             }
         }
-        return false;
+        // 编码处理
+        drainEncoder();
     }
 
+    @Override
+    public void signalEndOfInputStream() {
+        encodePCMData(null, 0);
+    }
 
-    /**
-     * 获取编码后的AAC数据
-     */
-    public boolean receivePacket() {
-        int outputIndex = 0;
-        while (outputIndex != MediaCodec.INFO_TRY_AGAIN_LATER) {
-            outputIndex = mMediaCodec.dequeueOutputBuffer(mBufferInfo, 0);
-            if (outputIndex >= 0) {
-                ByteBuffer buffer = null;
-                while (buffer == null) {
-                    buffer = mMediaCodec.getOutputBuffer(outputIndex);
-                }
-                buffer.position(mBufferInfo.offset);
-                buffer.limit(mBufferInfo.offset + mBufferInfo.size);
-                if ((mBufferInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
-                    mMediaCodec.releaseOutputBuffer(outputIndex, false);
-                } else {
-                    // TODO 提取编码后的数据
+    @Override
+    protected int getTrackIndex() {
+        return mAudioInfo.getTrack();
+    }
 
-                }
-            } else if (outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                Log.d(TAG, "receivePacket: MediaCodec.INFO_OUTPUT_FORMAT_CHANGED");
-            }
-        }
-        return false;
+    @Override
+    protected void calculateTimeUs(MediaCodec.BufferInfo info) {
+        info.presentationTimeUs = mPresentationTimeUs;
     }
 }

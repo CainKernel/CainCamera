@@ -2,11 +2,15 @@ package com.cgfay.cavfoundation.capture;
 
 import android.media.MediaCodec;
 import android.media.MediaFormat;
-import android.media.MediaMuxer;
 import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.cgfay.cavfoundation.codec.CAVAudioInfo;
+import com.cgfay.cavfoundation.codec.CAVMediaMuxer;
+import com.cgfay.cavfoundation.codec.CAVVideoInfo;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -24,7 +28,7 @@ public class CAVCaptureMuxer {
     // 音频编码器
     private CAVCaptureEncoder mAudioEncoder;
     // 媒体封装器
-    private MediaMuxer mMediaMuxer;
+    private CAVMediaMuxer mMediaMuxer;
     // 输出文件路径
     private String mOutputPath;
 
@@ -35,11 +39,16 @@ public class CAVCaptureMuxer {
     // 封装器是否已经开始
     private boolean mStarted;
 
+    private CAVVideoInfo mVideoInfo;
+    private CAVAudioInfo mAudioInfo;
+
     public CAVCaptureMuxer() {
         mOutputPath = null;
         mEncoderCount = 0;
         mStartedCount = 0;
         mStarted = false;
+        mAudioInfo = null;
+        mVideoInfo = null;
     }
 
     /**
@@ -51,7 +60,19 @@ public class CAVCaptureMuxer {
         mOutputPath = path;
     }
 
+    /**
+     * 设置音频参数
+     */
+    public void setAudioInfo(@Nullable CAVAudioInfo info) {
+        mAudioInfo = info;
+    }
 
+    /**
+     * 设置视频参数
+     */
+    public void setVideoInfo(@Nullable CAVVideoInfo info) {
+        mVideoInfo = info;
+    }
 
     /**
      * 准备的封装器
@@ -63,8 +84,13 @@ public class CAVCaptureMuxer {
             throw new IOException("Failed to prepare before set output path!");
         }
         if (mMediaMuxer == null) {
-            mMediaMuxer = new MediaMuxer(mOutputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+//            mMediaMuxer = new MediaMuxer(mOutputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+            mMediaMuxer = new CAVMediaMuxer();
+            mMediaMuxer.setOutputPath(mOutputPath);
         }
+        mMediaMuxer.setAudioInfo(mAudioInfo);
+        mMediaMuxer.setVideoInfo(mVideoInfo);
+        mMediaMuxer.prepare();
         if (mAudioEncoder != null) {
             mAudioEncoder.prepare();
         }
@@ -190,6 +216,16 @@ public class CAVCaptureMuxer {
     }
 
     /**
+     * 写入额外参数，音频csd-0、视频csd-0、csd-1参数，对应音频adts和视频sps、pps等参数
+     */
+    void writeExtraData(int trackIndex, @NonNull ByteBuffer extraData,
+                        @NonNull MediaCodec.BufferInfo bufferInfo) {
+        if (mMediaMuxer != null) {
+            mMediaMuxer.writeExtraData(trackIndex, extraData, bufferInfo);
+        }
+    }
+
+    /**
      * 将编码后的数据写入封装器
      *
      * @param trackIndex
@@ -200,7 +236,7 @@ public class CAVCaptureMuxer {
                                       @NonNull MediaCodec.BufferInfo bufferInfo) {
         if (mStartedCount > 0) {
             if (mMediaMuxer != null) {
-                mMediaMuxer.writeSampleData(trackIndex, encodeBuffer, bufferInfo);
+                mMediaMuxer.writeFrame(trackIndex, encodeBuffer, bufferInfo);
             }
         }
     }

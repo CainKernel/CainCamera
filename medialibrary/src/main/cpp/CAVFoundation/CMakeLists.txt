@@ -1,13 +1,17 @@
 # 添加目录
 set(common_dir ../Common)
 
+set(native_help_dir ../nativehelp)
+
 # 添加头文件路径
-include_directories(${common_dir})
+include_directories(${common_dir} ${native_help_dir} ./)
 
 # 添加源文件
 add_library( cavfoundation
 
         SHARED
+
+        codec/CAVMediaMuxer.cpp
 
         coregraphics/Geometry.cpp
 
@@ -23,7 +27,10 @@ add_library( cavfoundation
         AVCompositionTrack.cpp
         AVCompositionTrackSegment.cpp
 
-        android/com_cgfay_cavfoundation_CAVUriAsset.cpp
+        # android
+        ${native_help_dir}/JNIHelp.cpp
+        android/CAVUriAsset_jni.cpp
+        android/CAVMediaMuxer_jni.cpp
         )
 
 # 链接so库

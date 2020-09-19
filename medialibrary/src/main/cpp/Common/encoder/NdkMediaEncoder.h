@@ -56,8 +56,6 @@ public:
     // 获取媒体类型
     virtual AVMediaType getMediaType() = 0;
 
-    // 计算当前数据包的pts
-    int64_t rescalePts(int64_t presentationTimeUs, AVRational time_base);
 protected:
     std::weak_ptr<AVMediaMuxer> mWeakMuxer; // 复用器
     AVStream *pStream;          // 媒体流索引

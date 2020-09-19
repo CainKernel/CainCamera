@@ -27,7 +27,7 @@ public class CAVVideoInfo {
     public static final int LOW_BITRATE = 3921332;
 
     // 轨道索引
-    private int mTrackIndex;
+    private int mTrack;
     // 视频宽度
     private int mWidth;
     // 视频高度
@@ -46,7 +46,7 @@ public class CAVVideoInfo {
     private String mMimeType;
 
     public CAVVideoInfo() {
-        mTrackIndex = INVALID_TRACK;
+        mTrack = INVALID_TRACK;
         mMimeType = MIME_AVC;
         mWidth = DEFAULT_WIDTH;
         mHeight = DEFAULT_HEIGHT;
@@ -57,12 +57,12 @@ public class CAVVideoInfo {
         mLevel = MediaCodecInfo.CodecProfileLevel.AVCLevel31;
     }
 
-    public int getTrackIndex() {
-        return mTrackIndex;
+    public int getTrack() {
+        return mTrack;
     }
 
-    public void setTrackIndex(int trackIndex) {
-        mTrackIndex = trackIndex;
+    public void setTrack(int track) {
+        mTrack = track;
     }
 
     public int getWidth() {

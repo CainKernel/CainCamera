@@ -61,12 +61,3 @@ int NdkMediaEncoder::writePacket(AVPacket *packet) {
         return ret;
     }
 }
-
-/**
- * 计算编码后的AVPacket.pts
- * @param presentationTimeUs us
- * @param time_base          time_base
- */
-int64_t NdkMediaEncoder::rescalePts(int64_t presentationTimeUs, AVRational time_base) {
-    return (int64_t)(presentationTimeUs / 1000000.0 / av_q2d(time_base));
-}

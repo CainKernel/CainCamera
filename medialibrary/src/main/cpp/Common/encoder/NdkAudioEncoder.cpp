@@ -232,12 +232,11 @@ int NdkAudioEncoder::receiveEncodePacket(AVPacket *packet, int *gotFrame) {
                         packet->stream_index = mStreamIndex;
                         packet->data = encodeData;
                         packet->size = bufferInfo.size;
-                        packet->pts = rescalePts(bufferInfo.presentationTimeUs,
-                                                (AVRational) {1, mSampleRate});
+                        packet->pts = bufferInfo.presentationTimeUs;
                         packet->dts = packet->pts;
                         packet->pos = -1;
                         // 计算编码后的pts
-                        av_packet_rescale_ts(packet, (AVRational){1, mSampleRate}, pStream->time_base);
+                        av_packet_rescale_ts(packet, (AVRational) {1, 1000000}, pStream->time_base);
                     }
                     *gotFrame = 1;
                 }

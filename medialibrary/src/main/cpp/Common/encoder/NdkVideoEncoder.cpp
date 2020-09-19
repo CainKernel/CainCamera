@@ -391,12 +391,12 @@ int NdkVideoEncoder::receiveEncodePacket(AVPacket *packet, int *gotFrame) {
                         packet->data = encodeData;
                         packet->size = bufferInfo.size;
                         packet->duration = 0;
-                        packet->pts = rescalePts(pts, (AVRational) {1, mFrameRate});
+                        packet->pts = pts;
                         packet->dts = packet->pts;
                         packet->pos = -1;
 
                         // 计算编码后的pts
-                        av_packet_rescale_ts(packet, (AVRational) {1, mFrameRate},
+                        av_packet_rescale_ts(packet, (AVRational) {1, 1000000},
                                              pStream->time_base);
 
                         LOGD("NdkVideoEncoder - encode h264 data: %ld, buffer.presentationUs: %ld",

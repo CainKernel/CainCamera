@@ -174,8 +174,6 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
         try {
             mMediaRecorder = new CAVCaptureRecorder();
             mMediaRecorder.setOutputPath(generateOutputPath());
-            mMediaRecorder.setVideoOutputPath(PathUtils.getVideoTempPath(mActivity));
-            mMediaRecorder.setAudioOutputPath(PathUtils.getAudioTempPath(mActivity));
             mMediaRecorder.setOnCaptureRecordListener(this);
             mMediaRecorder.setSpeed(mSpeedMode.getSpeed());
             mMediaRecorder.setVideoInfo(mVideoInfo);

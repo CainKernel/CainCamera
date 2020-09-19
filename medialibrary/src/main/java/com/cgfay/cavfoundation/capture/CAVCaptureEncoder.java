@@ -230,6 +230,7 @@ abstract class CAVCaptureEncoder implements Runnable {
             final CAVCaptureMuxer muxer = mWeakMuxer != null ? mWeakMuxer.get() : null;
             if (muxer != null) {
                 try {
+                    Log.d("CainMedia", "muxer stop...");
                     muxer.stop();
                 } catch (final Exception e) {
                     Log.e(TAG, "failed stopping muxer", e);
@@ -303,6 +304,8 @@ LOOP:   while (mIsCapturing) {
                     if (VERBOSE) {
                         Log.d(TAG, "drainEncoder: BUFFER_FLAG_CODEC_CONFIG");
                     }
+                    // 写入额外数据，给AVStream->codecpar->extradata的，包含sps、pps等参数，"csd-0"和"csd-1"这些
+                    muxer.writeExtraData(mTrackIndex, encodedData, mBufferInfo);
                     mBufferInfo.size = 0;
                 }
 

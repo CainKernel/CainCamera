@@ -7,6 +7,7 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -179,10 +180,12 @@ public class FFMediaRecordFragment extends Fragment implements View.OnClickListe
                 WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         // 是否全面屏
         if (NotchUtils.hasNotchScreen(mActivity)) {
-            mActivity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-            WindowManager.LayoutParams lp = mActivity.getWindow().getAttributes();
-            lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-            mActivity.getWindow().setAttributes(lp);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                mActivity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+                WindowManager.LayoutParams lp = mActivity.getWindow().getAttributes();
+                lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+                mActivity.getWindow().setAttributes(lp);
+            }
         }
     }
 

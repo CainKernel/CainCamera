@@ -9,6 +9,7 @@
 #include <string.h>
 #include "../CAVFoundation.h"
 #include "../CAVUriAsset.h"
+#include "CAVMediaMuxer_jni.h"
 
 struct asset_fields_t {
     jfieldID context;
@@ -360,6 +361,7 @@ int register_com_cgfay_cavfoundation_CAVUriAsset(JNIEnv *env) {
     }
     if (env->RegisterNatives(clazz, nativeMethods, numMethods) < 0) {
         LOGE("Native registration unable to find class '%s'", ASSET_CLASS_NAME);
+        env->DeleteLocalRef(clazz);
         return JNI_ERR;
     }
     env->DeleteLocalRef(clazz);
@@ -374,6 +376,9 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
         return -1;
     }
     if (register_com_cgfay_cavfoundation_CAVUriAsset(env) != JNI_OK) {
+        return -1;
+    }
+    if (register_CAVMediaMuxer(env) != JNI_OK) {
         return -1;
     }
     return JNI_VERSION_1_4;

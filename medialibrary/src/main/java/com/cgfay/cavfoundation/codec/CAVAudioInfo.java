@@ -20,7 +20,7 @@ public class CAVAudioInfo {
     public static final int DEFAULT_CHANNEL_COUNT = 2;
 
     // 轨道索引
-    private int mTrackIndex;
+    private int mTrack;
     // 采样率
     private int mSampleRate;
     // 声道数
@@ -35,7 +35,7 @@ public class CAVAudioInfo {
     private String mMimeType;
 
     public CAVAudioInfo() {
-        mTrackIndex = INVALID_TRACK;
+        mTrack = INVALID_TRACK;
         mSampleRate = DEFAULT_SAMPLE_RATE;
         mChannelCount = DEFAULT_CHANNEL_COUNT;
         mAudioFormat = AudioFormat.ENCODING_PCM_16BIT;
@@ -44,12 +44,12 @@ public class CAVAudioInfo {
         mMimeType = AUDIO_MIME;
     }
 
-    public int getTrackIndex() {
-        return mTrackIndex;
+    public int getTrack() {
+        return mTrack;
     }
 
-    public void setTrackIndex(int trackIndex) {
-        mTrackIndex = trackIndex;
+    public void setTrack(int track) {
+        mTrack = track;
     }
 
     public int getSampleRate() {
