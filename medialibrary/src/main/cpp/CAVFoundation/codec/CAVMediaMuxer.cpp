@@ -175,7 +175,7 @@ int CAVMediaMuxer::getVideoTrack() {
  * 是否已经开始
  */
 bool CAVMediaMuxer::isStarted() {
-    return true;
+    return started;
 }
 
 /**
