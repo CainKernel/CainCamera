@@ -86,7 +86,7 @@ public interface ICameraController {
      * 判断是否支持闪光灯
      * @param front 是否前置摄像头
      */
-    boolean isSupportFlashLight(boolean front);
+    boolean supportTorch(boolean front);
 
     /**
      * 设置闪光灯

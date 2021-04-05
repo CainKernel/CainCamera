@@ -160,6 +160,12 @@ public abstract class PreviewPresenter<T extends Fragment> extends IPresenter<T>
     public abstract int getRecordedVideoSize();
 
     /**
+     * 是否打开闪光灯
+     * @param on    打开闪光灯
+     */
+    public abstract void changeFlashLight(boolean on);
+
+    /**
      * 是否允许边框模糊
      * @param enable true:允许边框模糊
      */

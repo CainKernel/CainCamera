@@ -973,7 +973,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
         @Override
         public void flashStateChanged(boolean flashOn) {
             // todo 闪光灯切换
-
+            mPreviewPresenter.changeFlashLight(flashOn);
         }
 
         @Override

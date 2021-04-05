@@ -265,15 +265,18 @@ public class CameraController implements ICameraController, Camera.PreviewCallba
     }
 
     @Override
-    public boolean isSupportFlashLight(boolean front) {
+    public boolean supportTorch(boolean front) {
         if (front) {
-            return false;
+            return true;
         }
-        return checkSupportFlashLight(mCamera);
+        return !checkSupportFlashLight(mCamera);
     }
 
     @Override
     public void setFlashLight(boolean on) {
+        if (supportTorch(isFront())) {
+            return;
+        }
         if (mCamera != null) {
             Camera.Parameters parameters = mCamera.getParameters();
             if (on) {

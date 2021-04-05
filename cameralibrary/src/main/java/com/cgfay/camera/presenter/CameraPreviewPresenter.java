@@ -454,6 +454,13 @@ public class CameraPreviewPresenter extends PreviewPresenter<CameraPreviewFragme
     }
 
     @Override
+    public void changeFlashLight(boolean on) {
+        if (mCameraController != null) {
+            mCameraController.setFlashLight(on);
+        }
+    }
+
+    @Override
     public void enableEdgeBlurFilter(boolean enable) {
         mCameraRenderer.changeEdgeBlur(enable);
     }

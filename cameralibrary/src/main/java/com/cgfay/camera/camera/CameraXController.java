@@ -223,8 +223,11 @@ public class CameraXController implements ICameraController {
     }
 
     @Override
-    public boolean isSupportFlashLight(boolean front) {
-        return false;
+    public boolean supportTorch(boolean front) {
+        if (mCamera != null) {
+            return !mCamera.getCameraInfo().hasFlashUnit();
+        }
+        return true;
     }
 
     @Override

@@ -77,7 +77,7 @@ public class FFMediaRecordPresenter implements PreviewCallback, FFAudioRecorder.
         mHandler = new Handler(Looper.myLooper());
         mVideoList = new ArrayList<>();
         if (CameraApi.hasCamera2(mActivity)) {
-            mCameraController = new CameraXController(mActivity, ContextCompat.getMainExecutor(activity));
+            mCameraController = new CameraXController(mActivity);
         } else {
             mCameraController = new CameraController(mActivity);
         }
