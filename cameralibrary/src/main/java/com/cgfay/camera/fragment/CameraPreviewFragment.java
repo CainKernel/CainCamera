@@ -14,6 +14,7 @@ import android.os.Handler;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 
@@ -34,7 +35,7 @@ import android.widget.Toast;
 
 import com.cgfay.camera.loader.impl.CameraMediaLoader;
 import com.cgfay.camera.presenter.CameraPreviewPresenter;
-import com.cgfay.camera.widget.CainTextureView;
+import com.cgfay.camera.widget.CameraTextureView;
 import com.cgfay.camera.widget.CameraPreviewTopbar;
 import com.cgfay.camera.widget.PreviewMeasureListener;
 import com.cgfay.camera.widget.RecordButton;
@@ -79,7 +80,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private View mContentView;
     // 预览部分
     private CameraMeasureFrameLayout mPreviewLayout;
-    private CainTextureView mCameraTextureView;
+    private CameraTextureView mCameraTextureView;
     // fps显示
     private TextView mFpsView;
 
@@ -123,7 +124,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private PreviewSettingFragment mSettingFragment;
 
     private final Handler mMainHandler;
-    private Activity mActivity;
+    private FragmentActivity mActivity;
 
     private CameraPreviewPresenter mPreviewPresenter;
 
@@ -143,7 +144,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof Activity) {
-            mActivity = (Activity) context;
+            mActivity = (FragmentActivity) context;
         } else {
             mActivity = getActivity();
         }
@@ -193,7 +194,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     private void initPreviewSurface() {
         mFpsView = mContentView.findViewById(R.id.tv_fps);
         mPreviewLayout = mContentView.findViewById(R.id.layout_camera_preview);
-        mCameraTextureView = new CainTextureView(mActivity);
+        mCameraTextureView = new CameraTextureView(mActivity);
         mCameraTextureView.addOnTouchScroller(mTouchScroller);
         mCameraTextureView.addMultiClickListener(mMultiClickListener);
         mCameraTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
@@ -882,7 +883,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     }
 
     // ------------------------------- TextureView 滑动、点击回调 ----------------------------------
-    private CainTextureView.OnTouchScroller mTouchScroller = new CainTextureView.OnTouchScroller() {
+    private CameraTextureView.OnTouchScroller mTouchScroller = new CameraTextureView.OnTouchScroller() {
 
         @Override
         public void swipeBack() {
@@ -913,7 +914,7 @@ public class CameraPreviewFragment extends Fragment implements View.OnClickListe
     /**
      * 单双击回调监听
      */
-    private CainTextureView.OnMultiClickListener mMultiClickListener = new CainTextureView.OnMultiClickListener() {
+    private CameraTextureView.OnMultiClickListener mMultiClickListener = new CameraTextureView.OnMultiClickListener() {
 
         @Override
         public void onSurfaceSingleClick(final float x, final float y) {

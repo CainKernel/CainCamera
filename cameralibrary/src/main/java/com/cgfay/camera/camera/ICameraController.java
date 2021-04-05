@@ -67,7 +67,6 @@ public interface ICameraController {
 
     /**
      * 是否支持自动对焦
-     * @return
      */
     boolean canAutoFocus();
 
@@ -93,4 +92,14 @@ public interface ICameraController {
      * @param on 是否打开闪光灯
      */
     void setFlashLight(boolean on);
+
+    /**
+     * zoom in
+     */
+    void zoomIn();
+
+    /**
+     * zoom out
+     */
+    void zoomOut();
 }

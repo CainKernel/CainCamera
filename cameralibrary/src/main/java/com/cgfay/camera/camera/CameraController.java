@@ -1,7 +1,6 @@
 package com.cgfay.camera.camera;
 
 import android.app.Activity;
-import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -284,6 +283,31 @@ public class CameraController implements ICameraController, Camera.PreviewCallba
             } else {
                 parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
             }
+            mCamera.setParameters(parameters);
+        }
+    }
+
+    private boolean canZoom() {
+        return (mCamera != null && mCamera.getParameters().isZoomSupported());
+    }
+
+    @Override
+    public void zoomIn() {
+        if (canZoom()) {
+            Camera.Parameters parameters = mCamera.getParameters();
+            int current = parameters. getZoom();
+            int maxZoom = parameters.getMaxZoom();
+            parameters.setZoom(Math.min(current + 1, maxZoom));
+            mCamera.setParameters(parameters);
+        }
+    }
+
+    @Override
+    public void zoomOut() {
+        if (canZoom()) {
+            Camera.Parameters parameters = mCamera.getParameters();
+            int current = parameters.getZoom();
+            parameters.setZoom(Math.max(current - 1, 0));
             mCamera.setParameters(parameters);
         }
     }

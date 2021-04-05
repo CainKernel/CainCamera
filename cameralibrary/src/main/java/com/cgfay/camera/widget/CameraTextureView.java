@@ -21,9 +21,9 @@ import com.cgfay.filter.glfilter.stickers.StaticStickerNormalFilter;
  * @author CainHuang
  * @date 2019/7/6
  */
-public class CainTextureView extends TextureView {
+public class CameraTextureView extends TextureView {
 
-    private static final String TAG = "CainTextureView";
+    private static final String TAG = "CameraTextureView";
     private static final boolean VERBOSE = false;
 
     // 单击时点击的位置
@@ -42,15 +42,15 @@ public class CainTextureView extends TextureView {
     // 手势监听器
     private GestureDetectorCompat mGestureDetector;
 
-    public CainTextureView(Context context) {
+    public CameraTextureView(Context context) {
         this(context, null);
     }
 
-    public CainTextureView(Context context, AttributeSet attrs) {
+    public CameraTextureView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public CainTextureView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public CameraTextureView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
     }

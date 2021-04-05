@@ -93,11 +93,11 @@ public class RecordPresenter implements OnSurfaceTextureListener, OnFrameAvailab
         mCommandEditor = new CainCommandEditor();
 
         // 创建相机控制器
-        if (CameraApi.hasCamera2(mActivity)) {
-            mCameraController = new CameraXController(activity, ContextCompat.getMainExecutor(activity));
-        } else {
-            mCameraController = new CameraController(activity);
-        }
+//        if (CameraApi.hasCamera2(mActivity)) {
+            mCameraController = new CameraXController(activity);
+//        } else {
+//            mCameraController = new CameraController(activity);
+//        }
         mCameraController.setOnFrameAvailableListener(this);
         mCameraController.setOnSurfaceTextureListener(this);
     }

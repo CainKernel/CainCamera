@@ -3,22 +3,26 @@ package com.cgfay.camera.camera;
 import android.annotation.SuppressLint;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
-import android.os.Build;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.util.Log;
 import android.util.Size;
+import android.view.Surface;
 
 import androidx.annotation.NonNull;
-import androidx.camera.core.AspectRatio;
-import androidx.camera.core.CameraX;
+import androidx.camera.core.Camera;
+import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageAnalysisConfig;
 import androidx.camera.core.Preview;
-import androidx.camera.core.PreviewConfig;
-import androidx.lifecycle.LifecycleOwner;
+import androidx.camera.core.ZoomState;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * CameraX库封装处理
@@ -38,16 +42,20 @@ public class CameraXController implements ICameraController {
     private int mRotation;
 
     // 生命周期对象(Fragment/Activity)
-    private final LifecycleOwner mLifecycleOwner;
+    private final FragmentActivity mLifecycleOwner;
 
     // 是否打开前置摄像头
     private boolean mFacingFront;
 
+    // Camera提供者
+    private ProcessCameraProvider mCameraProvider;
+    // Camera接口
+    private Camera mCamera;
     // 预览配置
     private Preview mPreview;
 
     // 预览帧
-    private Executor mExecutor;
+    private Executor mExecutor = Executors.newSingleThreadExecutor();
     private ImageAnalysis mPreviewAnalyzer;
     // 预览回调
     private PreviewCallback mPreviewCallback;
@@ -57,68 +65,93 @@ public class CameraXController implements ICameraController {
     private OnFrameAvailableListener mFrameAvailableListener;
     // 相机数据输出的SurfaceTexture
     private SurfaceTexture mOutputTexture;
-    private HandlerThread mOutputThread;
 
-    public CameraXController(@NonNull LifecycleOwner lifecycleOwner, @NonNull Executor executor) {
+    public CameraXController(@NonNull FragmentActivity lifecycleOwner) {
         Log.d(TAG, "CameraXController: created!");
         mLifecycleOwner = lifecycleOwner;
         mFacingFront = true;
-        mExecutor = executor;
         mRotation = 90;
     }
 
     @SuppressLint("RestrictedApi")
     @Override
     public void openCamera() {
-        CameraX.unbindAll();
-        initCameraConfig();
-        CameraX.bindToLifecycle(mLifecycleOwner, mPreview, mPreviewAnalyzer);
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
+                ProcessCameraProvider.getInstance(mLifecycleOwner);
+        cameraProviderFuture.addListener(() -> {
+            try {
+                mCameraProvider = cameraProviderFuture.get();
+                bindCameraUseCases();
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, ContextCompat.getMainExecutor(mLifecycleOwner));
     }
 
     /**
      * 初始化相机配置
      */
-    private void initCameraConfig() {
+    private void bindCameraUseCases() {
+        if (mCameraProvider == null) {
+            return;
+        }
+
+        // 解除绑定
+        mCameraProvider.unbindAll();
+
         // 预览画面
-        PreviewConfig.Builder previewBuilder = new PreviewConfig.Builder()
-                .setLensFacing(mFacingFront ? CameraX.LensFacing.FRONT : CameraX.LensFacing.BACK)
-                .setTargetResolution(new Size(mPreviewWidth, mPreviewHeight));
-        mPreview = new Preview(previewBuilder.build());
-        mPreview.setOnPreviewOutputUpdateListener(output -> {
-            releaseSurfaceTexture();
-            mOutputTexture = output.getSurfaceTexture();
-            if (Build.VERSION.SDK_INT >= 21) {
-                if (mOutputThread != null) {
-                    mOutputThread.quit();
-                    mOutputThread = null;
-                }
-                mOutputThread = new HandlerThread("FrameAvailableThread");
-                mOutputThread.start();
-                mOutputTexture.setOnFrameAvailableListener(surfaceTexture -> {
-                    if (mFrameAvailableListener != null) {
-                        mFrameAvailableListener.onFrameAvailable(surfaceTexture);
-                    }
-                }, new Handler(mOutputThread.getLooper()));
-            } else {
-                mOutputTexture.setOnFrameAvailableListener(surfaceTexture -> {
-                    if (mFrameAvailableListener != null) {
-                        mFrameAvailableListener.onFrameAvailable(surfaceTexture);
-                    }
-                });
-            }
+        mPreview = new Preview
+                .Builder()
+                .setTargetResolution(new Size(mPreviewWidth, mPreviewHeight))
+                .build();
+
+        // 预览绑定SurfaceTexture
+        mPreview.setSurfaceProvider(surfaceRequest -> {
+            // 创建SurfaceTexture
+            SurfaceTexture surfaceTexture =
+                    createDetachedSurfaceTexture(surfaceRequest.getResolution());
+            Surface surface = new Surface(surfaceTexture);
+            surfaceRequest.provideSurface(surface, mExecutor, result -> {
+                surface.release();
+            });
             if (mSurfaceTextureListener != null) {
                 mSurfaceTextureListener.onSurfaceTexturePrepared(mOutputTexture);
             }
         });
 
         // 预览帧回调
-        ImageAnalysisConfig analyBuilder = new ImageAnalysisConfig.Builder()
-                .setLensFacing(mFacingFront ? CameraX.LensFacing.FRONT : CameraX.LensFacing.BACK)
+        mPreviewAnalyzer = new ImageAnalysis.Builder()
                 .setTargetResolution(new Size(mPreviewWidth, mPreviewHeight))
-                .setImageReaderMode(ImageAnalysis.ImageReaderMode.ACQUIRE_LATEST_IMAGE)
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build();
-        mPreviewAnalyzer = new ImageAnalysis(analyBuilder);
-        mPreviewAnalyzer.setAnalyzer(mExecutor, new PreviewCallbackAnalyzer(this, mPreviewCallback));
+        mPreviewAnalyzer.setAnalyzer(mExecutor, new PreviewCallbackAnalyzer(mPreviewCallback));
+
+        // 前后置摄像头选择器
+        CameraSelector cameraSelector =
+                new CameraSelector.Builder().requireLensFacing(mFacingFront ?
+                        CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK).build();
+
+        // 绑定输出
+        mCamera = mCameraProvider.bindToLifecycle(mLifecycleOwner, cameraSelector, mPreview,
+                mPreviewAnalyzer);
+    }
+
+    /**
+     * 创建一个SurfaceTexture并
+     */
+    private SurfaceTexture createDetachedSurfaceTexture(@NonNull Size size) {
+        // 创建一个新的SurfaceTexture并从解绑GL上下文
+        if (mOutputTexture == null) {
+            mOutputTexture = new SurfaceTexture(0);
+            mOutputTexture.setDefaultBufferSize(size.getWidth(), size.getHeight());
+            mOutputTexture.detachFromGLContext();
+            mOutputTexture.setOnFrameAvailableListener(texture -> {
+                if (mFrameAvailableListener != null) {
+                    mFrameAvailableListener.onFrameAvailable(texture);
+                }
+            });
+        }
+        return mOutputTexture;
     }
 
     /**
@@ -129,22 +162,19 @@ public class CameraXController implements ICameraController {
             mOutputTexture.release();
             mOutputTexture = null;
         }
-        if (mOutputThread != null) {
-            mOutputThread.quitSafely();
-            mOutputThread = null;
-        }
     }
 
     @SuppressLint("RestrictedApi")
     @Override
     public void closeCamera() {
         try {
-            CameraX.getCameraWithLensFacing(mFacingFront ? CameraX.LensFacing.FRONT : CameraX.LensFacing.BACK);
-            CameraX.unbindAll();
+            if (mCameraProvider != null) {
+                mCameraProvider.unbindAll();
+                mCameraProvider = null;
+            }
+            releaseSurfaceTexture();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            releaseSurfaceTexture();
         }
     }
 
@@ -166,10 +196,21 @@ public class CameraXController implements ICameraController {
     @SuppressLint("RestrictedApi")
     @Override
     public void switchCamera() {
-        closeCamera();
         boolean front = isFront();
         setFront(!front);
-        openCamera();
+
+        // 解除绑定
+        mCameraProvider.unbindAll();
+
+
+        // 前后置摄像头选择器
+        CameraSelector cameraSelector =
+                new CameraSelector.Builder().requireLensFacing(mFacingFront ?
+                        CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK).build();
+
+        // 绑定输出
+        mCamera = mCameraProvider.bindToLifecycle(mLifecycleOwner, cameraSelector, mPreview,
+                mPreviewAnalyzer);
     }
 
     @Override
@@ -180,10 +221,6 @@ public class CameraXController implements ICameraController {
     @Override
     public boolean isFront() {
         return mFacingFront;
-    }
-
-    public void setOrientation(int rotation) {
-        mRotation = rotation;
     }
 
     @Override
@@ -232,6 +269,34 @@ public class CameraXController implements ICameraController {
 
     @Override
     public void setFlashLight(boolean on) {
+        if (supportTorch(isFront())) {
+            Log.e(TAG, "Failed to set flash light: " + on);
+            return;
+        }
+        if (mCamera != null) {
+            mCamera.getCameraControl().enableTorch(on);
+        }
+    }
 
+    @Override
+    public void zoomIn() {
+        if (mCamera != null) {
+            ZoomState zoomState =
+                    Objects.requireNonNull(mCamera.getCameraInfo().getZoomState().getValue());
+            float currentZoomRatio = Math.min(zoomState.getMaxZoomRatio(),
+                    zoomState.getZoomRatio() + 0.1f);
+            mCamera.getCameraControl().setZoomRatio(currentZoomRatio);
+        }
+    }
+
+    @Override
+    public void zoomOut() {
+        if (mCamera != null) {
+            ZoomState zoomState =
+                    Objects.requireNonNull(mCamera.getCameraInfo().getZoomState().getValue());
+            float currentZoomRatio = Math.max(zoomState.getMinZoomRatio(),
+                    zoomState.getZoomRatio() - 0.1f);
+            mCamera.getCameraControl().setZoomRatio(currentZoomRatio);
+        }
     }
 }

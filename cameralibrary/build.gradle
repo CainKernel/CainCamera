@@ -32,7 +32,7 @@ android {
     }
 }
 
-def camerax_version = "1.0.0-alpha06"
+def camerax_version = "1.0.0-rc03"
 def lifecycle_version = '2.0.0'
 
 dependencies {
@@ -61,9 +61,12 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
 
-    // CameraX
+    // CameraX core library
     implementation "androidx.camera:camera-core:${camerax_version}"
+    // CameraX Camera2 extensions
     implementation "androidx.camera:camera-camera2:${camerax_version}"
+    // CameraX Lifecycle library
+    implementation "androidx.camera:camera-lifecycle:$camerax_version"
 
     // Glide
     implementation 'com.github.bumptech.glide:glide:4.11.0'

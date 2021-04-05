@@ -124,16 +124,26 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
      */
     private void updateSurfaceTexture(@NonNull SurfaceTexture surfaceTexture) {
         // 绑定到当前的输入纹理
-        if (mNeedToAttach) {
-            if (mInputTexture != OpenGLUtils.GL_NOT_TEXTURE) {
-                OpenGLUtils.deleteTexture(mInputTexture);
+        synchronized (this) {
+            if (mNeedToAttach) {
+                if (mInputTexture != OpenGLUtils.GL_NOT_TEXTURE) {
+                    OpenGLUtils.deleteTexture(mInputTexture);
+                }
+                mInputTexture = OpenGLUtils.createOESTexture();
+                try {
+                    surfaceTexture.attachToGLContext(mInputTexture);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                mNeedToAttach = false;
             }
-            mInputTexture = OpenGLUtils.createOESTexture();
-            surfaceTexture.attachToGLContext(mInputTexture);
-            mNeedToAttach = false;
         }
-        surfaceTexture.updateTexImage();
-        surfaceTexture.getTransformMatrix(mMatrix);
+        try {
+            surfaceTexture.updateTexImage();
+            surfaceTexture.getTransformMatrix(mMatrix);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -142,8 +152,10 @@ public class RecordRenderer implements GLSurfaceView.Renderer {
      */
     public void bindSurfaceTexture(SurfaceTexture surfaceTexture) {
         synchronized (this) {
-            mWeakSurfaceTexture = new WeakReference<>(surfaceTexture);
-            mNeedToAttach = true;
+            if (mWeakSurfaceTexture == null || mWeakSurfaceTexture.get() != surfaceTexture) {
+                mWeakSurfaceTexture = new WeakReference<>(surfaceTexture);
+                mNeedToAttach = true;
+            }
         }
     }
 
