@@ -6,6 +6,7 @@ def platformVersion = 21    // 18: openGLES 3 min api level
 
 android {
     compileSdkVersion 29
+    buildToolsVersion = '29.0.3'
 
     defaultConfig {
         minSdkVersion "${platformVersion}"
@@ -46,11 +47,17 @@ android {
         }
     }
 
+    packagingOptions {
+        pickFirst 'lib/arm64-v8a/libyuv.so'
+        pickFirst 'lib/armeabi-v7a/libyuv.so'
+        pickFirst 'lib/arm64-v8a/libffmpeg.so'
+        pickFirst 'lib/armeabi-v7a/libffmpeg.so'
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    buildToolsVersion = '29.0.2'
 }
 
 dependencies {
