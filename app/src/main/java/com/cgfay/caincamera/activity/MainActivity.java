@@ -23,6 +23,7 @@ import com.cgfay.image.activity.ImageEditActivity;
 import com.cgfay.picker.MediaPicker;
 import com.cgfay.picker.selector.OnMediaSelector;
 import com.cgfay.picker.model.MediaData;
+import com.cgfay.picker.utils.MediaMetadataUtils;
 import com.cgfay.uitls.utils.PermissionUtils;
 import com.cgfay.video.activity.VideoEditActivity;
 
@@ -212,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void onMediaSelect(@NonNull Context context, @NonNull List<MediaData> mediaDataList) {
             if (mediaDataList.size() == 1) {
                 Intent intent = new Intent(context, MusicMergeActivity.class);
-                intent.putExtra(MusicMergeActivity.PATH, mediaDataList.get(0).getPath());
+                intent.putExtra(MusicMergeActivity.PATH, MediaMetadataUtils.getPath(context, mediaDataList.get(0).getContentUri()));
                 context.startActivity(intent);
             }
         }
@@ -243,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void onMediaSelect(@NonNull Context context, @NonNull List<MediaData> mediaDataList) {
             if (mediaDataList.size() == 1) {
                 Intent intent = new Intent(context, VideoPlayerActivity.class);
-                intent.putExtra(VideoPlayerActivity.PATH, mediaDataList.get(0).getPath());
+                intent.putExtra(VideoPlayerActivity.PATH, MediaMetadataUtils.getPath(context, mediaDataList.get(0).getContentUri()));
                 context.startActivity(intent);
             }
         }

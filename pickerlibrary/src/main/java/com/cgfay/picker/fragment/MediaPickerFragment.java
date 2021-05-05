@@ -9,6 +9,8 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.cgfay.picker.utils.MediaMetadataUtils;
 import com.google.android.material.tabs.TabLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -286,6 +288,9 @@ public class MediaPickerFragment extends AppCompatDialogFragment implements Medi
             if (mMediaSelector != null) {
                 int index = mMediaListViewPager.getCurrentItem();
                 mMediaSelector.onMediaSelect(mActivity, mMediaDataFragments.get(index).getSelectedMediaDataList());
+                if (mPickerParam.isAutoDismiss()) {
+                    animateCloseFragment();
+                }
             }
         });
 
@@ -437,7 +442,9 @@ public class MediaPickerFragment extends AppCompatDialogFragment implements Medi
                     parseVideoOrientation(mediaData);
                     mediaDataList.add(mediaData);
                     mMediaSelector.onMediaSelect(mActivity, mediaDataList);
-                    animateCloseFragment();
+                    if (mPickerParam.isAutoDismiss()) {
+                        animateCloseFragment();
+                    }
                 }
             }
         } else {
@@ -450,7 +457,7 @@ public class MediaPickerFragment extends AppCompatDialogFragment implements Medi
      */
     private void parseVideoOrientation(@NonNull MediaData mediaData) {
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource(mediaData.getPath());
+        mmr.setDataSource(MediaMetadataUtils.getPath(requireContext(), mediaData.getContentUri()));
         String orientation = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
         if ("90".equals(orientation)) {
             mediaData.setOrientation(90);

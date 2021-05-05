@@ -11,11 +11,14 @@ import android.view.ViewGroup;
 import android.widget.VideoView;
 
 import com.cgfay.picker.model.MediaData;
+import com.cgfay.picker.utils.MediaMetadataUtils;
 import com.cgfay.picker.widget.subsamplingview.ImageSource;
 import com.cgfay.picker.widget.subsamplingview.OnImageEventListener;
 import com.cgfay.picker.widget.subsamplingview.SubsamplingScaleImageView;
 import com.cgfay.scan.R;
 import com.cgfay.uitls.utils.DisplayUtils;
+
+import java.util.Objects;
 
 /**
  * 媒体预览页面
@@ -99,14 +102,14 @@ public class MediaPreviewFragment extends AppCompatDialogFragment {
                     calculatePictureScale(mOriginImageView, width, height);
                 }
             });
-            mOriginImageView.setImage(ImageSource.uri(mediaData.getPath()));
+            mOriginImageView.setImage(ImageSource.uri(mediaData.getContentUri()));
         } else {
             view.setOnClickListener(v -> {
                 removeFragment();
             });
             mVideoView = view.findViewById(R.id.video_view);
             mVideoView.setVisibility(View.VISIBLE);
-            setupVideo(mediaData.getPath());
+            setupVideo(Objects.requireNonNull(MediaMetadataUtils.getPath(requireContext(), mediaData.getContentUri())));
         }
     }
 

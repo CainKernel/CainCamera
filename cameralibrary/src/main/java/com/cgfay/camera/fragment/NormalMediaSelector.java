@@ -2,11 +2,13 @@ package com.cgfay.camera.fragment;
 
 import android.content.Context;
 import android.content.Intent;
+
 import androidx.annotation.NonNull;
 
 import com.cgfay.image.activity.ImageEditActivity;
 import com.cgfay.picker.model.MediaData;
 import com.cgfay.picker.selector.OnMediaSelector;
+import com.cgfay.picker.utils.MediaMetadataUtils;
 import com.cgfay.video.activity.MultiVideoActivity;
 import com.cgfay.video.activity.VideoCutActivity;
 
@@ -27,7 +29,7 @@ public class NormalMediaSelector implements OnMediaSelector {
         ArrayList<String> pathList = new ArrayList<>();
         for (MediaData mediaData : mediaDataList) {
             isVideo |= mediaData.isVideo();
-            pathList.add(mediaData.getPath());
+            pathList.add(MediaMetadataUtils.getPath(context, mediaData.getContentUri()));
         }
         if (isVideo) {
             if (pathList.size() > 1) {

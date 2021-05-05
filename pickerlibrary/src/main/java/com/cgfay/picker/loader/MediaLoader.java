@@ -16,21 +16,11 @@ public interface MediaLoader {
      * 加载缩略图
      * @param context
      * @param imageView
-     * @param path
+     * @param uri
      * @param placeholder
      * @param error
      */
-    void loadThumbnail(@NonNull Context context, @NonNull ImageView imageView, @NonNull String path, @DrawableRes int placeholder, @DrawableRes int error);
-
-    /**
-     * 加载缩略图
-     * @param context
-     * @param imageView
-     * @param path
-     * @param placeholder
-     * @param error
-     */
-    void loadThumbnail(@NonNull Context context, @NonNull ImageView imageView, @NonNull Uri path, @DrawableRes int placeholder, @DrawableRes int error);
+    void loadThumbnail(@NonNull Context context, @NonNull ImageView imageView, @NonNull Uri uri, @DrawableRes int placeholder, @DrawableRes int error);
 
     /**
      * 加载缩略图
@@ -38,9 +28,9 @@ public interface MediaLoader {
      * @param resize        期望缩放大小
      * @param placeholder   占位图
      * @param imageView     显示的widget
-     * @param path          路径
+     * @param uri           uri路径
      */
-    void loadThumbnail(@NonNull Context context, @NonNull ImageView imageView, @NonNull String path, int resize, @DrawableRes int placeholder, @DrawableRes int error);
+    void loadThumbnail(@NonNull Context context, @NonNull ImageView imageView, @NonNull Uri uri, int resize, @DrawableRes int placeholder, @DrawableRes int error);
 
     /**
      * 加载图片
@@ -48,27 +38,27 @@ public interface MediaLoader {
      * @param width         期望缩放的宽度
      * @param height        期望缩放的高度
      * @param imageView     显示的widget
-     * @param path           路径
+     * @param uri          uri路径
      */
-    void loadImage(@NonNull Context context, int width, int height, @NonNull ImageView imageView, @NonNull String path);
+    void loadImage(@NonNull Context context, int width, int height, @NonNull ImageView imageView, @NonNull String uri);
 
     /**
      * 加载GIF缩略图
-     * @param context
-     * @param resize
-     * @param placeholder
-     * @param imageView
-     * @param path
+     * @param context       上下文
+     * @param resize        尺寸
+     * @param placeholder   占位图
+     * @param imageView     显示的widget
+     * @param uri           uri路径
      */
-    void loadGifThumbnail(@NonNull Context context, @NonNull ImageView imageView, @NonNull String path, int resize, @DrawableRes int placeholder, @DrawableRes int error);
+    void loadGifThumbnail(@NonNull Context context, @NonNull ImageView imageView, @NonNull Uri uri, int resize, @DrawableRes int placeholder, @DrawableRes int error);
 
     /**
      * 加载GIF缩略图
-     * @param context
+     * @param context       上下文
      * @param width         期望缩放的宽度
      * @param height        期望缩放的高度
      * @param imageView     显示的widget
-     * @param path          路径
+     * @param uri           uri路径
      */
-    void loadGif(@NonNull Context context, int width, int height, @NonNull ImageView imageView, @NonNull String path);
+    void loadGif(@NonNull Context context, int width, int height, @NonNull ImageView imageView, @NonNull Uri uri);
 }

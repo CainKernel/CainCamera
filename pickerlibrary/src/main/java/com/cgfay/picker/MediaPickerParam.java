@@ -19,6 +19,8 @@ public final class MediaPickerParam implements Serializable {
     private int mSpaceSize;
     // 是否显示边沿分割线
     private boolean mHasEdge;
+    // 是否自动销毁
+    private boolean mAutoDismiss;
 
     public MediaPickerParam() {
         reset();
@@ -34,6 +36,7 @@ public final class MediaPickerParam implements Serializable {
         mSpanCount = 4;
         mSpaceSize = 4;
         mHasEdge = true;
+        mAutoDismiss = false;
     }
 
     public void setShowCapture(boolean show) {
@@ -82,6 +85,14 @@ public final class MediaPickerParam implements Serializable {
 
     public boolean isHasEdge() {
         return mHasEdge;
+    }
+
+    public boolean isAutoDismiss() {
+        return mAutoDismiss;
+    }
+
+    public void setAutoDismiss(boolean autoDismiss) {
+        mAutoDismiss = autoDismiss;
     }
 
     /**

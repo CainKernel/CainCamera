@@ -3,18 +3,21 @@ package com.cgfay.picker.model;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.cgfay.picker.utils.MediaMetadataUtils;
 import com.cgfay.picker.utils.UriToPathUtils;
-
-import java.io.File;
 
 /**
  * 媒体数据对象
@@ -22,6 +25,10 @@ import java.io.File;
 public class MediaData implements Parcelable {
 
     private static final String TAG = "MediaData";
+    private static final String EXTERNAL = "external";
+    private static final String KEY_DURATION = "duration";
+    private static final int KILO = 1000;
+    private static final int DEFAULT_HASHCODE = 31;
 
     public static final Creator<MediaData> CREATOR = new Creator<MediaData>() {
         @Override
@@ -35,72 +42,92 @@ public class MediaData implements Parcelable {
         }
     };
 
-    private String mMimeType;
-    private String mPath;
-    private long mSize;
-    private long mDuration;
-    private int mWidth;
-    private int mHeight;
-    private int mOrientation;
+    private long id;
+    private final String mimeType;
+    private final Uri uri;
+    private final long size;
+    private long durationMs;
+    private int width;
+    private int height;
+    private int orientation;
 
     public MediaData(@NonNull Context context, @NonNull Cursor cursor) throws Exception {
-        int id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID));
-        mMimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE));
-        mWidth = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.WIDTH));
-        mHeight = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.HEIGHT));
+        id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID));
+        mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE));
+        width = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.WIDTH));
+        height = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.HEIGHT));
+        size = cursor.getLong(cursor.getColumnIndex(MediaStore.MediaColumns.SIZE));
         Uri contentUri;
         if (isImage()) {
             contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         } else if (isVideo()) {
             contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
         } else {
-            contentUri = MediaStore.Files.getContentUri("external");
+            contentUri = MediaStore.Files.getContentUri(EXTERNAL);
         }
-        Uri uri = ContentUris.withAppendedId(contentUri, id);
-        mPath = UriToPathUtils.getPath(context, uri);
-        if (!TextUtils.isEmpty(mPath)) {
-            File file = new File(mPath);
-            if (file.exists() && !file.isDirectory()) {
-                if (isVideo()) {
-                    int durationId = cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns.DURATION);
-                    mDuration = cursor.getLong(durationId);
-                } else {
-                    mDuration = 0;
-                }
-//                // 如果是否需要过滤宽高异常的图片？？？
-//                if (isImage()) {
-//                    MediaMetadataUtils.buildImageMetadata(this);
-//                    if (mWidth <=0 || mHeight <= 0) {
-//                        throw new Exception("width or height is anomaly!");
-//                    }
-//                }
+        this.uri = ContentUris.withAppendedId(contentUri, id);
+        if (isVideo()) {
+            int durationId;
+            if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                durationId = cursor.getColumnIndexOrThrow(MediaStore.Video.VideoColumns.DURATION);
             } else {
-                throw new Exception("File not exit!");
+                durationId = cursor.getColumnIndexOrThrow(KEY_DURATION);
+            }
+            durationMs = cursor.getLong(durationId);
+            if (durationMs == 0) {
+                extractVideoMetadata(context);
             }
         } else {
-            throw new Exception("path not exit!");
+            durationMs = 0;
+        }
+        Log.d(TAG, "MediaData: " + toString());
+    }
+
+    /**
+     * 解析视频时长
+     */
+    private void extractVideoMetadata(@NonNull Context context) throws Exception {
+        MediaExtractor extractor = new MediaExtractor();
+        try {
+            extractor.setDataSource(context, uri, null);
+            for (int i = 0; i < extractor.getTrackCount(); i++) {
+                MediaFormat format = extractor.getTrackFormat(i);
+                if (format.containsKey(MediaFormat.KEY_MIME)) {
+                    String mime = format.getString(MediaFormat.KEY_MIME);
+                    if (!TextUtils.isEmpty(mime) && mime.startsWith("video/")) {
+                        durationMs = format.getLong(MediaFormat.KEY_DURATION) / KILO;
+                        if (width == 0 || height == 0) {
+                            width = format.getInteger(MediaFormat.KEY_WIDTH);
+                            height = format.getInteger(MediaFormat.KEY_HEIGHT);
+                        }
+                        break;
+                    }
+                }
+            }
+        } finally {
+            extractor.release();
         }
     }
 
     private MediaData(Parcel source) {
-        mMimeType = source.readString();
-        mPath = source.readString();
-        mSize = source.readLong();
-        mDuration = source.readLong();
-        mWidth = source.readInt();
-        mHeight = source.readInt();
-        mOrientation = source.readInt();
+        id = source.readLong();
+        mimeType = source.readString();
+        uri = source.readParcelable(Uri.class.getClassLoader());
+        size = source.readLong();
+        durationMs = source.readLong();
+        width = source.readInt();
+        height = source.readInt();
+        orientation = source.readInt();
     }
 
     public static MediaData valueOf(@NonNull Context context, @NonNull Cursor cursor) {
         MediaData mediaData = null;
         try {
             mediaData = new MediaData(context, cursor);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            return mediaData;
+        } catch (Exception ignored) {
+            // do nothing to ignored error media data
         }
+        return mediaData;
     }
 
     @Override
@@ -110,92 +137,92 @@ public class MediaData implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mMimeType);
-        dest.writeString(mPath);
-        dest.writeLong(mSize);
-        dest.writeLong(mDuration);
-        dest.writeInt(mWidth);
-        dest.writeInt(mHeight);
-        dest.writeInt(mOrientation);
-    }
-
-    @NonNull
-    public String getPath() {
-        return mPath;
+        dest.writeLong(id);
+        dest.writeString(mimeType);
+        dest.writeParcelable(uri, 0);
+        dest.writeLong(size);
+        dest.writeLong(durationMs);
+        dest.writeInt(width);
+        dest.writeInt(height);
+        dest.writeInt(orientation);
     }
 
     @NonNull
     public String getMimeType() {
-        return mMimeType;
+        return mimeType;
+    }
+
+    public Uri getContentUri() {
+        return uri;
     }
 
     public long getSize() {
-        return mSize;
+        return size;
     }
 
-    public long getDuration() {
-        return mDuration;
+    public long getDurationMs() {
+        return durationMs;
     }
 
     public void setWidth(int width) {
-        mWidth = width;
+        this.width = width;
     }
 
     public int getWidth() {
-        return mWidth;
+        return width;
     }
 
     public void setHeight(int height) {
-        mHeight = height;
+        this.height = height;
     }
 
     public int getHeight() {
-        return mHeight;
+        return height;
     }
 
     public void setOrientation(int orientation) {
-        mOrientation = orientation;
+        this.orientation = orientation;
     }
 
     public int getOrientation() {
-        return mOrientation;
+        return orientation;
     }
 
     /**
      * 是否图片
      */
     public boolean isImage() {
-        if (TextUtils.isEmpty(mMimeType)) {
+        if (TextUtils.isEmpty(mimeType)) {
             return false;
         }
-        return mMimeType.equals(MimeType.JPEG.getMimeType())
-                || mMimeType.equals(MimeType.JPG.getMimeType())
-                || mMimeType.equals(MimeType.BMP.getMimeType())
-                || mMimeType.equals(MimeType.PNG.getMimeType());
+        return mimeType.equals(MimeType.JPEG.getMimeType())
+                || mimeType.equals(MimeType.JPG.getMimeType())
+                || mimeType.equals(MimeType.BMP.getMimeType())
+                || mimeType.equals(MimeType.PNG.getMimeType());
     }
 
     /**
      * 是否视频
      */
     public boolean isVideo() {
-        if (TextUtils.isEmpty(mMimeType)) {
+        if (TextUtils.isEmpty(mimeType)) {
             return false;
         }
-        return mMimeType.equals(MimeType.MPEG.getMimeType())
-                || mMimeType.equals(MimeType.MP4.getMimeType())
-                || mMimeType.equals(MimeType.GPP.getMimeType())
-                || mMimeType.equals(MimeType.MKV.getMimeType())
-                || mMimeType.equals(MimeType.AVI.getMimeType());
+        return mimeType.equals(MimeType.MPEG.getMimeType())
+                || mimeType.equals(MimeType.MP4.getMimeType())
+                || mimeType.equals(MimeType.GPP.getMimeType())
+                || mimeType.equals(MimeType.MKV.getMimeType())
+                || mimeType.equals(MimeType.AVI.getMimeType());
     }
 
     /**
      * 是否gif
      */
     public boolean isGif() {
-        if (TextUtils.isEmpty(mMimeType)) {
+        if (TextUtils.isEmpty(mimeType)) {
             return false;
         }
-        return mMimeType.contentEquals(MimeType.GIF.getMimeType());
+        return mimeType.contentEquals(MimeType.GIF.getMimeType());
     }
 
     @Override
@@ -203,24 +230,28 @@ public class MediaData implements Parcelable {
         if (!(obj instanceof MediaData)) {
             return false;
         }
-        MediaData item = (MediaData) obj;
-        return (!TextUtils.isEmpty(mPath) && mMimeType.equals(item.mMimeType))
-                && (!TextUtils.isEmpty(mPath) && mPath.equals(item.mPath))
-                && (mSize == item.mSize)
-                && (mDuration == item.mDuration)
-                && (mWidth == item.mWidth)
-                && (mHeight == item.mHeight);
+        MediaData other = (MediaData) obj;
+        return (!TextUtils.isEmpty(mimeType) && mimeType.equals(other.mimeType))
+                && (uri != null && uri.equals(other.uri)
+                || (uri == null && other.uri == null))
+                && (size == other.size)
+                && (durationMs == other.durationMs)
+                && (width == other.width)
+                && (height == other.height);
     }
 
     @Override
     public int hashCode() {
         int result = 1;
-        result = 31 * result + mMimeType.hashCode();
-        result = 31 * result + mPath.hashCode();
-        result = 31 * result + Long.valueOf(mSize).hashCode();
-        result = 31 * result + Long.valueOf(mDuration).hashCode();
-        result = 31 * result + Long.valueOf(mWidth).hashCode();
-        result = 31 * result + Long.valueOf(mHeight).hashCode();
+        result = DEFAULT_HASHCODE * result + Long.valueOf(id).hashCode();
+        if (!TextUtils.isEmpty(mimeType)) {
+            result = DEFAULT_HASHCODE * result + mimeType.hashCode();
+        }
+        result = DEFAULT_HASHCODE * result + uri.hashCode();
+        result = DEFAULT_HASHCODE * result + Long.valueOf(size).hashCode();
+        result = DEFAULT_HASHCODE * result + Long.valueOf(durationMs).hashCode();
+        result = DEFAULT_HASHCODE * result + Long.valueOf(width).hashCode();
+        result = DEFAULT_HASHCODE * result + Long.valueOf(height).hashCode();
         return result;
     }
 }

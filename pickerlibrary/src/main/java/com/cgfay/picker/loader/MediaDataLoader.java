@@ -2,10 +2,14 @@ package com.cgfay.picker.loader;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
+import android.text.TextUtils;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import androidx.loader.content.CursorLoader;
 
@@ -26,123 +30,101 @@ public class MediaDataLoader extends CursorLoader {
 
     private static final Uri QUERY_URI = MediaStore.Files.getContentUri("external");
 
-//    private final static String DISTINCT_DATA = "DISTINCT " + MediaStore.MediaColumns.DATA;
-
-    private final static String[] PROJECTION_ALL = new String[] {
-//            DISTINCT_DATA,
+    private final static String[] PROJECTION_ALL = new String[]{
             MediaStore.Files.FileColumns._ID,
             MediaStore.MediaColumns.MIME_TYPE,
             MediaStore.MediaColumns.WIDTH,
             MediaStore.MediaColumns.HEIGHT,
+            MediaStore.MediaColumns.SIZE,
     };
 
     private final static String[] PROJECTION_IMAGE = new String[]{
-//            DISTINCT_DATA,
             MediaStore.Files.FileColumns._ID,
             MediaStore.MediaColumns.MIME_TYPE,
             MediaStore.MediaColumns.WIDTH,
             MediaStore.MediaColumns.HEIGHT,
+            MediaStore.MediaColumns.SIZE,
     };
 
     private final static String[] PROJECTION_VIDEO = new String[]{
-//            DISTINCT_DATA,
             MediaStore.Files.FileColumns._ID,
             MediaStore.MediaColumns.MIME_TYPE,
             MediaStore.MediaColumns.WIDTH,
             MediaStore.MediaColumns.HEIGHT,
-            MediaStore.Video.VideoColumns.DURATION,
+            MediaStore.MediaColumns.SIZE,
+            "duration",
     };
 
-    private static final String MEDIA_ORDER = MediaStore.Images.Media.DATE_TAKEN + " DESC";
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private final static String[] PROJECTION_VIDEO_Q = new String[]{
+            MediaStore.Files.FileColumns._ID,
+            MediaStore.MediaColumns.MIME_TYPE,
+            MediaStore.MediaColumns.WIDTH,
+            MediaStore.MediaColumns.HEIGHT,
+            MediaStore.MediaColumns.SIZE,
+            MediaStore.MediaColumns.DURATION,
+    };
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private static final String MEDIA_ORDER_Q = MediaStore.MediaColumns.DATE_TAKEN + " DESC";
+    private static final String MEDIA_ORDER = "datetaken DESC";
 
     private final static String MEDIA_SIZE = MediaStore.MediaColumns.SIZE + ">0";
-
-    private static final String SELECTION_ALL =
-            "(" + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
-                    + " or " + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?)"
-                    + " and " + MediaStore.MediaColumns.SIZE + ">0";
 
     private static final String[] SELECTION_ALL_TYPE_ARGS = {
             String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE),
             String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO),
     };
 
-    private static final String SELECTION_ALBUM_ALL =
-            "(" + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
-                    + " or " + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?)"
-                    + " and " + " bucket_id=?"
-                    + " and " + MediaStore.MediaColumns.SIZE + ">0";
+    private final static String[] SELECTION_IMAGE_TYPE_ARGS = {
+            "image/jpeg", "image/jpg", "image/bmp", "image/png"
+    };
 
-    private final static String SELECTION_IMAGE_TYPE = "(" + MediaStore.MediaColumns.MIME_TYPE + "=?"
-            + " or " + MediaStore.MediaColumns.MIME_TYPE + "=?"
-            + " or " + MediaStore.MediaColumns.MIME_TYPE + "=?"
-            + " or " + MediaStore.MediaColumns.MIME_TYPE + "=?)";
 
-    private final static String[] SELECTION_IMAGE_TYPE_ARGS = {"image/jpeg", "image/jpg", "image/bmp", "image/png"};
+    private final static String[] SELECTION_VIDEO_TYPE_ARGS = {
+            "video/mpeg", "video/mp4", "video/m4v", "video/3gpp", "video/x-matroska", "video/avi"
+    };
 
-    private final static String SELECTION_IMAGE_ALL = MEDIA_SIZE + " and " + MediaStore.Files.FileColumns.MEDIA_TYPE + "=" + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
-            + " and " + SELECTION_IMAGE_TYPE;
-
-    private static final String SELECTION_ALBUM_IMAGE_TYPE = SELECTION_IMAGE_TYPE + " and " + "bucket_id=?";
-
-    private final static String SELECTION_ALBUM_IMAGE = MEDIA_SIZE + " and " + MediaStore.Files.FileColumns.MEDIA_TYPE + "=" + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
-            + " and " + SELECTION_ALBUM_IMAGE_TYPE;
-
-    private final static String SELECTION_VIDEO_TYPE = "(" + MediaStore.MediaColumns.MIME_TYPE + "=?"
-            + " or " + MediaStore.MediaColumns.MIME_TYPE + "=?"
-            + " or " + MediaStore.MediaColumns.MIME_TYPE + "=?"
-            + " or " + MediaStore.MediaColumns.MIME_TYPE + "=?"
-            + " or " + MediaStore.MediaColumns.MIME_TYPE + "=?"
-            + " or " + MediaStore.MediaColumns.MIME_TYPE + "=?"
-            + ")";
-
-    private final static String[] SELECTION_VIDEO_TYPE_ARGS = {"video/mpeg", "video/mp4", "video/m4v", "video/3gpp", "video/x-matroska", "video/avi"};
-
-    private final static String SELECTION_VIDEO_ALL = MEDIA_SIZE + " and " + MediaStore.Files.FileColumns.MEDIA_TYPE + "=" + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
-            + " and " + SELECTION_VIDEO_TYPE;
-
-    private static final String SELECTION_ALBUM_VIDEO_TYPE = SELECTION_VIDEO_TYPE + " and " + "bucket_id=?";
-
-    private final static String SELECTION_ALBUM_VIDEO = MEDIA_SIZE + " and " + MediaStore.Files.FileColumns.MEDIA_TYPE + "=" + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
-            + " and " + SELECTION_ALBUM_VIDEO_TYPE;
-
-    private MediaDataLoader(@NonNull Context context, @Nullable String[] projection, @NonNull String selection, @NonNull String[] selectionArgs) {
-        super(context, QUERY_URI, projection, selection, selectionArgs, MEDIA_ORDER);
+    private MediaDataLoader(@NonNull Context context, @Nullable String[] projection,
+                            @NonNull String selection, @NonNull String[] selectionArgs) {
+        super(context, QUERY_URI, projection, selection, selectionArgs,
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? MEDIA_ORDER_Q : MEDIA_ORDER);
     }
 
     public static final int LOAD_ALL = 0;
     public static final int LOAD_VIDEO = 1;
     public static final int LOAD_IMAGE = 2;
+
     @RestrictTo(LIBRARY_GROUP)
     @IntDef(value = {LOAD_ALL, LOAD_VIDEO, LOAD_IMAGE})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface LoadMimeType {}
+    public @interface LoadMimeType {
+    }
 
     /**
      * 创建媒体数据加载器
-     * @param context
-     * @param mimeType
-     * @return
      */
-    public static CursorLoader createMediaDataLoader(@NonNull Context context, @LoadMimeType int mimeType) {
+    public static CursorLoader createMediaDataLoader(@NonNull Context context,
+                                                     @LoadMimeType int mimeType) {
         final String[] projection = getProjection(mimeType);
         final String selection;
         final String[] selectionArgs;
         switch (mimeType) {
             case LOAD_IMAGE: {
-                selection = getImageSelection(true);
+                selection = getSelectionMimeType(LOAD_IMAGE, SELECTION_IMAGE_TYPE_ARGS);
                 selectionArgs = getAlbumSelectionImageType(AlbumData.ALBUM_ID_ALL);
                 break;
             }
 
             case LOAD_VIDEO: {
-                selection = getVideoSelection(true);
+                selection = getSelectionMimeType(LOAD_VIDEO, SELECTION_VIDEO_TYPE_ARGS);
                 selectionArgs = getAlbumSelectionVideoType(AlbumData.ALBUM_ID_ALL);
                 break;
             }
 
+            case LOAD_ALL:
             default: {
-                selection = getImageAndVideoSelection(true);
+                selection = getSelectionMimeType(LOAD_ALL, null);
                 selectionArgs = getAlbumSelectionImageAndVideoType(AlbumData.ALBUM_ID_ALL);
                 break;
             }
@@ -152,31 +134,32 @@ public class MediaDataLoader extends CursorLoader {
 
     /**
      * 创建媒体数据加载器
-     * @param context
-     * @param album
-     * @param mimeType
-     * @return
      */
-    public static CursorLoader createMediaDataLoader(@NonNull Context context, @NonNull AlbumData album, @LoadMimeType int mimeType) {
+    public static CursorLoader createMediaDataLoader(@NonNull Context context,
+                                                     @NonNull AlbumData album,
+                                                     @LoadMimeType int mimeType) {
         final String[] projection = getProjection(mimeType);
         final String selection;
         final String[] selectionArgs;
 
         switch (mimeType) {
             case LOAD_IMAGE: {
-                selection = getImageSelection(album.isAll());
+                selection = getSelectionMimeType(LOAD_IMAGE, SELECTION_IMAGE_TYPE_ARGS,
+                        album.getId());
                 selectionArgs = getAlbumSelectionImageType(album.getId());
                 break;
             }
 
             case LOAD_VIDEO: {
-                selection = getVideoSelection(album.isAll());
+                selection = getSelectionMimeType(LOAD_VIDEO, SELECTION_VIDEO_TYPE_ARGS,
+                        album.getId());
                 selectionArgs = getAlbumSelectionVideoType(album.getId());
                 break;
             }
 
+            case LOAD_ALL:
             default: {
-                selection =  getImageAndVideoSelection(album.isAll());
+                selection = getSelectionMimeType(LOAD_ALL, null, album.getId());
                 selectionArgs = getAlbumSelectionImageAndVideoType(album.getId());
                 break;
             }
@@ -187,8 +170,8 @@ public class MediaDataLoader extends CursorLoader {
 
     /**
      * 获取Projection
-     * @param mimeType
-     * @return
+     *
+     * @param mimeType 媒体类型
      */
     private static String[] getProjection(@LoadMimeType int mimeType) {
         switch (mimeType) {
@@ -196,29 +179,18 @@ public class MediaDataLoader extends CursorLoader {
                 return PROJECTION_IMAGE;
 
             case LOAD_VIDEO:
-                return PROJECTION_VIDEO;
+                return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? PROJECTION_VIDEO_Q : PROJECTION_VIDEO;
 
+            case LOAD_ALL:
             default:
                 return PROJECTION_ALL;
         }
     }
 
     /**
-     * 获取图片selection
-     * @param all   所有相册
-     * @return
-     */
-    private static String getImageSelection(boolean all) {
-        if (all) {
-            return SELECTION_IMAGE_ALL;
-        }
-        return SELECTION_ALBUM_IMAGE;
-    }
-
-    /**
      * 获取某个相册的图片类型
+     *
      * @param bucketId 相册id
-     * @return
      */
     private static String[] getAlbumSelectionImageType(@NonNull String bucketId) {
         if (bucketId.equals(AlbumData.ALBUM_ID_ALL)) {
@@ -230,18 +202,6 @@ public class MediaDataLoader extends CursorLoader {
         String[] selection = new String[selectionType.size()];
         selectionType.toArray(selection);
         return selection;
-    }
-
-    /**
-     * 获取视频Selection
-     * @param all 是否所有相册
-     * @return
-     */
-    private static String getVideoSelection(boolean all) {
-        if (all) {
-            return SELECTION_VIDEO_ALL;
-        }
-        return SELECTION_ALBUM_VIDEO;
     }
 
     /**
@@ -260,30 +220,69 @@ public class MediaDataLoader extends CursorLoader {
     }
 
     /**
-     * 获取图片和视频的Selection
-     * @param all
-     * @return
-     */
-    private static String getImageAndVideoSelection(boolean all) {
-        if (all) {
-            return SELECTION_ALL;
-        }
-        return SELECTION_ALBUM_ALL;
-    }
-
-    /**
      * 获取图片和视频类型
-     * @param bucketId
-     * @return
      */
     public static String[] getAlbumSelectionImageAndVideoType(@NonNull String bucketId) {
         if (bucketId.equals(AlbumData.ALBUM_ID_ALL)) {
             return SELECTION_ALL_TYPE_ARGS;
         }
-        return new String[] {
+        return new String[]{
                 String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE),
                 String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO),
                 bucketId
         };
     }
+
+    /**
+     * 根据mimeType构建selection字符串
+     */
+    private static String getSelectionMimeType(@LoadMimeType int mediaType,
+                                               @Nullable String[] mimeTypeArgs) {
+        return getSelectionMimeType(mediaType, mimeTypeArgs, "");
+    }
+
+    /**
+     * 根据mediaType、mimeType、bucketId构建selection字符串
+     */
+    private static String getSelectionMimeType(@LoadMimeType int mediaType,
+                                               @Nullable String[] mimeTypeArgs,
+                                               @Nullable String bucketId) {
+        StringBuilder builder = new StringBuilder(MEDIA_SIZE);
+        builder.append(" and ");
+
+        // append media type
+        if (mediaType == LOAD_ALL) {
+            builder.append("(");
+            builder.append(MediaStore.Files.FileColumns.MEDIA_TYPE + "=?");
+            builder.append(" or ");
+            builder.append(MediaStore.Files.FileColumns.MEDIA_TYPE + "=?");
+            builder.append(")");
+        } else {
+            builder.append(MediaStore.Files.FileColumns.MEDIA_TYPE + "=");
+            builder.append(mediaType == LOAD_IMAGE ? MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE :
+                    MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO);
+        }
+
+        // setting custom mime type
+        if (mimeTypeArgs != null && mimeTypeArgs.length > 0) {
+            builder.append(" and ");
+            builder.append("(");
+            for (int i = 0; i < mimeTypeArgs.length; i++) {
+                if (i != 0) {
+                    builder.append(" or ");
+                }
+                builder.append(MediaStore.MediaColumns.MIME_TYPE + "=?");
+            }
+            builder.append(")");
+        }
+
+        // append bucket id
+        if (!TextUtils.isEmpty(bucketId) && !AlbumData.ALBUM_ID_ALL.equals(bucketId)) {
+            builder.append(" and ");
+            builder.append("bucket_id=?");
+        }
+
+        return builder.toString();
+    }
+
 }

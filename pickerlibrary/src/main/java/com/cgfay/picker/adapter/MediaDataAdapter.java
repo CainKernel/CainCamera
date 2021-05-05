@@ -2,7 +2,7 @@ package com.cgfay.picker.adapter;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +36,7 @@ public class MediaDataAdapter extends RecyclerView.Adapter<MediaDataAdapter.Thum
     private OnMediaDataChangeListener mMediaDataChangeListener;
 
     // 媒体数据列表
-    private List<MediaData> mMediaDataList = new ArrayList<>();
+    private final List<MediaData> mMediaDataList = new ArrayList<>();
 
 
     public MediaDataAdapter() {
@@ -59,27 +59,27 @@ public class MediaDataAdapter extends RecyclerView.Adapter<MediaDataAdapter.Thum
             if (mResize > 0) {
                 MediaPickerManager.getInstance().getMediaLoader()
                         .loadThumbnail(holder.itemView.getContext(),
-                        holder.mThumbnailView, mediaData.getPath(), mResize,
+                        holder.mThumbnailView, mediaData.getContentUri(), mResize,
                         R.color.white, R.color.white);
             } else {
                 MediaPickerManager.getInstance().getMediaLoader()
                         .loadThumbnail(holder.itemView.getContext(),
-                        holder.mThumbnailView, mediaData.getPath(),
+                        holder.mThumbnailView, mediaData.getContentUri(),
                         R.color.white, R.color.white);
             }
 
             if (mediaData.isVideo()) {
                 holder.mDurationView.setVisibility(View.VISIBLE);
-                holder.mDurationView.setText(StringUtils.generateStandardTime((int)mediaData.getDuration()));
+                holder.mDurationView.setText(StringUtils.generateStandardTime((int)mediaData.getDurationMs()));
             } else {
                 holder.mDurationView.setVisibility(View.GONE);
             }
             holder.mLayoutCheckbox.setVisibility(mShowCheckbox ? View.VISIBLE : View.GONE);
             holder.mLayoutCheckbox.setOnClickListener(v -> {
                 if (mediaData.isImage()) {
-                    MediaMetadataUtils.buildImageMetadata(mediaData);
+                    MediaMetadataUtils.buildImageMetadata(holder.itemView.getContext(), mediaData);
                 } else {
-                    MediaMetadataUtils.buildVideoMetadata(mediaData);
+                    MediaMetadataUtils.buildVideoMetadata(holder.itemView.getContext(), mediaData);
                 }
                 if (mMediaDataChangeListener != null) {
                     mMediaDataChangeListener.onMediaSelectedChange(mediaData);
@@ -97,9 +97,9 @@ public class MediaDataAdapter extends RecyclerView.Adapter<MediaDataAdapter.Thum
 
             holder.itemView.setOnClickListener(v -> {
                 if (mediaData.isImage()) {
-                    MediaMetadataUtils.buildImageMetadata(mediaData);
+                    MediaMetadataUtils.buildImageMetadata(holder.itemView.getContext(), mediaData);
                 } else {
-                    MediaMetadataUtils.buildVideoMetadata(mediaData);
+                    MediaMetadataUtils.buildVideoMetadata(holder.itemView.getContext(), mediaData);
                 }
                 if (mMediaDataChangeListener != null) {
                     mMediaDataChangeListener.onMediaPreview(mediaData);
@@ -148,42 +148,6 @@ public class MediaDataAdapter extends RecyclerView.Adapter<MediaDataAdapter.Thum
     }
 
     /**
-     * 将媒体数据插入头部
-     * @param mediaDatas
-     */
-    public void insertNewMediaData(@NonNull List<MediaData> mediaDatas) {
-        if (mediaDatas.size() > 0) {
-            synchronized (mLock) {
-                mMediaDataList.addAll(0, mediaDatas);
-            }
-            notifyItemRangeInserted(0, mediaDatas.size());
-        }
-    }
-
-    /**
-     * 将媒体数据插入头部
-     * @param mediaData
-     */
-    public void insertNewMediaData(@NonNull MediaData mediaData) {
-        if (mMediaDataList.size() == 0) {
-            synchronized (mLock) {
-                mMediaDataList.add(0, mediaData);
-                Log.d(TAG, "insertNewMediaData: " + mediaData.getPath());
-            }
-            notifyDataSetChanged();
-        } else {
-            MediaData media = mMediaDataList.get(0);
-            if (!mediaData.getPath().equals(media.getPath())) {
-                synchronized (mLock) {
-                    mMediaDataList.add(0, mediaData);
-                    Log.d(TAG, "insertNewMediaData: " + mediaData.getPath());
-                }
-                notifyItemRangeInserted(0, 1);
-            }
-        }
-    }
-
-    /**
      * 是否显示选中态
      * @param show
      */
@@ -199,7 +163,7 @@ public class MediaDataAdapter extends RecyclerView.Adapter<MediaDataAdapter.Thum
         mResize = resize;
     }
 
-    class ThumbnailViewHolder extends RecyclerView.ViewHolder {
+    public static class ThumbnailViewHolder extends RecyclerView.ViewHolder {
 
         ImageView mThumbnailView;
         View mLayoutCheckbox;

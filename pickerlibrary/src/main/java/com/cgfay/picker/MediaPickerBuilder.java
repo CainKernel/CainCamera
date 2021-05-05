@@ -88,6 +88,11 @@ public final class MediaPickerBuilder {
         return this;
     }
 
+    public MediaPickerBuilder setAutoDismiss(boolean autoDismiss) {
+        mPickerParam.setAutoDismiss(autoDismiss);
+        return this;
+    }
+
     /**
      * 图片加载器
      * @param loader

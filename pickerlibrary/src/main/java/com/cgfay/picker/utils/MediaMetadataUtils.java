@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.Objects;
 
 public final class MediaMetadataUtils {
     private static final String TAG = MediaMetadataUtils.class.getSimpleName();
@@ -44,11 +45,15 @@ public final class MediaMetadataUtils {
      * 构建图片宽高信息
      * @param mediaData
      */
-    public static void buildImageMetadata(@NonNull MediaData mediaData) {
+    public static void buildImageMetadata(@NonNull Context context, @NonNull MediaData mediaData) {
         if (mediaData.getWidth() > 0 && mediaData.getHeight() > 0) {
             return;
         }
-        File file = new File(mediaData.getPath());
+        String path = getPath(context.getContentResolver(), mediaData.getContentUri());
+        if (TextUtils.isEmpty(path)) {
+            return;
+        }
+        File file = new File(Objects.requireNonNull(path));
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BufferedInputStream bis = null;
@@ -58,7 +63,7 @@ public final class MediaMetadataUtils {
             mediaData.setWidth(options.outWidth);
             mediaData.setHeight(options.outHeight);
         } catch (FileNotFoundException e) {
-            Log.w(TAG, e.getLocalizedMessage());
+            Log.w(TAG, Objects.requireNonNull(e.getLocalizedMessage()));
         } finally {
             try {
                 if (bis != null) {
@@ -74,11 +79,11 @@ public final class MediaMetadataUtils {
      * 构建视频宽高信息
      * @param mediaData
      */
-    public static void buildVideoMetadata(@NonNull MediaData mediaData) {
+    public static void buildVideoMetadata(@NonNull Context context, @NonNull MediaData mediaData) {
         if (mediaData.getWidth() > 0 && mediaData.getHeight() > 0) {
             return;
         }
-        int[] size = getDimensions(mediaData.getPath());
+        int[] size = getDimensions(getPath(context.getContentResolver(), mediaData.getContentUri()));
         mediaData.setWidth(size[0]);
         mediaData.setHeight(size[1]);
     }
@@ -241,6 +246,10 @@ public final class MediaMetadataUtils {
         }
     }
 
+    public static String getPath(@NonNull Context context, @NonNull Uri uri) {
+        return getPath(context.getContentResolver(), uri);
+    }
+
     /**
      * 获取uri路径
      * @param resolver
@@ -299,6 +308,6 @@ public final class MediaMetadataUtils {
         df.applyPattern("0.0");
         String result = df.format((float) byteSize / 1024 / 1024);
         result = result.replaceAll(",", ".");
-        return Float.valueOf(result);
+        return Float.parseFloat(result);
     }
 }

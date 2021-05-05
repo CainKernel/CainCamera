@@ -20,6 +20,7 @@ import com.cgfay.filter.glfilter.utils.OpenGLUtils;
 import com.cgfay.filter.glfilter.utils.TextureRotationUtils;
 
 import com.cgfay.picker.model.MediaData;
+import com.cgfay.picker.utils.MediaMetadataUtils;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -626,7 +627,7 @@ public class DuetRecordRenderer implements GLSurfaceView.Renderer {
         mVideoSurface = new Surface(mVideoSurfaceTexture);
         mMediaPlayer = new MediaPlayer();
         try {
-            mMediaPlayer.setDataSource(mDuetVideo.getPath());
+            mMediaPlayer.setDataSource(MediaMetadataUtils.getPath(mWeakPresenter.get().getActivity(), mDuetVideo.getContentUri()));
             mMediaPlayer.setSurface(mVideoSurface);
             mMediaPlayer.setLooping(true);
             mMediaPlayer.prepare();
