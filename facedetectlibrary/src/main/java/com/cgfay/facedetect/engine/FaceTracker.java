@@ -214,17 +214,17 @@ public final class FaceTracker {
                 new LicenseManager.TakeLicenseCallback() {
                     @Override
                     public void onSuccess() {
-//                        if (VERBOSE) {
+                        if (VERBOSE) {
                             Log.d(TAG, "success to register license!");
-//                        }
+                        }
                         FaceTrackParam.getInstance().canFaceTrack = true;
                     }
 
                     @Override
                     public void onFailed(int i, byte[] bytes) {
-//                        if (VERBOSE) {
+                        if (VERBOSE) {
                             Log.d(TAG, "Failed to register license!");
-//                        }
+                        }
                         FaceTrackParam.getInstance().canFaceTrack = false;
                     }
                 });
