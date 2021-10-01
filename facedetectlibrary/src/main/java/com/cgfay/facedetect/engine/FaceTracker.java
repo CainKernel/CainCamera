@@ -198,18 +198,19 @@ public final class FaceTracker {
      */
     public static void requestFaceNetwork(Context context) {
         if (Facepp.getSDKAuthType(ConUtil.getFileContent(context, R.raw
-                .megviifacepp_0_4_7_model)) == 2) {// 非联网授权
+                .megviifacepp_0_5_2_model)) == 2) {// 非联网授权
             FaceTrackParam.getInstance().canFaceTrack = true;
             return;
         }
         final LicenseManager licenseManager = new LicenseManager(context);
         licenseManager.setExpirationMillis(Facepp.getApiExpirationMillis(context,
-                ConUtil.getFileContent(context, R.raw.megviifacepp_0_4_7_model)));
+                ConUtil.getFileContent(context, R.raw.megviifacepp_0_5_2_model)));
         String uuid = ConUtil.getUUIDString(context);
         long apiName = Facepp.getApiName();
+        String url = FaceppConstraints.US_LICENSE_URL;
         licenseManager.setAuthTimeBufferMillis(0);
-        licenseManager.takeLicenseFromNetwork(uuid, FaceppConstraints.API_KEY, FaceppConstraints.API_SECRET, apiName,
-                LicenseManager.DURATION_30DAYS, "Landmark", "1", true,
+        licenseManager.takeLicenseFromNetwork(url, uuid, FaceppConstraints.API_KEY, FaceppConstraints.API_SECRET, apiName,
+                "1",
                 new LicenseManager.TakeLicenseCallback() {
                     @Override
                     public void onSuccess() {
@@ -404,7 +405,7 @@ public final class FaceTracker {
                 bottom = height - top;
             }
 
-            facepp.init(context, ConUtil.getFileContent(context, R.raw.megviifacepp_0_4_7_model));
+            facepp.init(context, ConUtil.getFileContent(context, R.raw.megviifacepp_0_5_2_model));
             Facepp.FaceppConfig faceppConfig = facepp.getFaceppConfig();
             faceppConfig.interval = faceTrackParam.detectInterval;
             faceppConfig.minFaceSize = faceTrackParam.minFaceSize;

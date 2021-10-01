@@ -63,7 +63,7 @@ public final class FaceTrackParam {
         enableMultiFace = true;
         minFaceSize = 200;
         detectInterval = 25;
-        trackMode = Facepp.FaceppConfig.DETECTION_MODE_TRACKING_SMOOTH;
+        trackMode = Facepp.FaceppConfig.DETECTION_MODE_TRACKING;
         trackerCallback = null;
     }
 
