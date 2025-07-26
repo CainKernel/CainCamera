@@ -61,7 +61,7 @@ public class VideoFilterAdapter extends RecyclerView.Adapter<VideoFilterAdapter.
         if (position == mSelected) {
             holder.filterPanel.setBackgroundResource(R.drawable.ic_video_filter_selected);
         } else {
-            holder.filterPanel.setBackgroundColor(mContext.getResources().getColor(R.color.transparent));
+            holder.filterPanel.setBackgroundColor(mContext.getResources().getColor(com.cgfay.utilslibrary.R.color.transparent));
         }
         holder.filterRoot.setOnClickListener(new View.OnClickListener() {
             @Override

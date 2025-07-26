@@ -1,12 +1,13 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion '30.0.2'
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    namespace 'com.cgfay.cameralibrary'
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 30
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
 
@@ -33,8 +34,8 @@ android {
     }
 }
 
-def camerax_version = "1.0.0-rc03"
-def lifecycle_version = '2.2.0'
+def camerax_version = rootProject.ext.cameraXVersion
+def lifecycle_version = rootProject.ext.lifecycleVersion
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
@@ -50,11 +51,11 @@ dependencies {
     implementation project(':widgetlibrary')
 
     // AndroidX libraries
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation "androidx.appcompat:appcompat:${rootProject.ext.appcompatVersion}"
+    implementation "androidx.legacy:legacy-support-v4:${rootProject.ext.legacySupportVersion}"
+    implementation "androidx.recyclerview:recyclerview:${rootProject.ext.recyclerViewVersion}"
+    implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.constraintLayoutVersion}"
+    implementation "com.google.android.material:material:${rootProject.ext.materialVersion}"
 
     // Lifecycle and LiveData
     implementation "androidx.lifecycle:lifecycle-runtime:$lifecycle_version"
@@ -70,9 +71,9 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:$camerax_version"
 
     // Glide
-    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    implementation "com.github.bumptech.glide:glide:${rootProject.ext.glideVersion}"
 
-    testImplementation 'junit:junit:4.13'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    testImplementation "junit:junit:${rootProject.ext.junitVersion}"
+    androidTestImplementation "androidx.test.ext:junit:${rootProject.ext.androidXJunitVersion}"
+    androidTestImplementation "androidx.test.espresso:espresso-core:${rootProject.ext.espressoVersion}"
 }

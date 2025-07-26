@@ -3,7 +3,7 @@ package com.cgfay.widget;
 import android.content.Context;
 import android.content.res.TypedArray;
 
-import com.cgfay.design.R;
+import androidx.appcompat.R;
 
 /**
  * @author CainHuang

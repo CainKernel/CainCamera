@@ -1,0 +1,22 @@
+ext {
+    // Compile against the latest Android 14 SDK
+    compileSdkVersion = 35
+    buildToolsVersion = '35.0.0'
+    minSdkVersion = 21
+    targetSdkVersion = 30
+
+    appcompatVersion = '1.7.1'
+    recyclerViewVersion = '1.4.0'
+    materialVersion = '1.12.0'
+    constraintLayoutVersion = '2.2.1'
+    legacySupportVersion = '1.0.0'
+    glideVersion = '4.16.0'
+    junitVersion = '4.13.2'
+    androidXJunitVersion = '1.2.1'
+    espressoVersion = '3.6.1'
+    lifecycleVersion = '2.2.0'
+    cameraXVersion = '1.4.2'
+    rxJavaVersion = '2.2.21'
+    rxAndroidVersion = '2.1.1'
+}
+

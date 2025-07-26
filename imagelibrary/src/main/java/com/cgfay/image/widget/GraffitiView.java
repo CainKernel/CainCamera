@@ -78,7 +78,7 @@ public class GraffitiView extends View {
 
         Paint paint = new Paint();
         paint.setAntiAlias(true);
-        paint.setStrokeWidth(getResources().getDimension(R.dimen.dp3));
+        paint.setStrokeWidth(getResources().getDimension(com.cgfay.utilslibrary.R.dimen.dp3));
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStrokeCap(Paint.Cap.ROUND);

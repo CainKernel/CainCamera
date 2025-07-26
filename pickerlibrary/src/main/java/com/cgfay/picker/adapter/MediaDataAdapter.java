@@ -60,12 +60,14 @@ public class MediaDataAdapter extends RecyclerView.Adapter<MediaDataAdapter.Thum
                 MediaPickerManager.getInstance().getMediaLoader()
                         .loadThumbnail(holder.itemView.getContext(),
                         holder.mThumbnailView, mediaData.getContentUri(), mResize,
-                        R.color.white, R.color.white);
+                        com.cgfay.utilslibrary.R.color.white,
+                        com.cgfay.utilslibrary.R.color.white);
             } else {
                 MediaPickerManager.getInstance().getMediaLoader()
                         .loadThumbnail(holder.itemView.getContext(),
                         holder.mThumbnailView, mediaData.getContentUri(),
-                        R.color.white, R.color.white);
+                        com.cgfay.utilslibrary.R.color.white,
+                        com.cgfay.utilslibrary.R.color.white);
             }
 
             if (mediaData.isVideo()) {

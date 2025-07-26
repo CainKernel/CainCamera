@@ -55,7 +55,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.cgfay.design.R;
+import com.google.android.material.R;
 import com.cgfay.resources.MaterialResources;
 import com.cgfay.internal.ViewUtils;
 

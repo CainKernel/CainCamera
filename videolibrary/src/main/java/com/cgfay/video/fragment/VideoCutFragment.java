@@ -154,9 +154,9 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
         View layoutSpeed = mContentView.findViewById(R.id.layout_speed);
         ConstraintLayout.LayoutParams speedParams = (ConstraintLayout.LayoutParams) layoutSpeed.getLayoutParams();
         if (DisplayUtils.isFullScreenDevice(mActivity)) {
-            speedParams.bottomMargin = getResources().getDimensionPixelSize(R.dimen.dp20);
+            speedParams.bottomMargin = getResources().getDimensionPixelSize(com.cgfay.utilslibrary.R.dimen.dp20);
         } else {
-            speedParams.bottomMargin = getResources().getDimensionPixelSize(R.dimen.dp100);
+            speedParams.bottomMargin = getResources().getDimensionPixelSize(com.cgfay.utilslibrary.R.dimen.dp100);
         }
         layoutSpeed.setLayoutParams(speedParams);
 
@@ -167,9 +167,9 @@ public class VideoCutFragment extends Fragment implements View.OnClickListener {
         mVideoCutViewBar.setOnVideoCropViewBarListener(mOnVideoCropViewBarListener);
         ConstraintLayout.LayoutParams cutViewBarParams = (ConstraintLayout.LayoutParams) mVideoCutViewBar.getLayoutParams();
         if (DisplayUtils.isFullScreenDevice(mActivity)) {
-            cutViewBarParams.bottomMargin = getResources().getDimensionPixelSize(R.dimen.dp70);
+            cutViewBarParams.bottomMargin = getResources().getDimensionPixelSize(com.cgfay.utilslibrary.R.dimen.dp70);
         } else {
-            cutViewBarParams.bottomMargin = getResources().getDimensionPixelSize(R.dimen.dp20);
+            cutViewBarParams.bottomMargin = getResources().getDimensionPixelSize(com.cgfay.utilslibrary.R.dimen.dp20);
         }
         mVideoCutViewBar.setLayoutParams(cutViewBarParams);
 

@@ -46,7 +46,7 @@ public class VideoEffectCategoryAdapter extends RecyclerView.Adapter<VideoEffect
     public void onBindViewHolder(@NonNull ImageHolder holder, final int position) {
         holder.filterName.setText(mCategoryList.get(position).getName());
         if (position == mSelected) {
-            holder.filterName.setTextColor(mContext.getResources().getColor(R.color.white));
+            holder.filterName.setTextColor(mContext.getResources().getColor(com.cgfay.utilslibrary.R.color.white));
         } else {
             holder.filterName.setTextColor(mContext.getResources().getColor(R.color.video_edit_effect_category_text_normal));
         }

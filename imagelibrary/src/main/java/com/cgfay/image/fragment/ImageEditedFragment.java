@@ -334,7 +334,7 @@ public class ImageEditedFragment extends Fragment implements View.OnClickListene
      */
     private void requestStoragePermission() {
         if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            PermissionConfirmDialogFragment.newInstance(getString(R.string.request_storage_permission), PermissionUtils.REQUEST_STORAGE_PERMISSION)
+            PermissionConfirmDialogFragment.newInstance(getString(com.cgfay.utilslibrary.R.string.request_storage_permission), PermissionUtils.REQUEST_STORAGE_PERMISSION)
                     .show(getChildFragmentManager(), FRAGMENT_DIALOG);
         } else {
             requestPermissions(new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE},
@@ -346,7 +346,7 @@ public class ImageEditedFragment extends Fragment implements View.OnClickListene
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PermissionUtils.REQUEST_STORAGE_PERMISSION) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                PermissionErrorDialogFragment.newInstance(getString(R.string.request_storage_permission), PermissionUtils.REQUEST_STORAGE_PERMISSION, true)
+                PermissionErrorDialogFragment.newInstance(getString(com.cgfay.utilslibrary.R.string.request_storage_permission), PermissionUtils.REQUEST_STORAGE_PERMISSION, true)
                         .show(getChildFragmentManager(), FRAGMENT_DIALOG);
             } else {
                 mStorageWriteEnable = true;

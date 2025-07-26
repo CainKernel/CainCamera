@@ -10,6 +10,7 @@ import android.view.View;
 
 import com.cgfay.imagelibrary.R;
 
+
 /**
  * 裁剪遮罩视图
  * Created by cain.huang on 2017/12/28.
@@ -72,8 +73,8 @@ public class CropCoverView extends View {
     }
 
     private void init() {
-        mStrokeWidth = (int) getResources().getDimension(R.dimen.dp3);
-        mStrokeWidthNew = (int) getResources().getDimension(R.dimen.dp1);
+        mStrokeWidth = (int) getResources().getDimension(com.cgfay.utilslibrary.R.dimen.dp3);
+        mStrokeWidthNew = (int) getResources().getDimension(com.cgfay.utilslibrary.R.dimen.dp1);
 
         mPaint = new Paint();
         mPaint.setAntiAlias(true);

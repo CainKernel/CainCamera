@@ -241,7 +241,9 @@ public abstract class MediaDataFragment extends Fragment implements IMediaDataRe
      * 指定加载图片的大小
      */
     private void setItemImageSize() {
-        int divSize = (int)(getResources().getDimension(R.dimen.dp4) * (mMediaPickerParam.getSpanCount() + 1));
+        int divSize = (int)(getResources().getDimension(
+                com.cgfay.utilslibrary.R.dimen.dp4) *
+                (mMediaPickerParam.getSpanCount() + 1));
         int imageSize = getResources().getDisplayMetrics().widthPixels - divSize;
         int resize = imageSize / mMediaPickerParam.getSpanCount();
         mMediaDataAdapter.setThumbnailResize(resize);

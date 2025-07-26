@@ -6,7 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.cgfay.design.R;
+import com.google.android.material.R;
 
 
 /**

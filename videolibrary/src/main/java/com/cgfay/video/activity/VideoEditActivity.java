@@ -67,7 +67,7 @@ public class VideoEditActivity extends AppCompatActivity implements VideoEditFra
         fragment.addOnMusicSelectedListener(this);
         getSupportFragmentManager()
                 .beginTransaction()
-                .setCustomAnimations(R.anim.anim_slide_up, 0)
+                .setCustomAnimations(com.cgfay.utilslibrary.R.anim.anim_slide_up, 0)
                 .add(R.id.fragment_content, fragment)
                 .addToBackStack(FRAGMENT_MUSIC_SELECT)
                 .commit();
